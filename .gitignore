@@ -1,0 +1,15 @@
+# Entornos y dependencias
+.venv/
+__pycache__/
+web/node_modules/
+
+# Datos personales de salud: nunca al repositorio
+data/
+reports/
+site/
+web/public/data.js
+*.tar.gz
+
+# Secretos (las claves viven en ~/.config, fuera del proyecto)
+.env
+*.key
