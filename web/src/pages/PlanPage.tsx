@@ -301,10 +301,12 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           </Stack>
           <Stack spacing={1}>
             {plan.memory.map((m, i) => (
-              <Stack key={i} direction="row" spacing={1.25}>
-                <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: TYPE.race[mode], mt: '9px', flexShrink: 0 }} />
-                <Typography variant="body2">{m}</Typography>
-              </Stack>
+              <Typography key={i} variant="body2" component="div" sx={{ display: 'flex', gap: 1.25 }}>
+                <Box sx={{ height: '1lh', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: TYPE.race[mode] }} />
+                </Box>
+                <span>{m}</span>
+              </Typography>
             ))}
           </Stack>
         </Card>

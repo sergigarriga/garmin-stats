@@ -22,6 +22,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from . import DATA_DIR
 from . import ai
+from . import settings
 
 log = logging.getLogger(__name__)
 
@@ -112,7 +113,8 @@ def profile(data: dict) -> dict:
     today = date.today()
 
     def since(days):
-        lim = (today - timedelta(days=days)).isoformat()
+        # Últimos `days` días REGISTRADOS: los huecos con el reloj roto no cuentan como parón.
+        lim = settings.recorded_start(days, today).isoformat()
         return [a for a in runs if a["start"][:10] >= lim]
 
     def weekly_km(days):
@@ -143,6 +145,10 @@ def profile(data: dict) -> dict:
         "preparacion_hoy": data.get("readiness"),
         "forma_ctl": next((d.get("ctl") for d in reversed(data["days"]) if d.get("ctl") is not None), None),
         "semanas": data.get("weeks"),
+        "huecos_sin_reloj": settings.watch_gaps(),
+        "nota_huecos": "Los periodos de 'huecos_sin_reloj' NO son parones: el reloj no registraba. Las ventanas "
+                       "de km/carreras ya se calculan saltándolos (últimas semanas registradas). No planifiques "
+                       "como si volviera de una lesión o de no correr; parte de su nivel registrado.",
     }
 
 

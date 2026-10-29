@@ -112,7 +112,9 @@ def insights(A: dict, am: pd.DataFrame, rel: pd.DataFrame, best: pd.DataFrame) -
         h8 = acts[acts["date"] >= end - pd.Timedelta(weeks=8)]["duration_min"].sum() / 60 / 8
         prev = acts[(acts["date"] < end - pd.Timedelta(weeks=8)) & (acts["date"] >= end - pd.Timedelta(weeks=34))]
         h_prev = prev["duration_min"].sum() / 60 / 26
-        if h_prev > 1 and h8 < 0.4 * h_prev:
+        from . import settings
+        recent_gap = any(date.fromisoformat(g["to"]) >= (end - pd.Timedelta(weeks=8)).date() for g in settings.watch_gaps())
+        if h_prev > 1 and h8 < 0.4 * h_prev and not recent_gap:
             out["entreno"].append(f"Parón: las últimas 8 semanas entrenas {h8:.1f} h/semana frente a {h_prev:.1f} h/semana "
                                   "en los 6 meses anteriores. La forma (CTL) y el VO2max bajan tras 3-4 semanas sin estímulo.")
             out["acciones"].append(f"Vuelta progresiva: tras el parón, empieza con ~{max(1.5, h_prev * 0.5):.1f} h/semana "

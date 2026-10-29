@@ -39,15 +39,17 @@ function Formatted({ text }: { text: string }) {
     blocks.push(
       <Box key={blocks.length} component={ordered ? 'ol' : 'ul'} sx={{ m: 0, pl: 0, listStyle: 'none', display: 'grid', gap: 1 }}>
         {items.map((it, i) => (
-          <Box key={i} component="li" sx={{ display: 'flex', gap: 1.25, alignItems: 'flex-start' }}>
-            {ordered ? (
-              <Box sx={{ minWidth: 22, height: 22, borderRadius: '50%', bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent)',
-                color: 'primary.main', fontSize: 12, fontWeight: 700, display: 'grid', placeItems: 'center', mt: '1px' }}>{i + 1}</Box>
-            ) : (
-              <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: 'primary.main', flexShrink: 0, mt: '9px' }} />
-            )}
-            <Typography sx={{ fontSize: 15, lineHeight: 1.55 }}>{inline(it)}</Typography>
-          </Box>
+          <Typography key={i} component="li" sx={{ display: 'flex', gap: 1.25, fontSize: 15, lineHeight: 1.55 }}>
+            <Box sx={{ height: '1lh', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              {ordered ? (
+                <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent)',
+                  color: 'primary.main', fontSize: 12, fontWeight: 700, display: 'grid', placeItems: 'center' }}>{i + 1}</Box>
+              ) : (
+                <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: 'primary.main' }} />
+              )}
+            </Box>
+            <span>{inline(it)}</span>
+          </Typography>
         ))}
       </Box>,
     );

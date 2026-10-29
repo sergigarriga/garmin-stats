@@ -131,6 +131,8 @@ def _summary(data: dict) -> dict:
         "predictions": data.get("predictions"),
         "rule_based_findings": data["insights"],
         "coverage": data.get("coverage"),
+        "huecos_sin_reloj": __import__("garmin_stats.settings", fromlist=["x"]).watch_gaps(),
+        "nota_huecos": "En 'huecos_sin_reloj' el reloj estaba roto: no hables de parón ni de falta de entreno en ese periodo.",
         "relations": [r for r in data["relations"] if r.get("rho") is not None and abs(r["rho"]) >= 0.2],
         "notes": "bed = horas desde mediodía (13,8 = 01:48). wake = hora del reloj (7,9 = 07:54). "
                  "imVig cuenta doble para el objetivo OMS de 150 min/semana. ctl = forma (carga media 42 d), "
