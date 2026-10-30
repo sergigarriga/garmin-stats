@@ -20,6 +20,7 @@ import MonitorHeart from '@mui/icons-material/MonitorHeart';
 import BatteryChargingFull from '@mui/icons-material/BatteryChargingFull';
 import DirectionsRun from '@mui/icons-material/DirectionsRun';
 import type { AiCard } from './data';
+import { Rich } from './rich';
 import { RANGES, type Range } from './data';
 import { signed } from './format';
 import { CATEGORY, useResolvedMode } from './theme';
@@ -189,7 +190,7 @@ export function InsightList({ items, color, icon }: { items?: string[]; color: s
       {items.map((t, i) => (
         <Card key={i} sx={{ ...CARD_SX, py: 2, display: 'flex', gap: 2, alignItems: 'flex-start', bgcolor: alpha(color, 0.07) }}>
           <IconBubble color={color} size={32}>{icon ?? <LightbulbOutlined />}</IconBubble>
-          <Typography sx={{ pt: 0.5 }}>{t}</Typography>
+          <Typography sx={{ pt: 0.5, color: 'text.secondary', '& b': { color: 'text.primary' } }}><Rich>{t}</Rich></Typography>
         </Card>
       ))}
     </Stack>
@@ -238,7 +239,7 @@ export function AiCards({ cards }: { cards: AiCard[] }) {
               </Typography>
             </Stack>
             <Typography variant="subtitle1" sx={{ fontSize: 18, lineHeight: 1.3 }}>{c.title}</Typography>
-            <Typography color="text.secondary">{c.body}</Typography>
+            <Typography color="text.secondary"><Rich>{c.body}</Rich></Typography>
           </Card>
         );
       })}

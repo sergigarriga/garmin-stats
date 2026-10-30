@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -36,6 +36,29 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { downloadWeek } from '../workouts';
+import { Rich } from '../rich';
+import SpeedRounded from '@mui/icons-material/SpeedRounded';
+import TimerOutlined from '@mui/icons-material/TimerOutlined';
+import EmojiEventsOutlined from '@mui/icons-material/EmojiEventsOutlined';
+import ScienceOutlined from '@mui/icons-material/ScienceOutlined';
+import BedtimeOutlined from '@mui/icons-material/BedtimeOutlined';
+import CalendarMonthOutlined from '@mui/icons-material/CalendarMonthOutlined';
+import FitnessCenterRounded from '@mui/icons-material/FitnessCenterRounded';
+import MonitorWeightOutlined from '@mui/icons-material/MonitorWeightOutlined';
+import TuneRounded2 from '@mui/icons-material/TuneRounded';
+
+const TOPIC: Record<string, { icon: ReactNode; color: { light: string; dark: string } }> = {
+  nivel: { icon: <SpeedRounded />, color: { light: '#1A73E8', dark: '#8AB4F8' } },
+  ritmos: { icon: <TimerOutlined />, color: { light: '#E8710A', dark: '#FCAD70' } },
+  marcas: { icon: <EmojiEventsOutlined />, color: { light: '#C26401', dark: '#FDD663' } },
+  objetivo: { icon: <FlagRounded />, color: { light: '#D93025', dark: '#F28B82' } },
+  test: { icon: <ScienceOutlined />, color: { light: '#9334E6', dark: '#D7AEFB' } },
+  salud: { icon: <BedtimeOutlined />, color: { light: '#5B5BD6', dark: '#AFADFF' } },
+  estructura: { icon: <CalendarMonthOutlined />, color: { light: '#00838F', dark: '#78D9EC' } },
+  gimnasio: { icon: <FitnessCenterRounded />, color: { light: '#9334E6', dark: '#D7AEFB' } },
+  peso: { icon: <MonitorWeightOutlined />, color: { light: '#188038', dark: '#81C995' } },
+  preferencias: { icon: <TuneRounded2 />, color: { light: '#80868B', dark: '#BDC1C6' } },
+};
 import { isoLocal, toDate, type CoachView, type GarminData, type PlanSession, type SessionType } from '../data';
 import { dateLong, dateShort, dec1, duration, pace } from '../format';
 import { useResolvedMode } from '../theme';
@@ -417,7 +440,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
         </Box>
         <Box sx={{ mt: 2.5, pt: 2, borderTop: 1, borderColor: 'divider' }}>
           <Typography color="text.secondary" sx={{ fontSize: { xs: 14, sm: 16 }, ...(moreSummary ? {} : { display: '-webkit-box', WebkitLineClamp: { xs: 4, md: 'unset' }, WebkitBoxOrient: 'vertical', overflow: 'hidden' }) }}>
-            {plan.summary}
+            <Rich>{plan.summary}</Rich>
           </Typography>
           <Button size="small" onClick={() => setMoreSummary((m) => !m)} sx={{ display: { md: 'none' }, mt: 0.5, ml: -1, borderRadius: 999 }}>
             {moreSummary ? 'Leer menos' : 'Leer más'}
@@ -435,12 +458,12 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
               </Stack>
               <Typography variant="h5">{t.session.title}</Typography>
               <Typography color="text.secondary">{[plannedText(t.session), t.session.target].filter(Boolean).join(' · ')}</Typography>
-              <Typography sx={{ mt: 1 }}>{t.session.description}</Typography>
+              <Typography sx={{ mt: 1, color: 'text.secondary', '& b': { color: 'text.primary' } }}><Rich>{t.session.description}</Rich></Typography>
             </Box>
             {t.tip && (
               <Box sx={{ p: 2, borderRadius: '16px', bgcolor: 'background.paper', maxWidth: { md: 360 } }}>
                 <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Según tu preparación</Typography>
-                <Typography>{t.tip}</Typography>
+                <Typography><Rich>{t.tip}</Rich></Typography>
               </Box>
             )}
           </Stack>
@@ -478,20 +501,25 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
       {/* coach */}
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: last?.kind === 'adapt' ? '1fr 1fr' : '1fr' }, mt: 2 }}>
         <Card sx={{ ...CARD_SX }}>
-          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 1.5 }}>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2 }}>
             <IconBubble color={TYPE.race[mode]}><PsychologyRounded /></IconBubble>
             <Box><Typography variant="subtitle1">Lo que tu coach sabe de ti</Typography>
               <Typography variant="caption" color="text.secondary">Se actualiza en cada ajuste con tus datos y valoraciones</Typography></Box>
           </Stack>
-          <Stack spacing={1}>
-            {plan.memory.map((m, i) => (
-              <Typography key={i} variant="body2" component="div" sx={{ display: 'flex', gap: 1.25 }}>
-                <Box sx={{ height: '1lh', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: TYPE.race[mode] }} />
-                </Box>
-                <span>{m}</span>
-              </Typography>
-            ))}
+          <Stack spacing={1.75}>
+            {plan.memory.map((m, i) => {
+              const it = typeof m === 'string' ? { topic: 'preferencias' as const, title: '', detail: m } : m;
+              const tc = TOPIC[it.topic] ?? TOPIC.preferencias;
+              return (
+                <Stack key={i} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                  <IconBubble color={tc.color[mode]} size={30}>{tc.icon}</IconBubble>
+                  <Box sx={{ minWidth: 0, pt: 0.25 }}>
+                    {it.title && <Typography variant="body2" sx={{ fontWeight: 600 }}>{it.title}</Typography>}
+                    <Typography variant="body2" color="text.secondary" sx={{ '& b': { color: 'text.primary' } }}><Rich>{it.detail}</Rich></Typography>
+                  </Box>
+                </Stack>
+              );
+            })}
           </Stack>
         </Card>
         {last && last.kind === 'adapt' && (
@@ -501,7 +529,23 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
               <Box><Typography variant="subtitle1">Último ajuste</Typography>
                 <Typography variant="caption" color="text.secondary">{dateShort(new Date(last.at))} · se reajusta solo cada lunes</Typography></Box>
             </Stack>
-            <Typography variant="body2">{last.message}</Typography>
+            {last.changes?.length ? (
+              <>
+                <Typography sx={{ fontWeight: 500, mb: 1.25 }}><Rich>{last.message}</Rich></Typography>
+                <Stack spacing={1}>
+                  {last.changes.map((c, i) => (
+                    <Typography key={i} variant="body2" component="div" sx={{ display: 'flex', gap: 1.25, color: 'text.secondary', '& b': { color: 'text.primary' } }}>
+                      <Box sx={{ height: '1lh', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                        <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: TYPE.long[mode] }} />
+                      </Box>
+                      <span><Rich>{c}</Rich></span>
+                    </Typography>
+                  ))}
+                </Stack>
+              </>
+            ) : (
+              <Typography variant="body2" color="text.secondary" sx={{ '& b': { color: 'text.primary' } }}><Rich>{last.message}</Rich></Typography>
+            )}
           </Card>
         )}
       </Box>

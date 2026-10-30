@@ -76,16 +76,26 @@ class Week(BaseModel):
     sessions: list[Session]
 
 
+MemoryTopic = Literal["nivel", "ritmos", "marcas", "objetivo", "test", "salud", "estructura", "gimnasio", "peso", "preferencias"]
+
+
+class MemoryItem(BaseModel):
+    topic: MemoryTopic
+    title: str = Field(description="Titular de 2-6 palabras, p. ej. 'Ritmo suave real: 6:19 /km'")
+    detail: str = Field(description="Detalle en una frase corta (máx. 140 caracteres), con el dato concreto")
+
+
 class PlanOut(BaseModel):
     summary: str = Field(description="2-3 frases: cómo está planteado el plan y por qué, con tus datos")
     weeks: list[Week]
-    memory: list[str] = Field(description="Hasta 12 aprendizajes sobre el atleta, cortos y con dato")
+    memory: list[MemoryItem] = Field(description="Hasta 12 aprendizajes sobre el atleta, uno por tema, cortos y con dato")
 
 
 class AdaptOut(BaseModel):
-    message: str = Field(description="2-4 frases para el atleta: qué ha pasado esta semana, qué cambias y por qué")
+    message: str = Field(description="Una sola frase de resumen para el atleta (máx. 160 caracteres)")
+    changes: list[str] = Field(description="3-5 viñetas cortas (máx. 110 caracteres cada una): qué ha pasado y qué cambias")
     weeks: list[Week] = Field(description="Las semanas desde la actual hasta el final, completas y actualizadas")
-    memory: list[str] = Field(description="Memoria actualizada: hasta 12 aprendizajes, quita los que ya no valgan")
+    memory: list[MemoryItem] = Field(description="Memoria actualizada: hasta 12 aprendizajes, quita los que ya no valgan")
 
 
 SYSTEM = """Eres un entrenador de running con criterio y prudencia, y escribes con el tono de Google Health:
@@ -293,19 +303,38 @@ def _call(schema, prompt: str, kind: str):
     client = _client()
     model = ai.pick_model(MODEL)
     extra = ai.FALLBACKS if model != ai.MODEL else {}
-    import time as _time
+    import threading as _threading
+    stop, cancelled = _threading.Event(), _threading.Event()
     try:
         with client.beta.messages.stream(
             model=model, max_tokens=64000, output_config={"effort": "high"}, system=SYSTEM,
             messages=[{"role": "user", "content": prompt}], output_format=schema, **extra,
         ) as stream:
-            last = _time.monotonic()
-            for _ in stream:  # se consume a mano para poder cortar a mitad
-                if CANCEL_CHECK and _time.monotonic() - last > 4:
-                    last = _time.monotonic()
-                    if CANCEL_CHECK():
-                        raise Cancelled()  # al salir del bloque se cierra la conexión: la IA deja de generar
-            resp = stream.get_final_message()
+            # Vigilante: cada 3 s mira si el usuario ha cancelado y, si es así, cierra la conexión aunque la IA
+            # esté pensando en silencio (en ese rato no llegan eventos, así que no basta con mirar en el bucle).
+            def _watch():
+                while not stop.wait(3):
+                    if CANCEL_CHECK and CANCEL_CHECK():
+                        cancelled.set()
+                        try:
+                            stream.close()
+                        except Exception:  # noqa: BLE001
+                            pass
+                        return
+            if CANCEL_CHECK:
+                _threading.Thread(target=_watch, daemon=True).start()
+            try:
+                for _ in stream:
+                    pass
+                if cancelled.is_set():
+                    raise Cancelled()
+                resp = stream.get_final_message()
+            except Exception:
+                if cancelled.is_set():
+                    raise Cancelled() from None
+                raise
+            finally:
+                stop.set()
     except (anthropic.APIStatusError, anthropic.APIConnectionError, Cancelled):
         raise
     except Exception as e:  # corte a mitad de la respuesta (red, suspensión del equipo...)
@@ -354,7 +383,7 @@ def create(req: dict) -> dict:
                  "gymDays": goal["dias_gimnasio"], "bodyGoal": goal["objetivo_fisico"], "ambition": goal["ambicion"],
                  "createdAt": now, "updatedAt": now, "summary": out.summary,
                  "weeks": [w.model_dump() for w in out.weeks]},
-        "memory": out.memory[:12],
+        "memory": [m.model_dump() for m in out.memory[:12]],
         "lastAdaptWeek": monday.isoformat(),
         "history": state.get("history", []) + [{"at": now, "kind": "create", "message": out.summary, "cost": round(cost, 4)}],
     })
@@ -391,8 +420,9 @@ def adapt(force: bool = False, data: dict | None = None) -> dict | None:
     now = datetime.now().astimezone().isoformat(timespec="seconds")
     kept = [w for w in plan["weeks"] if w["start"] < monday]
     plan.update({"weeks": kept + [w.model_dump() for w in out.weeks], "updatedAt": now})
-    state.update({"plan": plan, "memory": out.memory[:12], "lastAdaptWeek": monday,
-                  "history": state.get("history", []) + [{"at": now, "kind": "adapt", "message": out.message, "cost": round(cost, 4)}]})
+    state.update({"plan": plan, "memory": [m.model_dump() for m in out.memory[:12]], "lastAdaptWeek": monday,
+                  "history": state.get("history", []) + [{"at": now, "kind": "adapt", "message": out.message,
+                                                          "changes": out.changes[:5], "cost": round(cost, 4)}]})
     save(state)
     log.info("Plan reajustado (%.3f $)", cost)
     return state

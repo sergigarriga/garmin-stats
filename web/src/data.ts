@@ -63,8 +63,9 @@ export interface PlanWeek { start: string; focus: string; sessions: PlanSession[
 export interface Plan {
   goal: string; raceDate: string; goalTime?: string | null; daysPerWeek: number; longRunDay: string; notes?: string;
   gymDays?: number; bodyGoal?: string | null; ambition?: 'realista' | 'exigente';
-  createdAt: string; updatedAt: string; summary: string; weeks: PlanWeek[]; memory: string[];
-  history: { at: string; kind: 'create' | 'adapt'; message: string; cost: number }[];
+  createdAt: string; updatedAt: string; summary: string; weeks: PlanWeek[];
+  memory: (string | { topic: string; title: string; detail: string })[];
+  history: { at: string; kind: 'create' | 'adapt'; message: string; changes?: string[]; cost: number }[];
 }
 export interface CoachView {
   plan: Plan | null; today: { session: PlanSession; tip?: string | null } | null;

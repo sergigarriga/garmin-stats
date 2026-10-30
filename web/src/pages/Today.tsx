@@ -21,6 +21,7 @@ import { useCat } from '../theme';
 import { AiBadge, AiCards, CARD_SX, IconBubble, InsightList, MetricCard, PageHeader, RingCard, SectionTitle } from '../ui';
 import Stack from '@mui/material/Stack';
 import { SportIcon } from './sport';
+import { Rich } from '../rich';
 import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import { Alerts, Goals, ReadinessCard, WeekCard } from './TodayExtras';
 
@@ -70,7 +71,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
 
       <Alerts alerts={data.alerts} />
       {data.ai?.headline && (
-        <Typography sx={{ fontSize: { xs: 18, sm: 20 }, mt: -1.5, mb: 3, maxWidth: 820 }}>{data.ai.headline}</Typography>
+        <Typography sx={{ fontSize: { xs: 18, sm: 20 }, mt: -1.5, mb: 3, maxWidth: 820 }}><Rich>{data.ai.headline}</Rich></Typography>
       )}
       <ReadinessCard data={data} />
       {data.coach?.today && (
@@ -79,7 +80,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>HOY EN TU PLAN</Typography>
             <Typography variant="subtitle1">{data.coach.today.session.title}{data.coach.today.session.distance_km ? ` · ${dec1(data.coach.today.session.distance_km)} km` : ''}</Typography>
-            {data.coach.today.tip && <Typography variant="body2" color="text.secondary">{data.coach.today.tip}</Typography>}
+            {data.coach.today.tip && <Typography variant="body2" color="text.secondary"><Rich>{data.coach.today.tip}</Rich></Typography>}
           </Box>
         </Card>
       )}

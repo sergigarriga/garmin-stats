@@ -16,6 +16,7 @@ import { isoLocal, streaks, toDate, type Alert, type GarminData, type WeekStats 
 import { dateShort, dec1, hm, int } from '../format';
 import { CATEGORY, useResolvedMode } from '../theme';
 import { AiBadge, CARD_SX, IconBubble, InfoTip } from '../ui';
+import { Rich } from '../rich';
 
 // ------------------------------------------------------------------ avisos
 const DISMISS_KEY = 'garmin-stats:dismissed';
@@ -233,14 +234,14 @@ export function WeekCard({ data }: { data: GarminData }) {
       {(w.went_well?.length || w.worse?.length || w.goal) ? (
         <Stack spacing={1.25}>
           {w.went_well?.map((t, i) => (
-            <Stack key={`g${i}`} direction="row" spacing={1.25}><CheckCircleRounded sx={{ fontSize: 20, color: CATEGORY.activity[mode], mt: 0.2 }} /><Typography>{t}</Typography></Stack>
+            <Stack key={`g${i}`} direction="row" spacing={1.25}><CheckCircleRounded sx={{ fontSize: 20, color: CATEGORY.activity[mode], mt: 0.2 }} /><Typography color="text.secondary"><Rich>{t}</Rich></Typography></Stack>
           ))}
           {w.worse?.map((t, i) => (
-            <Stack key={`w${i}`} direction="row" spacing={1.25}><TrendingDownRounded sx={{ fontSize: 20, color: CATEGORY.stress[mode], mt: 0.2 }} /><Typography>{t}</Typography></Stack>
+            <Stack key={`w${i}`} direction="row" spacing={1.25}><TrendingDownRounded sx={{ fontSize: 20, color: CATEGORY.stress[mode], mt: 0.2 }} /><Typography color="text.secondary"><Rich>{t}</Rich></Typography></Stack>
           ))}
           {w.goal && (
             <Stack direction="row" spacing={1.25} sx={{ p: 1.5, borderRadius: '14px', bgcolor: alpha(color, 0.08) }}>
-              <FlagRounded sx={{ fontSize: 20, color, mt: 0.2 }} /><Typography><b>Para esta semana:</b> {w.goal}</Typography>
+              <FlagRounded sx={{ fontSize: 20, color, mt: 0.2 }} /><Typography><b>Para esta semana:</b> <Rich>{w.goal}</Rich></Typography>
             </Stack>
           )}
         </Stack>
