@@ -79,7 +79,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
           </Box>
         </Card>
       )}
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(3, 1fr)' } }}>
+      <Box sx={{ display: 'grid', gap: { xs: 1, sm: 2 }, gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <RingCard icon={<DirectionsWalk />} color={cat('activity')} label="Pasos" help="steps"
           value={latest?.steps ?? 0} max={latest?.stepGoal ?? 10000}
           center={int(latest?.steps)} sub={`de ${int(latest?.stepGoal ?? 10000)}`}
@@ -96,7 +96,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
       </Box>
 
       <SectionTitle>Tus métricas</SectionTitle>
-      <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
+      <Box sx={{ display: 'grid', gap: { xs: 1.25, sm: 2 }, gridTemplateColumns: { xs: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
         <MetricCard icon={<Favorite />} color={cat('heart')} label="FC en reposo" help="rhr" value={int(latest?.rhr)} unit="lpm"
           delta={(() => { const v = vs30(days, latest, (d) => d.rhr); return v != null ? { value: v, unit: 'lpm', goodWhen: 'down' as const } : undefined; })()}
           spark={series(days, (d) => d.rhr)} onClick={() => go('corazon')} />
@@ -106,7 +106,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
         <MetricCard icon={<SelfImprovement />} color={cat('stress')} label="Estrés medio" help="stress" value={int(latest?.stress)} unit="/ 100"
           delta={(() => { const v = vs30(days, latest, (d) => d.stress); return v != null ? { value: v, goodWhen: 'down' as const } : undefined; })()}
           spark={series(days, (d) => d.stress)} onClick={() => go('corazon')} />
-        <MetricCard icon={<Bolt />} color={cat('activity')} label="Minutos de intensidad (7 días)" help="intensity" value={int(imWeek)} unit="/ 150"
+        <MetricCard icon={<Bolt />} color={cat('activity')} label="Intensidad · 7 días" help="intensity" value={int(imWeek)} unit="/ 150"
           caption={imWeek >= 150 ? 'Objetivo semanal cumplido' : `Te faltan ${int(150 - imWeek)} min para el objetivo de la OMS`}
           spark={days.slice(-30).map((d) => (d.imMod ?? 0) + 2 * (d.imVig ?? 0))} onClick={() => go('actividad')} />
         <MetricCard icon={<Speed />} color={cat('training')} label="VO2max" help="vo2max" value={dec1(vo2?.vo2)} unit="ml/kg/min"

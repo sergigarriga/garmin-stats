@@ -103,7 +103,7 @@ function Bubble({ m }: { m: Msg }) {
   );
 }
 
-export default function Chat() {
+export default function Chat({ showFab = true }: { showFab?: boolean }) {
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down('md'));
   const [open, setOpen] = useState(false);
@@ -111,6 +111,11 @@ export default function Chat() {
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const on = () => setOpen(true);
+    window.addEventListener('open-chat', on);
+    return () => window.removeEventListener('open-chat', on);
+  }, []);
 
   useEffect(() => {
     try { sessionStorage.setItem(STORE, JSON.stringify(msgs.slice(-20))); } catch { /* sin almacenamiento */ }
@@ -137,13 +142,13 @@ export default function Chat() {
 
   return (
     <>
-      <Fab variant="extended" color="primary" onClick={() => setOpen(true)} aria-label="Pregúntale a la IA"
+      {showFab && <Fab variant="extended" color="primary" onClick={() => setOpen(true)} aria-label="Pregúntale a la IA"
         sx={{ position: 'fixed', right: { xs: 16, md: 28 }, bottom: { xs: 88, md: 28 }, zIndex: 20, textTransform: 'none',
           borderRadius: '18px', px: 2.5, height: 56, boxShadow: '0 2px 6px rgba(0,0,0,.2), 0 6px 18px rgba(0,0,0,.12)' }}>
         <AutoAwesomeRounded sx={{ mr: 1 }} /> Pregunta
-      </Fab>
+      </Fab>}
       <Drawer anchor={mobile ? 'bottom' : 'right'} open={open} onClose={() => setOpen(false)}
-        slotProps={{ paper: { sx: { width: mobile ? '100%' : 440, height: mobile ? '92vh' : '100%',
+        slotProps={{ paper: { sx: { width: mobile ? '100%' : 440, height: mobile ? '92dvh' : '100%', pb: mobile ? 'env(safe-area-inset-bottom)' : 0,
           borderRadius: mobile ? '28px 28px 0 0' : '28px 0 0 28px', bgcolor: 'background.paper', backgroundImage: 'none' } } }}>
         <Stack sx={{ height: '100%' }}>
           <Stack direction="row" sx={{ alignItems: 'center', px: 2.5, pt: 2.5, pb: 1.5 }} spacing={1.5}>

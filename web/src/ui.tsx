@@ -23,6 +23,7 @@ import type { AiCard } from './data';
 import { RANGES, type Range } from './data';
 import { signed } from './format';
 import { CATEGORY, useResolvedMode } from './theme';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 export const CARD_SX = { p: { xs: 2.25, sm: 2.75 }, bgcolor: 'background.paper' } as const;
 
@@ -40,9 +41,9 @@ export function IconBubble({ color, children, size = 40 }: { color: string; chil
 
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
-    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3, alignItems: { sm: 'flex-end' }, justifyContent: 'space-between' }}>
+    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 2 }} sx={{ mb: { xs: 2, sm: 3 }, alignItems: { sm: 'flex-end' }, justifyContent: 'space-between' }}>
       <Box>
-        <Typography variant="h4" component="h1" sx={{ fontSize: { xs: 28, sm: 34 } }}>{title}</Typography>
+        <Typography variant="h4" component="h1" sx={{ fontSize: { xs: 26, sm: 34 } }}>{title}</Typography>
         {subtitle && <Typography color="text.secondary" sx={{ mt: 0.5 }}>{subtitle}</Typography>}
       </Box>
       {action}
@@ -52,7 +53,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
 
 export function SectionTitle({ children, help }: { children: ReactNode; help?: HelpKey }) {
   return (
-    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: 5, mb: 2 }}>
+    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mt: { xs: 4, sm: 5 }, mb: 2 }}>
       <Typography variant="h6">{children}</Typography>
       {help && <InfoTip k={help} />}
     </Stack>
@@ -87,7 +88,7 @@ function DeltaText({ delta }: { delta: Delta }) {
       color: neutral || good === null ? 'text.secondary' : good ? 'success.main' : 'error.main', fontWeight: 500,
     }}>
       {signed(delta.value, delta.digits ?? 0)}{delta.unit ? ` ${delta.unit}` : ''}
-      <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}> {delta.label ?? 'vs media 30 días'}</Box>
+      <Box component="span" sx={{ color: 'text.secondary', fontWeight: 400 }}> {delta.label ?? 'vs tu media'}</Box>
     </Typography>
   );
 }
@@ -99,19 +100,19 @@ export function MetricCard({ icon, color, label, value, unit, caption, delta, sp
 }) {
   return (
     <Card onClick={onClick} sx={{
-      ...CARD_SX, height: '100%', display: 'flex', flexDirection: 'column', gap: 1.5,
+      ...CARD_SX, p: { xs: 1.75, sm: 2.75 }, height: '100%', display: 'flex', flexDirection: 'column', gap: { xs: 1, sm: 1.5 },
       cursor: onClick ? 'pointer' : 'default', transition: 'box-shadow .2s, transform .2s',
       '&:hover': onClick ? { boxShadow: (t) => `0 1px 3px ${alpha(t.palette.text.primary, 0.12)}, 0 4px 12px ${alpha(t.palette.text.primary, 0.06)}` } : undefined,
     }}>
       <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-        <IconBubble color={color} size={36}>{icon}</IconBubble>
-        <Typography variant="subtitle2" color="text.secondary">{label}</Typography>
-        {help && <InfoTip k={help} />}
+        <IconBubble color={color} size={32}>{icon}</IconBubble>
+        <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: { xs: 13, sm: 14 }, lineHeight: 1.25, flex: 1, minWidth: 0 }}>{label}</Typography>
+        {help && <Box sx={{ display: { xs: 'none', sm: 'block' } }}><InfoTip k={help} /></Box>}
       </Stack>
       <Box>
-        <Typography component="div" sx={{ fontSize: 34, fontWeight: 500, lineHeight: 1.1, letterSpacing: '-0.02em' }}>
+        <Typography component="div" sx={{ fontSize: { xs: 26, sm: 34 }, fontWeight: 500, lineHeight: 1.1, letterSpacing: '-0.02em' }}>
           {value}
-          {unit && <Box component="span" sx={{ fontSize: 16, fontWeight: 400, color: 'text.secondary', ml: 0.75 }}>{unit}</Box>}
+          {unit && <Box component="span" sx={{ fontSize: { xs: 13, sm: 16 }, fontWeight: 400, color: 'text.secondary', ml: 0.5 }}>{unit}</Box>}
         </Typography>
         {delta && <DeltaText delta={delta} />}
         {caption && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>{caption}</Typography>}
@@ -132,16 +133,18 @@ export function RingCard({ icon, color, label, value, max, center, sub, caption,
   icon: ReactNode; color: string; label: string; value: number; max: number; center: string; sub?: string; caption?: string; help?: HelpKey;
 }) {
   const mode = useResolvedMode();
+  const small = useMediaQuery('(max-width:599px)');
+  const size = small ? 92 : 168;
   return (
-    <Card sx={{ ...CARD_SX, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-      <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', alignSelf: 'flex-start' }}>
-        <IconBubble color={color} size={32}>{icon}</IconBubble>
-        <Typography variant="subtitle2" color="text.secondary">{label}</Typography>
-        {help && <InfoTip k={help} />}
+    <Card sx={{ ...CARD_SX, p: { xs: 1.5, sm: 2.75 }, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+      <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', alignSelf: { xs: 'center', sm: 'flex-start' } }}>
+        {!small && <IconBubble color={color} size={32}>{icon}</IconBubble>}
+        <Typography variant="subtitle2" color="text.secondary" sx={{ fontSize: { xs: 12, sm: 14 } }}>{label}</Typography>
+        {help && !small && <InfoTip k={help} />}
       </Stack>
-      <Box sx={{ position: 'relative', width: 168, height: 168, my: 1 }}>
+      <Box sx={{ position: 'relative', width: size, height: size, my: 1 }}>
         <Gauge
-          width={168} height={168} value={Math.min(value, max)} valueMax={max}
+          width={size} height={size} value={Math.min(value, max)} valueMax={max}
           innerRadius="80%" outerRadius="100%" cornerRadius="50%" text=""
           sx={{
             [`& .${gaugeClasses.valueArc}`]: { fill: color },
@@ -149,11 +152,12 @@ export function RingCard({ icon, color, label, value, max, center, sub, caption,
           }}
         />
         <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeContent: 'center' }}>
-          <Typography sx={{ fontSize: 32, fontWeight: 500, lineHeight: 1.05, letterSpacing: '-0.02em' }}>{center}</Typography>
-          {sub && <Typography variant="body2" color="text.secondary">{sub}</Typography>}
+          <Typography sx={{ fontSize: small ? 17 : 32, fontWeight: 500, lineHeight: 1.05, letterSpacing: '-0.02em' }}>{center}</Typography>
+          {sub && !small && <Typography variant="body2" color="text.secondary">{sub}</Typography>}
         </Box>
       </Box>
-      {caption && <Typography variant="body2" color="text.secondary">{caption}</Typography>}
+      {caption && !small && <Typography variant="body2" color="text.secondary">{caption}</Typography>}
+      {small && sub && <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2 }}>{sub}</Typography>}
     </Card>
   );
 }

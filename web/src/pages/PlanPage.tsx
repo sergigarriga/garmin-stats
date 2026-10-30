@@ -18,6 +18,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { BarChart } from '@mui/x-charts/BarChart';
 import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
 import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
@@ -213,12 +214,41 @@ function DayCard({ s, go, onSaved, sets }: { s: PlanSession; go: (k: string) => 
   );
 }
 
+/** Día de la semana en una línea (móvil). */
+function DayRow({ s, go, first }: { s: PlanSession; go: (k: string) => void; first: boolean }) {
+  const mode = useResolvedMode();
+  const c = TYPE[s.type][mode];
+  const today = s.status === 'today';
+  return (
+    <Box onClick={() => s.actual && go(`act-${s.actual.id}`)} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1.25,
+      borderTop: first ? 0 : 1, borderColor: 'divider', borderRadius: today ? '16px' : 0, cursor: s.actual ? 'pointer' : 'default',
+      bgcolor: today ? alpha(c, mode === 'dark' ? 0.16 : 0.09) : 'transparent' }}>
+      <Box sx={{ width: 40, textAlign: 'center', flexShrink: 0 }}>
+        <Typography variant="caption" sx={{ display: 'block', color: today ? c : 'text.secondary', fontWeight: 600, textTransform: 'uppercase', lineHeight: 1.1 }}>
+          {toDate(s.date).toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', '')}
+        </Typography>
+        <Typography sx={{ fontWeight: 600, fontSize: 18, lineHeight: 1.1 }}>{toDate(s.date).getDate()}</Typography>
+      </Box>
+      <Box sx={{ width: 4, alignSelf: 'stretch', borderRadius: 999, bgcolor: s.type === 'rest' ? 'divider' : c, flexShrink: 0 }} />
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography variant="body2" noWrap sx={{ fontWeight: 600, color: s.type === 'rest' ? 'text.secondary' : 'text.primary' }}>{s.title}</Typography>
+        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+          {s.actual ? `Hecho: ${s.actual.km ? `${dec1(s.actual.km)} km` : `${s.actual.min} min`}` : s.type === 'rest' ? 'Descanso' : [TYPE[s.type].label, plannedText(s)].filter(Boolean).join(' · ')}
+        </Typography>
+      </Box>
+      <StatusIcon s={s.status} />
+    </Box>
+  );
+}
+
 // ------------------------------------------------------------------ página
 export default function PlanPage({ data, go }: { data: GarminData; go: (k: string) => void }) {
   const mode = useResolvedMode();
   const [view, setView] = useState<CoachView | undefined>(data.coach);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [moreSummary, setMoreSummary] = useState(false);
+  const small = useMediaQuery('(max-width:599px)');
   useEffect(() => {
     if (!online) return;
     api('./api/plan').then((v) => { setView(v); if (v.job?.status === 'running') { setBusy(true); settle(v).then(setView).catch((e) => setErr(e.message)).finally(() => setBusy(false)); } })
@@ -265,22 +295,29 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
 
       {/* resumen */}
       <Card sx={{ ...CARD_SX, mb: 2 }}>
-        <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
+        <Box sx={{ display: 'grid', gap: { xs: 2, sm: 3 }, gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
           <Box><Typography variant="caption" color="text.secondary">Faltan</Typography>
-            <Typography sx={{ fontSize: 28, fontWeight: 500 }}>{weeksLeft} semanas</Typography>
+            <Typography sx={{ fontSize: { xs: 21, sm: 28 }, fontWeight: 500, lineHeight: 1.25 }}>{weeksLeft} semanas</Typography>
             <Typography variant="caption" color="text.secondary">semana {wi + 1} de {plan.weeks.length}</Typography></Box>
           <Box><Typography variant="caption" color="text.secondary">Objetivo</Typography>
-            <Typography sx={{ fontSize: 28, fontWeight: 500 }}>{plan.goalTime || 'Terminar bien'}</Typography>
+            <Typography sx={{ fontSize: { xs: 21, sm: 28 }, fontWeight: 500, lineHeight: 1.25 }}>{plan.goalTime || 'Terminar bien'}</Typography>
             {pred && <Typography variant="caption" color="text.secondary">Tu VO2max apunta a {duration(pred.predicted)}</Typography>}</Box>
           <Box><Typography variant="caption" color="text.secondary">Cumplimiento</Typography>
-            <Typography sx={{ fontSize: 28, fontWeight: 500 }}>{compliance == null ? '–' : `${compliance} %`}</Typography>
+            <Typography sx={{ fontSize: { xs: 21, sm: 28 }, fontWeight: 500, lineHeight: 1.25 }}>{compliance == null ? '–' : `${compliance} %`}</Typography>
             <Typography variant="caption" color="text.secondary">{done.length} sesiones pasadas</Typography></Box>
           <Box><Typography variant="caption" color="text.secondary">Esta semana</Typography>
-            <Typography sx={{ fontSize: 28, fontWeight: 500 }}>{dec1(week.actualKm)} / {dec1(week.plannedKm)} km</Typography>
+            <Typography sx={{ fontSize: { xs: 21, sm: 28 }, fontWeight: 500, lineHeight: 1.25 }}>{dec1(week.actualKm)} / {dec1(week.plannedKm)} km</Typography>
             <LinearProgress variant="determinate" value={Math.min(100, (week.actualKm / (week.plannedKm || 1)) * 100)}
               sx={{ mt: 1, height: 6, borderRadius: 999, bgcolor: alpha('#808080', 0.15), '& .MuiLinearProgress-bar': { borderRadius: 999 } }} /></Box>
         </Box>
-        <Typography color="text.secondary" sx={{ mt: 2.5, pt: 2, borderTop: 1, borderColor: 'divider' }}>{plan.summary}</Typography>
+        <Box sx={{ mt: 2.5, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+          <Typography color="text.secondary" sx={{ fontSize: { xs: 14, sm: 16 }, ...(moreSummary ? {} : { display: '-webkit-box', WebkitLineClamp: { xs: 4, md: 'unset' }, WebkitBoxOrient: 'vertical', overflow: 'hidden' }) }}>
+            {plan.summary}
+          </Typography>
+          <Button size="small" onClick={() => setMoreSummary((m) => !m)} sx={{ display: { md: 'none' }, mt: 0.5, ml: -1, borderRadius: 999 }}>
+            {moreSummary ? 'Leer menos' : 'Leer más'}
+          </Button>
+        </Box>
       </Card>
 
       {/* hoy */}
@@ -307,9 +344,15 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
 
       {/* semana */}
       <SectionTitle>Semana {wi + 1} · {week.focus}</SectionTitle>
-      <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)', lg: 'repeat(7, 1fr)' } }}>
-        {week.sessions.map((s) => <DayCard key={`${s.date}-${s.type}`} s={s} go={go} onSaved={setView} sets={(id) => data.activities.find((x) => x.id === id)?.sets} />)}
-      </Box>
+      {small ? (
+        <Card sx={{ ...CARD_SX, p: 0.5 }}>
+          {week.sessions.map((s, i) => <DayRow key={`${s.date}-${s.type}`} s={s} go={go} first={i === 0} />)}
+        </Card>
+      ) : (
+        <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { sm: 'repeat(4, 1fr)', lg: 'repeat(7, 1fr)' } }}>
+          {week.sessions.map((s) => <DayCard key={`${s.date}-${s.type}`} s={s} go={go} onSaved={setView} sets={(id) => data.activities.find((x) => x.id === id)?.sets} />)}
+        </Box>
+      )}
 
       {/* planificado vs real */}
       <SectionTitle>Planificado frente a hecho</SectionTitle>

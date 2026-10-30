@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactElement } from 'react';
+import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import AppBar from '@mui/material/AppBar';
-import BottomNavigation from '@mui/material/BottomNavigation';
-import BottomNavigationAction from '@mui/material/BottomNavigationAction';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
@@ -9,7 +8,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Paper from '@mui/material/Paper';
 import Snackbar from '@mui/material/Snackbar';
 import Stack from '@mui/material/Stack';
 import Tab from '@mui/material/Tab';
@@ -152,6 +150,75 @@ function ModeMenu({ vapid, onInfo }: { vapid?: string; onInfo: (t: string) => vo
   );
 }
 
+type Section = { key: string; label: string; icon: ReactElement; pages: string[] };
+const SECTIONS: Section[] = [
+  { key: 'hoy', label: 'Hoy', icon: <HomeRounded />, pages: ['hoy'] },
+  { key: 'salud', label: 'Salud', icon: <FavoriteRounded />, pages: ['sueno', 'corazon', 'actividad'] },
+  { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, pages: ['plan', 'entreno'] },
+  { key: 'progreso', label: 'Progreso', icon: <TrendingUpRounded />, pages: ['progreso', 'analisis'] },
+];
+const SUB_LABEL: Record<string, string> = {
+  sueno: 'Sueño', corazon: 'Corazón', actividad: 'Actividad', plan: 'Plan', entreno: 'Actividades', progreso: 'Progreso', analisis: 'Análisis',
+};
+const sectionOf = (page: string) => SECTIONS.find((s) => s.pages.includes(page)) ?? SECTIONS[0];
+
+/** Selector de subpágina tipo "segmented control". */
+function SubTabs({ section, page, go }: { section: Section; page: string; go: (k: string) => void }) {
+  if (section.pages.length < 2) return null;
+  return (
+    <Box sx={{ display: 'flex', p: 0.5, gap: 0.5, borderRadius: 999, mb: { xs: 2.5, sm: 3 }, width: { xs: '100%', sm: 'fit-content' },
+      bgcolor: 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)' }}>
+      {section.pages.map((k) => {
+        const on = k === page;
+        return (
+          <Box key={k} component="button" onClick={() => go(k)}
+            sx={{ flex: { xs: 1, sm: 'none' }, px: { xs: 1, sm: 2.5 }, py: 1, border: 0, borderRadius: 999, cursor: 'pointer',
+              font: 'inherit', fontSize: 14, fontWeight: on ? 600 : 500, whiteSpace: 'nowrap',
+              color: on ? 'text.primary' : 'text.secondary', bgcolor: on ? 'background.paper' : 'transparent',
+              boxShadow: on ? '0 1px 3px rgba(0,0,0,.12)' : 'none', transition: 'all .2s' }}>
+            {SUB_LABEL[k]}
+          </Box>
+        );
+      })}
+    </Box>
+  );
+}
+
+/** Barra inferior flotante tipo "cristal" (móvil): 4 secciones + botón del chat aparte. */
+function GlassNav({ current, go, last }: { current: Section; go: (k: string) => void; last: Record<string, string> }) {
+  const glass = {
+    backdropFilter: 'blur(22px) saturate(180%)', WebkitBackdropFilter: 'blur(22px) saturate(180%)',
+    bgcolor: 'color-mix(in srgb, var(--mui-palette-background-paper) 62%, transparent)',
+    border: '1px solid color-mix(in srgb, var(--mui-palette-text-primary) 9%, transparent)',
+    boxShadow: '0 8px 32px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.35)',
+  } as const;
+  return (
+    <Box sx={{ position: 'fixed', zIndex: 20, left: 12, right: 12, bottom: 'calc(10px + env(safe-area-inset-bottom))',
+      display: 'flex', gap: 1, alignItems: 'center', maxWidth: 520, mx: 'auto' }}>
+      <Box sx={{ ...glass, flex: 1, height: 64, borderRadius: 999, display: 'flex', p: 0.5 }}>
+        {SECTIONS.map((sec) => {
+          const on = sec.key === current.key;
+          return (
+            <Box key={sec.key} component="button" onClick={() => go(last[sec.key] ?? sec.pages[0])} aria-label={sec.label}
+              sx={{ flex: 1, border: 0, borderRadius: 999, cursor: 'pointer', font: 'inherit', display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 0.25, color: on ? 'primary.main' : 'text.secondary',
+                bgcolor: on ? 'color-mix(in srgb, var(--mui-palette-primary-main) 14%, transparent)' : 'transparent',
+                transition: 'all .2s', '& svg': { fontSize: 23 } }}>
+              {sec.icon}
+              <Box component="span" sx={{ fontSize: 11, fontWeight: on ? 600 : 500, lineHeight: 1 }}>{sec.label}</Box>
+            </Box>
+          );
+        })}
+      </Box>
+      <Box component="button" aria-label="Pregúntale a la IA" onClick={() => window.dispatchEvent(new Event('open-chat'))}
+        sx={{ ...glass, width: 64, height: 64, borderRadius: '50%', cursor: 'pointer', display: 'grid', placeItems: 'center',
+          color: 'primary.main', '& svg': { fontSize: 26 } }}>
+        <AutoAwesomeRounded />
+      </Box>
+    </Box>
+  );
+}
+
 export default function App() {
   const { data, checking, fresh, clearFresh, check } = useGarminData(60_000);
   const [info, setInfo] = useState<string | null>(null);
@@ -159,80 +226,74 @@ export default function App() {
   const [page, go] = usePageFromHash();
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [last, setLast] = useState<Record<string, string>>({});
+
+  const actId = page.startsWith('act-') ? Number(page.slice(4)) : null;
+  const pageKey = actId != null ? 'entreno' : (PAGES.some((p) => p.key === page) ? page : 'hoy');
+  const section = sectionOf(pageKey);
+  useEffect(() => { if (actId == null) setLast((l) => ({ ...l, [section.key]: pageKey })); }, [pageKey, section.key, actId]);
 
   if (!data) {
     return (
       <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 3, textAlign: 'center' }}>
-        <Box>
-          <Typography variant="h5">Aún no hay datos</Typography>
-          <Typography color="text.secondary" sx={{ mt: 1 }}>Ejecuta <code>uv run garmin-stats all</code> en la carpeta del proyecto.</Typography>
-        </Box>
+        <Typography color="text.secondary">Cargando tus datos…</Typography>
       </Box>
     );
   }
 
-  const actId = page.startsWith('act-') ? Number(page.slice(4)) : null;
-  const current = actId != null ? PAGES.find((p) => p.key === 'entreno')! : PAGES.find((p) => p.key === page) ?? PAGES[0];
+  const current = PAGES.find((p) => p.key === pageKey) ?? PAGES[0];
   const generated = new Date(data.generatedAt);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: mobile ? 10 : 6 }}>
-      <AppBar position="sticky" sx={{ bgcolor: 'color-mix(in srgb, var(--mui-palette-background-default) 86%, transparent)', backdropFilter: 'blur(12px)' }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: mobile ? 'calc(104px + env(safe-area-inset-bottom))' : 6 }}>
+      <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: 'color-mix(in srgb, var(--mui-palette-background-default) 82%, transparent)',
+        backdropFilter: 'blur(16px) saturate(160%)', WebkitBackdropFilter: 'blur(16px) saturate(160%)' }}>
         <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ gap: 1.5, minHeight: { xs: 60, sm: 68 } }}>
-            <Box sx={{ width: 32, height: 32, borderRadius: '50%', display: 'grid', placeItems: 'center',
+          <Toolbar disableGutters sx={{ gap: 1.5, minHeight: { xs: 56, sm: 68 } }}>
+            <Box sx={{ width: 30, height: 30, borderRadius: '50%', display: 'grid', placeItems: 'center', flexShrink: 0,
               background: 'conic-gradient(from 200deg, #D93025, #E8710A, #F6AE2D, #188038, #1A73E8, #5B5BD6, #D93025)' }}>
-              <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: 'background.default', display: 'grid', placeItems: 'center' }}>
-                <FavoriteRounded sx={{ fontSize: 13, color: '#D93025' }} />
+              <Box sx={{ width: 21, height: 21, borderRadius: '50%', bgcolor: 'background.default', display: 'grid', placeItems: 'center' }}>
+                <FavoriteRounded sx={{ fontSize: 12, color: '#D93025' }} />
               </Box>
             </Box>
-            <Typography variant="h6" sx={{ fontSize: 22, color: 'text.primary', flex: mobile ? 1 : 'none' }}>Mi salud</Typography>
+            <Typography variant="h6" sx={{ fontSize: { xs: 19, sm: 22 }, color: 'text.primary', flex: mobile ? 1 : 'none' }}>Mi salud</Typography>
             {!mobile && (
-              <Tabs value={current.key} onChange={(_, v) => go(v)} variant="scrollable" scrollButtons={false}
-                sx={{ flex: 1, minWidth: 0, ml: 3,
-                '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' } }}>
-                {PAGES.map((p) => <Tab key={p.key} value={p.key} label={p.label} />)}
+              <Tabs value={section.key} onChange={(_, v) => { const sec = SECTIONS.find((x) => x.key === v)!; go(last[sec.key] ?? sec.pages[0]); }}
+                sx={{ flex: 1, minWidth: 0, ml: 3, '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' } }}>
+                {SECTIONS.map((sec) => <Tab key={sec.key} value={sec.key} label={sec.label} />)}
               </Tabs>
             )}
-            <Tooltip title={`Datos generados a las ${time(generated)}. Se comprueba cada minuto; Garmin se sincroniza cada hora.`}>
-              <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', color: 'text.secondary' }}>
-                <Typography variant="body2" sx={{ display: { xs: 'none', lg: 'block' }, whiteSpace: 'nowrap' }}>Actualizado {relative(generated, now)}</Typography>
-                <IconButton size="small" onClick={check} aria-label="Comprobar ahora"
-                  sx={{ animation: checking ? 'spin 0.8s linear infinite' : 'none', '@keyframes spin': { to: { transform: 'rotate(360deg)' } } }}>
-                  <RefreshRounded fontSize="small" />
-                </IconButton>
-              </Stack>
-            </Tooltip>
+            {!mobile && (
+              <Tooltip title={`Datos generados a las ${time(generated)}. Se actualizan solos cada hora.`}>
+                <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', color: 'text.secondary' }}>
+                  <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>Actualizado {relative(generated, now)}</Typography>
+                  <IconButton size="small" onClick={check} aria-label="Comprobar ahora"
+                    sx={{ animation: checking ? 'spin 0.8s linear infinite' : 'none', '@keyframes spin': { to: { transform: 'rotate(360deg)' } } }}>
+                    <RefreshRounded fontSize="small" />
+                  </IconButton>
+                </Stack>
+              </Tooltip>
+            )}
             <ModeMenu vapid={data.push?.vapidPublicKey ?? undefined} onInfo={setInfo} />
           </Toolbar>
         </Container>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ pt: { xs: 2, sm: 4 } }}>
+      <Container maxWidth="lg" sx={{ pt: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+        {actId == null && <SubTabs section={section} page={pageKey} go={go} />}
         {actId != null
           ? <ActivityDetail data={data} id={actId} back={() => (window.history.length > 1 ? window.history.back() : go('entreno'))} />
           : current.render(data, go)}
-        <Typography variant="body2" color="text.disabled" sx={{ mt: 6, textAlign: 'center' }}>
-          Datos de Garmin Connect (Personal API). No es consejo médico.
-        </Typography>
-        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', textAlign: 'center', mt: 0.5 }}>
-          Versión de la página: {new Date(Number(__BUILD_ID__)).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-          {' · '}datos: {generated.toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+        <Typography variant="caption" color="text.disabled" sx={{ display: 'block', textAlign: 'center', mt: 6 }}>
+          Datos de Garmin Connect · No es consejo médico · actualizado {relative(generated, now)}
         </Typography>
       </Container>
 
-      {mobile && (
-        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, borderTop: 1, borderColor: 'divider', zIndex: 10 }} square>
-          <BottomNavigation value={current.key} onChange={(_, v) => go(v)}
-            sx={{ height: 72, bgcolor: 'background.paper', '& .MuiBottomNavigationAction-root': { minWidth: 0, px: 0.5 } }}>
-            {PAGES.map((p) => <BottomNavigationAction key={p.key} value={p.key} label={p.label} icon={p.icon} />)}
-          </BottomNavigation>
-        </Paper>
-      )}
+      {mobile && <GlassNav current={section} go={go} last={last} />}
 
-      <Chat />
+      <Chat showFab={!mobile} />
       <Snackbar open={!!info} autoHideDuration={9000} onClose={() => setInfo(null)} message={info}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} sx={{ '& .MuiSnackbarContent-root': { maxWidth: 520 } }} />
+        anchorOrigin={{ vertical: mobile ? 'top' : 'bottom', horizontal: 'center' }} sx={{ '& .MuiSnackbarContent-root': { maxWidth: 520 } }} />
       <Snackbar open={fresh} autoHideDuration={4000} onClose={clearFresh} message="Datos actualizados"
         anchorOrigin={{ vertical: mobile ? 'top' : 'bottom', horizontal: 'center' }} />
     </Box>

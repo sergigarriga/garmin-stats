@@ -452,7 +452,9 @@ Resources:
         function handler(event) {
           var req = event.request;
           var u = req.uri;
-          if (u === '/manifest.webmanifest' || u === '/sw.js' || u.indexOf('/icons/') === 0) return req;  // sin datos
+          // Archivos públicos sin datos: instalar la app e icono de la pantalla de inicio
+          if (u === '/manifest.webmanifest' || u === '/sw.js' || u.indexOf('/icons/') === 0 || u === '/favicon.ico'
+              || u === '/apple-touch-icon.png' || u === '/apple-touch-icon-precomposed.png') return req;
           var c = req.cookies['gs_session'];
           if (c && valid(c.value)) {
             if (req.uri.endsWith('/')) req.uri += 'index.html';

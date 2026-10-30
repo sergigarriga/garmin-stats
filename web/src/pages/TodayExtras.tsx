@@ -86,7 +86,7 @@ export function ReadinessCard({ data }: { data: GarminData }) {
             {r.date !== today && <Typography variant="caption" color="text.secondary">Con datos del {dateShort(toDate(r.date))}</Typography>}
           </Box>
         </Stack>
-        <Box sx={{ flex: 1, display: 'grid', gap: 1.75, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+        <Box sx={{ flex: 1, display: 'grid', gap: { xs: 1.5, sm: 1.75 }, columnGap: { xs: 2, sm: 3 }, gridTemplateColumns: '1fr 1fr' }}>
           {r.parts.map((p) => {
             const c = READY_COLOR(p.score, mode);
             return (
@@ -98,7 +98,7 @@ export function ReadinessCard({ data }: { data: GarminData }) {
                 <Box sx={{ height: 6, borderRadius: 999, bgcolor: alpha(c, 0.16), my: 0.75, overflow: 'hidden' }}>
                   <Box sx={{ width: `${p.score}%`, height: '100%', bgcolor: c, borderRadius: 999 }} />
                 </Box>
-                <Typography variant="caption" color="text.secondary">{p.detail}</Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.35 }}>{p.detail}</Typography>
               </Box>
             );
           })}

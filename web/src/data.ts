@@ -137,10 +137,16 @@ export function useGarminData(intervalMs = 60_000) {
       setChecking(false);
       setLastCheck(new Date());
       const d = window.__GARMIN__;
-      // Hay una versión nueva de la página (se ha recompilado): recargar para usarla.
-      if (d?.appBuild && d.appBuild !== __BUILD_ID__) {
-        window.location.reload();
-        return;
+      // Hay una versión MÁS NUEVA de la página: recargar para usarla. Nunca hacia atrás y como mucho una
+      // vez cada 5 minutos, para que no pueda entrar en bucle si los datos aún no conocen la versión nueva.
+      if (d?.appBuild && Number(d.appBuild) > Number(__BUILD_ID__)) {
+        let last = 0;
+        try { last = Number(sessionStorage.getItem('gs-reload') ?? 0); } catch { /* sin almacenamiento */ }
+        if (Date.now() - last > 5 * 60_000) {
+          try { sessionStorage.setItem('gs-reload', String(Date.now())); } catch { /* sin almacenamiento */ }
+          window.location.reload();
+          return;
+        }
       }
       if (d && d.generatedAt !== current.current) {
         const first = current.current === undefined;

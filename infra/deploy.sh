@@ -104,6 +104,13 @@ if [ -f site/index.html ]; then
   [ -f site/sw.js ] && aws s3 cp site/sw.js "s3://$BUCKET/site/sw.js" --content-type "text/javascript; charset=utf-8" \
     --cache-control no-cache --only-show-errors
   [ -d site/icons ] && aws s3 sync site/icons "s3://$BUCKET/site/icons/" --cache-control "max-age=604800" --only-show-errors
+fi
+# Icono de la pantalla de inicio en las rutas estándar (el iPhone las pide por su cuenta)
+for f in apple-touch-icon.png apple-touch-icon-precomposed.png favicon.ico; do
+  aws s3 cp web/public/icons/apple-touch-icon.png "s3://$BUCKET/site/$f" --content-type image/png \
+    --cache-control "max-age=604800" --only-show-errors
+done
+if false; then :
   aws lambda invoke --function-name garmin-stats-sync --invocation-type Event /dev/null >/dev/null  # refresca data.js
   echo "Web publicada; la sincronización actualiza los datos en ~30 s."
 fi
