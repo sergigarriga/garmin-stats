@@ -63,6 +63,23 @@ export function ReadinessCard({ data }: { data: GarminData }) {
   if (!r) return null;
   const color = READY_COLOR(r.score, mode);
   const today = isoLocal(new Date());
+  if (r.date !== today) {
+    return (
+      <Card sx={{ ...CARD_SX, mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ width: 64, height: 64, borderRadius: '50%', border: '6px solid', borderColor: 'divider', display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+          <Typography sx={{ fontSize: 22, fontWeight: 500, color: 'text.secondary' }}>—</Typography>
+        </Box>
+        <Box>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <Typography variant="overline" color="text.secondary" sx={{ lineHeight: 1.5 }}>Preparación</Typography>
+            <InfoTip k="readiness" />
+          </Stack>
+          <Typography sx={{ fontWeight: 500 }}>Aún no hay datos de esta noche</Typography>
+          <Typography variant="body2" color="text.secondary">Sincroniza el reloj con la app de Garmin y se calculará solo (en menos de una hora).</Typography>
+        </Box>
+      </Card>
+    );
+  }
   return (
     <Card sx={{ ...CARD_SX, mb: 2, background: mode === 'dark'
       ? `linear-gradient(135deg, ${alpha(color, 0.16)}, transparent 60%)` : `linear-gradient(135deg, ${alpha(color, 0.12)}, #fff 60%)` }}>

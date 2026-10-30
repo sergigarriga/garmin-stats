@@ -15,7 +15,7 @@ import Bolt from '@mui/icons-material/Bolt';
 import Speed from '@mui/icons-material/Speed';
 import FitnessCenter from '@mui/icons-material/FitnessCenter';
 import TipsAndUpdates from '@mui/icons-material/TipsAndUpdates';
-import { lastWith, mean, toDate, type GarminData, type Day } from '../data';
+import { isoLocal, lastWith, mean, toDate, type GarminData, type Day } from '../data';
 import { dateLong, dateShort, hm, int, dec1, pace } from '../format';
 import { useCat } from '../theme';
 import { AiBadge, AiCards, CARD_SX, IconBubble, InsightList, MetricCard, PageHeader, RingCard, SectionTitle } from '../ui';
@@ -40,15 +40,19 @@ function vs30(days: Day[], ref: Day | undefined, pick: (d: Day) => number | unde
 export default function Today({ data, go }: { data: GarminData; go: (tab: string) => void }) {
   const cat = useCat();
   const days = data.days;
-  const latest = lastWith(days, (d) => d.rhr ?? d.steps);
-  const night = lastWith(days, (d) => d.sleepH);
-  const hrvDay = lastWith(days, (d) => d.hrv);
+  // Solo datos de HOY: si Garmin aún no los tiene, se muestra "—" en vez de los de ayer.
+  const todayIso = isoLocal(new Date());
+  const row = days.find((d) => d.d === todayIso);
+  const latest = row?.rhr != null || row?.steps != null ? row : undefined;
+  const night = row?.sleepH != null ? row : undefined;  // la noche lleva la fecha del día en que te despiertas
+  const hrvDay = row?.hrv != null ? row : undefined;
+  const lastSync = lastWith(days, (d) => d.rhr ?? d.steps);
   const vo2 = [...data.activities].reverse().find((a) => a.vo2 != null);
   const last7 = days.slice(-7);
   const imWeek = last7.reduce((s, d) => s + (d.imMod ?? 0) + 2 * (d.imVig ?? 0), 0);
   const loadDay = days[days.length - 1];
   const today = new Date();
-  const isToday = latest?.d === days[days.length - 1]?.d;
+  const isToday = !!latest;
 
   const hrvStatus = hrvDay?.hrv != null && hrvDay.hrvLow != null && hrvDay.hrvHigh != null
     ? hrvDay.hrv < hrvDay.hrvLow ? 'Por debajo de tu rango normal'
@@ -61,7 +65,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
     <Box>
       <PageHeader
         title="Hoy"
-        subtitle={`${dateLong(today).replace(/^\w/, (c) => c.toUpperCase())}${latest && !isToday ? ` · últimos datos del reloj: ${dateShort(toDate(latest.d))}` : ''}`}
+        subtitle={`${dateLong(today).replace(/^\w/, (c) => c.toUpperCase())}${!isToday && lastSync ? ` · aún no hay datos de hoy (últimos del ${dateShort(toDate(lastSync.d))})` : ''}`}
       />
 
       <Alerts alerts={data.alerts} />
@@ -82,28 +86,28 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
       <Box sx={{ display: 'grid', gap: { xs: 1, sm: 2 }, gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <RingCard icon={<DirectionsWalk />} color={cat('activity')} label="Pasos" help="steps"
           value={latest?.steps ?? 0} max={latest?.stepGoal ?? 10000}
-          center={int(latest?.steps)} sub={`de ${int(latest?.stepGoal ?? 10000)}`}
-          caption={latest ? dateShort(toDate(latest.d)) : undefined} />
+          center={latest?.steps != null ? int(latest.steps) : '—'} sub={latest ? `de ${int(latest.stepGoal ?? 10000)}` : 'sin datos de hoy'}
+          caption={latest ? 'Hoy' : 'Sincroniza el reloj'} />
         <RingCard icon={<Bedtime />} color={cat('sleep')} label="Sueño" help="sleepScore"
           value={night?.sleepScore ?? 0} max={100}
-          center={night?.sleepH != null ? hm(night.sleepH).replace(' min', '') : '–'}
-          sub={night?.sleepScore != null ? `Puntuación ${night.sleepScore}` : undefined}
-          caption={night ? `Noche hasta el ${dateShort(toDate(night.d))}` : undefined} />
+          center={night?.sleepH != null ? hm(night.sleepH).replace(' min', '') : '—'}
+          sub={night ? (night.sleepScore != null ? `Puntuación ${night.sleepScore}` : undefined) : 'sin datos de anoche'}
+          caption={night ? 'Anoche' : 'Sin datos de anoche'} />
         <RingCard icon={<BatteryChargingFull />} color={cat('energy')} label="Body Battery" help="bodyBattery"
           value={latest?.bbMax ?? 0} max={100}
-          center={int(latest?.bbMax)} sub="máximo del día"
-          caption={latest?.bbMin != null ? `Mínimo ${latest.bbMin} · cargado +${latest.bbCharged ?? '–'}` : undefined} />
+          center={latest?.bbMax != null ? int(latest.bbMax) : '—'} sub={latest?.bbMax != null ? 'máximo del día' : 'sin datos de hoy'}
+          caption={latest?.bbMin != null ? `Mínimo ${latest.bbMin} · cargado +${latest.bbCharged ?? '–'}` : 'Sin datos de hoy'} />
       </Box>
 
       <SectionTitle>Tus métricas</SectionTitle>
       <Box sx={{ display: 'grid', gap: { xs: 1.25, sm: 2 }, gridTemplateColumns: { xs: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
-        <MetricCard icon={<Favorite />} color={cat('heart')} label="FC en reposo" help="rhr" value={int(latest?.rhr)} unit="lpm"
+        <MetricCard icon={<Favorite />} color={cat('heart')} label="FC en reposo" help="rhr" value={latest?.rhr != null ? int(latest.rhr) : '—'} unit={latest?.rhr != null ? 'lpm' : undefined}
           delta={(() => { const v = vs30(days, latest, (d) => d.rhr); return v != null ? { value: v, unit: 'lpm', goodWhen: 'down' as const } : undefined; })()}
           spark={series(days, (d) => d.rhr)} onClick={() => go('corazon')} />
-        <MetricCard icon={<MonitorHeart />} color={cat('recovery')} label="HRV nocturna" help="hrv" value={int(hrvDay?.hrv)} unit="ms"
-          caption={hrvStatus}
+        <MetricCard icon={<MonitorHeart />} color={cat('recovery')} label="HRV nocturna" help="hrv" value={hrvDay ? int(hrvDay.hrv) : '—'} unit={hrvDay ? 'ms' : undefined}
+          caption={hrvDay ? hrvStatus : 'Sin datos de anoche'}
           spark={series(days, (d) => d.hrv)} onClick={() => go('corazon')} />
-        <MetricCard icon={<SelfImprovement />} color={cat('stress')} label="Estrés medio" help="stress" value={int(latest?.stress)} unit="/ 100"
+        <MetricCard icon={<SelfImprovement />} color={cat('stress')} label="Estrés medio" help="stress" value={latest?.stress != null ? int(latest.stress) : '—'} unit={latest?.stress != null ? '/ 100' : undefined}
           delta={(() => { const v = vs30(days, latest, (d) => d.stress); return v != null ? { value: v, goodWhen: 'down' as const } : undefined; })()}
           spark={series(days, (d) => d.stress)} onClick={() => go('corazon')} />
         <MetricCard icon={<Bolt />} color={cat('activity')} label="Intensidad · 7 días" help="intensity" value={int(imWeek)} unit="/ 150"

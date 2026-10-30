@@ -121,7 +121,7 @@ function AiUsageCard({ data }: { data: GarminData }) {
   if (!u) return null;
   const color = CATEGORY.energy[mode];
   const usd = (v?: number | null, d = 3) => (v == null ? '–' : `${v.toFixed(d).replace('.', ',')} $`);
-  const KIND: Record<string, string> = { textos: 'Textos diarios', chat: 'Chat', weekly: 'Resumen semanal', 'plan-create': 'Crear plan', 'plan-adapt': 'Ajustes del plan' };
+  const KIND: Record<string, string> = { textos: 'Textos diarios', chat: 'Chat', weekly: 'Resumen semanal', 'plan-create': 'Crear el plan', 'plan-adapt': 'Ajustes del plan', 'plan-structure': 'Entrenos para el reloj · carrera', 'plan-structure-gym': 'Entrenos para el reloj · gimnasio' };
   const MODEL: Record<string, string> = { 'claude-haiku-5-5': 'Haiku 5.5', 'claude-sonnet-5-5': 'Sonnet 5.5', 'claude-opus-5-5': 'Opus 5.5' };
   const month = u.monthCostUsd ?? 0, budget = u.monthlyBudgetUsd ?? 50;
   const tiles = [
@@ -162,9 +162,12 @@ function AiUsageCard({ data }: { data: GarminData }) {
       {u.byKind?.length ? (
         <Box sx={{ mt: 2, display: 'grid', gap: 1 }}>
           {u.byKind.map((k) => (
-            <Stack key={k.kind} direction="row" sx={{ justifyContent: 'space-between', py: 0.75, borderTop: 1, borderColor: 'divider' }}>
-              <Typography variant="body2">{KIND[k.kind] ?? k.kind} <Box component="span" sx={{ color: 'text.secondary' }}>· {MODEL[k.model] ?? k.model} · {k.calls} llamadas</Box></Typography>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>{usd(k.cost, 4)}</Typography>
+            <Stack key={`${k.kind}-${k.model}`} direction="row" spacing={2} sx={{ justifyContent: 'space-between', alignItems: 'center', py: 1, borderTop: 1, borderColor: 'divider' }}>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>{KIND[k.kind] ?? k.kind}</Typography>
+                <Typography variant="caption" color="text.secondary">{MODEL[k.model] ?? k.model} · {k.calls} {k.calls === 1 ? 'llamada' : 'llamadas'}</Typography>
+              </Box>
+              <Typography variant="body2" sx={{ fontWeight: 500, whiteSpace: 'nowrap' }}>{usd(k.cost, 3)}</Typography>
             </Stack>
           ))}
         </Box>

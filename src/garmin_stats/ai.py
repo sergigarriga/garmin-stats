@@ -245,7 +245,7 @@ def usage() -> dict:
         d["cost"] += c["cost"]
     kinds: dict[str, dict] = {}
     for c in calls:
-        k = kinds.setdefault(c["kind"], {"kind": c["kind"], "calls": 0, "cost": 0.0, "model": c["model"]})
+        k = kinds.setdefault((c["kind"], c["model"]), {"kind": c["kind"], "calls": 0, "cost": 0.0, "model": c["model"]})
         k["calls"] += 1
         k["cost"] = round(k["cost"] + c["cost"], 5)
         k["model"] = c["model"]
