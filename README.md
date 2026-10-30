@@ -218,4 +218,7 @@ La API personal de Garmin es de solo lectura (no se pueden crear entrenos ni pon
   por semana con Sonnet.
 - En Plan, el botón **"Pasar al reloj"** genera en el navegador los `.fit` de entrenamiento (SDK oficial `@garmin/fitsdk`,
   `web/src/workouts.ts`) y los descarga en un .zip.
+- Gimnasio: cada sesión de fuerza se convierte en ejercicios del catálogo oficial de Garmin (52 categorías y 1.846
+  ejercicios, en `src/garmin_stats/garmin_exercises.json`, extraído del SDK). La IA identifica categoría y nombre, y el
+  código busca el ejercicio exacto. Cada ejercicio es un bloque [serie con repeticiones o tiempo y peso, descanso] x series.
 - Para pasarlos: conectar el reloj por USB → `GARMIN/NewFiles` → copiar los `.fit` → aparecen en Entrenamiento → Entrenamientos.

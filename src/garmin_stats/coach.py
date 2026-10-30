@@ -430,10 +430,13 @@ def structure_week(week_start: str) -> dict:
     week = next((w for w in plan["weeks"] if w["start"] == week_start), None)
     if not week:
         raise RuntimeError("Semana no encontrada.")
+    data = _read_data()
+    changed = structure_strength(week, data)
     todo = [s for s in week["sessions"] if s["type"] in RUN_TYPES and not s.get("workout")]
     if not todo:
+        if changed:
+            save(state)
         return state
-    data = _read_data()
     zones = data["profile"].get("zones")
     model = ai.pick_model(ai.PREMIUM)
     extra = ai.FALLBACKS if model != ai.MODEL else {}
@@ -455,3 +458,85 @@ def structure_week(week_start: str) -> dict:
                 s["workout"] = [b.model_dump() for b in got.workout]
     save(state)
     return state
+
+
+# ======================================================================== gimnasio para el reloj
+from pathlib import Path as _Path
+import difflib as _difflib
+import re as _re
+
+_CATALOG = json.loads((_Path(__file__).with_name("garmin_exercises.json")).read_text())
+
+
+class StrengthItem(BaseModel):
+    date: str
+    label: str = Field(description="Nombre del ejercicio en castellano, corto (máx. 22 caracteres)")
+    category: str = Field(description="Categoría de Garmin (una de la lista)")
+    garmin_name: str = Field(description="Nombre del ejercicio en inglés, en camelCase, lo más parecido al catálogo de Garmin "
+                                         "(p. ej. barbellBenchPress, dumbbellRow, latPulldown, gobletSquat, plank)")
+    sets: int
+    reps: int = Field(description="Repeticiones por serie; en ejercicios por tiempo (plancha) usa 0 y rellena seconds")
+    seconds: int | None = Field(description="Segundos por serie si el ejercicio va por tiempo, si no null")
+    weight_kg: float | None = Field(description="Peso por serie en kg si se indica o se deduce del historial, si no null")
+    rest_s: int = Field(description="Descanso entre series en segundos")
+
+
+class StrengthWeek(BaseModel):
+    items: list[StrengthItem]
+
+
+STRENGTH_SYSTEM = """Conviertes sesiones de gimnasio de un plan en una lista de ejercicios para un reloj Garmin.
+Para cada ejercicio de cada sesión: categoría de Garmin (de la lista dada), nombre en inglés en camelCase lo más
+parecido al catálogo de Garmin, series, repeticiones (o segundos si va por tiempo), peso en kg y descanso.
+- Respeta exactamente series, repeticiones, pesos y descansos de la descripción.
+- Si no se indica el peso, usa el historial del atleta para ese ejercicio (último peso usado) o déjalo en null.
+- No inventes ejercicios que no estén en la descripción. Mantén el orden."""
+
+
+def _norm(s: str) -> str:
+    return _re.sub(r"[^a-z0-9]", "", _re.sub(r"(?<!^)(?=[A-Z])", " ", s).lower())
+
+
+def _match_exercise(category: str, name: str) -> tuple[int | None, int | None, str | None]:
+    cat = _CATALOG.get(category)
+    if not cat:
+        # categoría parecida (p. ej. "bench_press" → "benchPress")
+        keys = {_norm(k): k for k in _CATALOG}
+        hit = _difflib.get_close_matches(_norm(category), list(keys), n=1, cutoff=0.6)
+        if not hit:
+            return None, None, None
+        category, cat = keys[hit[0]], _CATALOG[keys[hit[0]]]
+    names = {_norm(k): k for k in cat["names"]}
+    hit = _difflib.get_close_matches(_norm(name), list(names), n=1, cutoff=0.55)
+    if not hit:
+        return cat["id"], None, None
+    key = names[hit[0]]
+    return cat["id"], cat["names"][key], key
+
+
+def structure_strength(week: dict, data: dict) -> bool:
+    todo = [s for s in week["sessions"] if s["type"] == "strength" and not s.get("strength")]
+    if not todo:
+        return False
+    model = ai.pick_model(ai.PREMIUM)
+    extra = ai.FALLBACKS if model != ai.MODEL else {}
+    prompt = ("Categorías de Garmin disponibles: " + ", ".join(_CATALOG) + "\n\n"
+              + "Historial de gimnasio del atleta: " + json.dumps((data.get("strength") or {}).get("por_ejercicio"), ensure_ascii=False)
+              + "\n\nSesiones:\n" + json.dumps([{k: s.get(k) for k in ("date", "title", "duration_min", "target", "description")}
+                                                  for s in todo], ensure_ascii=False))
+    resp = _client().beta.messages.parse(model=model, max_tokens=8000, output_config={"effort": "low"}, system=STRENGTH_SYSTEM,
+                                         messages=[{"role": "user", "content": prompt}], output_format=StrengthWeek, **extra)
+    ai._log_usage(resp, "plan-structure-gym", model)
+    if resp.parsed_output is None:
+        raise RuntimeError("No se pudieron preparar las sesiones de gimnasio.")
+    by_date: dict[str, list] = {}
+    for it in resp.parsed_output.items:
+        cat_id, name_id, key = _match_exercise(it.category, it.garmin_name)
+        by_date.setdefault(it.date, []).append({
+            "label": it.label[:22], "category_id": cat_id, "name_id": name_id, "garmin_key": key,
+            "sets": max(1, it.sets), "reps": max(0, it.reps), "seconds": it.seconds, "weight_kg": it.weight_kg,
+            "rest_s": max(0, it.rest_s)})
+    for s in todo:
+        if by_date.get(s["date"]):
+            s["strength"] = by_date[s["date"]]
+    return True

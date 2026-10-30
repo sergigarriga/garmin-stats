@@ -10,6 +10,11 @@ export interface Step {
   hr_low?: number | null; hr_high?: number | null; name: string;
 }
 export interface Block { repeat: number; steps: Step[] }
+export interface StrengthItem {
+  label: string; category_id: number | null; name_id: number | null; sets: number; reps: number;
+  seconds?: number | null; weight_kg?: number | null; rest_s: number;
+}
+type WithWorkouts = PlanSession & { workout?: Block[] | null; strength?: StrengthItem[] | null };
 
 // Los tipos del SDK no recogen todos los campos del perfil FIT: se pasan como mensaje genérico.
 const mesg = (o: Record<string, unknown>) => o as never;
@@ -22,7 +27,8 @@ const paceToSpeed = (p?: string | null) => {
 };
 
 /** Un archivo FIT de entrenamiento para una sesión (null si no tiene entreno estructurado). */
-export function sessionFit(s: PlanSession & { workout?: Block[] | null }): Uint8Array | null {
+export function sessionFit(s: WithWorkouts): Uint8Array | null {
+  if (s.strength?.length) return strengthFit(s);
   if (!s.workout?.length) return null;
   const steps: Record<string, unknown>[] = [];
   for (const b of s.workout) {
@@ -52,6 +58,31 @@ export function sessionFit(s: PlanSession & { workout?: Block[] | null }): Uint8
   enc.onMesg(Profile.MesgNum.FILE_ID, mesg({ type: 'workout', manufacturer: 'development', product: 0, timeCreated: new Date(), serialNumber: 20261030 }));
   const day = new Date(`${s.date}T00:00:00`).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }).replace('.', '');
   enc.onMesg(Profile.MesgNum.WORKOUT, mesg({ wktName: `${day} ${s.title}`.slice(0, 30), sport: 'running', subSport: 'generic', numValidSteps: steps.length }));
+  for (const m of steps) enc.onMesg(Profile.MesgNum.WORKOUT_STEP, mesg(m));
+  return enc.close();
+}
+
+/** Sesión de gimnasio: cada ejercicio es un bloque [serie, descanso] repetido tantas veces como series. */
+function strengthFit(s: WithWorkouts): Uint8Array {
+  const steps: Record<string, unknown>[] = [];
+  for (const it of s.strength ?? []) {
+    const first = steps.length;
+    const ex: Record<string, unknown> = {
+      messageIndex: steps.length, wktStepName: it.label.slice(0, 22), intensity: 'active', targetType: 'open',
+      // Repeticiones (o tiempo en ejercicios como la plancha); el reloj pide confirmarlas al acabar la serie.
+      ...(it.seconds ? { durationType: 'time', durationValue: Math.round(it.seconds) * 1000 } : { durationType: 'reps', durationValue: it.reps }),
+    };
+    if (it.category_id != null) ex.exerciseCategory = it.category_id;
+    if (it.name_id != null) ex.exerciseName = it.name_id;
+    if (it.weight_kg) { ex.exerciseWeight = it.weight_kg; ex.weightDisplayUnit = 'kilogram'; }  // el SDK aplica la escala (x100)
+    steps.push(ex);
+    if (it.rest_s > 0) steps.push({ messageIndex: steps.length, wktStepName: 'Descanso', intensity: 'rest', durationType: 'time', durationValue: it.rest_s * 1000, targetType: 'open' });
+    if (it.sets > 1) steps.push({ messageIndex: steps.length, durationType: 'repeatUntilStepsCmplt', durationValue: first, targetType: 'open', targetValue: it.sets });
+  }
+  const enc = new Encoder();
+  enc.onMesg(Profile.MesgNum.FILE_ID, mesg({ type: 'workout', manufacturer: 'development', product: 0, timeCreated: new Date(), serialNumber: 20261030 }));
+  const day = new Date(`${s.date}T00:00:00`).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }).replace('.', '');
+  enc.onMesg(Profile.MesgNum.WORKOUT, mesg({ wktName: `${day} ${s.title}`.slice(0, 30), sport: 'training', subSport: 'strengthTraining', numValidSteps: steps.length }));
   for (const m of steps) enc.onMesg(Profile.MesgNum.WORKOUT_STEP, mesg(m));
   return enc.close();
 }

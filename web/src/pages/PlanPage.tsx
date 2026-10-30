@@ -253,17 +253,19 @@ function WatchDialog({ open, onClose, weekStart, sessions, onView }: {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const runs = sessions.filter((x) => ['easy', 'long', 'tempo', 'intervals', 'race'].includes(x.type));
+  const gym = sessions.filter((x) => x.type === 'strength');
+  type Wk = PlanSession & { workout?: unknown; strength?: unknown };
   const go = async () => {
     setBusy(true); setMsg(null);
     try {
       let list = sessions;
-      if (runs.some((x) => !(x as PlanSession & { workout?: unknown }).workout)) {
+      if (runs.some((x) => !(x as Wk).workout) || gym.some((x) => !(x as Wk).strength)) {
         const v = await api('./api/plan/structure', { week: weekStart });
         onView(v);
         list = v.plan?.weeks.find((w) => w.start === weekStart)?.sessions ?? sessions;
       }
       const n = downloadWeek(list, weekStart);
-      setMsg(n ? `Descargados ${n} entrenos. Ahora cópialos al reloj (pasos de abajo).` : 'Esta semana no tiene sesiones de carrera para el reloj.');
+      setMsg(n ? `Descargados ${n} entrenos. Ahora cópialos al reloj (pasos de abajo).` : 'Esta semana no tiene sesiones para el reloj.');
     } catch (e) { setMsg((e as Error).message); } finally { setBusy(false); }
   };
   return (
@@ -271,9 +273,9 @@ function WatchDialog({ open, onClose, weekStart, sessions, onView }: {
       <DialogTitle sx={{ pb: 1 }}>Pasar los entrenos al reloj</DialogTitle>
       <DialogContent>
         <Typography color="text.secondary" sx={{ mb: 2 }}>
-          {runs.length} sesiones de carrera esta semana, con calentamiento, series y ritmos o pulso objetivo. El reloj te guiará paso a paso.
+          {runs.length} de carrera (calentamiento, series y ritmo o pulso objetivo) y {gym.length} de gimnasio (ejercicios del catálogo de Garmin con series, repeticiones, peso y descansos). El reloj te guiará paso a paso.
         </Typography>
-        <Button variant="contained" disableElevation onClick={go} disabled={busy || !online || runs.length === 0}
+        <Button variant="contained" disableElevation onClick={go} disabled={busy || !online || runs.length + gym.length === 0}
           startIcon={busy ? <CircularProgress size={18} color="inherit" /> : <WatchRounded />} sx={{ borderRadius: 999, mb: 2 }}>
           {busy ? 'Preparando entrenos…' : 'Descargar entrenos de la semana'}
         </Button>
@@ -286,7 +288,7 @@ function WatchDialog({ open, onClose, weekStart, sessions, onView }: {
           <li>Desconecta el reloj: los verás en <b>Entrenamiento → Entrenamientos</b>. Elige el del día y pulsa Iniciar.</li>
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
-          Las sesiones de gimnasio no se pasan al reloj de momento. Puedes descargar desde el móvil, pero para copiarlos hace falta el ordenador.
+          En el gimnasio, al acabar cada serie el reloj te pide confirmar repeticiones y peso: así el coach sabe cuánto subir. Puedes descargar desde el móvil, pero para copiarlos hace falta el ordenador.
         </Typography>
         <Box sx={{ textAlign: 'right', mt: 1 }}><Button onClick={onClose} sx={{ borderRadius: 999 }}>Cerrar</Button></Box>
       </DialogContent>
