@@ -22,13 +22,17 @@ ORIGIN=$(python3 -c "import json; print(json.load(open('$SECRETS'))['origin'])")
 # 2) Clave de Anthropic en SSM (SecureString), sin mostrarla
 aws ssm put-parameter --name /garmin-stats/anthropic-key --type SecureString --overwrite \
   --value "file://$HOME/.config/anthropic/garmin-stats-key" >/dev/null
-# Cliente OAuth de Google, si ya está guardado en local
-if [ -f ~/.config/garmin/google-oauth.json ]; then
-  aws ssm put-parameter --name /garmin-stats/google-client-id --type String --overwrite \
-    --value "$(python3 -c "import json; print(json.load(open('$HOME/.config/garmin/google-oauth.json'))['client_id'])")" >/dev/null
-  python3 -c "import json; print(json.load(open('$HOME/.config/garmin/google-oauth.json'))['client_secret'], end='')" > /tmp/.gs-gsec && chmod 600 /tmp/.gs-gsec
+# Cliente OAuth de Google, si ya está guardado en local. Acepta el JSON tal cual lo descarga Google
+# ({"web": {"client_id", "client_secret", ...}}) o uno simple {"client_id", "client_secret"}.
+GJSON=~/.config/garmin/google-oauth.json
+if [ -f "$GJSON" ]; then
+  chmod 600 "$GJSON"
+  gfield() { python3 -c "import json,sys; d=json.load(open(sys.argv[1])); d=d.get('web', d); print(d[sys.argv[2]], end='')" "$GJSON" "$1"; }
+  aws ssm put-parameter --name /garmin-stats/google-client-id --type String --overwrite --value "$(gfield client_id)" >/dev/null
+  umask 077; gfield client_secret > /tmp/.gs-gsec
   aws ssm put-parameter --name /garmin-stats/google-client-secret --type SecureString --overwrite --value file:///tmp/.gs-gsec >/dev/null
   rm -f /tmp/.gs-gsec
+  echo "Cliente OAuth de Google guardado en SSM."
 fi
 
 # 3) Bucket de artefactos (código de las Lambda)
