@@ -33,6 +33,23 @@ RUN_TYPES = ("easy", "long", "tempo", "intervals", "race")
 SessionType = Literal["easy", "long", "tempo", "intervals", "race", "strength", "cross", "rest"]
 
 
+class Step(BaseModel):
+    kind: Literal["warmup", "active", "recovery", "cooldown", "rest"]
+    duration: Literal["distance", "time", "open"] = Field(description="open = hasta pulsar vuelta")
+    value: float | None = Field(description="km si distance, minutos si time, null si open")
+    target: Literal["pace", "hr", "open"]
+    pace_fast: str | None = Field(description="Ritmo más rápido del rango, 'm:ss' por km (solo si target=pace)")
+    pace_slow: str | None = Field(description="Ritmo más lento del rango, 'm:ss' por km (solo si target=pace)")
+    hr_low: int | None = Field(description="Pulso mínimo en lpm (solo si target=hr)")
+    hr_high: int | None = Field(description="Pulso máximo en lpm (solo si target=hr)")
+    name: str = Field(description="Nombre corto del paso, máx. 15 caracteres, p. ej. 'Calentamiento', '1 km ritmo'")
+
+
+class Block(BaseModel):
+    repeat: int = Field(description="Veces que se repite el bloque (1 = sin repetir)")
+    steps: list[Step]
+
+
 class Session(BaseModel):
     date: str = Field(description="AAAA-MM-DD")
     type: SessionType
@@ -41,6 +58,9 @@ class Session(BaseModel):
     duration_min: int | None = Field(description="Duración prevista en minutos")
     target: str = Field(description="Ritmo o zona objetivo, p. ej. '5:50-6:10 /km · Z2'")
     description: str = Field(description="Qué hacer, en 1-2 frases claras")
+    workout: list[Block] | None = Field(default=None, description="Solo en sesiones de carrera: el entreno estructurado para el "
+                                        "reloj (calentamiento, bloques/series, vuelta a la calma) con ritmos o pulso objetivo. "
+                                        "null en fuerza, descanso o cruzado.")
 
 
 class Week(BaseModel):
@@ -261,7 +281,7 @@ def _call(schema, prompt: str, kind: str):
     extra = ai.FALLBACKS if model != ai.MODEL else {}
     try:
         with client.beta.messages.stream(
-            model=model, max_tokens=48000, output_config={"effort": "high"}, system=SYSTEM,
+            model=model, max_tokens=64000, output_config={"effort": "high"}, system=SYSTEM,
             messages=[{"role": "user", "content": prompt}], output_format=schema, **extra,
         ) as stream:
             resp = stream.get_final_message()
@@ -378,3 +398,60 @@ def view(data: dict | None = None) -> dict:
     state = load()
     full = with_compliance(state, data)
     return {"plan": full, "today": today_advice(full, data.get("readiness"))}
+
+
+# ======================================================================== entrenos para el reloj
+class StructuredSession(BaseModel):
+    date: str
+    title: str
+    workout: list[Block]
+
+
+class StructuredWeek(BaseModel):
+    sessions: list[StructuredSession]
+
+
+STRUCT_SYSTEM = """Conviertes sesiones de carrera de un plan en entrenos estructurados para un reloj Garmin.
+Para cada sesión de carrera devuelve bloques con pasos: calentamiento, parte principal (series como bloque con
+repeat > 1 que contiene el paso de esfuerzo y el de recuperación) y vuelta a la calma.
+- Respeta exactamente las distancias, tiempos y ritmos de la descripción y del objetivo.
+- Rodajes suaves y tiradas: un paso por distancia con rango de ritmo, o con pulso si el objetivo es por pulso/zona.
+- Ritmos como 'm:ss' por km; el rango de ritmo debe tener 10-20 s de margen.
+- Si el objetivo es una zona de pulso, usa las zonas del atleta (lpm) que te paso.
+- Nombres de paso cortos, en castellano."""
+
+
+def structure_week(week_start: str) -> dict:
+    """Añade el entreno estructurado a las sesiones de carrera de una semana que aún no lo tengan."""
+    state = load()
+    plan = state.get("plan")
+    if not plan:
+        raise RuntimeError("No hay plan.")
+    week = next((w for w in plan["weeks"] if w["start"] == week_start), None)
+    if not week:
+        raise RuntimeError("Semana no encontrada.")
+    todo = [s for s in week["sessions"] if s["type"] in RUN_TYPES and not s.get("workout")]
+    if not todo:
+        return state
+    data = _read_data()
+    zones = data["profile"].get("zones")
+    model = ai.pick_model(ai.PREMIUM)
+    extra = ai.FALLBACKS if model != ai.MODEL else {}
+    client = _client()
+    prompt = (f"Zonas de pulso del atleta (lpm desde Z1..Z5): {zones}\n\nSesiones:\n"
+              + json.dumps([{k: s.get(k) for k in ("date", "type", "title", "distance_km", "duration_min", "target", "description")}
+                            for s in todo], ensure_ascii=False))
+    resp = client.beta.messages.parse(model=model, max_tokens=12000, output_config={"effort": "low"}, system=STRUCT_SYSTEM,
+                                      messages=[{"role": "user", "content": prompt}], output_format=StructuredWeek, **extra)
+    ai._log_usage(resp, "plan-structure", model)
+    if resp.parsed_output is None:
+        raise RuntimeError("No se pudo estructurar la semana.")
+    by_key = {(x.date, x.title): x for x in resp.parsed_output.sessions}
+    by_date = {x.date: x for x in resp.parsed_output.sessions}
+    for s in week["sessions"]:
+        if s in todo:
+            got = by_key.get((s["date"], s["title"])) or by_date.get(s["date"])
+            if got:
+                s["workout"] = [b.model_dump() for b in got.workout]
+    save(state)
+    return state

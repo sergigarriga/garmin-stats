@@ -192,6 +192,14 @@ def handler(event, _ctx):
                        Payload=json.dumps({"job": state["job"]["action"], "body": payload}).encode())
         return _json(202, _with_job(coach.view(_read_data()), coach))
 
+    if path == "/api/plan/structure":
+        try:
+            coach.structure_week(payload.get("week", ""))
+        except RuntimeError as e:
+            return _json(400, {"error": str(e)})
+        _push("coach.json", "ai_usage_lambda.log")
+        _refresh_site(coach)
+        return _json(200, _with_job(coach.view(_read_data()), coach))
     if path == "/api/plan/feedback":
         coach.feedback(payload["date"], payload.get("rating", 3), payload.get("note", ""))
     elif path == "/api/plan/delete":

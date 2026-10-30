@@ -31,6 +31,11 @@ import PsychologyRounded from '@mui/icons-material/PsychologyRounded';
 import TuneRounded from '@mui/icons-material/TuneRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import FlagRounded from '@mui/icons-material/FlagRounded';
+import WatchRounded from '@mui/icons-material/WatchRounded';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { downloadWeek } from '../workouts';
 import { isoLocal, toDate, type CoachView, type GarminData, type PlanSession, type SessionType } from '../data';
 import { dateLong, dateShort, dec1, duration, pace } from '../format';
 import { useResolvedMode } from '../theme';
@@ -241,6 +246,54 @@ function DayRow({ s, go, first }: { s: PlanSession; go: (k: string) => void; fir
   );
 }
 
+/** Ventana "Pasar al reloj": prepara los entrenos de la semana y explica cómo copiarlos. */
+function WatchDialog({ open, onClose, weekStart, sessions, onView }: {
+  open: boolean; onClose: () => void; weekStart: string; sessions: PlanSession[]; onView: (v: CoachView) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const runs = sessions.filter((x) => ['easy', 'long', 'tempo', 'intervals', 'race'].includes(x.type));
+  const go = async () => {
+    setBusy(true); setMsg(null);
+    try {
+      let list = sessions;
+      if (runs.some((x) => !(x as PlanSession & { workout?: unknown }).workout)) {
+        const v = await api('./api/plan/structure', { week: weekStart });
+        onView(v);
+        list = v.plan?.weeks.find((w) => w.start === weekStart)?.sessions ?? sessions;
+      }
+      const n = downloadWeek(list, weekStart);
+      setMsg(n ? `Descargados ${n} entrenos. Ahora cópialos al reloj (pasos de abajo).` : 'Esta semana no tiene sesiones de carrera para el reloj.');
+    } catch (e) { setMsg((e as Error).message); } finally { setBusy(false); }
+  };
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: '28px', m: 2 } } }}>
+      <DialogTitle sx={{ pb: 1 }}>Pasar los entrenos al reloj</DialogTitle>
+      <DialogContent>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          {runs.length} sesiones de carrera esta semana, con calentamiento, series y ritmos o pulso objetivo. El reloj te guiará paso a paso.
+        </Typography>
+        <Button variant="contained" disableElevation onClick={go} disabled={busy || !online || runs.length === 0}
+          startIcon={busy ? <CircularProgress size={18} color="inherit" /> : <WatchRounded />} sx={{ borderRadius: 999, mb: 2 }}>
+          {busy ? 'Preparando entrenos…' : 'Descargar entrenos de la semana'}
+        </Button>
+        {msg && <Alert severity="info" sx={{ borderRadius: '14px', mb: 2 }}>{msg}</Alert>}
+        <Typography variant="subtitle2" sx={{ mb: 1 }}>Cómo pasarlos (desde el ordenador)</Typography>
+        <Typography component="ol" sx={{ pl: 2.5, m: 0, '& li': { mb: 0.75 } }}>
+          <li>Conecta el reloj al ordenador con su cable USB.</li>
+          <li>Ábrelo como una unidad (aparece en el Explorador de archivos) y entra en <b>GARMIN → NewFiles</b>.</li>
+          <li>Descomprime el .zip descargado y copia los archivos <b>.fit</b> en esa carpeta.</li>
+          <li>Desconecta el reloj: los verás en <b>Entrenamiento → Entrenamientos</b>. Elige el del día y pulsa Iniciar.</li>
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+          Las sesiones de gimnasio no se pasan al reloj de momento. Puedes descargar desde el móvil, pero para copiarlos hace falta el ordenador.
+        </Typography>
+        <Box sx={{ textAlign: 'right', mt: 1 }}><Button onClick={onClose} sx={{ borderRadius: 999 }}>Cerrar</Button></Box>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ------------------------------------------------------------------ página
 export default function PlanPage({ data, go }: { data: GarminData; go: (k: string) => void }) {
   const mode = useResolvedMode();
@@ -248,6 +301,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [moreSummary, setMoreSummary] = useState(false);
+  const [watchOpen, setWatchOpen] = useState(false);
   const small = useMediaQuery('(max-width:599px)');
   useEffect(() => {
     if (!online) return;
@@ -343,7 +397,12 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
       )}
 
       {/* semana */}
-      <SectionTitle>Semana {wi + 1} · {week.focus}</SectionTitle>
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, mt: { xs: 4, sm: 5 }, mb: 2 }}>
+        <Typography variant="h6" sx={{ minWidth: 0 }}>Semana {wi + 1} · {week.focus}</Typography>
+        <Button variant="outlined" size="small" startIcon={<WatchRounded />} onClick={() => setWatchOpen(true)}
+          sx={{ borderRadius: 999, flexShrink: 0, whiteSpace: 'nowrap' }}>Pasar al reloj</Button>
+      </Stack>
+      <WatchDialog open={watchOpen} onClose={() => setWatchOpen(false)} weekStart={week.start} sessions={week.sessions} onView={setView} />
       {small ? (
         <Card sx={{ ...CARD_SX, p: 0.5 }}>
           {week.sessions.map((s, i) => <DayRow key={`${s.date}-${s.type}`} s={s} go={go} first={i === 0} />)}

@@ -209,3 +209,13 @@ región eu-west-1. Diseño completo en `docs/aws.md`.
 - **Peso:** el que apuntas en Garmin Connect, en Progreso → Peso; el coach ve la tendencia.
 - **Alarmas por email** (SNS `garmin-stats-alerts`): la sincronización falla 2 horas seguidas, lleva 3 horas sin
   ejecutarse o falla el aviso de la mañana. Hay que confirmar la suscripción en el email de AWS.
+
+## Entrenos al reloj (archivos FIT)
+
+La API personal de Garmin es de solo lectura (no se pueden crear entrenos ni ponerlos en el calendario: 404). Por eso:
+- Cada sesión de carrera del plan lleva un entreno estructurado (`workout`: bloques y pasos con distancia o tiempo y
+  ritmo o pulso objetivo). Los planes nuevos lo traen de Opus; en los existentes, `POST /api/plan/structure` lo genera
+  por semana con Sonnet.
+- En Plan, el botón **"Pasar al reloj"** genera en el navegador los `.fit` de entrenamiento (SDK oficial `@garmin/fitsdk`,
+  `web/src/workouts.ts`) y los descarga en un .zip.
+- Para pasarlos: conectar el reloj por USB → `GARMIN/NewFiles` → copiar los `.fit` → aparecen en Entrenamiento → Entrenamientos.
