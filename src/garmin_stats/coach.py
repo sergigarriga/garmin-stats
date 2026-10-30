@@ -244,11 +244,16 @@ def _call(schema, prompt: str, kind: str):
     client = _client()
     model = ai.pick_model(MODEL)
     extra = ai.FALLBACKS if model != ai.MODEL else {}
-    with client.beta.messages.stream(
-        model=model, max_tokens=48000, output_config={"effort": "high"}, system=SYSTEM,
-        messages=[{"role": "user", "content": prompt}], output_format=schema, **extra,
-    ) as stream:
-        resp = stream.get_final_message()
+    try:
+        with client.beta.messages.stream(
+            model=model, max_tokens=48000, output_config={"effort": "high"}, system=SYSTEM,
+            messages=[{"role": "user", "content": prompt}], output_format=schema, **extra,
+        ) as stream:
+            resp = stream.get_final_message()
+    except (anthropic.APIStatusError, anthropic.APIConnectionError):
+        raise
+    except Exception as e:  # corte a mitad de la respuesta (red, suspensión del equipo...)
+        raise RuntimeError("Se cortó la conexión con la IA mientras escribía el plan. Inténtalo de nuevo.") from e
     cost = ai._log_usage(resp, kind, model)
     if resp.stop_reason == "refusal":
         raise RuntimeError("La IA no ha podido generar el plan.")

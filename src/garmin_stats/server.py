@@ -189,6 +189,9 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json(503, {"error": f"La IA no está disponible ahora ({e.status_code})."})
                 except anthropic.APIConnectionError:
                     return self._json(503, {"error": "Sin conexión con la IA."})
+                except Exception:
+                    log.exception("Error en %s", self.path)
+                    return self._json(500, {"error": "Algo ha fallado en el servidor. Inténtalo de nuevo."})
             return self._json(200, coach.view())
         return self._json(404, {"error": "no encontrado"})
 
