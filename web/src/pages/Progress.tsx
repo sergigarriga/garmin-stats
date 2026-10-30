@@ -114,7 +114,7 @@ function Heatmap({ data, go }: { data: GarminData; go: (k: string) => void }) {
     const actsBy = new Map<string, Activity[]>();
     data.activities.forEach((a) => { const k = a.start.slice(0, 10); actsBy.set(k, [...(actsBy.get(k) ?? []), a]); });
     const end = toDate(data.period.end);
-    const start = new Date(end); start.setDate(start.getDate() - 364);
+    const start = new Date(end); start.setDate(start.getDate() - (window.innerWidth < 600 ? 7 * Math.max(10, Math.floor((window.innerWidth - 112) / 16)) - 1 : 364));
     start.setDate(start.getDate() - ((start.getDay() + 6) % 7)); // lunes
     const weeks: { d: string; day?: Day; acts: Activity[]; future: boolean }[][] = [];
     const months: { i: number; label: string }[] = [];

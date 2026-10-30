@@ -401,11 +401,16 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
       {plan.weeks.map((w, i) => (
         <Accordion key={w.start} disableGutters defaultExpanded={false} elevation={0}
           sx={{ mb: 1, borderRadius: '16px !important', bgcolor: 'background.paper', '&::before': { display: 'none' } }}>
-          <AccordionSummary expandIcon={<ExpandMoreRounded />}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: 'center', width: '100%', pr: 1 }}>
-              <Typography sx={{ fontWeight: 600, minWidth: 92 }}>Semana {i + 1}</Typography>
-              <Typography color="text.secondary" sx={{ flex: 1 }} noWrap>{dateShort(toDate(w.start))} · {w.focus}</Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+          <AccordionSummary expandIcon={<ExpandMoreRounded />} sx={{ '& .MuiAccordionSummary-content': { minWidth: 0 } }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 0.25, sm: 2 }} sx={{ alignItems: { sm: 'center' }, width: '100%', minWidth: 0, pr: 1 }}>
+              <Stack direction="row" sx={{ justifyContent: 'space-between', minWidth: { sm: 92 }, gap: 1 }}>
+                <Typography sx={{ fontWeight: 600 }}>Semana {i + 1}</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap', display: { sm: 'none' } }}>
+                  {w.start <= todayIso ? `${dec1(w.actualKm)} / ` : ''}{dec1(w.plannedKm)} km
+                </Typography>
+              </Stack>
+              <Typography variant="body2" color="text.secondary" sx={{ flex: 1, minWidth: 0 }} noWrap>{dateShort(toDate(w.start))} · {w.focus}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap', display: { xs: 'none', sm: 'block' } }}>
                 {w.start <= todayIso ? `${dec1(w.actualKm)} / ` : ''}{dec1(w.plannedKm)} km{w.compliance != null ? ` · ${w.compliance} %` : ''}
               </Typography>
             </Stack>
@@ -413,12 +418,12 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           <AccordionDetails sx={{ pt: 0 }}>
             <Stack spacing={1.25}>
               {w.sessions.map((s) => (
-                <Stack key={s.date} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                <Stack key={`${s.date}-${s.type}`} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', minWidth: 0 }}>
                   <StatusIcon s={s.status} />
-                  <Typography variant="body2" sx={{ minWidth: 70, color: 'text.secondary', textTransform: 'capitalize' }}>
+                  <Typography variant="body2" sx={{ minWidth: { xs: 52, sm: 70 }, color: 'text.secondary', textTransform: 'capitalize' }}>
                     {toDate(s.date).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }).replace('.', '')}
                   </Typography>
-                  <Box sx={{ flex: 1 }}>
+                  <Box sx={{ flex: 1, minWidth: 0, overflowWrap: 'anywhere' }}>
                     <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{s.title}</Typography><SessionChip s={s} compact />
                     </Stack>

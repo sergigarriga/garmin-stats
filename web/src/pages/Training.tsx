@@ -150,11 +150,11 @@ export default function Training({ data, go }: { data: GarminData; go: (k: strin
       {data.predictions.length > 0 && (
         <>
           <SectionTitle help="predictions">Predicciones de carrera</SectionTitle>
-          <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
+          <Box sx={{ display: 'grid', gap: { xs: 1.25, sm: 2 }, gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}>
             {data.predictions.map((p) => (
-              <Card key={p.distance} sx={CARD_SX}>
+              <Card key={p.distance} sx={{ ...CARD_SX, p: { xs: 1.75, sm: 2.75 } }}>
                 <Typography variant="subtitle2" color="text.secondary">{p.distance}</Typography>
-                <Typography sx={{ fontSize: 30, fontWeight: 500, letterSpacing: '-0.02em' }}>{duration(p.predicted)}</Typography>
+                <Typography sx={{ fontSize: { xs: 24, sm: 30 }, fontWeight: 500, letterSpacing: '-0.02em' }}>{duration(p.predicted)}</Typography>
                 <Typography variant="body2" color="text.secondary">{pace(p.pace)} según tu VO2max</Typography>
                 {p.best != null && (
                   <Chip size="small" sx={{ mt: 1.5 }} label={`Tu mejor: ${duration(p.best)}`} />
@@ -173,7 +173,27 @@ export default function Training({ data, go }: { data: GarminData; go: (k: strin
       <InsightList items={data.ai?.training?.length ? data.ai.training : [...data.insights.entreno, ...data.insights.carrera.filter((t) => !t.startsWith('Mejor '))]} color={cat('training')} />
 
       <SectionTitle>Actividades</SectionTitle>
-      <Card sx={{ ...CARD_SX, p: 0 }}>
+      <Card sx={{ ...CARD_SX, p: 0.5, display: { xs: 'block', md: 'none' } }}>
+        {list.map((a, i) => (
+          <Stack key={a.id} direction="row" spacing={1.5} onClick={() => go(`act-${a.id}`)}
+            sx={{ alignItems: 'center', px: 1.5, py: 1.25, cursor: 'pointer', borderTop: i ? 1 : 0, borderColor: 'divider', minWidth: 0 }}>
+            <IconBubble color={SPORTS[a.group]?.[mode] ?? cat('training')} size={34}><SportIcon group={a.group} /></IconBubble>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="body2" noWrap sx={{ fontWeight: 600 }}>{a.name ?? a.group}</Typography>
+              <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+                {[a.km ? `${dec1(a.km)} km` : null, duration((a.min ?? 0) * 60), a.km && a.km > 0.5 ? pace(a.pace) : null, a.hr ? `${a.hr} lpm` : null].filter(Boolean).join(' · ')}
+              </Typography>
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>{dateShort(new Date(a.start))}</Typography>
+          </Stack>
+        ))}
+        {acts.length > 12 && (
+          <Box sx={{ p: 1, textAlign: 'center' }}>
+            <Button onClick={() => setShowAll((s) => !s)}>{showAll ? 'Ver menos' : `Ver todas (${acts.length})`}</Button>
+          </Box>
+        )}
+      </Card>
+      <Card sx={{ ...CARD_SX, p: 0, display: { xs: 'none', md: 'block' } }}>
         <TableContainer>
           <Table size="small">
             <TableHead>

@@ -160,11 +160,11 @@ export default function ActivityDetail({ data, id, back }: { data: GarminData; i
             <>
               <SectionTitle>Parciales por kilómetro</SectionTitle>
               <Card sx={{ ...CARD_SX, p: 0, overflowX: 'auto' }}>
-                <Table size="small">
+                <Table size="small" sx={{ '& td, & th': { px: { xs: 1, sm: 2 } } }}>
                   <TableHead>
                     <TableRow>
                       {['Km', 'Tiempo', 'Ritmo', '', 'Pulso', 'Desnivel'].map((h, i) => (
-                        <TableCell key={i} align={i ? 'right' : 'left'} sx={{ color: 'text.secondary', fontWeight: 500, py: 1.5 }}>{h}</TableCell>
+                        <TableCell key={i} align={i ? 'right' : 'left'} sx={{ color: 'text.secondary', fontWeight: 500, py: 1.5, ...(i === 3 ? { display: { xs: 'none', sm: 'table-cell' } } : {}) }}>{h}</TableCell>
                       ))}
                     </TableRow>
                   </TableHead>
@@ -179,7 +179,7 @@ export default function ActivityDetail({ data, id, back }: { data: GarminData; i
                             <TableCell>{s.km}</TableCell>
                             <TableCell align="right">{duration(s.time)}</TableCell>
                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{pace(s.pace)}</TableCell>
-                            <TableCell sx={{ width: { xs: 60, sm: 180 } }}>
+                            <TableCell sx={{ width: { sm: 180 }, display: { xs: 'none', sm: 'table-cell' } }}>
                               <Box sx={{ height: 8, width: `${w}%`, borderRadius: 999, bgcolor: color, opacity: s.pace === fast ? 1 : 0.55 }} />
                             </TableCell>
                             <TableCell align="right">{s.hr ?? '–'}</TableCell>
