@@ -159,10 +159,8 @@ servidor (`fallbacks: "default"`). El gasto real por tipo y por mes aparece en A
 
 ## Copias de seguridad
 
-`bin/backup.sh` (cron, domingos a las 21:30) guarda la base de datos (copia en caliente), el plan, la caché
-de la IA y el registro de gasto en `C:\Users\garrigas\OneDrive\Backups\garmin_stats` (OneDrive
-**personal**). Conserva las 8 copias más recientes. Para restaurar: descomprimir el `.tar.gz` en `data/`.
-Los FIT no se copian: `garmin-stats sync` los vuelve a descargar.
+Desactivadas a petición del usuario (30-10-2026): no hay copia en OneDrive. `bin/backup.sh` sigue en el
+repositorio por si se quiere reactivar.
 
 ## Web en AWS (privada, con login de Google)
 
