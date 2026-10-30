@@ -134,6 +134,20 @@ def ask(messages: list[dict]) -> dict:
     return {"answer": text, "cost": round(cost, 5)}
 
 
+def _refresh_site_coach() -> None:
+    """Tras cambiar el plan, actualiza ya el bloque `coach` de data.js (la portada lo usa)."""
+    from . import export
+    try:
+        path = SITE_DIR / "data.js"
+        raw = path.read_text(encoding="utf-8")
+        data = json.loads(raw[raw.index("=") + 1:].rstrip().rstrip(";"))
+        data["coach"] = coach.view(data)
+        data["generatedAt"] = datetime.now().astimezone().isoformat(timespec="seconds")
+        export.write_site(data, SITE_DIR)
+    except Exception:
+        log.exception("No se pudo refrescar data.js tras cambiar el plan")
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
         super().__init__(*a, directory=str(SITE_DIR), **kw)
@@ -192,6 +206,7 @@ class Handler(SimpleHTTPRequestHandler):
                 except Exception:
                     log.exception("Error en %s", self.path)
                     return self._json(500, {"error": "Algo ha fallado en el servidor. Inténtalo de nuevo."})
+            _refresh_site_coach()
             return self._json(200, coach.view())
         return self._json(404, {"error": "no encontrado"})
 
