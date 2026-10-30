@@ -179,6 +179,16 @@ def handler(event, _ctx):
         _push("ai_usage_lambda.log")
         return _json(200 if "answer" in res else 503, res)
 
+    if path == "/api/plan/ambition":
+        if payload.get("ambition") not in ("realista", "exigente"):
+            return _json(400, {"error": "Nivel no válido."})
+        st = coach.load()
+        if not st.get("plan"):
+            return _json(400, {"error": "No hay plan."})
+        st["plan"]["ambition"] = payload["ambition"]
+        coach.save(st)
+        _push("coach.json")
+        path = "/api/plan/adapt"  # reajusta el plan con el nuevo nivel
     if path in ("/api/plan/create", "/api/plan/adapt"):
         state = coach.load()
         if (state.get("job") or {}).get("status") == "running" and time.time() - state["job"].get("at", 0) < 900:

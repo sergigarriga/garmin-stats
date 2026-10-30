@@ -99,12 +99,13 @@ function CreateForm({ onDone }: { onDone: (v: CoachView) => void }) {
   const [longDay, setLongDay] = useState('domingo');
   const [notes, setNotes] = useState('');
   const [gymDays, setGymDays] = useState(0);
+  const [ambition, setAmbition] = useState<'realista' | 'exigente'>('realista');
   const [bodyGoal, setBodyGoal] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const submit = async () => {
     setBusy(true); setErr(null);
-    try { onDone(await settle(await api('./api/plan/create', { goal, date, goalTime, daysPerWeek: days, longRunDay: longDay, notes, gymDays, bodyGoal }))); }
+    try { onDone(await settle(await api('./api/plan/create', { goal, date, goalTime, daysPerWeek: days, longRunDay: longDay, notes, gymDays, bodyGoal, ambition }))); }
     catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
   return (
@@ -155,6 +156,15 @@ function CreateForm({ onDone }: { onDone: (v: CoachView) => void }) {
           <TextField label="Objetivo de físico (opcional)" placeholder="Ganar definición, más fuerza…" value={bodyGoal}
             onChange={(e) => setBodyGoal(e.target.value)} sx={{ flex: 1 }} />
         </Stack>
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>Nivel</Typography>
+          <ToggleButtonGroup exclusive value={ambition} onChange={(_, v) => v && setAmbition(v)} size="small"
+            sx={{ gap: 1, '& .MuiToggleButton-root': { borderRadius: '999px !important', border: '1px solid', borderColor: 'divider', px: 2 },
+              '& .Mui-selected': { bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent) !important', color: 'primary.main', borderColor: 'primary.main' } }}>
+            <ToggleButton value="realista">Realista</ToggleButton>
+            <ToggleButton value="exigente">🔥 Exigente: quiero un reto</ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
         <TextField label="Algo que deba saber (opcional)" placeholder="Molestias, días que no puedes, si prefieres cinta…" value={notes}
           onChange={(e) => setNotes(e.target.value)} multiline minRows={2} />
         {err && <Alert severity="error" sx={{ borderRadius: '14px' }}>{err}</Alert>}
@@ -331,10 +341,10 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const last = plan.history[plan.history.length - 1];
   const t = view?.today;
 
-  const run = async (path: string, confirmText?: string) => {
+  const run = async (path: string, confirmText?: string, body: Record<string, unknown> = {}) => {
     if (confirmText && !window.confirm(confirmText)) return;
     setBusy(true); setErr(null);
-    try { setView(await settle(await api(path, {}))); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+    try { setView(await settle(await api(path, body))); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
 
   return (
@@ -348,6 +358,19 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           </Stack>
         ) : undefined} />
       {err && <Alert severity="error" sx={{ mb: 2, borderRadius: '14px' }}>{err}</Alert>}
+      {online && (
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2, flexWrap: 'wrap', rowGap: 1 }}>
+          <Typography variant="body2" color="text.secondary">Nivel del plan</Typography>
+          <ToggleButtonGroup exclusive size="small" value={plan.ambition ?? 'realista'} disabled={busy}
+            onChange={(_, v) => v && v !== (plan.ambition ?? 'realista') && run('./api/plan/ambition', undefined, { ambition: v })}
+            sx={{ bgcolor: 'background.paper', '& .MuiToggleButton-root': { borderRadius: '999px !important', px: 2, color: 'text.secondary' },
+              '& .Mui-selected': { bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent) !important', color: 'primary.main' } }}>
+            <ToggleButton value="realista">Realista</ToggleButton>
+            <ToggleButton value="exigente">🔥 Exigente</ToggleButton>
+          </ToggleButtonGroup>
+          {busy && <Typography variant="caption" color="text.secondary">Reajustando el plan (1-3 min)…</Typography>}
+        </Stack>
+      )}
 
       {/* resumen */}
       <Card sx={{ ...CARD_SX, mb: 2 }}>

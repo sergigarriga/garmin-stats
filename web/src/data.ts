@@ -62,7 +62,7 @@ export interface PlanSession {
 export interface PlanWeek { start: string; focus: string; sessions: PlanSession[]; plannedKm: number; actualKm: number; compliance?: number | null }
 export interface Plan {
   goal: string; raceDate: string; goalTime?: string | null; daysPerWeek: number; longRunDay: string; notes?: string;
-  gymDays?: number; bodyGoal?: string | null;
+  gymDays?: number; bodyGoal?: string | null; ambition?: 'realista' | 'exigente';
   createdAt: string; updatedAt: string; summary: string; weeks: PlanWeek[]; memory: string[];
   history: { at: string; kind: 'create' | 'adapt'; message: string; cost: number }[];
 }
