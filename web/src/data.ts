@@ -68,7 +68,7 @@ export interface Plan {
 }
 export interface CoachView {
   plan: Plan | null; today: { session: PlanSession; tip?: string | null } | null;
-  job?: { status: 'running' | 'done' | 'error'; action: string; error?: string; at: number } | null;
+  job?: { status: 'running' | 'done' | 'error' | 'cancelled'; action: string; error?: string; at: number; cancel?: boolean } | null;
 }
 
 export type AiCategory = 'activity' | 'heart' | 'sleep' | 'stress' | 'recovery' | 'energy' | 'training';

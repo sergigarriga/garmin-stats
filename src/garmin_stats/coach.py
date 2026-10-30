@@ -26,6 +26,13 @@ from . import settings
 
 log = logging.getLogger(__name__)
 
+class Cancelled(Exception):
+    """El usuario ha cancelado la generación del plan."""
+
+
+# Función que dice si hay que cancelar (la pone la Lambda; consulta S3). None = no se puede cancelar.
+CANCEL_CHECK = None
+
 MODEL = "claude-opus-5-5"  # el plan es lo más difícil y se llama poco: Opus 5.5 (con el tope de gasto cae a Haiku)
 STATE = DATA_DIR / "coach.json"
 RUN_TYPES = ("easy", "long", "tempo", "intervals", "race")
@@ -286,13 +293,20 @@ def _call(schema, prompt: str, kind: str):
     client = _client()
     model = ai.pick_model(MODEL)
     extra = ai.FALLBACKS if model != ai.MODEL else {}
+    import time as _time
     try:
         with client.beta.messages.stream(
             model=model, max_tokens=64000, output_config={"effort": "high"}, system=SYSTEM,
             messages=[{"role": "user", "content": prompt}], output_format=schema, **extra,
         ) as stream:
+            last = _time.monotonic()
+            for _ in stream:  # se consume a mano para poder cortar a mitad
+                if CANCEL_CHECK and _time.monotonic() - last > 4:
+                    last = _time.monotonic()
+                    if CANCEL_CHECK():
+                        raise Cancelled()  # al salir del bloque se cierra la conexión: la IA deja de generar
             resp = stream.get_final_message()
-    except (anthropic.APIStatusError, anthropic.APIConnectionError):
+    except (anthropic.APIStatusError, anthropic.APIConnectionError, Cancelled):
         raise
     except Exception as e:  # corte a mitad de la respuesta (red, suspensión del equipo...)
         raise RuntimeError("Se cortó la conexión con la IA mientras escribía el plan. Inténtalo de nuevo.") from e

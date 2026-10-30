@@ -111,6 +111,14 @@ def _run_job(event):
     _setup_key()
     _pull()
     action, body = event["job"], event.get("body") or {}
+
+    def cancelled() -> bool:
+        try:
+            st = json.loads(s3.get_object(Bucket=BUCKET, Key="state/coach.json")["Body"].read())
+            return bool((st.get("job") or {}).get("cancel"))
+        except Exception:
+            return False
+    coach.CANCEL_CHECK = cancelled
     try:
         if action == "create":
             coach.create(body)
@@ -118,6 +126,13 @@ def _run_job(event):
             coach.adapt(force=True)
         state = coach.load()
         state["job"] = {"status": "done", "action": action, "at": int(time.time())}
+        coach.save(state)
+    except coach.Cancelled:
+        state = coach.load()
+        prev = (state.get("job") or {}).get("prev_ambition")
+        if prev and state.get("plan"):
+            state["plan"]["ambition"] = prev  # deshace el cambio de nivel
+        state["job"] = {"status": "cancelled", "action": action, "at": int(time.time())}
         coach.save(state)
     except Exception as e:  # noqa: BLE001 - se muestra al usuario
         state = coach.load()
@@ -179,23 +194,36 @@ def handler(event, _ctx):
         _push("ai_usage_lambda.log")
         return _json(200 if "answer" in res else 503, res)
 
+    if path == "/api/plan/cancel":
+        st = coach.load()
+        if (st.get("job") or {}).get("status") == "running":
+            st["job"]["cancel"] = True
+            coach.save(st)
+            _push("coach.json")
+        return _json(200, _with_job(coach.view(_read_data()), coach))
     if path == "/api/plan/ambition":
         if payload.get("ambition") not in ("realista", "exigente"):
             return _json(400, {"error": "Nivel no válido."})
         st = coach.load()
         if not st.get("plan"):
             return _json(400, {"error": "No hay plan."})
+        if (st.get("job") or {}).get("status") == "running" and time.time() - st["job"].get("at", 0) < 900:
+            return _json(409, {"error": "Ya hay un plan generándose. Espera a que termine o cancélalo."})
+        prev_ambition = st["plan"].get("ambition", "realista")
         st["plan"]["ambition"] = payload["ambition"]
         coach.save(st)
         _push("coach.json")
         path = "/api/plan/adapt"  # reajusta el plan con el nuevo nivel
+    else:
+        prev_ambition = None
     if path in ("/api/plan/create", "/api/plan/adapt"):
         state = coach.load()
         if (state.get("job") or {}).get("status") == "running" and time.time() - state["job"].get("at", 0) < 900:
             return _json(409, {"error": "Ya hay un plan generándose. Espera a que termine."})
         if path.endswith("create") and not payload.get("date"):
             return _json(400, {"error": "Falta la fecha."})
-        state["job"] = {"status": "running", "action": path.rsplit("/", 1)[1], "at": int(time.time())}
+        state["job"] = {"status": "running", "action": path.rsplit("/", 1)[1], "at": int(time.time()),
+                        **({"prev_ambition": prev_ambition} if prev_ambition else {})}
         coach.save(state)
         _push("coach.json")
         _lambda.invoke(FunctionName=FUNCTION_NAME, InvocationType="Event",

@@ -74,6 +74,7 @@ async function settle(v: CoachView): Promise<CoachView> {
     cur = await api('./api/plan');
   }
   if (cur.job?.status === 'error') throw new Error(cur.job.error ?? 'No se pudo generar el plan.');
+  if (cur.job?.status === 'cancelled') throw new Error('Reajuste cancelado: tu plan sigue igual.');
   return cur;
 }
 
@@ -314,6 +315,9 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const [err, setErr] = useState<string | null>(null);
   const [moreSummary, setMoreSummary] = useState(false);
   const [watchOpen, setWatchOpen] = useState(false);
+  const [confirm, setConfirm] = useState<null | { title: string; text: string; action: () => void }>(null);
+  const [cancelling, setCancelling] = useState(false);
+  const cancel = async () => { setCancelling(true); try { await api('./api/plan/cancel', {}); } catch { /* el polling lo resuelve */ } };
   const small = useMediaQuery('(max-width:599px)');
   useEffect(() => {
     if (!online) return;
@@ -344,8 +348,10 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const run = async (path: string, confirmText?: string, body: Record<string, unknown> = {}) => {
     if (confirmText && !window.confirm(confirmText)) return;
     setBusy(true); setErr(null);
-    try { setView(await settle(await api(path, body))); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+    try { setView(await settle(await api(path, body))); } catch (e) { setErr((e as Error).message); setView(await api('./api/plan').catch(() => view)); }
+    finally { setBusy(false); setCancelling(false); }
   };
+  const ask = (title: string, text: string, action: () => void) => setConfirm({ title, text, action });
 
   return (
     <Box>
@@ -353,7 +359,8 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
         action={online ? (
           <Stack direction="row" spacing={1}>
             <Button variant="outlined" startIcon={busy ? <CircularProgress size={16} /> : <TuneRounded />} disabled={busy}
-              onClick={() => run('./api/plan/adapt')} sx={{ borderRadius: 999 }}>{busy ? 'Reajustando…' : 'Reajustar ahora'}</Button>
+              onClick={() => ask('¿Reajustar el plan ahora?', 'El coach revisa tus últimos datos y rehace las semanas que quedan. Tarda 1-3 minutos y cuesta unos 0,50 $ (Opus). Ya se reajusta solo cada lunes.', () => run('./api/plan/adapt'))}
+              sx={{ borderRadius: 999 }}>{busy ? 'Reajustando…' : 'Reajustar ahora'}</Button>
             <Tooltip title="Borrar plan"><IconButton onClick={() => run('./api/plan/delete', '¿Borrar el plan? Se guarda una copia en el historial.')}><DeleteOutlineRounded /></IconButton></Tooltip>
           </Stack>
         ) : undefined} />
@@ -362,15 +369,34 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2, flexWrap: 'wrap', rowGap: 1 }}>
           <Typography variant="body2" color="text.secondary">Nivel del plan</Typography>
           <ToggleButtonGroup exclusive size="small" value={plan.ambition ?? 'realista'} disabled={busy}
-            onChange={(_, v) => v && v !== (plan.ambition ?? 'realista') && run('./api/plan/ambition', undefined, { ambition: v })}
+            onChange={(_, v) => v && v !== (plan.ambition ?? 'realista') && ask(v === 'exigente' ? '¿Pasar al modo exigente? 🔥' : '¿Pasar al modo realista?',
+              (v === 'exigente' ? 'Mantiene tu objetivo, sube el volumen y pone 2 sesiones de calidad por semana.' : 'Prioriza llegar sano y ajusta el objetivo si no es realista.')
+              + ' Se reajusta todo el plan: tarda 1-3 minutos y cuesta unos 0,50 $.', () => run('./api/plan/ambition', undefined, { ambition: v }))}
             sx={{ bgcolor: 'background.paper', '& .MuiToggleButton-root': { borderRadius: '999px !important', px: 2, color: 'text.secondary' },
               '& .Mui-selected': { bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent) !important', color: 'primary.main' } }}>
             <ToggleButton value="realista">Realista</ToggleButton>
             <ToggleButton value="exigente">🔥 Exigente</ToggleButton>
           </ToggleButtonGroup>
-          {busy && <Typography variant="caption" color="text.secondary">Reajustando el plan (1-3 min)…</Typography>}
+          {busy && (
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              <CircularProgress size={14} />
+              <Typography variant="caption" color="text.secondary">{cancelling ? 'Cancelando…' : 'Reajustando el plan (1-3 min)…'}</Typography>
+              <Button size="small" color="error" onClick={cancel} disabled={cancelling} sx={{ borderRadius: 999, minWidth: 0 }}>Cancelar</Button>
+            </Stack>
+          )}
         </Stack>
       )}
+
+      <Dialog open={!!confirm} onClose={() => setConfirm(null)} slotProps={{ paper: { sx: { borderRadius: '28px', m: 2, maxWidth: 420 } } }}>
+        <DialogTitle sx={{ pb: 1 }}>{confirm?.title}</DialogTitle>
+        <DialogContent>
+          <Typography color="text.secondary">{confirm?.text}</Typography>
+          <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end', mt: 3 }}>
+            <Button onClick={() => setConfirm(null)} sx={{ borderRadius: 999 }}>No</Button>
+            <Button variant="contained" disableElevation onClick={() => { const a = confirm?.action; setConfirm(null); a?.(); }} sx={{ borderRadius: 999 }}>Sí, reajustar</Button>
+          </Stack>
+        </DialogContent>
+      </Dialog>
 
       {/* resumen */}
       <Card sx={{ ...CARD_SX, mb: 2 }}>
