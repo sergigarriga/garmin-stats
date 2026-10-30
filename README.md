@@ -19,7 +19,7 @@ Se actualiza sola:
 Cron solo funciona mientras WSL está encendido. Si WSL está apagado, la siguiente hora en la que
 esté encendido recupera todo lo pendiente.
 
-Si cambias el código de la web (`web/src`), recompila:
+Si cambias el código de la web (`web/src`), reinstala las dependencias (se borraron para ahorrar espacio) y recompila:
 
 ```bash
 cd web && npm install && npm run build   # genera site/index.html (un solo archivo)
@@ -106,16 +106,17 @@ Haiku 5.5 con tono Google Health (`src/garmin_stats/ai.py`).
   no hay ninguno, los textos por reglas.
 - `uv run garmin-stats report --force-ai` regenera ahora; `--no-ai` lo desactiva.
 
-## Servidor local y chat con la IA
+## Servidor local y chat con la IA (desactivado)
 
-La web se usa desde **http://localhost:8765**. El servidor (`garmin-stats serve`) solo escucha en
+Ahora la web se usa en AWS (más abajo). El servidor local está parado y fuera de cron desde el 30-10-2026;
+para volver a usarlo: `uv run garmin-stats serve` y abrir **http://localhost:8765**. El servidor (`garmin-stats serve`) solo escucha en
 este ordenador y hace dos cosas:
 
 - sirve la web y sus datos, siempre sin caché;
 - responde al chat en `/api/ask`. La clave de Anthropic se queda en el servidor y el navegador nunca
   la ve.
 
-Cron lo arranca al encender (`@reboot`) y comprueba cada 5 minutos que siga vivo (`bin/serve.sh`).
+Antes cron lo arrancaba con `bin/serve.sh` (`@reboot` y cada 5 minutos); esas entradas se han quitado.
 El log está en `data/serve.log`. El chat cuesta unos 0,0006 $ por pregunta, con un máximo de
 80 preguntas al día. Abriendo `site/index.html` como archivo, la web sigue funcionando sin el chat.
 
