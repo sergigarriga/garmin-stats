@@ -222,3 +222,17 @@ La API personal de Garmin es de solo lectura (no se pueden crear entrenos ni pon
   ejercicios, en `src/garmin_stats/garmin_exercises.json`, extraído del SDK). La IA identifica categoría y nombre, y el
   código busca el ejercicio exacto. Cada ejercicio es un bloque [serie con repeticiones o tiempo y peso, descanso] x series.
 - Para pasarlos: conectar el reloj por USB → `GARMIN/NewFiles` → copiar los `.fit` → aparecen en Entrenamiento → Entrenamientos.
+
+## Últimos cambios (30-10-2026)
+
+- **Nivel del plan:** "Realista" o "🔥 Exigente" (selector en Plan y al crear un plan). En modo exigente el coach
+  mantiene tu tiempo objetivo, sube el volumen hasta un +12 % semanal, pone 2 sesiones de calidad y tiradas con
+  bloques a ritmo de carrera, sin quitar las descargas ni los avisos por preparación baja (`POST /api/plan/ambition`).
+- **Portada solo con datos de hoy:** si Garmin aún no tiene la noche o el día de hoy, se muestra "—" con "sin datos
+  de anoche" o "sin datos de hoy", nunca los valores de ayer. La preparación avisa de que falta sincronizar.
+- **Uso de la IA:** desglose por tipo y modelo con nombres claros. El registro (`state/ai_usage*.log`) apunta cada
+  llamada con los tokens que devuelve la API, incluidas la escritura y la lectura de caché, así que cuadra con la
+  factura de Anthropic.
+- **Alarmas:** para probar el email sin provocar un fallo real:
+  `aws cloudwatch set-alarm-state --alarm-name garmin-stats-sync-falla --state-value ALARM --state-reason "Prueba"`.
+  Vuelve sola a OK en la siguiente comprobación y también avisa por email.
