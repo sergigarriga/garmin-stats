@@ -1,5 +1,24 @@
 # garmin_stats
 
+Mi web privada de salud con los datos de mi Garmin. **Todo corre en AWS** (cuenta personal 123456789012,
+eu-west-1, stack de CloudFormation `garmin-stats`); en el PC solo queda el código.
+
+- Web: https://xxxxxxxxxxxxxx.cloudfront.net. Solo entra `tu@gmail.com` (login de Google).
+- Cada hora (minuto 5, hora de Madrid) la Lambda `garmin-stats-sync` descarga lo nuevo de Garmin, recalcula,
+  escribe los textos con IA (y los lunes reajusta el plan) y publica la web en S3.
+- El chat y el plan: Lambda `garmin-stats-api`. Login: Lambda `garmin-stats-auth`.
+- Datos: bucket privado `garmin-stats-site-123456789012` (`state/` con la base de datos, el plan, la
+  memoria y los FIT originales; `site/` con la web). Versionado, con 3 días de versiones antiguas.
+- Desplegar cambios: `infra/deploy.sh`. Para cambiar la web: `cd web && npm ci && npm run build`
+  y después `infra/deploy.sh`, que publica `site/index.html`.
+- Claves (solo en este PC, para desplegar): `~/.config/garmin/connect-personal-api-key`,
+  `~/.config/anthropic/garmin-stats-key`, `~/.config/garmin/google-oauth.json` y
+  `~/.config/garmin/aws-secrets.json`. En AWS están en SSM Parameter Store, cifradas.
+- Coste de AWS: prácticamente 0 $ al mes (capa gratuita). La IA tiene un presupuesto de 50 $ al mes.
+
+> Lo que sigue describe los módulos y la historia del proyecto. Las secciones de "servidor local" y "cron"
+> quedaron obsoletas el 30-10-2026, cuando todo pasó a AWS.
+
 Descarga todos tus datos de Garmin Connect con la **Personal API oficial** y genera un
 informe HTML con análisis de sueño, recuperación, entrenamiento y carrera.
 

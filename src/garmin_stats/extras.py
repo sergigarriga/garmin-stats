@@ -281,11 +281,14 @@ def write_activity_details(am: pd.DataFrame, site_dir: Path, zones: list | None)
     """Un archivo site/acts/<id>.js por actividad (se carga bajo demanda con <script>)."""
     out_dir = site_dir / "acts"
     out_dir.mkdir(parents=True, exist_ok=True)
+    # En AWS los detalles ya publicados están en S3: el handler deja aquí su lista para no rehacerlos.
+    index = out_dir / "_published.txt"
+    published = set(index.read_text().split()) if index.exists() else set()
     written = 0
     for a in am.itertuples():
         fit = FIT_DIR / f"{a.activity_id}.fit"
         dst = out_dir / f"{a.activity_id}.js"
-        if not fit.exists():
+        if not fit.exists() or str(a.activity_id) in published:
             continue
         if dst.exists():
             with dst.open() as f:

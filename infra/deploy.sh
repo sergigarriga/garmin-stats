@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Despliega la web privada en AWS (cuenta personal, perfil `default`) con un único stack.
 # Uso: infra/deploy.sh            (idempotente: se puede relanzar para actualizar)
+# Todo corre en AWS: la Lambda de sincronización (cada hora) descarga de Garmin y publica la web.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 export AWS_PROFILE=${AWS_PROFILE:-default} AWS_REGION=${AWS_REGION:-eu-west-1} AWS_PAGER=""
@@ -19,7 +20,9 @@ fi
 SESSION=$(python3 -c "import json; print(json.load(open('$SECRETS'))['session'])")
 ORIGIN=$(python3 -c "import json; print(json.load(open('$SECRETS'))['origin'])")
 
-# 2) Clave de Anthropic en SSM (SecureString), sin mostrarla
+# 2) Claves de Garmin y Anthropic en SSM (SecureString), sin mostrarlas
+aws ssm put-parameter --name /garmin-stats/garmin-key --type SecureString --overwrite \
+  --value "file://$HOME/.config/garmin/connect-personal-api-key" >/dev/null
 aws ssm put-parameter --name /garmin-stats/anthropic-key --type SecureString --overwrite \
   --value "file://$HOME/.config/anthropic/garmin-stats-key" >/dev/null
 # Cliente OAuth de Google, si ya está guardado en local. Acepta el JSON tal cual lo descarga Google
@@ -48,6 +51,13 @@ uv pip install --quiet --target infra/build/api --python-version 3.12 --python-p
   --only-binary :all: "anthropic>=2.3" "pydantic>=2"
 cp -r src/garmin_stats infra/build/api/ && find infra/build/api -name __pycache__ -prune -exec rm -rf {} +
 cp infra/lambda/api/handler.py infra/build/api/
+# Paquete de la sincronización: todas las dependencias del proyecto (pandas, fitdecode, cliente de Garmin...)
+mkdir -p infra/build/sync
+uv pip install --quiet --target infra/build/sync --python-version 3.12 --python-platform x86_64-manylinux_2_28 \
+  --only-binary :all: "anthropic>=2.3" "pydantic>=2" "pandas>=2.3" "fitdecode>=0.10" "garmin-connect-personal-api-python>=1.0"
+cp -r src/garmin_stats infra/build/sync/ && cp infra/lambda/sync/handler.py infra/build/sync/
+find infra/build/sync \( -name __pycache__ -o -name tests \) -prune -exec rm -rf {} + 2>/dev/null || true
+echo "Tamaño del paquete de sincronización: $(du -sh infra/build/sync | cut -f1)"
 cp infra/stack.yaml infra/build/stack.yaml && cp -r infra/lambda infra/build/lambda
 
 # 5) Empaquetar y desplegar
@@ -59,10 +69,15 @@ aws cloudformation deploy --stack-name "$STACK" --template-file infra/build/pack
 
 out() { aws cloudformation describe-stacks --stack-name "$STACK" --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text; }
 BUCKET=$(out Bucket); URL=$(out Url)
-printf '{"bucket": "%s", "url": "%s", "region": "%s", "profile": "%s"}\n' "$BUCKET" "$URL" "$AWS_REGION" "$AWS_PROFILE" > data/aws.json
 
-# 6) Subir la web y el estado
-bin/aws-sync.sh up
+# 6) Si hay una versión nueva de la web compilada (web → site/index.html), se publica. Los datos (data.js,
+#    detalles, estado) solo los escribe la Lambda de sincronización: nunca se suben desde el PC.
+if [ -f site/index.html ]; then
+  aws s3 cp site/index.html "s3://$BUCKET/site/index.html" --content-type "text/html; charset=utf-8" \
+    --cache-control no-store --only-show-errors
+  aws lambda invoke --function-name garmin-stats-sync --invocation-type Event /dev/null >/dev/null  # refresca data.js
+  echo "Web publicada; la sincronización actualiza los datos en ~30 s."
+fi
 echo
 echo "Web:              $URL"
 echo "Redirección OAuth: $(out GoogleRedirectUri)"

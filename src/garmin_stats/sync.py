@@ -145,7 +145,9 @@ class Syncer:
 
     def _download_fits(self, acts: list[dict]) -> None:
         FIT_DIR.mkdir(parents=True, exist_ok=True)
-        missing = [a for a in acts if not (FIT_DIR / f"{a['activityId']}.fit").exists()
+        parsed = self.store.keys("fit_summary")  # ya leídos: no hace falta el archivo (p. ej. en Lambda)
+        missing = [a for a in acts if str(a["activityId"]) not in parsed
+                   and not (FIT_DIR / f"{a['activityId']}.fit").exists()
                    and not (FIT_DIR / f"{a['activityId']}.missing").exists()]
         log.info("Archivos FIT por descargar: %d", len(missing))
         for i, a in enumerate(missing, 1):

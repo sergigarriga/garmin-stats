@@ -82,58 +82,84 @@ RINGS = """<svg class="rings" viewBox="0 0 120 120" aria-hidden="true">
 </g><path transform="translate(48.5 49) scale(.96)" fill="var(--heart)" d="M12 21s-7.5-4.6-9.4-9.3C1.2 8.2 3.4 4.5 7 4.5c2 0 3.5 1.1 5 2.9 1.5-1.8 3-2.9 5-2.9 3.6 0 5.8 3.7 4.4 7.2C19.5 16.4 12 21 12 21z"/></svg>"""
 
 CSS = """
-:root{--bg:#f6f8fc;--card:#fff;--text:#1f1f1f;--muted:#5f6368;--line:#e3e6ea;--r1:#188038;--r2:#1a73e8;--r3:#5b5bd6;--heart:#d93025;--btn:#fff;--btnText:#1f1f1f;--btnLine:#dadce0}
-@media (prefers-color-scheme:dark){:root{--bg:#0e0e0f;--card:#1e1f20;--text:#e3e3e3;--muted:#a8abaf;--line:#2e3134;--r1:#81c995;--r2:#8ab4f8;--r3:#afadff;--heart:#f28b82;--btn:#131314;--btnText:#e3e3e3;--btnLine:#8e918f}}
+:root{--bg:#f6f8fc;--card:#fff;--text:#1f1f1f;--muted:#5f6368;--line:#e3e6ea;--r1:#188038;--r2:#1a73e8;--r3:#5b5bd6;--heart:#d93025;
+ --btn:#fff;--btnText:#1f1f1f;--btnLine:#dadce0;--shadow:0 1px 2px rgba(60,64,67,.10),0 8px 28px rgba(60,64,67,.10)}
+@media (prefers-color-scheme:dark){:root{--bg:#0e0e0f;--card:#1e1f20;--text:#e3e3e3;--muted:#a8abaf;--line:#2e3134;--r1:#81c995;--r2:#8ab4f8;
+ --r3:#afadff;--heart:#f28b82;--btn:#131314;--btnText:#e3e3e3;--btnLine:#8e918f;--shadow:0 8px 28px rgba(0,0,0,.45)}}
 *{box-sizing:border-box}html,body{margin:0}
-body{min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--text);font:16px/1.55 "Google Sans Flex","Google Sans",Roboto,system-ui,-apple-system,sans-serif;
- display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;position:relative;overflow-x:hidden}
-.glow{position:fixed;inset:-20% -10% auto;height:70vh;pointer-events:none;filter:blur(60px);opacity:.55;
- background:radial-gradient(40% 50% at 20% 30%,color-mix(in srgb,var(--r3) 35%,transparent),transparent 70%),
-            radial-gradient(35% 45% at 80% 20%,color-mix(in srgb,var(--r2) 30%,transparent),transparent 70%),
-            radial-gradient(30% 40% at 55% 60%,color-mix(in srgb,var(--r1) 25%,transparent),transparent 70%)}
-main{position:relative;width:100%;max-width:440px;text-align:center}
-.rings{width:132px;height:132px;display:block;margin:0 auto 8px}
-.a1,.a2,.a3{animation:fill 1.4s cubic-bezier(.2,.8,.2,1) both}.a2{animation-delay:.12s}.a3{animation-delay:.24s}
-@keyframes fill{from{stroke-dashoffset:330}}
-h1{font-size:40px;font-weight:500;letter-spacing:-.02em;margin:8px 0 6px}
-.lead{color:var(--muted);font-size:17px;margin:0 auto 28px;max-width:360px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;height:52px;padding:0 28px;border-radius:999px;
+body{min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--text);
+ font:16px/1.55 "Google Sans Flex","Google Sans",Roboto,system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;overflow-x:hidden}
+.glow{position:fixed;inset:-25% -10% auto;height:80vh;pointer-events:none;filter:blur(70px);opacity:.5;z-index:0;
+ background:radial-gradient(40% 50% at 15% 30%,color-mix(in srgb,var(--r3) 35%,transparent),transparent 70%),
+  radial-gradient(35% 45% at 85% 25%,color-mix(in srgb,var(--r2) 30%,transparent),transparent 70%),
+  radial-gradient(30% 40% at 55% 70%,color-mix(in srgb,var(--r1) 22%,transparent),transparent 70%)}
+header{position:relative;z-index:1;display:flex;align-items:center;gap:10px;padding:20px clamp(16px,4vw,48px);font-weight:500;font-size:18px}
+header svg{width:30px;height:30px}
+main{position:relative;z-index:1;flex:1;display:grid;align-items:center;gap:clamp(32px,5vw,72px);
+ grid-template-columns:minmax(0,1fr);max-width:1180px;width:100%;margin:0 auto;padding:16px clamp(16px,4vw,48px) 40px}
+@media (min-width:960px){main{grid-template-columns:1.05fr 1fr}}
+.hero{text-align:center}@media (min-width:960px){.hero{text-align:left}}
+.hero .rings{width:120px;height:120px;margin:0 auto 12px;display:block}@media (min-width:960px){.hero .rings{display:none}}
+h1{font-size:clamp(36px,5.2vw,60px);line-height:1.05;font-weight:500;letter-spacing:-.025em;margin:0 0 16px}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--r3),var(--r2) 50%,var(--r1));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--muted);font-size:clamp(16px,1.6vw,19px);margin:0 auto 28px;max-width:520px}@media (min-width:960px){.lead{margin-left:0}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:12px;height:54px;padding:0 30px;border-radius:999px;
  background:var(--btn);color:var(--btnText);border:1px solid var(--btnLine);text-decoration:none;font-weight:500;font-size:16px;
- box-shadow:0 1px 2px rgba(60,64,67,.12),0 2px 8px rgba(60,64,67,.08);transition:box-shadow .2s,transform .2s;width:100%;max-width:320px}
+ box-shadow:0 1px 2px rgba(60,64,67,.12),0 2px 8px rgba(60,64,67,.08);transition:box-shadow .2s,transform .2s;width:100%;max-width:340px}
 .btn:hover{box-shadow:0 2px 4px rgba(60,64,67,.18),0 6px 16px rgba(60,64,67,.12);transform:translateY(-1px)}
 .btn:focus-visible{outline:3px solid var(--r2);outline-offset:3px}
 .note{display:flex;gap:8px;align-items:center;justify-content:center;color:var(--muted);font-size:13px;margin:16px 0 0}
-.msg{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;margin:0 auto 20px;font-size:14px;max-width:360px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:40px 0 0;text-align:left}
-.f{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px}
-.f i{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;margin-bottom:10px}
-.f svg{width:20px;height:20px}
-.f b{display:block;font-weight:500;font-size:15px}.f span{display:block;color:var(--muted);font-size:13px;line-height:1.4;margin-top:2px}
-footer{position:relative;color:var(--muted);font-size:12px;margin-top:32px;opacity:.8}
-@media (max-width:380px){h1{font-size:34px}.grid{grid-template-columns:1fr}}
-@media (prefers-reduced-motion:reduce){.a1,.a2,.a3{animation:none}}
+@media (min-width:960px){.note{justify-content:flex-start}}
+.msg{display:inline-block;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 16px;margin:0 0 20px;font-size:14px;max-width:520px}
+/* vista previa (derecha en ordenador, debajo en móvil) */
+.preview{background:var(--card);border:1px solid var(--line);border-radius:32px;padding:22px;box-shadow:var(--shadow)}
+.top{display:flex;align-items:center;gap:18px;padding:6px 6px 18px;border-bottom:1px solid var(--line)}
+.top .rings{width:96px;height:96px;flex:none}
+.top small{color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.top b{display:block;font-size:26px;font-weight:500;color:var(--r1)}.top span{color:var(--muted);font-size:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.f{border-radius:20px;padding:14px;background:color-mix(in srgb,var(--c) 8%,transparent)}
+.f i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;margin-bottom:8px;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}
+.f svg{width:19px;height:19px}.f b{display:block;font-weight:500;font-size:15px}.f span{display:block;color:var(--muted);font-size:13px;line-height:1.4;margin-top:2px}
+footer{position:relative;z-index:1;text-align:center;color:var(--muted);font-size:12px;padding:0 16px 24px;opacity:.85}
+@media (max-width:959px){.preview .top{display:none}.preview{background:none;border:0;box-shadow:none;padding:0}}
+@media (max-width:380px){.grid{grid-template-columns:1fr}}
+.a1,.a2,.a3{animation:fill 1.4s cubic-bezier(.2,.8,.2,1) both}.a2{animation-delay:.12s}.a3{animation-delay:.24s}
+@keyframes fill{from{stroke-dashoffset:330}}
+@media (prefers-reduced-motion:reduce){.a1,.a2,.a3{animation:none}.btn{transition:none}}
 """
+
+HEART = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--heart)" d="M12 21s-7.5-4.6-9.4-9.3C1.2 8.2 3.4 4.5 7 4.5c2 0 3.5 1.1 5 2.9 1.5-1.8 3-2.9 5-2.9 3.6 0 5.8 3.7 4.4 7.2C19.5 16.4 12 21 12 21z"/></svg>'
 
 
 def landing(message: str = "", button_href: str = "/auth/login?go=1", button_text: str = "Continuar con Google", status=200):
     feats = "".join(
-        f'<div class="f"><i style="background:color-mix(in srgb,{c} 14%,transparent);color:{c}">'
-        f'<svg viewBox="0 0 24 24" fill="currentColor">{svg}</svg></i><b>{t}</b><span>{d}</span></div>'
+        f'<div class="f" style="--c:{c}"><i><svg viewBox="0 0 24 24" fill="currentColor">{svg}</svg></i>'
+        f'<b>{t}</b><span>{d}</span></div>'
         for c, t, d, svg in FEATURES)
     msg = f'<p class="msg">{message}</p>' if message else ""
     html = f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark">
 <meta name="robots" content="noindex,nofollow"><title>Mi salud</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23D93025' d='M12 21s-7.5-4.6-9.4-9.3C1.2 8.2 3.4 4.5 7 4.5c2 0 3.5 1.1 5 2.9 1.5-1.8 3-2.9 5-2.9 3.6 0 5.8 3.7 4.4 7.2C19.5 16.4 12 21 12 21z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..600&display=swap" rel="stylesheet">
-<style>{CSS}</style></head><body><div class="glow"></div><main>
-{RINGS}<h1>Mi salud</h1>
-<p class="lead">Tu sueño, tu corazón y tus entrenos en un solo sitio, con un coach que aprende de ti.</p>
-{msg}<a class="btn" href="{button_href}">{G_LOGO}<span>{button_text}</span></a>
-<p class="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 6a3 3 0 0 1 3 3v1h1v6H8v-6h1v-1a3 3 0 0 1 3-3zm0 2a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1z"/></svg>
-Privada: solo tu cuenta de Google tiene acceso</p>
-<div class="grid">{feats}</div></main>
+<style>{CSS}</style></head><body><div class="glow"></div>
+<header>{HEART}Mi salud</header>
+<main>
+ <section class="hero">
+  {RINGS}
+  <h1>Tu salud, <em>clara y a tu medida</em></h1>
+  <p class="lead">Sueño, corazón y entrenos de tu Garmin en un solo sitio, con un coach con IA que aprende de ti cada semana.</p>
+  {msg}<div><a class="btn" href="{button_href}">{G_LOGO}<span>{button_text}</span></a></div>
+  <p class="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 6a3 3 0 0 1 3 3v1h1v6H8v-6h1v-1a3 3 0 0 1 3-3zm0 2a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1z"/></svg>
+  Privada: solo tu cuenta de Google tiene acceso</p>
+ </section>
+ <section class="preview" aria-label="Qué encontrarás dentro">
+  <div class="top">{RINGS}<div><small>Preparación de hoy</small><b>Lista para entrenar</b><span>HRV, sueño, pulso y carga frente a tu normalidad</span></div></div>
+  <div class="grid">{feats}</div>
+ </section>
+</main>
 <footer>Datos de Garmin Connect · No es consejo médico</footer></body></html>"""
     return _resp(status, html)
 

@@ -214,6 +214,78 @@ Resources:
       Principal: "*"
       InvokedViaFunctionUrl: true
 
+  # ------------------------------------------------------------------ sincronización horaria (Lambda)
+  SyncRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: sts:AssumeRole }]
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole]
+      Policies:
+        - PolicyName: sync-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: [!Sub "${SiteBucket.Arn}/site/*", !Sub "${SiteBucket.Arn}/state/*"]
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt SiteBucket.Arn
+              - Effect: Allow
+                Action: ssm:GetParameter
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/garmin-key
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
+
+  SyncFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: garmin-stats-sync
+      Runtime: python3.12
+      Architectures: [x86_64]
+      Handler: handler.handler
+      Code: sync
+      Role: !GetAtt SyncRole.Arn
+      Timeout: 900
+      MemorySize: 1024
+      EphemeralStorage: { Size: 1024 }
+      Environment:
+        Variables:
+          BUCKET: !Ref SiteBucket
+
+  SyncLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/garmin-stats-sync
+      RetentionInDays: 14
+
+  SchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: scheduler.amazonaws.com }, Action: sts:AssumeRole }]
+      Policies:
+        - PolicyName: invoke-sync
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement: [{ Effect: Allow, Action: lambda:InvokeFunction, Resource: !GetAtt SyncFunction.Arn }]
+
+  HourlySync:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: garmin-stats-hourly
+      Description: Sincroniza Garmin y actualiza la web cada hora
+      ScheduleExpression: cron(5 * * * ? *)
+      ScheduleExpressionTimezone: Europe/Madrid
+      FlexibleTimeWindow: { Mode: "OFF" }
+      Target:
+        Arn: !GetAtt SyncFunction.Arn
+        RoleArn: !GetAtt SchedulerRole.Arn
+        RetryPolicy: { MaximumRetryAttempts: 1 }
+
   # ------------------------------------------------------------------ CloudFront
   # Comprueba la cookie de sesión antes de servir la web o la API. Sin sesión: login (o 401 en la API).
   GuardFunction:

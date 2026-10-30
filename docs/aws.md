@@ -16,7 +16,7 @@ Navegador ──HTTPS──> CloudFront (xxxx.cloudfront.net)
                       │              → pone cookies firmadas de CloudFront (30 días)
                       ├─ /api/*    → Lambda "api" (chat, plan)       [exige cookie firmada]
                       └─ /*        → S3 privado (web + data.js + acts/)  [exige cookie firmada, OAC]
-PC (cron cada hora) ── sync Garmin + informe ── aws s3 sync site/ → S3
+EventBridge Scheduler (cada hora) → Lambda garmin-stats-sync → Garmin API → S3 (state/ + site/)
 ```
 
 - **Sin Cognito y sin Lambda@Edge:** CloudFront comprueba las cookies firmadas (trusted key group).
@@ -62,3 +62,11 @@ Más una alarma de presupuesto de AWS a 5 $.
 4. Web: detectar el modo AWS (API relativa `/api`), polling del plan y botón de cerrar sesión.
 5. `bin/update.sh`: tras el informe, `aws s3 sync site/ s3://… --delete` e invalidar `index.html` y `data.js`.
 6. Presupuesto de AWS a 5 $ con aviso por email. Prueba: sin cookie se recibe 403; con otro email, acceso denegado.
+
+
+## Estado final (30-10-2026)
+
+Desplegado. Sincronización 100 % en AWS (Lambda `garmin-stats-sync`, 1 GB, unos 22 s por ejecución, todo en
+la capa gratuita). El PC no ejecuta nada y no guarda datos. Pruebas de acceso superadas: sin sesión, con firma
+falsa, con otro email, con la sesión caducada o accediendo directamente a S3 o a las Lambda se recibe 302, 401
+o 403.
