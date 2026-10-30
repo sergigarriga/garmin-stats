@@ -48,7 +48,7 @@ DAY_FIELDS = {
 }
 
 
-def payload(A: dict, am: pd.DataFrame, last_sync: str | None) -> dict:
+def payload(A: dict, am: pd.DataFrame, last_sync: str | None, sets: dict | None = None) -> dict:
     day = A["day"].copy()
     ready, ready_latest = E.readiness(day)
     day["ready"] = ready
@@ -77,6 +77,7 @@ def payload(A: dict, am: pd.DataFrame, last_sync: str | None) -> dict:
             "elev": _num(a.elev_gain, 0), "cal": _num(a.calories, 0),
             "z": [_num(getattr(a, f"z{i}_min"), 1) or 0 for i in range(1, 6)],
             "pr": bool(a.is_pr) or None,
+            "sets": (sets or {}).get(str(a.activity_id)) or None,
         }))
 
     preds = []
@@ -100,6 +101,11 @@ def payload(A: dict, am: pd.DataFrame, last_sync: str | None) -> dict:
     prof = A["prof"]
     return {
         "coverage": coverage,
+        "weights": [_clean({"d": r.date.strftime("%Y-%m-%d"), "kg": _num(r.weight_kg, 1),
+                            "fat": _num(getattr(r, "body_fat", None), 1), "muscle": _num(getattr(r, "muscle_kg", None), 1)})
+                    for r in A["weight"].itertuples()] if not A["weight"].empty else [],
+        "strength": E.strength_summary(sets or {}, am) if not am.empty else None,
+        "push": {"vapidPublicKey": __import__("os").environ.get("VAPID_PUBLIC_KEY")} if __import__("os").environ.get("VAPID_PUBLIC_KEY") else None,
         "readiness": ready_latest,
         "alerts": E.alerts(day),
         "weeks": E.last_weeks(day, am),

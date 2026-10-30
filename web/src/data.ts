@@ -17,6 +17,7 @@ export interface Activity {
   km?: number; min?: number; pace?: number; hr?: number; hrMax?: number; trimp?: number;
   ef?: number; dec?: number; vo2?: number; cad?: number; elev?: number; cal?: number;
   z: number[]; pr?: boolean;
+  sets?: { ex: string; reps: number; kg?: number | null; dur?: number }[] | null;
 }
 
 export interface Prediction {
@@ -107,6 +108,8 @@ export interface GarminData {
   weekly?: Weekly | null;
   records?: RecordItem[];
   coach?: CoachView;
+  weights?: { d: string; kg: number; fat?: number; muscle?: number }[];
+  push?: { vapidPublicKey?: string | null } | null;
 }
 
 declare global {

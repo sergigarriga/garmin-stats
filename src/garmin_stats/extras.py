@@ -212,6 +212,77 @@ def records(acts: pd.DataFrame, day: pd.DataFrame) -> list[dict]:
     return out
 
 
+# ======================================================================== gimnasio
+# Categorías de ejercicio del estándar FIT (exercise_category) → nombre en castellano.
+EXERCISES = {
+    0: "Press de banca", 1: "Gemelos", 2: "Cardio", 3: "Acarreos", 4: "Leñador", 5: "Core", 6: "Abdominales",
+    7: "Curl de bíceps", 8: "Peso muerto", 9: "Aperturas", 10: "Puente de glúteo", 11: "Estabilidad de cadera",
+    12: "Swing", 13: "Hiperextensiones", 14: "Elevaciones laterales", 15: "Curl femoral", 16: "Elevación de piernas",
+    17: "Zancadas", 18: "Halterofilia", 19: "Plancha", 20: "Pliometría", 21: "Dominadas", 22: "Flexiones",
+    23: "Remo", 24: "Press de hombro", 25: "Estabilidad de hombro", 26: "Encogimientos", 27: "Sit-ups",
+    28: "Sentadilla", 29: "Cuerpo completo", 30: "Extensión de tríceps", 31: "Calentamiento", 32: "Carrera",
+}
+
+
+def parse_sets(path: Path) -> list[dict]:
+    """Series activas registradas por el reloj: ejercicio, repeticiones, peso (kg) y duración."""
+    out = []
+    with fitdecode.FitReader(path, check_crc=fitdecode.CrcCheck.DISABLED) as r:
+        for fr in r:
+            if not isinstance(fr, fitdecode.FitDataMessage) or fr.name != "set":
+                continue
+            v = {f.name: f.value for f in fr.fields}
+            if v.get("set_type") != "active":
+                continue
+            reps, dur = v.get("repetitions") or 0, v.get("duration") or 0
+            if reps <= 0 or dur > 600:  # sin repeticiones o "serie" que es la sesión entera
+                continue
+            cats = v.get("category") or ()
+            cats = cats if isinstance(cats, (tuple, list)) else (cats,)
+            cat = next((c for c in cats if isinstance(c, int) and c < 65534), None)
+            out.append({"ex": EXERCISES.get(cat, "Otro ejercicio"), "reps": int(reps),
+                        "kg": _f(v.get("weight"), 1), "dur": _f(dur, 0)})
+    return out
+
+
+def parse_new_strength(store) -> int:
+    """Lee las series de las sesiones de fuerza aún no procesadas (si su FIT está disponible)."""
+    done = store.keys("strength_sets")
+    n = 0
+    for key, a in store.items("activity"):
+        if key in done or (a.get("activityType") or {}).get("typeKey") != "strength_training":
+            continue
+        fit = FIT_DIR / f"{key}.fit"
+        if not fit.exists():
+            continue
+        try:
+            store.put("strength_sets", key, parse_sets(fit))
+            n += 1
+        except Exception as e:  # FIT corrupto
+            log.warning("Series de %s: %s", key, e)
+    store.commit()
+    return n
+
+
+def strength_summary(sets_by_act: dict[str, list], acts: pd.DataFrame) -> dict:
+    """Resumen para el coach: últimas sesiones y progresión por ejercicio (mejor serie)."""
+    rows = []
+    for a in acts[acts["type"] == "strength_training"].sort_values("start").itertuples():
+        sets = sets_by_act.get(str(a.activity_id)) or []
+        by_ex: dict[str, list] = {}
+        for s in sets:
+            by_ex.setdefault(s["ex"], []).append(s)
+        rows.append({"fecha": a.start.strftime("%Y-%m-%d"), "min": _f(a.duration_min, 0),
+                     "ejercicios": {ex: [f"{s['reps']}x{s['kg']}kg" if s.get("kg") else f"{s['reps']} reps" for s in ss]
+                                    for ex, ss in by_ex.items()}})
+    progress: dict[str, list] = {}
+    for r in rows:
+        for ex, ss in r["ejercicios"].items():
+            progress.setdefault(ex, []).append({"fecha": r["fecha"], "series": ss})
+    return {"ultimas_sesiones": rows[-6:], "por_ejercicio": {k: v[-4:] for k, v in progress.items()},
+            "nota": "Si no hay kg, el reloj no registró el peso de esa serie (solo repeticiones)."}
+
+
 # ======================================================================== detalle de actividad
 DETAIL_VERSION = "3"
 SEMI = 180 / 2 ** 31

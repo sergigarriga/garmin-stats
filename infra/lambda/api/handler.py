@@ -158,6 +158,22 @@ def handler(event, _ctx):
     if method != "POST":
         return _json(405, {"error": "método no permitido"})
 
+    if path == "/api/push/subscribe":
+        sub = payload.get("subscription") or {}
+        if not str(sub.get("endpoint", "")).startswith("https://") or not (sub.get("keys") or {}).get("p256dh"):
+            return _json(400, {"error": "Suscripción no válida."})
+        try:
+            subs = json.loads(s3.get_object(Bucket=BUCKET, Key="state/push.json")["Body"].read())
+        except s3.exceptions.NoSuchKey:
+            subs = []
+        subs = [x for x in subs if x.get("endpoint") != sub["endpoint"]] + [sub]
+        s3.put_object(Bucket=BUCKET, Key="state/push.json", Body=json.dumps(subs[-10:]).encode())
+        return _json(200, {"ok": True, "devices": len(subs[-10:])})
+    if path == "/api/push/test":
+        _lambda.invoke(FunctionName=os.environ["NOTIFY_FUNCTION"], InvocationType="Event",
+                       Payload=json.dumps({"message": {"title": "Mi salud", "body": "¡Listo! Así te llegará el aviso de cada mañana.",
+                                                       "url": "/#hoy", "tag": "test"}}).encode())
+        return _json(200, {"ok": True})
     if path == "/api/ask":
         res = server.ask(payload.get("messages") or [])
         _push("ai_usage_lambda.log")

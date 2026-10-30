@@ -44,6 +44,21 @@ def _pull() -> None:
         s3.download_file(BUCKET, "site/index.html", str(ROOT / "site" / "index.html"))  # para el id de versión
     except s3.exceptions.ClientError:
         pass
+    # FIT de sesiones de fuerza cuyas series aún no se han leído (solo la primera vez)
+    import sqlite3
+    db = sqlite3.connect(ROOT / "data" / "garmin.sqlite")
+    try:
+        pending = [k for (k,) in db.execute(
+            "SELECT key FROM raw WHERE dataset='activity' AND json_extract(payload,'$.activityType.typeKey')='strength_training' "
+            "AND key NOT IN (SELECT key FROM raw WHERE dataset='strength_sets')")]
+    finally:
+        db.close()
+    (ROOT / "data" / "fit").mkdir(parents=True, exist_ok=True)
+    for k in pending:
+        try:
+            s3.download_file(BUCKET, f"state/fit/{k}.fit", str(ROOT / "data" / "fit" / f"{k}.fit"))
+        except s3.exceptions.ClientError:
+            pass
     ids = []
     for page in s3.get_paginator("list_objects_v2").paginate(Bucket=BUCKET, Prefix="site/acts/"):
         ids += [Path(o["Key"]).stem for o in page.get("Contents", [])]
@@ -57,6 +72,12 @@ def _push() -> None:
             s3.upload_file(str(p), BUCKET, f"state/{name}")
     s3.upload_file(str(ROOT / "site" / "data.js"), BUCKET, "site/data.js",
                    ExtraArgs={"ContentType": "text/javascript; charset=utf-8", "CacheControl": "no-store"})
+    # FIT nuevos descargados de Garmin: se guardan en S3 (originales, para poder reprocesar)
+    existing = {Path(o["Key"]).name for p in s3.get_paginator("list_objects_v2").paginate(Bucket=BUCKET, Prefix="state/fit/")
+                for o in p.get("Contents", [])}
+    for f in (ROOT / "data" / "fit").glob("*.fit"):
+        if f.name not in existing:
+            s3.upload_file(str(f), BUCKET, f"state/fit/{f.name}")
     for f in (ROOT / "site" / "acts").glob("*.js"):
         s3.upload_file(str(f), BUCKET, f"site/acts/{f.name}",
                        ExtraArgs={"ContentType": "text/javascript; charset=utf-8", "CacheControl": "no-store"})

@@ -185,7 +185,7 @@ function FeedbackStars({ s, onSaved }: { s: PlanSession; onSaved: (v: CoachView)
   );
 }
 
-function DayCard({ s, go, onSaved }: { s: PlanSession; go: (k: string) => void; onSaved: (v: CoachView) => void }) {
+function DayCard({ s, go, onSaved, sets }: { s: PlanSession; go: (k: string) => void; onSaved: (v: CoachView) => void; sets?: (id: number) => { ex: string }[] | null | undefined }) {
   const mode = useResolvedMode();
   const c = TYPE[s.type][mode];
   const today = s.status === 'today';
@@ -205,6 +205,7 @@ function DayCard({ s, go, onSaved }: { s: PlanSession; go: (k: string) => void; 
         <Typography variant="caption" onClick={() => go(`act-${s.actual!.id}`)}
           sx={{ color: 'success.main', fontWeight: 500, cursor: 'pointer', mt: 'auto' }}>
           Hecho: {s.actual.km ? `${dec1(s.actual.km)} km` : `${s.actual.min} min`}{s.actual.pace ? ` · ${pace(s.actual.pace)}` : ''}
+          {(() => { const st = sets?.(s.actual!.id); return st && st.length ? ` · ${new Set(st.map((x) => x.ex)).size} ejercicios, ${st.length} series` : ''; })()}
         </Typography>
       )}
       <FeedbackStars s={s} onSaved={onSaved} />
@@ -307,7 +308,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
       {/* semana */}
       <SectionTitle>Semana {wi + 1} · {week.focus}</SectionTitle>
       <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)', lg: 'repeat(7, 1fr)' } }}>
-        {week.sessions.map((s) => <DayCard key={s.date} s={s} go={go} onSaved={setView} />)}
+        {week.sessions.map((s) => <DayCard key={`${s.date}-${s.type}`} s={s} go={go} onSaved={setView} sets={(id) => data.activities.find((x) => x.id === id)?.sets} />)}
       </Box>
 
       {/* planificado vs real */}

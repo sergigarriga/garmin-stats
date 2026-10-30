@@ -38,6 +38,26 @@ if [ -f "$GJSON" ]; then
   echo "Cliente OAuth de Google guardado en SSM."
 fi
 
+# Claves VAPID para las notificaciones push (se crean una vez)
+VAPID=~/.config/garmin/vapid.json
+if [ ! -f "$VAPID" ]; then
+  umask 077
+  uv run --quiet --no-project --with cryptography python - "$VAPID" <<'PY'
+import base64, json, sys
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric import ec
+k = ec.generate_private_key(ec.SECP256R1())
+b64 = lambda b: base64.urlsafe_b64encode(b).rstrip(b"=").decode()
+der = k.private_bytes(serialization.Encoding.DER, serialization.PrivateFormat.PKCS8, serialization.NoEncryption())
+pub = k.public_key().public_bytes(serialization.Encoding.X962, serialization.PublicFormat.UncompressedPoint)
+json.dump({"private": b64(der), "public": b64(pub)}, open(sys.argv[1], "w"))
+PY
+fi
+VAPID_PUBLIC=$(python3 -c "import json; print(json.load(open('$VAPID'))['public'])")
+python3 -c "import json; print(json.load(open('$VAPID'))['private'], end='')" > /tmp/.gs-vapid && chmod 600 /tmp/.gs-vapid
+aws ssm put-parameter --name /garmin-stats/vapid-private --type SecureString --overwrite --value file:///tmp/.gs-vapid >/dev/null
+rm -f /tmp/.gs-vapid
+
 # 3) Bucket de artefactos (código de las Lambda)
 if ! aws s3api head-bucket --bucket "$ARTIFACTS" 2>/dev/null; then
   aws s3api create-bucket --bucket "$ARTIFACTS" --create-bucket-configuration LocationConstraint="$AWS_REGION" >/dev/null
@@ -53,9 +73,12 @@ cp -r src/garmin_stats infra/build/api/ && find infra/build/api -name __pycache_
 cp infra/lambda/api/handler.py infra/build/api/
 # Paquete de la sincronización: todas las dependencias del proyecto (pandas, fitdecode, cliente de Garmin...)
 mkdir -p infra/build/sync
+# Binarios para Linux siempre que existan; los paquetes de Python puro sin binario (http-ece) se compilan.
 uv pip install --quiet --target infra/build/sync --python-version 3.12 --python-platform x86_64-manylinux_2_28 \
-  --only-binary :all: "anthropic>=2.3" "pydantic>=2" "pandas>=2.3" "fitdecode>=0.10" "garmin-connect-personal-api-python>=1.0"
-cp -r src/garmin_stats infra/build/sync/ && cp infra/lambda/sync/handler.py infra/build/sync/
+  --only-binary pandas --only-binary numpy --only-binary pydantic-core --only-binary cryptography --only-binary cffi \
+  "anthropic>=2.3" "pydantic>=2" "pandas>=2.3" "fitdecode>=0.10" "garmin-connect-personal-api-python>=1.0" \
+  "pywebpush>=2"
+cp -r src/garmin_stats infra/build/sync/ && cp infra/lambda/sync/handler.py infra/lambda/sync/notify.py infra/build/sync/
 find infra/build/sync \( -name __pycache__ -o -name tests \) -prune -exec rm -rf {} + 2>/dev/null || true
 echo "Tamaño del paquete de sincronización: $(du -sh infra/build/sync | cut -f1)"
 cp infra/stack.yaml infra/build/stack.yaml && cp -r infra/lambda infra/build/lambda
@@ -65,7 +88,7 @@ aws cloudformation package --template-file infra/build/stack.yaml --s3-bucket "$
   --output-template-file infra/build/packaged.yaml >/dev/null
 aws cloudformation deploy --stack-name "$STACK" --template-file infra/build/packaged.yaml \
   --capabilities CAPABILITY_IAM --no-fail-on-empty-changeset \
-  --parameter-overrides AllowedEmails="$EMAIL" BudgetEmail="$EMAIL" SessionSecret="$SESSION" OriginSecret="$ORIGIN"
+  --parameter-overrides AllowedEmails="$EMAIL" BudgetEmail="$EMAIL" SessionSecret="$SESSION" OriginSecret="$ORIGIN" VapidPublicKey="$VAPID_PUBLIC"
 
 out() { aws cloudformation describe-stacks --stack-name "$STACK" --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text; }
 BUCKET=$(out Bucket); URL=$(out Url)
@@ -75,6 +98,12 @@ BUCKET=$(out Bucket); URL=$(out Url)
 if [ -f site/index.html ]; then
   aws s3 cp site/index.html "s3://$BUCKET/site/index.html" --content-type "text/html; charset=utf-8" \
     --cache-control no-store --only-show-errors
+  # Archivos de la app instalable (manifiesto, service worker, iconos)
+  [ -f site/manifest.webmanifest ] && aws s3 cp site/manifest.webmanifest "s3://$BUCKET/site/manifest.webmanifest" \
+    --content-type application/manifest+json --cache-control no-cache --only-show-errors
+  [ -f site/sw.js ] && aws s3 cp site/sw.js "s3://$BUCKET/site/sw.js" --content-type "text/javascript; charset=utf-8" \
+    --cache-control no-cache --only-show-errors
+  [ -d site/icons ] && aws s3 sync site/icons "s3://$BUCKET/site/icons/" --cache-control "max-age=604800" --only-show-errors
   aws lambda invoke --function-name garmin-stats-sync --invocation-type Event /dev/null >/dev/null  # refresca data.js
   echo "Web publicada; la sincronización actualiza los datos en ~30 s."
 fi

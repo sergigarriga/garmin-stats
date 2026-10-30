@@ -79,6 +79,12 @@ Principios:
   fuerza-hipertrofia de cuerpo completo, 8-12 repeticiones, básicos más core). Evita pierna pesada las 48 h
   previas a series o a la tirada larga, y en la puesta a punto baja el volumen de gimnasio. Puedes poner
   gimnasio el mismo día que un rodaje suave (indícalo en la descripción). Un día puede tener dos sesiones.
+- Progresión en el gimnasio: usa "gimnasio_registrado_por_el_reloj" (series reales con repeticiones y kg).
+  Si el atleta completó todas las repeticiones con buena técnica, sube la carga un 2,5-5 % o 1-2 repeticiones;
+  si falló, mantén. Indica en cada ejercicio el peso o las repeticiones objetivo concretas basadas en lo último
+  que hizo (p. ej. "Press de banca 3x10 con 32,5 kg, la última vez 3x10 con 30 kg"). Si no hay kg registrados,
+  pide en la descripción que confirme el peso en el reloj al terminar cada serie.
+- Peso: usa "peso_registrado" para valorar la tendencia hacia su objetivo de físico (sin dar dietas).
 - Si el objetivo incluye definición, añade en la descripción de alguna sesión un consejo breve y práctico
   (proteína, sueño), sin dietas ni cifras de calorías.
 - La memoria son aprendizajes sobre ESTE atleta (cómo responde, qué tolera, sus ritmos reales, sus preferencias).
@@ -152,6 +158,8 @@ def profile(data: dict) -> dict:
         "preparacion_hoy": data.get("readiness"),
         "forma_ctl": next((d.get("ctl") for d in reversed(data["days"]) if d.get("ctl") is not None), None),
         "semanas": data.get("weeks"),
+        "gimnasio_registrado_por_el_reloj": data.get("strength"),
+        "peso_registrado": (data.get("weights") or [])[-12:],
         "huecos_sin_reloj": settings.watch_gaps(),
         "nota_huecos": "Los periodos de 'huecos_sin_reloj' NO son parones: el reloj no registraba. Las ventanas "
                        "de km/carreras ya se calculan saltándolos (últimas semanas registradas). No planifiques "

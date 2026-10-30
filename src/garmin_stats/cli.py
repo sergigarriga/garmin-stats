@@ -33,6 +33,11 @@ def cmd_report(args) -> None:
     store = Store(DB_PATH)
     try:
         n = T.parse_new_fits(store)
+        from . import extras
+        n_sets = extras.parse_new_strength(store)
+        if n_sets:
+            log.info("Series de fuerza leídas: %d sesiones", n_sets)
+        sets = dict(store.items("strength_sets"))
         if n:
             log.info("FIT procesados: %d", n)
         prof = T.profile(store)
@@ -50,7 +55,7 @@ def cmd_report(args) -> None:
         A = R.assemble({**tables, "activities": am}, prof)
         T.write_tables(store, {**tables, "activity_metrics": am, "load": A["load"],
                                "day": A["day"].reset_index()})
-        data = X.payload(A, am, store.state("last_sync"))
+        data = X.payload(A, am, store.state("last_sync"), sets)
         from . import extras
         n_det = extras.write_activity_details(am, SITE_DIR, prof.get("zones"))
         if n_det:

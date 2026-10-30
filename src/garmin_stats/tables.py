@@ -138,8 +138,10 @@ def weight(store: Store) -> pd.DataFrame:
     for key, r in store.items("weight"):
         w = _g(r, "latestWeight", "weight")
         if w:
-            rows.append({"date": key, "weight_kg": w / 1000,
-                         "source": _g(r, "latestWeight", "sourceType")})
+            lw = r.get("latestWeight") or {}
+            rows.append({"date": key, "weight_kg": w / 1000, "source": lw.get("sourceType"),
+                         "body_fat": lw.get("bodyFat"), "muscle_kg": (lw.get("muscleMass") or 0) / 1000 or None,
+                         "bmi": lw.get("bmi")})
     df = pd.DataFrame(rows)
     if not df.empty:
         df["date"] = pd.to_datetime(df["date"])

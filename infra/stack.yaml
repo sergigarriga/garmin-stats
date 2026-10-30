@@ -19,7 +19,10 @@ Parameters:
     Description: Cabecera secreta que solo CloudFront envía a las Lambda
   BudgetEmail:
     Type: String
-    Description: Email para el aviso de presupuesto
+    Description: Email para el aviso de presupuesto y las alarmas
+  VapidPublicKey:
+    Type: String
+    Description: Clave pública VAPID (notificaciones push)
 
 Resources:
   # ------------------------------------------------------------------ almacenamiento
@@ -165,7 +168,9 @@ Resources:
                 Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
               - Effect: Allow
                 Action: lambda:InvokeFunction
-                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-api
+                Resource:
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-api
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-notify
 
   ApiFunction:
     Type: AWS::Lambda::Function
@@ -185,6 +190,7 @@ Resources:
           SESSION_SECRET: !Ref SessionSecret
           ORIGIN_SECRET: !Ref OriginSecret
           ANTHROPIC_KEY_PARAM: /garmin-stats/anthropic-key
+          NOTIFY_FUNCTION: garmin-stats-notify
 
   ApiLogs:
     Type: AWS::Logs::LogGroup
@@ -254,6 +260,7 @@ Resources:
       Environment:
         Variables:
           BUCKET: !Ref SiteBucket
+          VAPID_PUBLIC_KEY: !Ref VapidPublicKey
 
   SyncLogs:
     Type: AWS::Logs::LogGroup
@@ -286,6 +293,135 @@ Resources:
         RoleArn: !GetAtt SchedulerRole.Arn
         RetryPolicy: { MaximumRetryAttempts: 1 }
 
+  # ------------------------------------------------------------------ aviso de la mañana (Web Push)
+  NotifyRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: sts:AssumeRole }]
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole]
+      Policies:
+        - PolicyName: notify-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: [!Sub "${SiteBucket.Arn}/site/data.js", !Sub "${SiteBucket.Arn}/state/push.json"]
+              - Effect: Allow
+                Action: s3:PutObject
+                Resource: !Sub ${SiteBucket.Arn}/state/push.json
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt SiteBucket.Arn
+              - Effect: Allow
+                Action: ssm:GetParameter
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/vapid-private
+
+  NotifyFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: garmin-stats-notify
+      Runtime: python3.12
+      Architectures: [x86_64]
+      Handler: notify.handler
+      Code: sync
+      Role: !GetAtt NotifyRole.Arn
+      Timeout: 60
+      MemorySize: 256
+      Environment:
+        Variables:
+          BUCKET: !Ref SiteBucket
+
+  NotifyLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/garmin-stats-notify
+      RetentionInDays: 14
+
+  NotifySchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: scheduler.amazonaws.com }, Action: sts:AssumeRole }]
+      Policies:
+        - PolicyName: invoke-notify
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement: [{ Effect: Allow, Action: lambda:InvokeFunction, Resource: !GetAtt NotifyFunction.Arn }]
+
+  MorningNotify:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: garmin-stats-morning
+      Description: Aviso de la mañana con la preparación y la sesión del día
+      ScheduleExpression: cron(30 7 * * ? *)
+      ScheduleExpressionTimezone: Europe/Madrid
+      FlexibleTimeWindow: { Mode: "OFF" }
+      Target:
+        Arn: !GetAtt NotifyFunction.Arn
+        RoleArn: !GetAtt NotifySchedulerRole.Arn
+
+  # ------------------------------------------------------------------ alarmas (email si algo falla)
+  AlertsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: garmin-stats-alerts
+      DisplayName: Mi salud
+      Subscription: [{ Protocol: email, Endpoint: !Ref BudgetEmail }]
+
+  SyncErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: garmin-stats-sync-falla
+      AlarmDescription: La sincronización con Garmin ha fallado 2 horas seguidas.
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions: [{ Name: FunctionName, Value: !Ref SyncFunction }]
+      Statistic: Sum
+      Period: 3600
+      EvaluationPeriods: 2
+      DatapointsToAlarm: 2
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+      OKActions: [!Ref AlertsTopic]
+
+  SyncStoppedAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: garmin-stats-sync-parada
+      AlarmDescription: La sincronización no se ha ejecutado en las últimas 3 horas.
+      Namespace: AWS/Lambda
+      MetricName: Invocations
+      Dimensions: [{ Name: FunctionName, Value: !Ref SyncFunction }]
+      Statistic: Sum
+      Period: 3600
+      EvaluationPeriods: 3
+      Threshold: 1
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+
+  NotifyErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: garmin-stats-aviso-falla
+      AlarmDescription: El aviso de la mañana ha fallado.
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions: [{ Name: FunctionName, Value: !Ref NotifyFunction }]
+      Statistic: Sum
+      Period: 86400
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlertsTopic]
+
   # ------------------------------------------------------------------ CloudFront
   # Comprueba la cookie de sesión antes de servir la web o la API. Sin sesión: login (o 401 en la API).
   GuardFunction:
@@ -315,6 +451,8 @@ Resources:
         }
         function handler(event) {
           var req = event.request;
+          var u = req.uri;
+          if (u === '/manifest.webmanifest' || u === '/sw.js' || u.indexOf('/icons/') === 0) return req;  // sin datos
           var c = req.cookies['gs_session'];
           if (c && valid(c.value)) {
             if (req.uri.endsWith('/')) req.uri += 'index.html';

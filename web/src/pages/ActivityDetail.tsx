@@ -110,7 +110,7 @@ export default function ActivityDetail({ data, id, back }: { data: GarminData; i
       </Card>
 
       {d === undefined && <Box sx={{ display: 'grid', placeItems: 'center', py: 8 }}><CircularProgress /></Box>}
-      {d === null && <Typography color="text.secondary">No hay detalle segundo a segundo para esta actividad.</Typography>}
+      {d === null && !a.sets?.length && <Typography color="text.secondary">No hay detalle segundo a segundo para esta actividad.</Typography>}
 
       {d && (
         <>
@@ -191,6 +191,36 @@ export default function ActivityDetail({ data, id, back }: { data: GarminData; i
                   </TableBody>
                 </Table>
               </Card>
+            </>
+          )}
+
+          {a.sets && a.sets.length > 0 && (
+            <>
+              <SectionTitle>Ejercicios</SectionTitle>
+              <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
+                {Object.entries(a.sets.reduce<Record<string, typeof a.sets>>((m, s) => { (m[s.ex] ??= []).push(s); return m; }, {}))
+                  .map(([ex, ss]) => (
+                    <Card key={ex} sx={{ ...CARD_SX, py: 2 }}>
+                      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>
+                        <Typography variant="subtitle1">{ex}</Typography>
+                        <Typography variant="body2" color="text.secondary">{ss!.length} series · {ss!.reduce((t, s) => t + s.reps, 0)} reps</Typography>
+                      </Stack>
+                      <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
+                        {ss!.map((s, i) => (
+                          <Box key={i} sx={{ px: 1.25, py: 0.5, borderRadius: '10px', fontSize: 14, fontWeight: 500,
+                            bgcolor: alpha(color, mode === 'dark' ? 0.18 : 0.1) }}>
+                            {s.reps}{s.kg ? ` × ${dec1(s.kg)} kg` : ' reps'}
+                          </Box>
+                        ))}
+                      </Stack>
+                    </Card>
+                  ))}
+              </Box>
+              {a.sets.every((s) => !s.kg) && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+                  El reloj no guardó el peso de estas series. Si lo confirmas en el reloj al terminar cada serie, el coach podrá subir las cargas.
+                </Typography>
+              )}
             </>
           )}
 

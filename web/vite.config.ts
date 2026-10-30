@@ -6,7 +6,7 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 // como archivo, sin servidor. Los datos van aparte en site/data.js (los escribe Python).
 const BUILD_ID = String(Date.now());
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(() => ({
   base: './',
   // Identificador de esta compilación: Python lo copia a data.js y la página se recarga sola
   // si detecta que hay una versión nueva del HTML.
@@ -16,7 +16,7 @@ export default defineConfig(({ command }) => ({
     viteSingleFile(),
     { name: 'build-id', transformIndexHtml: (html) => html.replace('</head>', `<meta name="app-build" content="${BUILD_ID}" /></head>`) },
   ],
-  publicDir: command === 'serve' ? 'public' : false,
+  publicDir: 'public',  // manifiesto, service worker e iconos de la app instalable
   build: {
     outDir: '../site',
     emptyOutDir: false,

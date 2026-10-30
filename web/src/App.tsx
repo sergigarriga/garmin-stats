@@ -33,6 +33,13 @@ import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
 import ContrastOutlined from '@mui/icons-material/ContrastOutlined';
 import Check from '@mui/icons-material/Check';
 import LogoutRounded from '@mui/icons-material/LogoutRounded';
+import InstallMobileRounded from '@mui/icons-material/InstallMobileRounded';
+import NotificationsActiveOutlined from '@mui/icons-material/NotificationsActiveOutlined';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Button from '@mui/material/Button';
+import { canPromptInstall, enablePush, isIos, isStandalone, onInstallChange, promptInstall } from './pwa';
 import { useGarminData, useNow, type GarminData } from './data';
 import { relative, time } from './format';
 import Today from './pages/Today';
@@ -75,9 +82,14 @@ function usePageFromHash() {
   return [page, go] as const;
 }
 
-function ModeMenu() {
+function ModeMenu({ vapid, onInfo }: { vapid?: string; onInfo: (t: string) => void }) {
   const { mode, setMode } = useColorScheme();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const [, force] = useState(0);
+  const [iosHelp, setIosHelp] = useState(false);
+  useEffect(() => onInstallChange(() => force((n) => n + 1)) as unknown as () => void, []);
+  const remote = !['localhost', '127.0.0.1', ''].includes(window.location.hostname);
+  const showInstall = remote && !isStandalone() && (canPromptInstall() || isIos());
   const opts = [
     { v: 'system', label: 'Automático', hint: 'Igual que tu sistema', icon: <ContrastOutlined /> },
     { v: 'light', label: 'Claro', hint: undefined, icon: <LightModeOutlined /> },
@@ -105,19 +117,44 @@ function ModeMenu() {
             {o.v === mode && <Check fontSize="small" sx={{ color: 'primary.main', ml: 2 }} />}
           </MenuItem>
         ))}
-        {!['localhost', '127.0.0.1', ''].includes(window.location.hostname) && (
+        {showInstall && (
+          <MenuItem onClick={async () => { setAnchor(null); if (canPromptInstall()) await promptInstall(); else setIosHelp(true); }} sx={{ mt: 0.5 }}>
+            <ListItemIcon><InstallMobileRounded fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Instalar la app" secondary="Icono en tu pantalla de inicio" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+          </MenuItem>
+        )}
+        {remote && vapid && (
+          <MenuItem onClick={async () => { setAnchor(null); onInfo(await enablePush(vapid)); }}>
+            <ListItemIcon><NotificationsActiveOutlined fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Avisos de la mañana" secondary="Preparación y sesión del día a las 7:30" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+          </MenuItem>
+        )}
+        {remote && (
           <MenuItem component="a" href="/auth/logout" sx={{ mt: 0.5 }}>
             <ListItemIcon><LogoutRounded fontSize="small" /></ListItemIcon>
             <ListItemText primary="Cerrar sesión" />
           </MenuItem>
         )}
       </Menu>
+      <Dialog open={iosHelp} onClose={() => setIosHelp(false)} slotProps={{ paper: { sx: { borderRadius: '28px', p: 1 } } }}>
+        <DialogTitle>Instalar en el iPhone</DialogTitle>
+        <DialogContent>
+          <Typography component="ol" sx={{ pl: 2.5, m: 0, '& li': { mb: 1 } }}>
+            <li>Abre esta web en <b>Safari</b>.</li>
+            <li>Pulsa el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba).</li>
+            <li>Elige <b>Añadir a pantalla de inicio</b> y pulsa <b>Añadir</b>.</li>
+            <li>Abre <b>Mi salud</b> desde el icono y activa los <b>Avisos de la mañana</b> en este menú.</li>
+          </Typography>
+          <Button onClick={() => setIosHelp(false)} sx={{ mt: 2, borderRadius: 999 }} variant="contained" disableElevation>Entendido</Button>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
 
 export default function App() {
   const { data, checking, fresh, clearFresh, check } = useGarminData(60_000);
+  const [info, setInfo] = useState<string | null>(null);
   const now = useNow();
   const [page, go] = usePageFromHash();
   const theme = useTheme();
@@ -166,7 +203,7 @@ export default function App() {
                 </IconButton>
               </Stack>
             </Tooltip>
-            <ModeMenu />
+            <ModeMenu vapid={data.push?.vapidPublicKey ?? undefined} onInfo={setInfo} />
           </Toolbar>
         </Container>
       </AppBar>
@@ -194,6 +231,8 @@ export default function App() {
       )}
 
       <Chat />
+      <Snackbar open={!!info} autoHideDuration={9000} onClose={() => setInfo(null)} message={info}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} sx={{ '& .MuiSnackbarContent-root': { maxWidth: 520 } }} />
       <Snackbar open={fresh} autoHideDuration={4000} onClose={clearFresh} message="Datos actualizados"
         anchorOrigin={{ vertical: mobile ? 'top' : 'bottom', horizontal: 'center' }} />
     </Box>

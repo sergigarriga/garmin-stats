@@ -13,7 +13,10 @@ import EmojiEventsOutlined from '@mui/icons-material/EmojiEventsOutlined';
 import { isoLocal, mean, toDate, type Activity, type Day, type GarminData, type RecordItem } from '../data';
 import { dateLong, dateShort, dec1, duration, hm, int } from '../format';
 import { CATEGORY, useResolvedMode, type Category } from '../theme';
-import { CARD_SX, IconBubble, PageHeader, SectionTitle } from '../ui';
+import { CARD_SX, IconBubble, PageHeader, SectionTitle, chartSx } from '../ui';
+import { LineChart } from '@mui/x-charts/LineChart';
+import { timeAxis } from '../charts';
+import MonitorWeightOutlined from '@mui/icons-material/MonitorWeightOutlined';
 
 type Metric = {
   key: string; label: string; cat: Category; good: 'up' | 'down';
@@ -178,6 +181,51 @@ function Heatmap({ data, go }: { data: GarminData; go: (k: string) => void }) {
   );
 }
 
+function Weight({ data }: { data: GarminData }) {
+  const mode = useResolvedMode();
+  const w = data.weights ?? [];
+  if (w.length === 0) return null;
+  const color = CATEGORY.energy[mode];
+  const last = w[w.length - 1];
+  const ago = (days: number) => {
+    const lim = new Date(toDate(last.d)); lim.setDate(lim.getDate() - days);
+    return [...w].reverse().find((x) => toDate(x.d) <= lim);
+  };
+  const p30 = ago(30), p90 = ago(90);
+  const delta = (p?: { kg: number }) => (p ? `${last.kg - p.kg > 0 ? '+' : last.kg - p.kg < 0 ? '−' : ''}${dec1(Math.abs(last.kg - p.kg))} kg` : '–');
+  const hasFat = w.some((x) => x.fat != null);
+  return (
+    <>
+      <SectionTitle>Peso</SectionTitle>
+      <Card sx={{ ...CARD_SX }}>
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={3} sx={{ alignItems: { md: 'center' }, mb: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+            <IconBubble color={color} size={48}><MonitorWeightOutlined /></IconBubble>
+            <Box>
+              <Typography sx={{ fontSize: 30, fontWeight: 500, lineHeight: 1.1 }}>{dec1(last.kg)} kg</Typography>
+              <Typography variant="body2" color="text.secondary">Último registro · {dateShort(toDate(last.d))}{last.fat != null ? ` · ${dec1(last.fat)} % grasa` : ''}</Typography>
+            </Box>
+          </Stack>
+          <Stack direction="row" spacing={3}>
+            <Box><Typography variant="caption" color="text.secondary">30 días</Typography><Typography sx={{ fontWeight: 500 }}>{delta(p30)}</Typography></Box>
+            <Box><Typography variant="caption" color="text.secondary">90 días</Typography><Typography sx={{ fontWeight: 500 }}>{delta(p90)}</Typography></Box>
+            <Box><Typography variant="caption" color="text.secondary">Registros</Typography><Typography sx={{ fontWeight: 500 }}>{w.length}</Typography></Box>
+          </Stack>
+        </Stack>
+        {w.length > 1 && (
+          <LineChart height={220} sx={chartSx} grid={{ horizontal: true }} hideLegend={!hasFat}
+            xAxis={[timeAxis(w.map((x) => toDate(x.d)))]}
+            yAxis={[{ disableLine: true, disableTicks: true, valueFormatter: (v: number) => `${dec1(v)}` }]}
+            series={[{ data: w.map((x) => x.kg), label: 'Peso (kg)', color, curve: 'monotoneX', showMark: w.length < 40, valueFormatter: (v) => `${dec1(v)} kg` }]} />
+        )}
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          Sale de lo que apuntas en Garmin Connect. Pésate en condiciones parecidas (por la mañana, en ayunas) para que la tendencia sea fiable.
+        </Typography>
+      </Card>
+    </>
+  );
+}
+
 export default function Progress({ data, go }: { data: GarminData; go: (k: string) => void }) {
   const mode = useResolvedMode();
   const [cmp, setCmp] = useState<'month' | 'year'>('month');
@@ -194,6 +242,8 @@ export default function Progress({ data, go }: { data: GarminData; go: (k: strin
           </ToggleButtonGroup>
         } />
       <Compare data={data} mode={cmp} />
+
+      <Weight data={data} />
 
       <SectionTitle>Tu año en actividad</SectionTitle>
       <Heatmap data={data} go={go} />

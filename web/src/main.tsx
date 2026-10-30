@@ -5,6 +5,9 @@ import { ThemeProvider } from '@mui/material/styles';
 import './fonts.css';
 import { theme } from './theme';
 import App from './App';
+import { setupPwa } from './pwa';
+
+setupPwa();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

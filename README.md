@@ -196,3 +196,16 @@ región eu-west-1. Diseño completo en `docs/aws.md`.
 - Cliente OAuth de Google: `~/.config/garmin/google-oauth.json` (`{"client_id": …, "client_secret": …}`),
   que `infra/deploy.sh` sube a SSM.
 - Presupuesto de AWS: aviso por email al 80 % de 5 $ (es de toda la cuenta).
+
+## App instalable, avisos, gimnasio y alarmas (30-10-2026)
+
+- **App instalable (PWA):** `web/public/manifest.webmanifest`, `sw.js` e `icons/`. En el menú (arriba a la derecha):
+  "Instalar la app" (Android/Chrome) o instrucciones para el iPhone (Safari → Compartir → Añadir a pantalla de inicio).
+- **Aviso de la mañana:** Web Push cada día a las 7:30 (hora de Madrid, Lambda `garmin-stats-notify`) con la preparación y
+  la sesión del día. Se activa desde el menú con "Avisos de la mañana". En el iPhone, primero hay que instalar la app.
+  Claves VAPID en `~/.config/garmin/vapid.json` y en SSM; suscripciones en `state/push.json`.
+- **Gimnasio:** las series que registra el reloj (ejercicio, repeticiones y kg) se leen de los FIT (`extras.parse_sets`) y
+  se ven en el detalle de cada sesión. El coach las usa para subir cargas o repeticiones.
+- **Peso:** el que apuntas en Garmin Connect, en Progreso → Peso; el coach ve la tendencia.
+- **Alarmas por email** (SNS `garmin-stats-alerts`): la sincronización falla 2 horas seguidas, lleva 3 horas sin
+  ejecutarse o falla el aviso de la mañana. Hay que confirmar la suscripción en el email de AWS.
