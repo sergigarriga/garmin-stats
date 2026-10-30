@@ -13,3 +13,4 @@ web/public/data.js
 # Secretos (las claves viven en ~/.config, fuera del proyecto)
 .env
 *.key
+infra/build/

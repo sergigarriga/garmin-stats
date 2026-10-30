@@ -54,9 +54,21 @@ async function api(path: string, body?: unknown): Promise<CoachView> {
   const r = await fetch(path, body === undefined ? undefined : {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Garmin-Stats': '1' }, body: JSON.stringify(body),
   });
+  if (r.status === 401) { window.location.href = '/auth/login?next=%2F%23plan'; throw new Error('Sesión caducada'); }
   const j = await r.json();
   if (!r.ok) throw new Error(j.error ?? 'Algo ha fallado.');
   return j;
+}
+
+/** En AWS el plan se genera en segundo plano: consulta hasta que termine (máx. ~8 min). */
+async function settle(v: CoachView): Promise<CoachView> {
+  let cur = v;
+  for (let i = 0; i < 100 && cur.job?.status === 'running'; i++) {
+    await new Promise((r) => setTimeout(r, 5000));
+    cur = await api('./api/plan');
+  }
+  if (cur.job?.status === 'error') throw new Error(cur.job.error ?? 'No se pudo generar el plan.');
+  return cur;
 }
 
 function StatusIcon({ s }: { s: PlanSession['status'] }) {
@@ -80,11 +92,13 @@ function CreateForm({ onDone }: { onDone: (v: CoachView) => void }) {
   const [days, setDays] = useState(4);
   const [longDay, setLongDay] = useState('domingo');
   const [notes, setNotes] = useState('');
+  const [gymDays, setGymDays] = useState(0);
+  const [bodyGoal, setBodyGoal] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const submit = async () => {
     setBusy(true); setErr(null);
-    try { onDone(await api('./api/plan/create', { goal, date, goalTime, daysPerWeek: days, longRunDay: longDay, notes })); }
+    try { onDone(await settle(await api('./api/plan/create', { goal, date, goalTime, daysPerWeek: days, longRunDay: longDay, notes, gymDays, bodyGoal }))); }
     catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
   return (
@@ -122,6 +136,18 @@ function CreateForm({ onDone }: { onDone: (v: CoachView) => void }) {
           <TextField select label="Día de la tirada larga" value={longDay} onChange={(e) => setLongDay(e.target.value)} sx={{ flex: 1 }}>
             {DAYS.map((d) => <MenuItem key={d} value={d}>{d[0].toUpperCase() + d.slice(1)}</MenuItem>)}
           </TextField>
+        </Stack>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Días de gimnasio</Typography>
+            <ToggleButtonGroup exclusive value={gymDays} onChange={(_, v) => v !== null && setGymDays(v)} size="small"
+              sx={{ gap: 1, '& .MuiToggleButton-root': { borderRadius: '999px !important', border: '1px solid', borderColor: 'divider', minWidth: 44 },
+                '& .Mui-selected': { bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent) !important', color: 'primary.main', borderColor: 'primary.main' } }}>
+              {[0, 1, 2, 3, 4].map((d) => <ToggleButton key={d} value={d}>{d}</ToggleButton>)}
+            </ToggleButtonGroup>
+          </Box>
+          <TextField label="Objetivo de físico (opcional)" placeholder="Ganar definición, más fuerza…" value={bodyGoal}
+            onChange={(e) => setBodyGoal(e.target.value)} sx={{ flex: 1 }} />
         </Stack>
         <TextField label="Algo que deba saber (opcional)" placeholder="Molestias, días que no puedes, si prefieres cinta…" value={notes}
           onChange={(e) => setNotes(e.target.value)} multiline minRows={2} />
@@ -192,7 +218,11 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const [view, setView] = useState<CoachView | undefined>(data.coach);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  useEffect(() => { if (online) api('./api/plan').then(setView).catch(() => setView(data.coach)); }, [data.generatedAt]);  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!online) return;
+    api('./api/plan').then((v) => { setView(v); if (v.job?.status === 'running') { setBusy(true); settle(v).then(setView).catch((e) => setErr(e.message)).finally(() => setBusy(false)); } })
+      .catch(() => setView(data.coach));
+  }, [data.generatedAt]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const plan = view?.plan;
   if (!plan) {
@@ -217,7 +247,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const run = async (path: string, confirmText?: string) => {
     if (confirmText && !window.confirm(confirmText)) return;
     setBusy(true); setErr(null);
-    try { setView(await api(path, {})); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+    try { setView(await settle(await api(path, {}))); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
 
   return (

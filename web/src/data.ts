@@ -61,10 +61,14 @@ export interface PlanSession {
 export interface PlanWeek { start: string; focus: string; sessions: PlanSession[]; plannedKm: number; actualKm: number; compliance?: number | null }
 export interface Plan {
   goal: string; raceDate: string; goalTime?: string | null; daysPerWeek: number; longRunDay: string; notes?: string;
+  gymDays?: number; bodyGoal?: string | null;
   createdAt: string; updatedAt: string; summary: string; weeks: PlanWeek[]; memory: string[];
   history: { at: string; kind: 'create' | 'adapt'; message: string; cost: number }[];
 }
-export interface CoachView { plan: Plan | null; today: { session: PlanSession; tip?: string | null } | null }
+export interface CoachView {
+  plan: Plan | null; today: { session: PlanSession; tip?: string | null } | null;
+  job?: { status: 'running' | 'done' | 'error'; action: string; error?: string; at: number } | null;
+}
 
 export type AiCategory = 'activity' | 'heart' | 'sleep' | 'stress' | 'recovery' | 'energy' | 'training';
 export interface AiCard { category: AiCategory; tone: 'positive' | 'neutral' | 'attention'; title: string; body: string }

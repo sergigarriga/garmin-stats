@@ -1,0 +1,352 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  garmin-stats: web privada de salud (S3 privado + CloudFront + login con Google + Lambda para chat y plan).
+  Solo los emails permitidos pueden descargar cualquier archivo.
+
+Parameters:
+  AllowedEmails:
+    Type: String
+    Description: Emails de Google con acceso (separados por comas)
+  SessionSecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: Secreto HMAC de la cookie de sesión
+  OriginSecret:
+    Type: String
+    NoEcho: true
+    MinLength: 32
+    Description: Cabecera secreta que solo CloudFront envía a las Lambda
+  BudgetEmail:
+    Type: String
+    Description: Email para el aviso de presupuesto
+
+Resources:
+  # ------------------------------------------------------------------ almacenamiento
+  SiteBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub garmin-stats-site-${AWS::AccountId}
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      OwnershipControls:
+        Rules: [{ ObjectOwnership: BucketOwnerEnforced }]
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      VersioningConfiguration: { Status: Enabled }
+      LifecycleConfiguration:
+        Rules:
+          - Id: old-versions
+            Status: Enabled
+            NoncurrentVersionExpiration: { NoncurrentDays: 30 }
+
+  SiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SiteBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: CloudFrontReadSite
+            Effect: Allow
+            Principal: { Service: cloudfront.amazonaws.com }
+            Action: s3:GetObject
+            Resource: !Sub ${SiteBucket.Arn}/site/*
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}
+          - Sid: DenyInsecureTransport
+            Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource: [!GetAtt SiteBucket.Arn, !Sub "${SiteBucket.Arn}/*"]
+            Condition: { Bool: { aws:SecureTransport: "false" } }
+
+  SiteOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub garmin-stats-oac-${AWS::StackName}
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  # ------------------------------------------------------------------ login (Lambda)
+  AuthRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: sts:AssumeRole }]
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole]
+      Policies:
+        - PolicyName: read-google-oauth
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: ssm:GetParameter
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/google-*
+
+  AuthFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: garmin-stats-auth
+      Runtime: python3.12
+      Architectures: [x86_64]
+      Handler: handler.handler
+      Code: lambda/auth
+      Role: !GetAtt AuthRole.Arn
+      Timeout: 15
+      MemorySize: 256
+      Environment:
+        Variables:
+          ALLOWED_EMAILS: !Ref AllowedEmails
+          SESSION_SECRET: !Ref SessionSecret
+          ORIGIN_SECRET: !Ref OriginSecret
+          GOOGLE_CLIENT_ID_PARAM: /garmin-stats/google-client-id
+          GOOGLE_CLIENT_SECRET_PARAM: /garmin-stats/google-client-secret
+
+  AuthLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/garmin-stats-auth
+      RetentionInDays: 14
+
+  AuthUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt AuthFunction.Arn
+      AuthType: NONE
+
+  AuthUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AuthFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
+  AuthInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AuthFunction
+      Action: lambda:InvokeFunction
+      Principal: "*"
+      InvokedViaFunctionUrl: true
+
+  # ------------------------------------------------------------------ API: chat y plan (Lambda)
+  ApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: sts:AssumeRole }]
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole]
+      Policies:
+        - PolicyName: api-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: [!Sub "${SiteBucket.Arn}/site/data.js", !Sub "${SiteBucket.Arn}/state/*"]
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt SiteBucket.Arn
+              - Effect: Allow
+                Action: ssm:GetParameter
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-api
+
+  ApiFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: garmin-stats-api
+      Runtime: python3.12
+      Architectures: [x86_64]
+      Handler: handler.handler
+      Code: api
+      Role: !GetAtt ApiRole.Arn
+      Timeout: 900
+      MemorySize: 1024
+      Environment:
+        Variables:
+          BUCKET: !Ref SiteBucket
+          ALLOWED_EMAILS: !Ref AllowedEmails
+          SESSION_SECRET: !Ref SessionSecret
+          ORIGIN_SECRET: !Ref OriginSecret
+          ANTHROPIC_KEY_PARAM: /garmin-stats/anthropic-key
+
+  ApiLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/garmin-stats-api
+      RetentionInDays: 14
+
+  ApiUrl:
+    Type: AWS::Lambda::Url
+    Properties:
+      TargetFunctionArn: !GetAtt ApiFunction.Arn
+      AuthType: NONE
+
+  ApiUrlPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiFunction
+      Action: lambda:InvokeFunctionUrl
+      Principal: "*"
+      FunctionUrlAuthType: NONE
+
+  ApiInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiFunction
+      Action: lambda:InvokeFunction
+      Principal: "*"
+      InvokedViaFunctionUrl: true
+
+  # ------------------------------------------------------------------ CloudFront
+  # Comprueba la cookie de sesión antes de servir la web o la API. Sin sesión: login (o 401 en la API).
+  GuardFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub garmin-stats-guard-${AWS::StackName}
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Comprueba la cookie gs_session (HMAC-SHA256)
+        Runtime: cloudfront-js-2.0
+      FunctionCode: !Sub |
+        const crypto = require('crypto');
+        const SECRET = '${SessionSecret}';
+        const ALLOWED = '${AllowedEmails}'.toLowerCase().split(',').map(function (e) { return e.trim(); });
+        function b64decode(s) {
+          s = s.replace(/-/g, '+').replace(/_/g, '/');
+          while (s.length % 4) s += '=';
+          return Buffer.from(s, 'base64').toString('utf8');
+        }
+        function valid(v) {
+          var p = v.split('.');
+          if (p.length !== 3) return false;
+          if (!(parseInt(p[1], 10) > Date.now() / 1000)) return false;
+          var mac = crypto.createHmac('sha256', SECRET).update(p[0] + '.' + p[1]).digest('hex');
+          if (mac !== p[2]) return false;
+          return ALLOWED.indexOf(b64decode(p[0]).toLowerCase()) >= 0;
+        }
+        function handler(event) {
+          var req = event.request;
+          var c = req.cookies['gs_session'];
+          if (c && valid(c.value)) {
+            if (req.uri.endsWith('/')) req.uri += 'index.html';
+            return req;
+          }
+          if (req.uri.indexOf('/api/') === 0) {
+            return { statusCode: 401, statusDescription: 'Unauthorized', headers: { 'cache-control': { value: 'no-store' } } };
+          }
+          var next = encodeURIComponent(req.uri === '/index.html' ? '/' : req.uri);
+          return { statusCode: 302, statusDescription: 'Found',
+                   headers: { location: { value: '/auth/login?next=' + next }, 'cache-control': { value: 'no-store' } } };
+        }
+
+  # Pasa el dominio público a la Lambda de login (para la dirección de vuelta de Google).
+  HostFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: !Sub garmin-stats-host-${AWS::StackName}
+      AutoPublish: true
+      FunctionConfig:
+        Comment: Copia el Host del visitante en x-viewer-host
+        Runtime: cloudfront-js-2.0
+      FunctionCode: |
+        function handler(event) {
+          var req = event.request;
+          req.headers['x-viewer-host'] = { value: req.headers.host.value };
+          return req;
+        }
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: garmin-stats
+        Enabled: true
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        Origins:
+          - Id: site
+            DomainName: !GetAtt SiteBucket.RegionalDomainName
+            OriginPath: /site
+            OriginAccessControlId: !GetAtt SiteOAC.Id
+            S3OriginConfig: { OriginAccessIdentity: "" }
+          - Id: auth
+            DomainName: !Select [2, !Split ["/", !GetAtt AuthUrl.FunctionUrl]]
+            CustomOriginConfig: { OriginProtocolPolicy: https-only, OriginSSLProtocols: [TLSv1.2] }
+            OriginCustomHeaders: [{ HeaderName: x-origin-verify, HeaderValue: !Ref OriginSecret }]
+          - Id: api
+            DomainName: !Select [2, !Split ["/", !GetAtt ApiUrl.FunctionUrl]]
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+              OriginSSLProtocols: [TLSv1.2]
+              OriginReadTimeout: 60
+            OriginCustomHeaders: [{ HeaderName: x-origin-verify, HeaderValue: !Ref OriginSecret }]
+        DefaultCacheBehavior:
+          TargetOriginId: site
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad            # CachingDisabled
+          ResponseHeadersPolicyId: 67f7725c-6f97-4210-82d7-5512b31e9d03  # SecurityHeadersPolicy
+          FunctionAssociations:
+            - { EventType: viewer-request, FunctionARN: !GetAtt GuardFunction.FunctionMetadata.FunctionARN }
+        CacheBehaviors:
+          - PathPattern: /auth/*
+            TargetOriginId: auth
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods: [GET, HEAD]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac  # AllViewerExceptHostHeader
+            FunctionAssociations:
+              - { EventType: viewer-request, FunctionARN: !GetAtt HostFunction.FunctionMetadata.FunctionARN }
+          - PathPattern: /api/*
+            TargetOriginId: api
+            ViewerProtocolPolicy: https-only
+            AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac
+            FunctionAssociations:
+              - { EventType: viewer-request, FunctionARN: !GetAtt GuardFunction.FunctionMetadata.FunctionARN }
+
+  # ------------------------------------------------------------------ control de gasto
+  Budget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: garmin-stats-5usd
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit: { Amount: 5, Unit: USD }
+      NotificationsWithSubscribers:
+        - Notification: { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 80, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
+        - Notification: { NotificationType: FORECASTED, ComparisonOperator: GREATER_THAN, Threshold: 100, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref BudgetEmail }]
+
+Outputs:
+  Url:
+    Description: Dirección de la web
+    Value: !Sub https://${Distribution.DomainName}
+  GoogleRedirectUri:
+    Description: URI de redirección autorizada para el cliente OAuth de Google
+    Value: !Sub https://${Distribution.DomainName}/auth/callback
+  Bucket:
+    Value: !Ref SiteBucket
+  DistributionId:
+    Value: !Ref Distribution

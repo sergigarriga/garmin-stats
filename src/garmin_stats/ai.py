@@ -11,6 +11,7 @@ Barato por diseño:
 from __future__ import annotations
 
 import hashlib
+import os
 import json
 import logging
 from datetime import date, datetime
@@ -39,7 +40,8 @@ SAFE_LIMIT = 40.0       # al llegar aquí, chat y plan pasan a Haiku
 MAX_CALLS_PER_DAY = 3
 KEY_FILE = Path("~/.config/anthropic/garmin-stats-key").expanduser()
 CACHE = DATA_DIR / "ai_cache.json"
-USAGE_LOG = DATA_DIR / "ai_usage.log"
+# El PC escribe ai_usage.log y AWS Lambda ai_usage_lambda.log; los resúmenes leen los dos.
+USAGE_LOG = DATA_DIR / os.environ.get("GARMIN_STATS_USAGE_LOG", "ai_usage.log")
 
 Category = Literal["activity", "heart", "sleep", "stress", "recovery", "energy", "training"]
 
@@ -227,8 +229,9 @@ def usage() -> dict:
     """Resumen del gasto en IA a partir de data/ai_usage.log (solo llamadas que han funcionado;
     las rechazadas no se cobran)."""
     calls = []
+    lines = sorted(line for f in DATA_DIR.glob("ai_usage*.log") for line in f.read_text().splitlines() if line.strip())
     try:
-        for line in USAGE_LOG.read_text().splitlines():
+        for line in lines:
             parts = dict(p.split("=", 1) for p in line.split()[1:] if "=" in p)
             calls.append({"at": line.split()[0], "in": int(parts.get("in", 0)), "out": int(parts.get("out", 0)),
                           "cost": float(parts.get("cost", "$0").lstrip("$")), "kind": parts.get("kind", "textos"),
@@ -337,7 +340,7 @@ def month_spend() -> float:
     month = date.today().isoformat()[:7]
     total = 0.0
     try:
-        for line in USAGE_LOG.read_text().splitlines():
+        for line in (l for f in DATA_DIR.glob("ai_usage*.log") for l in f.read_text().splitlines()):
             if line.startswith(month):
                 for p in line.split():
                     if p.startswith("cost=$"):

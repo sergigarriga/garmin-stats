@@ -74,6 +74,13 @@ Principios:
 - Ritmos objetivo basados en sus ritmos reales y su VO2max, no en tablas genéricas.
 - Si el objetivo de tiempo no es realista para la fecha, dilo con tacto y plantea uno alcanzable.
 - Fechas exactas (AAAA-MM-DD). Cada semana empieza en lunes. Incluye también los días de descanso.
+- Gimnasio: si el atleta pide días de gimnasio, prográmalos como sesiones "strength" con ejercicios concretos en
+  la descripción (series x repeticiones y descanso), orientados a su objetivo de físico (p. ej. definición:
+  fuerza-hipertrofia de cuerpo completo, 8-12 repeticiones, básicos más core). Evita pierna pesada las 48 h
+  previas a series o a la tirada larga, y en la puesta a punto baja el volumen de gimnasio. Puedes poner
+  gimnasio el mismo día que un rodaje suave (indícalo en la descripción). Un día puede tener dos sesiones.
+- Si el objetivo incluye definición, añade en la descripción de alguna sesión un consejo breve y práctico
+  (proteína, sueño), sin dietas ni cifras de calorías.
 - La memoria son aprendizajes sobre ESTE atleta (cómo responde, qué tolera, sus ritmos reales, sus preferencias).
   Cada aprendizaje en una frase con su dato. No repitas reglas generales de entrenamiento."""
 
@@ -279,6 +286,8 @@ def create(req: dict) -> dict:
         "objetivo": req.get("goal", "Media maratón"), "fecha_carrera": req["date"],
         "tiempo_objetivo": req.get("goalTime") or None, "dias_por_semana": int(req.get("daysPerWeek", 4)),
         "dia_tirada_larga": req.get("longRunDay", "domingo"), "notas_del_atleta": (req.get("notes") or "")[:600],
+        "dias_gimnasio": int(req.get("gymDays", 0) or 0),
+        "objetivo_fisico": (req.get("bodyGoal") or "")[:200] or None,
         "primer_lunes_del_plan": monday.isoformat(),
         "semanas": (race_date - monday).days // 7 + 1,
     }
@@ -292,6 +301,7 @@ def create(req: dict) -> dict:
     state.update({
         "plan": {"goal": goal["objetivo"], "raceDate": req["date"], "goalTime": goal["tiempo_objetivo"],
                  "daysPerWeek": goal["dias_por_semana"], "longRunDay": goal["dia_tirada_larga"], "notes": goal["notas_del_atleta"],
+                 "gymDays": goal["dias_gimnasio"], "bodyGoal": goal["objetivo_fisico"],
                  "createdAt": now, "updatedAt": now, "summary": out.summary,
                  "weeks": [w.model_dump() for w in out.weeks]},
         "memory": out.memory[:12],
@@ -321,7 +331,7 @@ def adapt(force: bool = False, data: dict | None = None) -> dict | None:
     future = [w for w in plan["weeks"] if w["start"] >= monday]
     prompt = ("Revisa cómo ha ido el plan y reajusta desde esta semana hasta la carrera. Mantén lo que funciona;"
               " cambia lo que los datos pidan (sesiones no hechas, cansancio, HRV baja, ritmos reales distintos).\n\n"
-              f"OBJETIVO: {json.dumps({k: plan[k] for k in ('goal', 'raceDate', 'goalTime', 'daysPerWeek', 'longRunDay', 'notes')}, ensure_ascii=False)}\n\n"
+              f"OBJETIVO: {json.dumps({k: plan.get(k) for k in ('goal', 'raceDate', 'goalTime', 'daysPerWeek', 'longRunDay', 'notes', 'gymDays', 'bodyGoal')}, ensure_ascii=False)}\n\n"
               f"ÚLTIMAS SEMANAS (planificado frente a hecho, con tu valoración):\n{json.dumps(past, ensure_ascii=False)}\n\n"
               f"SEMANAS QUE QUEDAN (plan actual):\n{json.dumps(future, ensure_ascii=False)}\n\n"
               f"PERFIL REAL ACTUALIZADO:\n{json.dumps(profile(data), ensure_ascii=False)}\n\n"

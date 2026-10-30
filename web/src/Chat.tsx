@@ -127,6 +127,7 @@ export default function Chat() {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Garmin-Stats': '1' },
         body: JSON.stringify({ messages: next.filter((m) => !m.error).map(({ role, content }) => ({ role, content })) }),
       });
+      if (r.status === 401) { window.location.href = '/auth/login'; return; }
       const j = await r.json();
       setMsgs([...next, j.answer ? { role: 'assistant', content: j.answer } : { role: 'assistant', content: j.error ?? 'Algo ha fallado.', error: true }]);
     } catch {

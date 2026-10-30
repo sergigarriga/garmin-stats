@@ -162,3 +162,19 @@ servidor (`fallbacks: "default"`). El gasto real por tipo y por mes aparece en A
 de la IA y el registro de gasto en `C:\Users\garrigas\OneDrive\Backups\garmin_stats` (OneDrive
 **personal**). Conserva las 8 copias más recientes. Para restaurar: descomprimir el `.tar.gz` en `data/`.
 Los FIT no se copian: `garmin-stats sync` los vuelve a descargar.
+
+## Web en AWS (privada, con login de Google)
+
+Desplegada con un solo stack de CloudFormation (`infra/stack.yaml`) en la cuenta personal 123456789012,
+región eu-west-1. Diseño completo en `docs/aws.md`.
+
+- URL: https://xxxxxxxxxxxxxx.cloudfront.net (solo entra `tu@gmail.com`).
+- Desplegar o actualizar: `infra/deploy.sh` (idempotente; empaqueta las Lambda y sube la web).
+- Cada hora `bin/update.sh` baja el estado de AWS (`bin/aws-sync.sh down`), genera el informe y sube la
+  web y el estado (`bin/aws-sync.sh up`).
+- Seguridad: una CloudFront Function comprueba la cookie de sesión (HMAC) antes de servir nada. S3 es
+  privado (OAC) y las Lambda solo aceptan la cabecera secreta de CloudFront. Los secretos están en
+  `~/.config/garmin/aws-secrets.json` y en SSM.
+- Cliente OAuth de Google: `~/.config/garmin/google-oauth.json` (`{"client_id": …, "client_secret": …}`),
+  que `infra/deploy.sh` sube a SSM.
+- Presupuesto de AWS: aviso por email al 80 % de 5 $ (es de toda la cuenta).

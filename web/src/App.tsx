@@ -32,6 +32,7 @@ import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
 import DarkModeOutlined from '@mui/icons-material/DarkModeOutlined';
 import ContrastOutlined from '@mui/icons-material/ContrastOutlined';
 import Check from '@mui/icons-material/Check';
+import LogoutRounded from '@mui/icons-material/LogoutRounded';
 import { useGarminData, useNow, type GarminData } from './data';
 import { relative, time } from './format';
 import Today from './pages/Today';
@@ -104,6 +105,12 @@ function ModeMenu() {
             {o.v === mode && <Check fontSize="small" sx={{ color: 'primary.main', ml: 2 }} />}
           </MenuItem>
         ))}
+        {!['localhost', '127.0.0.1', ''].includes(window.location.hostname) && (
+          <MenuItem component="a" href="/auth/logout" sx={{ mt: 0.5 }}>
+            <ListItemIcon><LogoutRounded fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Cerrar sesión" />
+          </MenuItem>
+        )}
       </Menu>
     </>
   );
