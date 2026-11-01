@@ -115,7 +115,10 @@ function plannedText(s: PlanSession) {
 }
 
 // ------------------------------------------------------------------ crear
-function CreateForm({ onDone }: { onDone: (v: CoachView) => void }) {
+/** Formulario del objetivo. En la página del plan lo crea; en el onboarding (onSubmit) solo lo guarda. */
+export function CreateForm({ onDone, onSubmit, submitLabel, onSkip }: {
+  onDone?: (v: CoachView) => void; onSubmit?: (body: Record<string, unknown>) => Promise<void>; submitLabel?: string; onSkip?: () => void;
+}) {
   const [goal, setGoal] = useState('Media maratón');
   const [date, setDate] = useState(() => { const d = new Date(); d.setDate(d.getDate() + 7 * 16); return isoLocal(d); });
   const [goalTime, setGoalTime] = useState('');
@@ -129,7 +132,8 @@ function CreateForm({ onDone }: { onDone: (v: CoachView) => void }) {
   const [err, setErr] = useState<string | null>(null);
   const submit = async () => {
     setBusy(true); setErr(null);
-    try { onDone(await settle(await api('./api/plan/create', { goal, date, goalTime, daysPerWeek: days, longRunDay: longDay, notes, gymDays, bodyGoal, ambition }))); }
+    const body = { goal, date, goalTime, daysPerWeek: days, longRunDay: longDay, notes, gymDays, bodyGoal, ambition };
+    try { if (onSubmit) await onSubmit(body); else onDone?.(await settle(await api('./api/plan/create', body))); }
     catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
   return (
@@ -193,11 +197,14 @@ function CreateForm({ onDone }: { onDone: (v: CoachView) => void }) {
           onChange={(e) => setNotes(e.target.value)} multiline minRows={2} />
         {err && <Alert severity="error" sx={{ borderRadius: '14px' }}>{err}</Alert>}
         {!online && <Alert severity="info" sx={{ borderRadius: '14px' }}>Para crear el plan abre la web desde http://localhost:8765.</Alert>}
-        <Button variant="contained" size="large" disabled={busy || !online} onClick={submit}
-          sx={{ borderRadius: 999, alignSelf: 'flex-start', px: 3, boxShadow: 'none' }}
-          startIcon={busy ? <CircularProgress size={18} color="inherit" /> : <AutoAwesomeRounded />}>
-          {busy ? 'Diseñando tu plan… (1-3 min)' : 'Crear plan'}
-        </Button>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1 }}>
+          <Button variant="contained" size="large" disabled={busy || !online} onClick={submit}
+            sx={{ borderRadius: 999, px: 3, boxShadow: 'none' }}
+            startIcon={busy ? <CircularProgress size={18} color="inherit" /> : <AutoAwesomeRounded />}>
+            {busy ? (onSubmit ? 'Guardando…' : 'Diseñando tu plan… (1-3 min)') : (submitLabel ?? 'Crear plan')}
+          </Button>
+          {onSkip && <Button onClick={onSkip} disabled={busy} sx={{ borderRadius: 999 }}>Ahora no</Button>}
+        </Stack>
       </Stack>
     </Card>
   );
@@ -350,10 +357,26 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
 
   const plan = view?.plan;
   if (!plan) {
+    const creating = busy || view?.job?.status === 'running';
     return (
       <Box>
         <PageHeader title="Plan" subtitle="Tu entrenador con IA: un plan hecho a tu medida que aprende de ti cada semana" />
-        <CreateForm onDone={setView} />
+        {creating ? (
+          <Card sx={{ ...CARD_SX, maxWidth: 720 }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+              <CircularProgress size={28} />
+              <Box>
+                <Typography variant="h6">Tu coach está diseñando tu plan</Typography>
+                <Typography color="text.secondary">Revisa tu historial y tu objetivo semana a semana. Tarda 1-3 minutos; aparecerá aquí solo.</Typography>
+              </Box>
+            </Stack>
+          </Card>
+        ) : (
+          <>
+            {err && <Alert severity="error" sx={{ borderRadius: '14px', mb: 2, maxWidth: 720 }}>{err}</Alert>}
+            <CreateForm onDone={setView} />
+          </>
+        )}
       </Box>
     );
   }
@@ -382,7 +405,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
         action={online ? (
           <Stack direction="row" spacing={1}>
             <Button variant="outlined" startIcon={busy ? <CircularProgress size={16} /> : <TuneRounded />} disabled={busy}
-              onClick={() => ask('¿Reajustar el plan ahora?', 'El coach revisa tus últimos datos y rehace las semanas que quedan. Tarda 1-3 minutos y cuesta unos 0,50 $ (Opus). Ya se reajusta solo cada lunes.', () => run('./api/plan/adapt'))}
+              onClick={() => ask('¿Reajustar el plan ahora?', 'El coach revisa tus últimos datos y rehace las semanas que quedan. Tarda 1-3 minutos y gasta unos 0,25-0,50 $ de tu tope de IA. Ya se reajusta solo cada lunes.', () => run('./api/plan/adapt'))}
               sx={{ borderRadius: 999 }}>{busy ? 'Reajustando…' : 'Reajustar ahora'}</Button>
             <Tooltip title="Borrar plan"><IconButton onClick={() => run('./api/plan/delete', '¿Borrar el plan? Se guarda una copia en el historial.')}><DeleteOutlineRounded /></IconButton></Tooltip>
           </Stack>
@@ -394,7 +417,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           <ToggleButtonGroup exclusive size="small" value={plan.ambition ?? 'realista'} disabled={busy}
             onChange={(_, v) => v && v !== (plan.ambition ?? 'realista') && ask(v === 'exigente' ? '¿Pasar al modo exigente? 🔥' : '¿Pasar al modo realista?',
               (v === 'exigente' ? 'Mantiene tu objetivo, sube el volumen y pone 2 sesiones de calidad por semana.' : 'Prioriza llegar sano y ajusta el objetivo si no es realista.')
-              + ' Se reajusta todo el plan: tarda 1-3 minutos y cuesta unos 0,50 $.', () => run('./api/plan/ambition', undefined, { ambition: v }))}
+              + ' Se reajusta todo el plan: tarda 1-3 minutos y gasta unos 0,25-0,50 $ de tu tope de IA.', () => run('./api/plan/ambition', undefined, { ambition: v }))}
             sx={{ bgcolor: 'background.paper', '& .MuiToggleButton-root': { borderRadius: '999px !important', px: 2, color: 'text.secondary' },
               '& .Mui-selected': { bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent) !important', color: 'primary.main' } }}>
             <ToggleButton value="realista">Realista</ToggleButton>

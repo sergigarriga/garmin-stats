@@ -267,6 +267,11 @@ def handler(event, _ctx):
             return _json(400, {"error": "La cuenta del administrador no se puede borrar desde aquí."})
         _delete_user(user)
         return _json(200, {"ok": True}, cookies=["gs_session=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax"])
+    if path == "/api/chat":  # conversación guardada (para verla igual en el móvil y en el ordenador)
+        return _json(200, {"messages": _get_json(_sp("chat.json"), {}).get("messages", [])})
+    if path == "/api/chat/clear" and method == "POST":
+        _put_json(_sp("chat.json"), {"messages": []})
+        return _json(200, {"ok": True})
     if path.startswith("/api/admin/"):
         if user.get("role") != "owner":
             return _json(403, {"error": "Solo el administrador."})
@@ -296,8 +301,15 @@ def handler(event, _ctx):
     if method != "POST":
         return _json(405, {"error": "método no permitido"})
     if path == "/api/ask":
-        res = server.ask(payload.get("messages") or [])
+        msgs = payload.get("messages") or []
+        res = server.ask(msgs)
         _push("ai_usage_lambda.log")
+        if "answer" in res and msgs and msgs[-1].get("role") == "user":
+            hist = _get_json(_sp("chat.json"), {}).get("messages", [])
+            now = U.now()
+            hist += [{"role": "user", "content": str(msgs[-1].get("content", ""))[:2000], "at": now},
+                     {"role": "assistant", "content": res["answer"], "at": now}]
+            _put_json(_sp("chat.json"), {"messages": hist[-60:]})
         return _json(200 if "answer" in res else 503, res)
 
     if path == "/api/plan/cancel":

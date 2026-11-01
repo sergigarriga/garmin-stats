@@ -117,6 +117,15 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
     return () => window.removeEventListener('open-chat', on);
   }, []);
 
+  // La conversación se guarda en el servidor: al abrir la app se recupera (también desde otro dispositivo)
+  useEffect(() => {
+    fetch('./api/chat', { credentials: 'same-origin' }).then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (j?.messages?.length) setMsgs((cur) => (busyRef.current ? cur : j.messages.map(({ role, content }: Msg) => ({ role, content })))); })
+      .catch(() => { /* sin conexión: se queda la copia local */ });
+  }, [open]);
+  const busyRef = useRef(false);
+  busyRef.current = busy;
+
   useEffect(() => {
     try { sessionStorage.setItem(STORE, JSON.stringify(msgs.slice(-20))); } catch { /* sin almacenamiento */ }
     end.current?.scrollIntoView({ behavior: 'smooth' });
@@ -136,7 +145,7 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
       const j = await r.json();
       setMsgs([...next, j.answer ? { role: 'assistant', content: j.answer } : { role: 'assistant', content: j.error ?? 'Algo ha fallado.', error: true }]);
     } catch {
-      setMsgs([...next, { role: 'assistant', content: 'No llego al servidor. ¿Está abierta la página desde http://localhost:8765?', error: true }]);
+      setMsgs([...next, { role: 'assistant', content: 'No llego al servidor. Comprueba tu conexión y vuelve a probar.', error: true }]);
     } finally { setBusy(false); }
   };
 
@@ -157,7 +166,7 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
               <Typography variant="h6" sx={{ lineHeight: 1.2 }}>Pregunta a tus datos</Typography>
               <Typography variant="caption" color="text.secondary">Claude Sonnet 5.5 · lee tu histórico completo</Typography>
             </Box>
-            {msgs.length > 0 && <IconButton aria-label="Borrar conversación" onClick={() => setMsgs([])}><DeleteOutlineRounded /></IconButton>}
+            {msgs.length > 0 && <IconButton aria-label="Borrar conversación" onClick={() => { setMsgs([]); fetch('./api/chat/clear', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(() => {}); }}><DeleteOutlineRounded /></IconButton>}
             <IconButton aria-label="Cerrar" onClick={() => setOpen(false)}><CloseRounded /></IconButton>
           </Stack>
 

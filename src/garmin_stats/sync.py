@@ -61,6 +61,8 @@ RANGE_DATASETS = [
 
 # FC cada 2 min: en una cuenta nueva solo se bajan los últimos días (un día = una petición).
 INTRADAY_BACKFILL_DAYS = 120
+# Por tandas (Lambda): como mucho estos FIT por ejecución, para que leerlos después quepa en el tiempo.
+MAX_FIT_PER_RUN = 150
 # Resultado de la última ejecución: True si se cortó por tiempo y queda historial por bajar.
 LAST_PARTIAL = False
 
@@ -75,6 +77,7 @@ class Syncer:
         # Hora límite (epoch) para cortar y seguir en otra ejecución (Lambda dura 15 min como mucho).
         self.deadline = float(os.environ.get("GARMIN_STATS_DEADLINE") or 0)
         self.partial = False
+        self.more_fits = False
 
     def _late(self) -> bool:
         if self.deadline and time.time() > self.deadline:
@@ -170,6 +173,10 @@ class Syncer:
                    and not (FIT_DIR / f"{a['activityId']}.fit").exists()
                    and not (FIT_DIR / f"{a['activityId']}.missing").exists()]
         log.info("Archivos FIT por descargar: %d", len(missing))
+        if self.deadline and len(missing) > MAX_FIT_PER_RUN:
+            missing.sort(key=lambda a: a.get("startTimeLocal", ""), reverse=True)  # primero los recientes
+            missing = missing[:MAX_FIT_PER_RUN]
+            self.more_fits = True  # quedan FIT para la próxima tanda (el resto de esta sigue normal)
         for i, a in enumerate(missing, 1):
             if self._late():
                 break
@@ -244,7 +251,7 @@ class Syncer:
         if self.intraday:
             self.sync_intraday()
         global LAST_PARTIAL
-        LAST_PARTIAL = self.partial
+        LAST_PARTIAL = self.partial or self.more_fits
         self.store.set_state("last_sync", self.today.isoformat())
         self.store.commit()
-        log.info("Sincronización %s: %d peticiones", "parcial (sigue después)" if self.partial else "terminada", self.api.calls)
+        log.info("Sincronización %s: %d peticiones", "parcial (sigue después)" if LAST_PARTIAL else "terminada", self.api.calls)

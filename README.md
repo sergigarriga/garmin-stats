@@ -245,3 +245,33 @@ La API personal de Garmin es de solo lectura (no se pueden crear entrenos ni pon
   una pulsación repetida espera a la que ya está en marcha y en los 45 s siguientes a terminar no se vuelve a llamar a Garmin.
 - La IA solo reescribe los textos si hay datos nuevos y con límite diario, así que actualizar a menudo no gasta más.
 - Ojo: trae lo que ya está en Garmin Connect. Si el reloj no se ha sincronizado con la app del móvil, no hay nada nuevo.
+
+## Versión multipersona (01-11-2026)
+
+La web admite invitadas (pensado para ~5 amigas). Cada persona entra con su Google, conecta su propio Garmin y ve
+**solo sus datos**.
+
+**Invitar a alguien**
+1. En la web, menú (icono del tema) → **Invitadas** → nombre + email de Google → Invitar. Copia el mensaje y envíaselo.
+2. Mientras la app de Google OAuth esté en modo de prueba, añade también su email en Google Cloud Console →
+   Google Auth Platform → Público → **Usuarios de prueba** (si no, Google le muestra "Acceso bloqueado").
+3. Ella entra, acepta el aviso de privacidad, crea su clave en Garmin Connect
+   (<https://connect.garmin.com/app/settings/personalApiToken>, caducidad 1 año), la pega, elige su objetivo y listo:
+   la primera descarga tarda unos minutos y después el coach crea su plan.
+
+**Cómo está montado**
+- Registro: `s3://…/admin/users.json` (owner + friends, tope de IA por persona, estado).
+  El login solo deja entrar a quien está ahí.
+- Datos privados: `users/<uid>/state/` (SQLite, plan, chat, gasto de IA, avisos). Web: `site/u/<uid>/`.
+  El `uid` es un HMAC del email.
+- CloudFront: la función de la cookie reescribe `/data.js` y `/acts/*` a la carpeta de esa persona.
+  Pedir `/u/...` directamente da 404.
+- Clave de Garmin: SSM SecureString `/garmin-stats/users/<uid>/garmin-key`. Si Garmin la rechaza, el estado pasa a
+  `key_invalid` y la web le pide una nueva (sin alarmas por email).
+- Sincronización: la programada lanza una ejecución por persona. La primera descarga va por tandas de ~7 min que se
+  encadenan solas; al terminar se crea el plan si dejó objetivo.
+- IA: tope mensual por persona (5 $ las invitadas, 50 $ el dueño). Al 80 % pasa a Haiku, al 100 % se pausa hasta el
+  día 1. A las invitadas el reajuste semanal se lo hace Sonnet (el plan inicial, Opus).
+- Borrar: la invitada puede borrar su cuenta desde el menú y el dueño puede quitarla desde Invitadas. Se borran todas
+  las versiones de sus archivos, su clave y su entrada del registro.
+- `infra/migrate_multiuser.sh`: migración única de los datos del dueño (ya ejecutada el 01-11-2026).

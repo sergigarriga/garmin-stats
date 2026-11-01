@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import GlobalStyles from '@mui/material/GlobalStyles';
 import { PullToRefresh, useManualSync } from './sync';
+import Alert from '@mui/material/Alert';
+import Divider from '@mui/material/Divider';
+import GroupAddOutlined from '@mui/icons-material/GroupAddOutlined';
+import KeyOutlined from '@mui/icons-material/KeyOutlined';
+import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined';
+import { AdminDialog, DeleteAccountDialog, GarminKeyDialog, useMe, type Me } from './account';
+import Onboarding from './pages/Onboarding';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -82,7 +89,7 @@ function usePageFromHash() {
   return [page, go] as const;
 }
 
-function ModeMenu({ vapid, onInfo }: { vapid?: string; onInfo: (t: string) => void }) {
+function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t: string) => void; me: Me | null; onAccount: (d: 'admin' | 'key' | 'delete') => void }) {
   const { mode, setMode } = useColorScheme();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [, force] = useState(0);
@@ -127,6 +134,30 @@ function ModeMenu({ vapid, onInfo }: { vapid?: string; onInfo: (t: string) => vo
           <MenuItem onClick={async () => { setAnchor(null); onInfo(await enablePush(vapid)); }}>
             <ListItemIcon><NotificationsActiveOutlined fontSize="small" /></ListItemIcon>
             <ListItemText primary="Avisos de la mañana" secondary="Preparación y sesión del día a las 7:30" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+          </MenuItem>
+        )}
+        {me && <Divider sx={{ my: 0.5 }} />}
+        {me && (
+          <Typography variant="caption" sx={{ display: 'block', px: 2.5, pt: 0.5, pb: 0.5, color: 'text.secondary', fontWeight: 500 }} noWrap>
+            {me.name ? `${me.name} · ` : ''}{me.email}
+          </Typography>
+        )}
+        {me?.role === 'owner' && (
+          <MenuItem onClick={() => { setAnchor(null); onAccount('admin'); }}>
+            <ListItemIcon><GroupAddOutlined fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Invitadas" secondary="Invitar amigas y ver su gasto" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+          </MenuItem>
+        )}
+        {me && (
+          <MenuItem onClick={() => { setAnchor(null); onAccount('key'); }}>
+            <ListItemIcon><KeyOutlined fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Clave de Garmin" secondary="Cambiarla si caduca" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+          </MenuItem>
+        )}
+        {me?.role === 'friend' && (
+          <MenuItem onClick={() => { setAnchor(null); onAccount('delete'); }}>
+            <ListItemIcon><PersonRemoveOutlined fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Borrar mi cuenta" secondary="Y todos mis datos" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
           </MenuItem>
         )}
         {remote && (
@@ -195,7 +226,7 @@ function GlassNav({ current, go, last }: { current: Section; go: (k: string) => 
     boxShadow: '0 8px 32px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.35)',
   } as const;
   return (
-    <Box sx={{ position: 'fixed', zIndex: 20, left: 12, right: 12, bottom: 'calc(10px + env(safe-area-inset-bottom))',
+    <Box sx={{ position: 'fixed', zIndex: 20, left: 12, right: 12, bottom: 'max(10px, calc(env(safe-area-inset-bottom) - 12px))',
       display: 'flex', gap: 1, alignItems: 'center', maxWidth: 520, mx: 'auto' }}>
       <Box sx={{ ...glass, flex: 1, height: 64, borderRadius: 999, display: 'flex', p: 0.5 }}>
         {SECTIONS.map((sec) => {
@@ -230,6 +261,10 @@ export default function App() {
   const mobile = useMediaQuery(theme.breakpoints.down('md'));
   const [last, setLast] = useState<Record<string, string>>({});
   const onSynced = useCallback((msg: string) => { clearFresh(); setInfo(msg); }, [clearFresh]);
+  const { me, error: meError, refresh: refreshMe } = useMe(120_000);
+  const [dialog, setDialog] = useState<null | 'admin' | 'key' | 'delete'>(null);
+  // Ya hay datos en el servidor pero esta página se cargó antes: traerlos
+  useEffect(() => { if (me?.hasData && !data) check(); }, [me?.hasData, data, check]);
   const { syncing, sync } = useManualSync(data, check, onSynced);
 
   const actId = page.startsWith('act-') ? Number(page.slice(4)) : null;
@@ -238,9 +273,13 @@ export default function App() {
   useEffect(() => { if (actId == null) setLast((l) => ({ ...l, [section.key]: pageKey })); }, [pageKey, section.key, actId]);
 
   if (!data) {
+    if (me && !me.hasData) return <Onboarding me={me} refresh={refreshMe} onData={() => { check(); }} />;
     return (
       <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', p: 3, textAlign: 'center' }}>
-        <Typography color="text.secondary">Cargando tus datos…</Typography>
+        {meError
+          ? <Stack spacing={2} sx={{ alignItems: 'center' }}><Typography color="text.secondary">{meError}</Typography>
+              <Button href="./" variant="outlined" sx={{ borderRadius: 999 }}>Reintentar</Button></Stack>
+          : <Typography color="text.secondary">Cargando tus datos…</Typography>}
       </Box>
     );
   }
@@ -249,7 +288,7 @@ export default function App() {
   const generated = new Date(data.generatedAt);
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: mobile ? 'calc(104px + env(safe-area-inset-bottom))' : 6 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: mobile ? 'calc(92px + env(safe-area-inset-bottom))' : 6 }}>
       <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: 'color-mix(in srgb, var(--mui-palette-background-default) 82%, transparent)',
         backdropFilter: 'blur(16px) saturate(160%)', WebkitBackdropFilter: 'blur(16px) saturate(160%)' }}>
         <Container maxWidth="lg">
@@ -293,12 +332,28 @@ export default function App() {
                 </Stack>
               </Tooltip>
             )}
-            <ModeMenu vapid={data.push?.vapidPublicKey ?? undefined} onInfo={setInfo} />
+            <ModeMenu vapid={data.push?.vapidPublicKey ?? undefined} onInfo={setInfo} me={me} onAccount={setDialog} />
           </Toolbar>
         </Container>
       </AppBar>
 
       <Container maxWidth="lg" sx={{ pt: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
+        {me?.status === 'key_invalid' && (
+          <Alert severity="warning" sx={{ borderRadius: '16px', mb: 2 }}
+            action={<Button color="inherit" size="small" onClick={() => setDialog('key')}>Poner clave nueva</Button>}>
+            Garmin ya no acepta tu clave (puede haber caducado): tus datos no se actualizan.
+          </Alert>
+        )}
+        {me?.sync?.status === 'running' && me.sync.backfill && (
+          <Alert severity="info" sx={{ borderRadius: '16px', mb: 2 }}>
+            Seguimos bajando tu historial de Garmin: algunas gráficas se completarán en unos minutos.
+          </Alert>
+        )}
+        {me && me.budgetUsd > 0 && me.monthSpendUsd >= me.budgetUsd && (
+          <Alert severity="info" sx={{ borderRadius: '16px', mb: 2 }}>
+            Has usado el tope de IA de este mes ({me.budgetUsd} $). Los textos del coach y el chat vuelven el día 1; tus datos se siguen actualizando.
+          </Alert>
+        )}
         {actId == null && <SubTabs section={section} page={pageKey} go={go} />}
         {actId != null
           ? <ActivityDetail data={data} id={actId} back={() => (window.history.length > 1 ? window.history.back() : go('entreno'))} />
@@ -309,6 +364,9 @@ export default function App() {
       </Container>
 
       {mobile && <GlassNav current={section} go={go} last={last} />}
+      <AdminDialog open={dialog === 'admin'} onClose={() => setDialog(null)} />
+      <GarminKeyDialog open={dialog === 'key'} onClose={() => setDialog(null)} onDone={() => { refreshMe(); setInfo('Clave guardada: actualizando tus datos de Garmin…'); }} />
+      <DeleteAccountDialog open={dialog === 'delete'} onClose={() => setDialog(null)} />
       {mobile && <GlobalStyles styles={{ 'html, body': { overscrollBehaviorY: 'contain' } }} />}
       {mobile && <PullToRefresh onRefresh={sync} busy={syncing} />}
 
