@@ -1,5 +1,5 @@
 // Service worker de "Mi salud": abre al instante (guarda la última versión de la página) y recibe los avisos.
-const CACHE = 'mi-salud-v1';
+const CACHE = 'mi-salud-v2';
 
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => {

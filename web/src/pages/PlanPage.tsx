@@ -563,7 +563,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
                   {w.start <= todayIso ? `${dec1(w.actualKm)} / ` : ''}{dec1(w.plannedKm)} km
                 </Typography>
               </Stack>
-              <Typography variant="body2" color="text.secondary" sx={{ flex: 1, minWidth: 0 }} noWrap>{dateShort(toDate(w.start))} · {w.focus}</Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ flex: 1, minWidth: 0, textWrap: 'pretty', lineHeight: 1.4 }}>{dateShort(toDate(w.start))} · {w.focus}</Typography>
               <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap', display: { xs: 'none', sm: 'block' } }}>
                 {w.start <= todayIso ? `${dec1(w.actualKm)} / ` : ''}{dec1(w.plannedKm)} km{w.compliance != null ? ` · ${w.compliance} %` : ''}
               </Typography>

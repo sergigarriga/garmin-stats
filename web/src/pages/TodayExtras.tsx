@@ -4,7 +4,8 @@ import Card from '@mui/material/Card';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles';
+import { alpha, useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import CheckCircleRounded from '@mui/icons-material/CheckCircleRounded';
@@ -128,9 +129,11 @@ export function ReadinessCard({ data }: { data: GarminData }) {
 
 // ------------------------------------------------------------------ objetivos y rachas
 function MiniRing({ value, max, color, center, sub }: { value: number; max: number; color: string; center: string; sub: string }) {
+  const narrow = useMediaQuery(useTheme().breakpoints.down('sm'));
+  const size = narrow ? 100 : 116;
   return (
-    <Box sx={{ position: 'relative', width: 116, height: 116 }}>
-      <Gauge width={116} height={116} value={Math.min(value, max)} valueMax={max} innerRadius="84%" outerRadius="100%" cornerRadius="50%" text=""
+    <Box sx={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <Gauge width={size} height={size} value={Math.min(value, max)} valueMax={max} innerRadius="84%" outerRadius="100%" cornerRadius="50%" text=""
         sx={{ [`& .${gaugeClasses.valueArc}`]: { fill: color }, [`& .${gaugeClasses.referenceArc}`]: { fill: alpha(color, 0.16) } }} />
       <Box sx={{ position: 'absolute', inset: 0, display: 'grid', placeContent: 'center', textAlign: 'center', px: 2.5 }}>
         <Typography sx={{ fontSize: center.length > 5 ? 17 : center.length > 3 ? 20 : 22, fontWeight: 600, lineHeight: 1.1, letterSpacing: '-0.02em' }}>{center}</Typography>
@@ -168,22 +171,18 @@ export function Goals({ data }: { data: GarminData }) {
         return (
           <Card key={g.key} sx={{ ...CARD_SX, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 1.25 }}>
             <MiniRing value={g.value} max={g.max} color={color} center={`${int(g.value)}/${int(g.max)}`} sub={g.sub} />
-            <Typography variant="subtitle2" noWrap sx={{ maxWidth: '100%' }}>{g.label}</Typography>
-            <Typography variant="body2" sx={{ color: done ? 'success.main' : 'text.secondary', fontWeight: done ? 500 : 400 }} noWrap>
-              {done ? 'Conseguido esta semana' : `Faltan ${int(left)} ${g.sub}`}
+            <Typography variant="subtitle2" sx={{ maxWidth: '100%', textWrap: 'balance', lineHeight: 1.3 }}>{g.label}</Typography>
+            <Typography variant="body2" sx={{ maxWidth: '100%', textWrap: 'balance', lineHeight: 1.3, color: done ? 'success.main' : 'text.secondary', fontWeight: done ? 500 : 400 }}>
+              {done ? '¡Conseguido!' : `Faltan ${int(left)} ${g.sub}`}
             </Typography>
-            <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', justifyContent: 'center', minHeight: 20, mt: 'auto' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 'auto', maxWidth: '100%', textWrap: 'balance', lineHeight: 1.35 }}>
               {g.streak ? (
                 <>
-                  <LocalFireDepartmentRounded sx={{ fontSize: 16, color: g.streak.current ? '#E8710A' : 'text.disabled' }} />
-                  <Typography variant="caption" color="text.secondary" noWrap>
-                    Racha {g.streak.current} · mejor {g.streak.best} {g.unit}
-                  </Typography>
+                  <LocalFireDepartmentRounded sx={{ fontSize: 15, verticalAlign: '-3px', mr: 0.25, color: g.streak.current ? '#E8710A' : 'text.disabled' }} />
+                  Racha {g.streak.current} · mejor {g.streak.best}
                 </>
-              ) : (
-                <Typography variant="caption" color="text.secondary" noWrap>Meta semanal</Typography>
-              )}
-            </Stack>
+              ) : 'Meta semanal'}
+            </Typography>
           </Card>
         );
       })}
