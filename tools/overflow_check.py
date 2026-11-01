@@ -1,8 +1,8 @@
-"""Detector de desbordes (uso: OK=<cookie gs_session> uv run --with playwright python tools/overflow_check.py 360,390,768)."""
+"""Detector de desbordes (uso: SITE_URL=https://… OK=<cookie gs_session> uv run --with playwright python tools/overflow_check.py 360,390,768)."""
 import glob, json, os, sys
 from playwright.sync_api import sync_playwright
 
-URL = "https://xxxxxxxxxxxxxx.cloudfront.net/"
+URL = os.environ["SITE_URL"].rstrip("/") + "/"  # p. ej. https://xxxx.cloudfront.net
 PAGES = ["hoy", "sueno", "corazon", "actividad", "plan", "entreno", "progreso", "analisis"]
 WIDTHS = [int(w) for w in (sys.argv[1] if len(sys.argv) > 1 else "360,390,768").split(",")]
 SHOTS = os.environ.get("SHOTS")
@@ -38,7 +38,7 @@ with sync_playwright() as p:
     b = p.chromium.launch(executable_path=exe, args=["--disable-renderer-backgrounding", "--disable-background-timer-throttling"])
     for w in WIDTHS:
         c = b.new_context(viewport={"width": w, "height": 900}, device_scale_factor=1, is_mobile=w < 600, has_touch=w < 600)
-        c.add_cookies([{"name": "gs_session", "value": os.environ["OK"], "domain": "xxxxxxxxxxxxxx.cloudfront.net", "path": "/", "secure": True}])
+        c.add_cookies([{"name": "gs_session", "value": os.environ["OK"], "domain": URL.split("/")[2], "path": "/", "secure": True}])
         pg = c.new_page(); pg.goto(URL + "#hoy"); pg.wait_for_timeout(2500)
         act = pg.evaluate("() => (window.__GARMIN__.activities.find(a => a.km) || {}).id")
         for name in PAGES + [f"act-{act}"]:

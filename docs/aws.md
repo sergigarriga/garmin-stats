@@ -1,11 +1,11 @@
 # Web en AWS solo para mí (diseño)
 
-Cuenta personal 123456789012 (perfil `default`, usuario IAM `Sergi`). Nunca en cuentas de la empresa.
+Cuenta personal de AWS (perfil `default`, usuario IAM propio).
 
 ## Objetivo
 
 Abrir la web desde cualquier navegador (móvil incluido) con login de Google, de modo que solo
-`tu@gmail.com` pueda descargar cualquier archivo, y con un coste de casi 0 $ al mes.
+el email del dueño (`OWNER_EMAIL` en `~/.config/garmin/deploy.env`) pueda descargar cualquier archivo, y con un coste de casi 0 $ al mes.
 
 ## Arquitectura
 
@@ -46,10 +46,10 @@ EventBridge Scheduler (cada hora) → Lambda garmin-stats-sync → Garmin API �
 
 Más una alarma de presupuesto de AWS a 5 $.
 
-## Lo que hace falta de Sergi
+## Lo que hace falta del dueño
 
 1. **Cliente OAuth de Google** (console.cloud.google.com → APIs y servicios → Credenciales):
-   - Pantalla de consentimiento: tipo Externo, en modo "Testing", con `tu@gmail.com` como usuario de prueba.
+   - Pantalla de consentimiento: tipo Externo, en modo "Testing", con el email del dueño (`OWNER_EMAIL` en `~/.config/garmin/deploy.env`) como usuario de prueba.
    - Crear credenciales → ID de cliente de OAuth → Aplicación web.
    - URI de redirección autorizada: `https://<dominio de CloudFront>/auth/callback` (se conoce al crear la distribución).
    - Guardar el ID y el secreto directamente en `~/.config/garmin/google-oauth.json` (sin pegarlos en el chat).

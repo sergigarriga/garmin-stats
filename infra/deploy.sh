@@ -6,11 +6,17 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export AWS_PROFILE=${AWS_PROFILE:-default} AWS_REGION=${AWS_REGION:-eu-west-1} AWS_PAGER=""
 STACK=garmin-stats
+# Datos personales (email del dueño y cuenta de AWS esperada) en un archivo local, fuera del repositorio:
+#   ~/.config/garmin/deploy.env  con  OWNER_EMAIL=tu@gmail.com  y  AWS_ACCOUNT_ID=123456789012
+CONF=~/.config/garmin/deploy.env
+[ -f "$CONF" ] || { echo "Falta $CONF (OWNER_EMAIL y AWS_ACCOUNT_ID)." >&2; exit 1; }
+# shellcheck disable=SC1090
+. "$CONF"
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-[ "$ACCOUNT" = "123456789012" ] || { echo "Cuenta inesperada ($ACCOUNT): solo la personal." >&2; exit 1; }
+[ "$ACCOUNT" = "$AWS_ACCOUNT_ID" ] || { echo "Cuenta inesperada ($ACCOUNT): no es la de $CONF." >&2; exit 1; }
 ARTIFACTS="garmin-stats-artifacts-$ACCOUNT"
 SECRETS=~/.config/garmin/aws-secrets.json
-EMAIL=tu@gmail.com
+EMAIL=$OWNER_EMAIL
 
 # 1) Secretos propios (se crean una vez y se reutilizan)
 if [ ! -f "$SECRETS" ]; then
@@ -20,9 +26,7 @@ fi
 SESSION=$(python3 -c "import json; print(json.load(open('$SECRETS'))['session'])")
 ORIGIN=$(python3 -c "import json; print(json.load(open('$SECRETS'))['origin'])")
 
-# 2) Claves de Garmin y Anthropic en SSM (SecureString), sin mostrarlas
-aws ssm put-parameter --name /garmin-stats/garmin-key --type SecureString --overwrite \
-  --value "file://$HOME/.config/garmin/connect-personal-api-key" >/dev/null
+# 2) Clave de Anthropic en SSM (SecureString), sin mostrarla. Las de Garmin las pone cada persona desde la web.
 aws ssm put-parameter --name /garmin-stats/anthropic-key --type SecureString --overwrite \
   --value "file://$HOME/.config/anthropic/garmin-stats-key" >/dev/null
 # Cliente OAuth de Google, si ya está guardado en local. Acepta el JSON tal cual lo descarga Google

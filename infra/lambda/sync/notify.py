@@ -15,7 +15,7 @@ from pywebpush import WebPushException, webpush
 from garmin_stats import users
 
 BUCKET = os.environ["BUCKET"]
-OWNER = os.environ.get("OWNER_EMAIL", "tu@gmail.com")
+OWNER = os.environ["OWNER_EMAIL"]
 s3 = boto3.client("s3")
 ssm = boto3.client("ssm")
 

@@ -6,8 +6,9 @@
 # y crea el registro admin/users.json con el dueño. Solo copia: lo antiguo se borra aparte tras comprobarlo.
 set -euo pipefail
 export AWS_PROFILE=${AWS_PROFILE:-default} AWS_REGION=${AWS_REGION:-eu-west-1} AWS_PAGER=""
-B=garmin-stats-site-123456789012
-OWNER=tu@gmail.com
+. ~/.config/garmin/deploy.env  # OWNER_EMAIL y AWS_ACCOUNT_ID
+B=garmin-stats-site-$AWS_ACCOUNT_ID
+OWNER=$OWNER_EMAIL
 UID_=$(python3 -c "
 import json,hmac,hashlib
 s=json.load(open('$HOME/.config/garmin/aws-secrets.json'))['session'].encode()
@@ -26,7 +27,7 @@ python3 - "$UID_" "$OWNER" > "$TMP" <<'PY'
 import json, sys, time
 uid, email = sys.argv[1], sys.argv[2]
 now = int(time.time())
-print(json.dumps({"users": [{"email": email, "uid": uid, "name": "Sergi", "role": "owner", "budgetUsd": 50,
+print(json.dumps({"users": [{"email": email, "uid": uid, "name": "", "role": "owner", "budgetUsd": 50,
                              "status": "active", "invitedAt": now, "joinedAt": now, "consentAt": now, "keyAt": now}]}, indent=1))
 PY
 if aws s3api head-object --bucket "$B" --key admin/users.json >/dev/null 2>&1; then

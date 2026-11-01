@@ -1,13 +1,13 @@
 # garmin_stats
 
-Mi web privada de salud con los datos de mi Garmin. **Todo corre en AWS** (cuenta personal 123456789012,
+Mi web privada de salud con los datos de mi Garmin. **Todo corre en AWS** (cuenta personal de AWS,
 eu-west-1, stack de CloudFormation `garmin-stats`); en el PC solo queda el código.
 
-- Web: https://xxxxxxxxxxxxxx.cloudfront.net. Solo entra `tu@gmail.com` (login de Google).
+- Web: https://xxxxxxxxxxxx.cloudfront.net. Solo entra el email del dueño (`OWNER_EMAIL` en `~/.config/garmin/deploy.env`) (login de Google).
 - Cada hora (minuto 5, hora de Madrid) la Lambda `garmin-stats-sync` descarga lo nuevo de Garmin, recalcula,
   escribe los textos con IA (y los lunes reajusta el plan) y publica la web en S3.
 - El chat y el plan: Lambda `garmin-stats-api`. Login: Lambda `garmin-stats-auth`.
-- Datos: bucket privado `garmin-stats-site-123456789012` (`state/` con la base de datos, el plan, la
+- Datos: bucket privado `garmin-stats-site-<cuenta>` (`state/` con la base de datos, el plan, la
   memoria y los FIT originales; `site/` con la web). Versionado, con 3 días de versiones antiguas.
 - Desplegar cambios: `infra/deploy.sh`. Para cambiar la web: `cd web && npm ci && npm run build`
   y después `infra/deploy.sh`, que publica `site/index.html`.
@@ -183,10 +183,10 @@ repositorio por si se quiere reactivar.
 
 ## Web en AWS (privada, con login de Google)
 
-Desplegada con un solo stack de CloudFormation (`infra/stack.yaml`) en la cuenta personal 123456789012,
+Desplegada con un solo stack de CloudFormation (`infra/stack.yaml`) en la cuenta personal de AWS,
 región eu-west-1. Diseño completo en `docs/aws.md`.
 
-- URL: https://xxxxxxxxxxxxxx.cloudfront.net (solo entra `tu@gmail.com`).
+- URL: https://xxxxxxxxxxxx.cloudfront.net (solo entra el email del dueño (`OWNER_EMAIL` en `~/.config/garmin/deploy.env`)).
 - Desplegar o actualizar: `infra/deploy.sh` (idempotente; empaqueta las Lambda y sube la web).
 - Cada hora `bin/update.sh` baja el estado de AWS (`bin/aws-sync.sh down`), genera el informe y sube la
   web y el estado (`bin/aws-sync.sh up`).
