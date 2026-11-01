@@ -35,8 +35,8 @@ PRICES = {
     "claude-sonnet-5-5": (2.0 / 1e6, 10.0 / 1e6),
     "claude-opus-5-5": (4.0 / 1e6, 20.0 / 1e6),
 }
-MONTHLY_BUDGET = 50.0   # $ al mes
-SAFE_LIMIT = 40.0       # al llegar aquí, chat y plan pasan a Haiku
+MONTHLY_BUDGET = 50.0   # $ al mes (por defecto; en AWS cada usuaria tiene el suyo en GARMIN_STATS_AI_BUDGET)
+SAFE_LIMIT = 40.0       # al llegar aquí, chat y plan pasan a Haiku (80 % del tope)
 MAX_CALLS_PER_DAY = 3
 KEY_FILE = Path("~/.config/anthropic/garmin-stats-key").expanduser()
 CACHE = DATA_DIR / "ai_cache.json"
@@ -175,6 +175,9 @@ def generate(data: dict, force: bool = False, offline: bool = False) -> dict | N
     if not key:
         log.info("IA: sin clave en %s, uso textos por reglas", KEY_FILE)
         return cache.get("result")
+    if over_budget():
+        log.info("IA: tope de %.2f $ de este mes alcanzado, uso la caché", budget())
+        return cache.get("result")
 
     client = anthropic.Anthropic(api_key=key, max_retries=2, timeout=60)
     prompt = ("Estos son mis datos de Garmin (JSON). Escribe los textos de la app.\n\n"
@@ -254,7 +257,7 @@ def usage() -> dict:
         "model": MODEL,
         "byKind": sorted(kinds.values(), key=lambda x: -x["cost"]),
         "monthCostUsd": round(sum(c["cost"] for c in calls if c["at"].startswith(month)), 4),
-        "monthlyBudgetUsd": MONTHLY_BUDGET, "safeLimitUsd": SAFE_LIMIT,
+        "monthlyBudgetUsd": budget(), "safeLimitUsd": safe_limit(),
         "calls": len(calls),
         "inputTokens": sum(c["in"] for c in calls),
         "outputTokens": sum(c["out"] for c in calls),
@@ -296,6 +299,8 @@ def weekly(data: dict, offline: bool = False) -> dict | None:
         return {"week": last["start"], **stats}
     key = _api_key()
     if not key:
+        return {"week": last["start"], **stats}
+    if over_budget():
         return {"week": last["start"], **stats}
     client = anthropic.Anthropic(api_key=key, max_retries=2, timeout=60)
     try:
@@ -350,6 +355,23 @@ def month_spend() -> float:
     return total
 
 
+def budget() -> float:
+    """Tope de gasto en IA de este mes para la usuaria actual."""
+    try:
+        return float(os.environ.get("GARMIN_STATS_AI_BUDGET") or MONTHLY_BUDGET)
+    except ValueError:
+        return MONTHLY_BUDGET
+
+
+def safe_limit() -> float:
+    return round(budget() * 0.8, 2)
+
+
+def over_budget() -> bool:
+    """Tope del mes alcanzado: no se llama más a la IA hasta el mes que viene."""
+    return month_spend() >= budget()
+
+
 def pick_model(preferred: str) -> str:
-    """El modelo bueno mientras el mes esté por debajo del límite seguro; si no, Haiku."""
-    return preferred if month_spend() < SAFE_LIMIT else MODEL
+    """El modelo bueno mientras el mes esté por debajo del 80 % del tope; si no, Haiku."""
+    return preferred if month_spend() < safe_limit() else MODEL

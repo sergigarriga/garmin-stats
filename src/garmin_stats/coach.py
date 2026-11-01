@@ -12,6 +12,7 @@ alternativas automáticas del servidor si un modelo rechazara la petición.
 from __future__ import annotations
 
 import json
+import os
 import logging
 import statistics
 from datetime import date, datetime, timedelta
@@ -299,9 +300,11 @@ def _client():
     return anthropic.Anthropic(api_key=key, max_retries=2, timeout=600)
 
 
-def _call(schema, prompt: str, kind: str):
+def _call(schema, prompt: str, kind: str, model: str | None = None):
+    if ai.over_budget():
+        raise RuntimeError(f"Has llegado al tope de IA de este mes ({ai.budget():.0f} $). El plan se podrá reajustar el día 1.")
     client = _client()
-    model = ai.pick_model(MODEL)
+    model = ai.pick_model(model or MODEL)
     extra = ai.FALLBACKS if model != ai.MODEL else {}
     import threading as _threading
     stop, cancelled = _threading.Event(), _threading.Event()
@@ -416,7 +419,8 @@ def adapt(force: bool = False, data: dict | None = None) -> dict | None:
               f"PERFIL REAL ACTUALIZADO:\n{json.dumps(profile(data), ensure_ascii=False)}\n\n"
               f"MEMORIA DEL COACH (actualízala):\n{json.dumps(state.get('memory', []), ensure_ascii=False)}\n\n"
               f"Esta semana empieza el {monday}.")
-    out, cost = _call(AdaptOut, prompt, "plan-adapt")
+    # Los reajustes semanales pueden ir con un modelo más barato (GARMIN_STATS_ADAPT_MODEL, p. ej. Sonnet para invitadas)
+    out, cost = _call(AdaptOut, prompt, "plan-adapt", os.environ.get("GARMIN_STATS_ADAPT_MODEL") or MODEL)
     now = datetime.now().astimezone().isoformat(timespec="seconds")
     kept = [w for w in plan["weeks"] if w["start"] < monday]
     plan.update({"weeks": kept + [w.model_dump() for w in out.weeks], "updatedAt": now})

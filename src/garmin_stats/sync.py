@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import io
 import logging
+import os
+import time
 import zipfile
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -57,6 +59,12 @@ RANGE_DATASETS = [
 ]
 
 
+# FC cada 2 min: en una cuenta nueva solo se bajan los últimos días (un día = una petición).
+INTRADAY_BACKFILL_DAYS = 120
+# Resultado de la última ejecución: True si se cortó por tiempo y queda historial por bajar.
+LAST_PARTIAL = False
+
+
 class Syncer:
     def __init__(self, api: Api, store: Store, intraday: bool = True, fit: bool = True) -> None:
         self.api = api
@@ -64,6 +72,16 @@ class Syncer:
         self.intraday = intraday
         self.fit = fit
         self.today = date.today()
+        # Hora límite (epoch) para cortar y seguir en otra ejecución (Lambda dura 15 min como mucho).
+        self.deadline = float(os.environ.get("GARMIN_STATS_DEADLINE") or 0)
+        self.partial = False
+
+    def _late(self) -> bool:
+        if self.deadline and time.time() > self.deadline:
+            if not self.partial:
+                log.warning("Tiempo agotado: sigo en la próxima ejecución")
+            self.partial = True
+        return self.partial
 
     # ---------- utilidades ----------
     def _fetch_range(self, ds: RangeDataset, start: date, end: date) -> int:
@@ -133,6 +151,8 @@ class Syncer:
         new = [a for a in acts if not self.store.has("activity_detail", a["activityId"])]
         log.info("Actividades: %d en total, %d nuevas", len(acts), len(new))
         for i, a in enumerate(new, 1):
+            if self._late():
+                break
             aid = a["activityId"]
             self.store.put("activity_detail", aid, self.api.call("get_activity", aid))
             if i % 20 == 0:
@@ -151,6 +171,8 @@ class Syncer:
                    and not (FIT_DIR / f"{a['activityId']}.missing").exists()]
         log.info("Archivos FIT por descargar: %d", len(missing))
         for i, a in enumerate(missing, 1):
+            if self._late():
+                break
             aid = a["activityId"]
             try:
                 blob = self.api.call("download_activity", aid)
@@ -168,15 +190,22 @@ class Syncer:
 
     def sync_ranges(self, first: date) -> None:
         for ds in RANGE_DATASETS:
+            if self._late():
+                return
             done = self.store.state(f"done:{ds.name}")
             start = first if not done else date.fromisoformat(done) - timedelta(days=REFRESH_DAYS)
             start = max(start, first)
             total = 0
             for a, b in _days(start, self.today, ds.chunk_days):
+                if self._late():
+                    self.store.commit()
+                    return  # sin marcar como hecho: la próxima ejecución lo repite
                 try:
                     total += self._fetch_range(ds, a, b)
                 except HttpError as e:
                     log.warning("%s %s..%s: HTTP %s, lo salto", ds.name, a, b, e.status_code)
+                if self.deadline:  # por tandas: guardar hasta dónde se ha llegado
+                    self.store.set_state(f"done:{ds.name}", (b + timedelta(days=REFRESH_DAYS)).isoformat())
                 self.store.commit()
             self.store.set_state(f"done:{ds.name}", self.today.isoformat())
             self.store.commit()
@@ -187,9 +216,17 @@ class Syncer:
         days = sorted(k for k, v in self.store.items("daily_summary") if v.get("includesWellnessData"))
         have = self.store.keys("heart_rate")
         recent = {(self.today - timedelta(days=i)).isoformat() for i in range(REFRESH_DAYS + 1)}
-        todo = [d for d in days if d not in have or d in recent]
+        since = self.store.state("intraday_from")
+        if not since and not have:  # cuenta nueva: solo los últimos meses, empezando por lo reciente
+            since = (self.today - timedelta(days=INTRADAY_BACKFILL_DAYS)).isoformat()
+            self.store.set_state("intraday_from", since)
+        todo = [d for d in days if (d not in have and (not since or d >= since)) or d in recent]
+        if since:
+            todo.sort(reverse=True)
         log.info("FC intradía por descargar: %d días", len(todo))
         for i, d in enumerate(todo, 1):
+            if self._late():
+                break
             try:
                 self.store.put("heart_rate", d, self.api.call("get_daily_heart_rate", d))
             except HttpError as e:
@@ -206,6 +243,8 @@ class Syncer:
         self.sync_ranges(first)
         if self.intraday:
             self.sync_intraday()
+        global LAST_PARTIAL
+        LAST_PARTIAL = self.partial
         self.store.set_state("last_sync", self.today.isoformat())
         self.store.commit()
-        log.info("Sincronización terminada: %d peticiones", self.api.calls)
+        log.info("Sincronización %s: %d peticiones", "parcial (sigue después)" if self.partial else "terminada", self.api.calls)

@@ -2,14 +2,16 @@
 
 Flujo OAuth "authorization code" + PKCE. El id_token llega directamente de Google por TLS, así que
 basta con comprobar emisor, audiencia, caducidad y email (lo permite la especificación de OpenID).
-Si el email es el permitido, pone la cookie de sesión `gs_session` firmada con HMAC, que la
-CloudFront Function comprueba antes de servir cualquier archivo.
+Si el email está en el registro de usuarias (S3 admin/users.json, lo gestiona el dueño desde la web),
+pone la cookie de sesión `gs_session` firmada con HMAC, que la CloudFront Function comprueba antes de
+servir cualquier archivo (y con la que sirve a cada persona solo su carpeta de datos).
 Solo usa la librería estándar (y boto3, incluido en Lambda).
 """
 
 import base64
 import hashlib
 import hmac
+import html
 import json
 import os
 import secrets
@@ -19,14 +21,45 @@ import urllib.request
 
 import boto3
 
-ALLOWED = {e.strip().lower() for e in os.environ["ALLOWED_EMAILS"].split(",") if e.strip()}
+OWNER = os.environ["OWNER_EMAIL"].strip().lower()
+BUCKET = os.environ["BUCKET"]
+USERS_KEY = "admin/users.json"
 SESSION_SECRET = os.environ["SESSION_SECRET"].encode()
 ORIGIN_SECRET = os.environ["ORIGIN_SECRET"]
 CLIENT_ID_PARAM = os.environ["GOOGLE_CLIENT_ID_PARAM"]
 CLIENT_SECRET_PARAM = os.environ["GOOGLE_CLIENT_SECRET_PARAM"]
 SESSION_DAYS = 30
 _ssm = boto3.client("ssm")
+_s3 = boto3.client("s3")
 _cfg: dict = {}
+
+
+def _check_user(email: str, name: str) -> bool:
+    """¿Tiene invitación? Al entrar por primera vez se apunta su nombre y la fecha."""
+    try:
+        reg = json.loads(_s3.get_object(Bucket=BUCKET, Key=USERS_KEY)["Body"].read())
+    except _s3.exceptions.NoSuchKey:
+        reg = {"users": []}
+    users = reg.setdefault("users", [])
+    u = next((x for x in users if x.get("email") == email), None)
+    if u is None and email == OWNER:  # arranque: el dueño siempre puede entrar
+        uid = hmac.new(SESSION_SECRET, b"uid:" + email.encode(), hashlib.sha256).hexdigest()[:16]
+        u = {"email": email, "uid": uid, "name": name, "role": "owner", "budgetUsd": 50, "status": "onboarding",
+             "invitedAt": int(time.time())}
+        users.append(u)
+    if u is None:
+        return False
+    changed = False
+    if u.get("status") == "invited":
+        u["status"], changed = "onboarding", True
+    if not u.get("joinedAt"):
+        u["joinedAt"], changed = int(time.time()), True
+    if name and not u.get("name"):
+        u["name"], changed = name, True
+    if changed:
+        _s3.put_object(Bucket=BUCKET, Key=USERS_KEY, Body=json.dumps(reg, ensure_ascii=False, indent=1).encode(),
+                       ContentType="application/json")
+    return True
 
 
 def _google():
@@ -156,7 +189,7 @@ def landing(message: str = "", button_href: str = "/auth/login?go=1", button_tex
   <p class="lead">Sueño, corazón y entrenos de tu Garmin en un solo sitio, con un coach con IA que aprende de ti cada semana.</p>
   {msg}<div><a class="btn" href="{button_href}">{G_LOGO}<span>{button_text}</span></a></div>
   <p class="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 6a3 3 0 0 1 3 3v1h1v6H8v-6h1v-1a3 3 0 0 1 3-3zm0 2a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1z"/></svg>
-  Privada: solo tu cuenta de Google tiene acceso</p>
+  Privada: solo con invitación, y cada persona ve únicamente sus datos</p>
  </section>
  <section class="preview" aria-label="Qué encontrarás dentro">
   <div class="top">{RINGS}<div><small>Preparación de hoy</small><b>Lista para entrenar</b><span>HRV, sueño, pulso y carga frente a tu normalidad</span></div></div>
@@ -203,7 +236,7 @@ def handler(event, _ctx):
             nxt = "/"
         params = {
             "client_id": g["id"], "redirect_uri": f"{base}/auth/callback", "response_type": "code",
-            "scope": "openid email", "state": state, "prompt": "select_account",
+            "scope": "openid email profile", "state": state, "prompt": "select_account",
             "code_challenge": _b64(hashlib.sha256(verifier.encode()).digest()), "code_challenge_method": "S256",
         }
         tmp = json.dumps({"v": verifier, "s": state, "n": nxt})
@@ -230,9 +263,15 @@ def handler(event, _ctx):
         email = str(claims.get("email", "")).lower()
         ok = (claims.get("iss") in ("https://accounts.google.com", "accounts.google.com")
               and claims.get("aud") == g["id"] and int(claims.get("exp", 0)) > time.time()
-              and claims.get("email_verified") is True and email in ALLOWED)
+              and claims.get("email_verified") is True)
+        if ok:
+            try:
+                ok = _check_user(email, str(claims.get("given_name") or claims.get("name") or "")[:60])
+            except Exception:  # noqa: BLE001
+                return landing("No se pudo comprobar tu acceso. Vuelve a intentarlo en un momento.")
         if not ok:
-            return landing(f"La cuenta <b>{email or 'elegida'}</b> no tiene acceso a esta web.", button_text="Probar con otra cuenta")
+            return landing(f"La cuenta <b>{html.escape(email) or 'elegida'}</b> no tiene invitación. Pide a quien te pasó el enlace que te invite con este email.",
+                           button_text="Probar con otra cuenta")
         return _resp(302, headers={"location": tmp["n"]}, cookies=[
             f"gs_session={session_cookie(email)}; Path=/; Max-Age={SESSION_DAYS * 86400}; Secure; HttpOnly; SameSite=Lax",
             "gs_oauth=; Path=/auth; Max-Age=0; Secure; HttpOnly; SameSite=Lax",

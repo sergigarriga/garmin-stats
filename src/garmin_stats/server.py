@@ -8,6 +8,7 @@ X-Garmin-Stats (una web ajena no puede enviarla sin un permiso CORS que aquí nu
 from __future__ import annotations
 
 import json
+import os
 import logging
 import threading
 from datetime import date, datetime
@@ -102,7 +103,9 @@ def ask(messages: list[dict]) -> dict:
     key = ai._api_key()
     if not key:
         return {"error": "No hay clave de Anthropic configurada."}
-    today = date.today().isoformat()
+    if ai.over_budget():
+        return {"error": f"Has llegado al tope de IA de este mes ({ai.budget():.0f} $). El chat vuelve el día 1."}
+    today = (os.environ.get("GARMIN_STATS_UID", ""), date.today().isoformat())  # contador por persona
     with _lock:
         if _count.get(today, 0) >= MAX_QUESTIONS_PER_DAY:
             return {"error": f"Has llegado al límite de {MAX_QUESTIONS_PER_DAY} preguntas por hoy."}

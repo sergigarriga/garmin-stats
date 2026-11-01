@@ -68,7 +68,7 @@ fi
 # 4) Paquete de la API: dependencias para Lambda (Linux x86_64, Python 3.12) + código del proyecto
 rm -rf infra/build && mkdir -p infra/build/api
 uv pip install --quiet --target infra/build/api --python-version 3.12 --python-platform x86_64-manylinux_2_28 \
-  --only-binary :all: "anthropic>=2.3" "pydantic>=2"
+  --only-binary :all: "anthropic>=2.3" "pydantic>=2" "garmin-connect-personal-api-python>=1.0"
 cp -r src/garmin_stats infra/build/api/ && find infra/build/api -name __pycache__ -prune -exec rm -rf {} +
 cp infra/lambda/api/handler.py infra/build/api/
 # Paquete de la sincronización: todas las dependencias del proyecto (pandas, fitdecode, cliente de Garmin...)
@@ -110,10 +110,10 @@ for f in apple-touch-icon.png apple-touch-icon-precomposed.png favicon.ico; do
   aws s3 cp web/public/icons/apple-touch-icon.png "s3://$BUCKET/site/$f" --content-type image/png \
     --cache-control "max-age=604800" --only-show-errors
 done
-if false; then :
-  aws lambda invoke --function-name garmin-stats-sync --invocation-type Event /dev/null >/dev/null  # refresca data.js
-  echo "Web publicada; la sincronización actualiza los datos en ~30 s."
-fi
+# La sincronización vuelve a escribir data.js de cada persona con el id de la web nueva (así se recarga sola)
+aws lambda invoke --function-name garmin-stats-sync --invocation-type Event --cli-binary-format raw-in-base64-out \
+  --payload '{}' /dev/null >/dev/null
+echo "Web publicada; la sincronización actualiza los datos en ~30 s."
 echo
 echo "Web:              $URL"
 echo "Redirección OAuth: $(out GoogleRedirectUri)"

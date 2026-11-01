@@ -96,6 +96,12 @@ Resources:
               - Effect: Allow
                 Action: ssm:GetParameter
                 Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/google-*
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: !Sub ${SiteBucket.Arn}/admin/users.json
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt SiteBucket.Arn
 
   AuthFunction:
     Type: AWS::Lambda::Function
@@ -110,7 +116,8 @@ Resources:
       MemorySize: 256
       Environment:
         Variables:
-          ALLOWED_EMAILS: !Ref AllowedEmails
+          OWNER_EMAIL: !Ref AllowedEmails
+          BUCKET: !Ref SiteBucket
           SESSION_SECRET: !Ref SessionSecret
           ORIGIN_SECRET: !Ref OriginSecret
           GOOGLE_CLIENT_ID_PARAM: /garmin-stats/google-client-id
@@ -158,14 +165,17 @@ Resources:
             Version: "2012-10-17"
             Statement:
               - Effect: Allow
-                Action: [s3:GetObject, s3:PutObject]
-                Resource: [!Sub "${SiteBucket.Arn}/site/data.js", !Sub "${SiteBucket.Arn}/state/*"]
+                Action: [s3:GetObject, s3:PutObject, s3:DeleteObject, s3:DeleteObjectVersion]
+                Resource: [!Sub "${SiteBucket.Arn}/site/u/*", !Sub "${SiteBucket.Arn}/users/*", !Sub "${SiteBucket.Arn}/admin/users.json"]
               - Effect: Allow
-                Action: s3:ListBucket
+                Action: [s3:ListBucket, s3:ListBucketVersions]
                 Resource: !GetAtt SiteBucket.Arn
               - Effect: Allow
                 Action: ssm:GetParameter
                 Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
+              - Effect: Allow
+                Action: [ssm:PutParameter, ssm:DeleteParameter, ssm:GetParameter]
+                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/users/*
               - Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource:
@@ -187,7 +197,7 @@ Resources:
       Environment:
         Variables:
           BUCKET: !Ref SiteBucket
-          ALLOWED_EMAILS: !Ref AllowedEmails
+          OWNER_EMAIL: !Ref AllowedEmails
           SESSION_SECRET: !Ref SessionSecret
           ORIGIN_SECRET: !Ref OriginSecret
           ANTHROPIC_KEY_PARAM: /garmin-stats/anthropic-key
@@ -237,15 +247,20 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: [s3:GetObject, s3:PutObject]
-                Resource: [!Sub "${SiteBucket.Arn}/site/*", !Sub "${SiteBucket.Arn}/state/*"]
+                Resource: [!Sub "${SiteBucket.Arn}/site/*", !Sub "${SiteBucket.Arn}/users/*", !Sub "${SiteBucket.Arn}/admin/users.json"]
               - Effect: Allow
                 Action: s3:ListBucket
                 Resource: !GetAtt SiteBucket.Arn
               - Effect: Allow
                 Action: ssm:GetParameter
                 Resource:
-                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/garmin-key
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/users/*
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource:
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-sync
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-api
 
   SyncFunction:
     Type: AWS::Lambda::Function
@@ -263,6 +278,7 @@ Resources:
         Variables:
           BUCKET: !Ref SiteBucket
           VAPID_PUBLIC_KEY: !Ref VapidPublicKey
+          API_FUNCTION: garmin-stats-api
 
   SyncLogs:
     Type: AWS::Logs::LogGroup
@@ -310,10 +326,10 @@ Resources:
             Statement:
               - Effect: Allow
                 Action: s3:GetObject
-                Resource: [!Sub "${SiteBucket.Arn}/site/data.js", !Sub "${SiteBucket.Arn}/state/push.json"]
+                Resource: [!Sub "${SiteBucket.Arn}/site/u/*", !Sub "${SiteBucket.Arn}/users/*", !Sub "${SiteBucket.Arn}/admin/users.json"]
               - Effect: Allow
                 Action: s3:PutObject
-                Resource: !Sub ${SiteBucket.Arn}/state/push.json
+                Resource: !Sub ${SiteBucket.Arn}/users/*/state/push.json
               - Effect: Allow
                 Action: s3:ListBucket
                 Resource: !GetAtt SiteBucket.Arn
@@ -330,11 +346,12 @@ Resources:
       Handler: notify.handler
       Code: sync
       Role: !GetAtt NotifyRole.Arn
-      Timeout: 60
+      Timeout: 120
       MemorySize: 256
       Environment:
         Variables:
           BUCKET: !Ref SiteBucket
+          OWNER_EMAIL: !Ref AllowedEmails
 
   NotifyLogs:
     Type: AWS::Logs::LogGroup
@@ -437,19 +454,20 @@ Resources:
       FunctionCode: !Sub |
         const crypto = require('crypto');
         const SECRET = '${SessionSecret}';
-        const ALLOWED = '${AllowedEmails}'.toLowerCase().split(',').map(function (e) { return e.trim(); });
         function b64decode(s) {
           s = s.replace(/-/g, '+').replace(/_/g, '/');
           while (s.length % 4) s += '=';
           return Buffer.from(s, 'base64').toString('utf8');
         }
-        function valid(v) {
+        // Devuelve el email de una sesión válida (firma y caducidad), o null. Quién tiene acceso lo decide el
+        // login (registro de usuarias en S3); aquí solo se comprueba que la sesión la firmó el login.
+        function sessionEmail(v) {
           var p = v.split('.');
-          if (p.length !== 3) return false;
-          if (!(parseInt(p[1], 10) > Date.now() / 1000)) return false;
+          if (p.length !== 3) return null;
+          if (!(parseInt(p[1], 10) > Date.now() / 1000)) return null;
           var mac = crypto.createHmac('sha256', SECRET).update(p[0] + '.' + p[1]).digest('hex');
-          if (mac !== p[2]) return false;
-          return ALLOWED.indexOf(b64decode(p[0]).toLowerCase()) >= 0;
+          if (mac !== p[2]) return null;
+          return b64decode(p[0]).trim().toLowerCase();
         }
         function handler(event) {
           var req = event.request;
@@ -457,15 +475,22 @@ Resources:
           // Archivos públicos sin datos: instalar la app e icono de la pantalla de inicio
           if (u === '/manifest.webmanifest' || u === '/sw.js' || u.indexOf('/icons/') === 0 || u === '/favicon.ico'
               || u === '/apple-touch-icon.png' || u === '/apple-touch-icon-precomposed.png') return req;
+          // Las carpetas de datos de cada persona nunca se piden directamente
+          if (u.indexOf('/u/') === 0) return { statusCode: 404, statusDescription: 'Not Found' };
           var c = req.cookies['gs_session'];
-          if (c && valid(c.value)) {
-            if (req.uri.endsWith('/')) req.uri += 'index.html';
+          var email = c ? sessionEmail(c.value) : null;
+          if (email) {
+            // Cada persona solo ve SU carpeta: el id sale del email firmado (HMAC), no de nada que mande el navegador
+            var uid = crypto.createHmac('sha256', SECRET).update('uid:' + email).digest('hex').substring(0, 16);
+            if (u === '/data.js') req.uri = '/u/' + uid + '/data.js';
+            else if (u.indexOf('/acts/') === 0) req.uri = '/u/' + uid + u;
+            else if (u.endsWith('/')) req.uri += 'index.html';
             return req;
           }
-          if (req.uri.indexOf('/api/') === 0) {
+          if (u.indexOf('/api/') === 0) {
             return { statusCode: 401, statusDescription: 'Unauthorized', headers: { 'cache-control': { value: 'no-store' } } };
           }
-          var next = encodeURIComponent(req.uri === '/index.html' ? '/' : req.uri);
+          var next = encodeURIComponent(u === '/index.html' ? '/' : u);
           return { statusCode: 302, statusDescription: 'Found',
                    headers: { location: { value: '/auth/login?next=' + next }, 'cache-control': { value: 'no-store' } } };
         }
