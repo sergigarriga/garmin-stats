@@ -236,3 +236,12 @@ La API personal de Garmin es de solo lectura (no se pueden crear entrenos ni pon
 - **Alarmas:** para probar el email sin provocar un fallo real:
   `aws cloudwatch set-alarm-state --alarm-name garmin-stats-sync-falla --state-value ALARM --state-reason "Prueba"`.
   Vuelve sola a OK en la siguiente comprobación y también avisa por email.
+
+## Actualizar ahora (01-11-2026)
+
+- Botón de actualizar en la barra (móvil y escritorio) y gesto de deslizar hacia abajo en el móvil.
+- `POST /api/sync` lanza la Lambda `garmin-stats-sync` en el momento (~30-40 s); `GET /api/sync` da el estado.
+- `state/sync_status.json` hace de candado: nunca corren dos sincronizaciones a la vez (botón y la de cada hora),
+  una pulsación repetida espera a la que ya está en marcha y en los 45 s siguientes a terminar no se vuelve a llamar a Garmin.
+- La IA solo reescribe los textos si hay datos nuevos y con límite diario, así que actualizar a menudo no gasta más.
+- Ojo: trae lo que ya está en Garmin Connect. Si el reloj no se ha sincronizado con la app del móvil, no hay nada nuevo.

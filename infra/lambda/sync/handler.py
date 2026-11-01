@@ -8,8 +8,10 @@ de IA (y el lunes reajusta el plan) y publica la web. El estado vive en S3:
 Los FIT solo se bajan de Garmin para actividades nuevas; los ya leídos están en la base de datos.
 """
 
+import json
 import logging
 import os
+import time
 from pathlib import Path
 
 import boto3
@@ -83,7 +85,40 @@ def _push() -> None:
                        ExtraArgs={"ContentType": "text/javascript; charset=utf-8", "CacheControl": "no-store"})
 
 
+STATUS_KEY = "state/sync_status.json"
+STALE = 300  # una sincronización "en marcha" de hace más de 5 min se da por muerta
+
+
+def _status() -> dict:
+    try:
+        return json.loads(s3.get_object(Bucket=BUCKET, Key=STATUS_KEY)["Body"].read())
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def _set_status(**st) -> None:
+    s3.put_object(Bucket=BUCKET, Key=STATUS_KEY, Body=json.dumps(st).encode(), ContentType="application/json")
+
+
 def handler(event, _ctx):
+    event = event or {}
+    token = event.get("token")  # lo pone la API cuando pulsas "actualizar"
+    st = _status()
+    if st.get("status") == "running" and time.time() - st.get("at", 0) < STALE and st.get("token") != token:
+        log.warning("Ya hay otra sincronización en marcha; esta se salta.")
+        return {"ok": True, "skipped": True}
+    started = int(time.time())
+    _set_status(status="running", at=started, token=token or f"auto-{started}", manual=bool(token))
+    try:
+        _run()
+    except Exception as e:
+        _set_status(status="error", at=started, finished=int(time.time()), manual=bool(token), error=str(e)[:200])
+        raise  # la alarma "sync falla" sigue saltando
+    _set_status(status="done", at=started, finished=int(time.time()), manual=bool(token))
+    return {"ok": True}
+
+
+def _run() -> None:
     _secret("/garmin-stats/garmin-key", "~/.config/garmin/connect-personal-api-key")
     _secret("/garmin-stats/anthropic-key", "~/.config/anthropic/garmin-stats-key")
     _pull()
@@ -91,4 +126,3 @@ def handler(event, _ctx):
     from garmin_stats.cli import main
     main(["all"])
     _push()
-    return {"ok": True}

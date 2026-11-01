@@ -142,6 +142,30 @@ def _run_job(event):
     _refresh_site(coach)
 
 
+def _sync_status() -> dict:
+    try:
+        return json.loads(s3.get_object(Bucket=BUCKET, Key="state/sync_status.json")["Body"].read())
+    except Exception:  # noqa: BLE001
+        return {}
+
+
+def _sync(method: str):
+    """Sincronizar con Garmin ahora (botón "actualizar" de la web). GET devuelve el estado."""
+    st = _sync_status()
+    now = time.time()
+    if method == "GET":
+        return _json(200, st)
+    if st.get("status") == "running" and now - st.get("at", 0) < 300:
+        return _json(200, {**st, "already": True})  # ya hay una en marcha: la web espera a esa
+    if st.get("status") == "done" and now - st.get("finished", 0) < 45:
+        return _json(200, {**st, "recent": True})  # acaba de terminar: no se vuelve a llamar a Garmin
+    token = base64.urlsafe_b64encode(os.urandom(9)).decode()
+    st = {"status": "running", "at": int(now), "token": token, "manual": True}
+    s3.put_object(Bucket=BUCKET, Key="state/sync_status.json", Body=json.dumps(st).encode(), ContentType="application/json")
+    _lambda.invoke(FunctionName=os.environ["SYNC_FUNCTION"], InvocationType="Event", Payload=json.dumps({"token": token}).encode())
+    return _json(202, st)
+
+
 def handler(event, _ctx):
     if "job" in event:  # invocación asíncrona propia
         return _run_job(event)
@@ -161,6 +185,9 @@ def handler(event, _ctx):
         payload = json.loads(body) if body else {}
     except json.JSONDecodeError:
         return _json(400, {"error": "JSON no válido"})
+
+    if path == "/api/sync":
+        return _sync(method)
 
     _setup_key()
     _pull()

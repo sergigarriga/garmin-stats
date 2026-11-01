@@ -1,4 +1,6 @@
-import { useEffect, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useState, type ReactElement } from 'react';
+import GlobalStyles from '@mui/material/GlobalStyles';
+import { PullToRefresh, useManualSync } from './sync';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -227,6 +229,8 @@ export default function App() {
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down('md'));
   const [last, setLast] = useState<Record<string, string>>({});
+  const onSynced = useCallback((msg: string) => { clearFresh(); setInfo(msg); }, [clearFresh]);
+  const { syncing, sync } = useManualSync(data, check, onSynced);
 
   const actId = page.startsWith('act-') ? Number(page.slice(4)) : null;
   const pageKey = actId != null ? 'entreno' : (PAGES.some((p) => p.key === page) ? page : 'hoy');
@@ -256,7 +260,22 @@ export default function App() {
                 <FavoriteRounded sx={{ fontSize: 12, color: '#D93025' }} />
               </Box>
             </Box>
-            <Typography variant="h6" sx={{ fontSize: { xs: 19, sm: 22 }, color: 'text.primary', flex: mobile ? 1 : 'none' }}>Mi salud</Typography>
+            {mobile ? (
+              <Box sx={{ flex: 1, minWidth: 0, lineHeight: 1 }}>
+                <Typography variant="h6" sx={{ fontSize: 19, color: 'text.primary', lineHeight: 1.2 }}>Mi salud</Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }} noWrap>
+                  {syncing ? 'Conectando con Garmin…' : `Actualizado ${relative(generated, now)}`}
+                </Typography>
+              </Box>
+            ) : (
+              <Typography variant="h6" sx={{ fontSize: 22, color: 'text.primary' }}>Mi salud</Typography>
+            )}
+            {mobile && (
+              <IconButton onClick={sync} disabled={syncing} aria-label="Actualizar con Garmin ahora" sx={{ color: 'text.secondary',
+                animation: syncing ? 'spin 0.8s linear infinite' : 'none', '@keyframes spin': { to: { transform: 'rotate(360deg)' } } }}>
+                <RefreshRounded />
+              </IconButton>
+            )}
             {!mobile && (
               <Tabs value={section.key} onChange={(_, v) => { const sec = SECTIONS.find((x) => x.key === v)!; go(last[sec.key] ?? sec.pages[0]); }}
                 sx={{ flex: 1, minWidth: 0, ml: 3, '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' } }}>
@@ -264,11 +283,11 @@ export default function App() {
               </Tabs>
             )}
             {!mobile && (
-              <Tooltip title={`Datos generados a las ${time(generated)}. Se actualizan solos cada hora.`}>
+              <Tooltip title={syncing ? 'Conectando con Garmin…' : `Datos de las ${time(generated)}. Se actualizan solos cada hora; pulsa para traerlos de Garmin ahora.`}>
                 <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', color: 'text.secondary' }}>
-                  <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>Actualizado {relative(generated, now)}</Typography>
-                  <IconButton size="small" onClick={check} aria-label="Comprobar ahora"
-                    sx={{ animation: checking ? 'spin 0.8s linear infinite' : 'none', '@keyframes spin': { to: { transform: 'rotate(360deg)' } } }}>
+                  <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>{syncing ? 'Conectando con Garmin…' : `Actualizado ${relative(generated, now)}`}</Typography>
+                  <IconButton size="small" onClick={sync} disabled={syncing} aria-label="Actualizar con Garmin ahora"
+                    sx={{ animation: syncing || checking ? 'spin 0.8s linear infinite' : 'none', '@keyframes spin': { to: { transform: 'rotate(360deg)' } } }}>
                     <RefreshRounded fontSize="small" />
                   </IconButton>
                 </Stack>
@@ -290,6 +309,8 @@ export default function App() {
       </Container>
 
       {mobile && <GlassNav current={section} go={go} last={last} />}
+      {mobile && <GlobalStyles styles={{ 'html, body': { overscrollBehaviorY: 'contain' } }} />}
+      {mobile && <PullToRefresh onRefresh={sync} busy={syncing} />}
 
       <Chat showFab={!mobile} />
       <Snackbar open={!!info} autoHideDuration={9000} onClose={() => setInfo(null)} message={info}

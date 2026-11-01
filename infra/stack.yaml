@@ -171,6 +171,7 @@ Resources:
                 Resource:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-api
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-notify
+                  - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:garmin-stats-sync
 
   ApiFunction:
     Type: AWS::Lambda::Function
@@ -191,6 +192,7 @@ Resources:
           ORIGIN_SECRET: !Ref OriginSecret
           ANTHROPIC_KEY_PARAM: /garmin-stats/anthropic-key
           NOTIFY_FUNCTION: garmin-stats-notify
+          SYNC_FUNCTION: garmin-stats-sync
 
   ApiLogs:
     Type: AWS::Logs::LogGroup

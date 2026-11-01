@@ -129,7 +129,7 @@ export function useGarminData(intervalMs = 60_000) {
   const [lastCheck, setLastCheck] = useState(() => new Date());
   const current = useRef(data?.generatedAt);
 
-  const check = useCallback(() => {
+  const check = useCallback(() => new Promise<GarminData | undefined>((resolve) => {
     setChecking(true);
     const s = document.createElement('script');
     s.src = `./data.js?t=${Date.now()}`;
@@ -146,6 +146,7 @@ export function useGarminData(intervalMs = 60_000) {
         if (Date.now() - last > 5 * 60_000) {
           try { sessionStorage.setItem('gs-reload', String(Date.now())); } catch { /* sin almacenamiento */ }
           window.location.reload();
+          resolve(d);
           return;
         }
       }
@@ -155,11 +156,12 @@ export function useGarminData(intervalMs = 60_000) {
         setData(d);
         if (!first) setFresh(true);
       }
+      resolve(d);
     };
     s.onload = done;
     s.onerror = done;
     document.head.appendChild(s);
-  }, []);
+  }), []);
 
   useEffect(() => {
     const id = window.setInterval(check, intervalMs);
