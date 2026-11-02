@@ -76,7 +76,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
             </Box>
             <Stack spacing={1.5}>
               {[
-                { icon: <BedtimeRounded />, color: '#5B5BD6', t: 'Sueño, corazón y energía', d: 'Cómo duermes, tu HRV y cómo de preparada estás cada mañana.' },
+                { icon: <BedtimeRounded />, color: '#5B5BD6', t: 'Sueño, corazón y energía', d: 'Cómo duermes, tu HRV y cómo llegas cada mañana para entrenar.' },
                 { icon: <DirectionsRunRounded />, color: '#E8710A', t: 'Plan de entreno con IA', d: 'Para tu objetivo (5 km, 10 km, media, maratón) y con gimnasio si quieres.' },
                 { icon: <FavoriteRounded />, color: '#D93025', t: 'Un coach al que preguntar', d: '"¿Por qué duermo peor los domingos?" y te responde con tus datos.' },
               ].map((f) => (

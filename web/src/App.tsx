@@ -145,7 +145,7 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
         {me?.role === 'owner' && (
           <MenuItem onClick={() => { setAnchor(null); onAccount('admin'); }}>
             <ListItemIcon><GroupAddOutlined fontSize="small" /></ListItemIcon>
-            <ListItemText primary="Invitadas" secondary="Invitar amigas y ver su gasto" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+            <ListItemText primary="Invitaciones" secondary="Invitar a amigos y ver su gasto" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
           </MenuItem>
         )}
         {me && (

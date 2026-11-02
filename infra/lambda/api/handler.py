@@ -511,7 +511,7 @@ def _admin(path: str, method: str, payload: dict):
         if U.find(users, email=email):
             return _json(400, {"error": "Ya tiene invitación."})
         if sum(1 for u in users if u.get("role") != "owner") >= 10:
-            return _json(400, {"error": "Máximo 10 invitadas."})
+            return _json(400, {"error": "Máximo 10 invitaciones."})
         budget = float(payload.get("budgetUsd") or FRIEND_BUDGET)
         users.append({"email": email, "uid": U.uid_for(email, SESSION_SECRET), "name": str(payload.get("name") or "")[:60],
                       "role": "friend", "budgetUsd": max(0.0, min(budget, 20.0)), "status": "invited", "invitedAt": U.now()})

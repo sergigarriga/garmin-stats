@@ -151,7 +151,7 @@ interface AdminUser {
   invitedAt?: number; joinedAt?: number; lastSync?: number; syncStatus?: string;
 }
 const STATUS: Record<string, { label: string; color: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
-  invited: { label: 'Invitada', color: 'default' },
+  invited: { label: 'Invitación enviada', color: 'default' },
   onboarding: { label: 'Configurando', color: 'info' },
   active: { label: 'Activa', color: 'success' },
   key_invalid: { label: 'Clave caducada', color: 'error' },
@@ -188,7 +188,7 @@ export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => v
 
   return (
     <Dialog open={open} onClose={onClose} slotProps={{ paper: { sx: { borderRadius: '28px', m: 2, width: 'calc(100% - 32px)', maxWidth: 600 } } }}>
-      <DialogTitle sx={{ pr: 6 }}>Invitadas
+      <DialogTitle sx={{ pr: 6 }}>Invitaciones
         <IconButton onClick={onClose} aria-label="Cerrar" sx={{ position: 'absolute', right: 12, top: 12 }}><CloseRounded /></IconButton>
       </DialogTitle>
       <DialogContent>
