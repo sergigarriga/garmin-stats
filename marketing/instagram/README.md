@@ -34,13 +34,16 @@ Publica los posts en orden (01 primero). Los carruseles se suben como una sola p
 
 - `color`: activity (verde), heart (rojo), sleep (índigo), stress (ámbar), recovery (turquesa), energy (azul),
   training (naranja), gym (morado). También vale un color `#RRGGBB`.
-- `dark: true` (en el post o en una diapositiva): modo oscuro.
+- Estilo: fondos pastel con manchas difuminadas, titulares centrados con subrayador en `**palabra**`, pegatinas y
+  tarjetas un poco giradas. No hay modo oscuro.
 - Diapositivas (`layout`):
-  - `hook`: gancho a pantalla completa. `title`, `body`, `sticker` (pegatina ladeada: "Confiesa", "Red flag", "POV"…),
-    `bg` ("color" = color del post, por defecto, o "dark"), `size` (118 por defecto), `swipe` (botón "Desliza").
+  - `hook`: gancho centrado. `title`, `body`, `sticker` (pegatina ladeada: "Confiesa", "Red flag", "POV"…), `floats`
+    (2-4 pegatinas con datos cortos), `size` (112 por defecto), `swipe` (botón "Desliza").
   - `versus`: `title`, `left` y `right` ({`label`, `value`, `unit`, `lines`, `tone`: "good" en el bueno}), `body`.
-  - `cover`: `kicker`, `icon`, `title`, `body`, `visual` (opcional), `size` (tamaño del titular, 96 por defecto).
-  - `points`: `title` y `points` [{`icon`, `color`, `title`, `body`}] (3-4 puntos).
+  - `cover`: `kicker`, `icon`, `title`, `body`, `visual` (tarjeta girada), `tag` (etiqueta en su esquina), `tilt`
+    (giro en grados), `size` (tamaño del titular, 86 por defecto).
+  - `points`: mosaico. `title` y `points` [{`icon`, `color`, `title`, `body`}] (3-4 bloques; con 3, el primero ocupa
+    todo el ancho).
   - `big`: `big` (número o texto enorme), `title`, `body`.
   - `cta`: `title`, `body`, `icon`, `actions` [{`icon`, `text`}].
   - `example: false` quita la nota "Datos de ejemplo".

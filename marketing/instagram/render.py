@@ -24,32 +24,45 @@ HERE = Path(__file__).resolve().parent
 ICONS = json.loads((HERE / "icons.json").read_text())
 W, H = 1080, 1350
 
-# Colores de la app (web/src/theme.ts): tono claro y tono oscuro de cada categoría
-C_LIGHT = {"activity": "#188038", "heart": "#D93025", "sleep": "#5B5BD6", "stress": "#C26401", "recovery": "#00838F",
-           "energy": "#1A73E8", "training": "#E8710A", "gym": "#9334E6", "neutral": "#5F6368"}
-C_DARK = {"activity": "#81C995", "heart": "#F28B82", "sleep": "#AFADFF", "stress": "#FDD663", "recovery": "#78D9EC",
-          "energy": "#8AB4F8", "training": "#FCAD70", "gym": "#D7AEFB", "neutral": "#BDC1C6"}
-ZONES = ["#9AA0A6", "#1A73E8", "#188038", "#E8710A", "#D93025"]
-LIGHT = {"TEXT": "#1F1F1F", "TEXT2": "#5F6368", "BG": "#F8FAFD", "CARD": "#FFFFFF", "LINE": "#EEF0F3", "CHIP": "#EEF2F8", "OUTLINE": "#DADCE0"}
-DARK = {"TEXT": "#ECEEF1", "TEXT2": "#A9B0BB", "BG": "#0F1115", "CARD": "#23272F", "LINE": "#323743", "CHIP": "#262A33", "OUTLINE": "#3A3F4B"}
-YELLOW = "#FDE293"  # resalte sobre fondos de color
+# Paleta pastel "aesthetic": fondo pastel por tema, color de acento con contraste para datos y textos destacados,
+# y dos pasteles complementarios para las manchas difuminadas del fondo.
+PASTEL = {
+    "energy":   {"bg": "#DCEAFF", "accent": "#2F6FE4", "blobs": ["#FFD6E5", "#FFF0B8"]},
+    "activity": {"bg": "#D6F2E1", "accent": "#1E8E4E", "blobs": ["#FFF0B8", "#D3E6FF"]},
+    "sleep":    {"bg": "#E5DFFF", "accent": "#5B4BD6", "blobs": ["#FFD8EA", "#CFEFFF"]},
+    "stress":   {"bg": "#FFF0C2", "accent": "#B86A00", "blobs": ["#FFD7C7", "#E5DFFF"]},
+    "recovery": {"bg": "#D0F0EC", "accent": "#00807A", "blobs": ["#E5DFFF", "#FFF0B8"]},
+    "training": {"bg": "#FFE1CE", "accent": "#DE6418", "blobs": ["#FFF0B8", "#FFD6E5"]},
+    "gym":      {"bg": "#EEDDFF", "accent": "#8A3FD6", "blobs": ["#FFD6E5", "#CFEFFF"]},
+    "heart":    {"bg": "#FFDBE4", "accent": "#D23A5C", "blobs": ["#FFE8C4", "#E5DFFF"]},
+    "neutral":  {"bg": "#ECEEF2", "accent": "#5F6368", "blobs": ["#DCEAFF", "#FFD6E5"]},
+}
+# Colores de datos (gráficos, iconos) dentro de las tarjetas blancas
+C_LIGHT = {k: v["accent"] for k, v in PASTEL.items()}
+ZONES = ["#A6AEBB", "#5B8DEF", "#3FB37F", "#F29A4A", "#EB5E6F"]
+INK, INK2 = "#1D1B2C", "#5E5B70"
+LIGHT = {"TEXT": INK, "TEXT2": INK2, "BG": "#FFFFFF", "CARD": "#FFFFFF", "LINE": "#EFEDF3", "CHIP": "#F1EFF7", "OUTLINE": "#DDDAE6"}
+YELLOW = "#FFE58A"
 
 C: dict = {}
 TEXT = TEXT2 = BG = CARD = LINE = CHIP = OUTLINE = ""
 DARKMODE = False
 
 
-def set_theme(dark: bool) -> None:
-    """Tema de la diapositiva (claro u oscuro). Los visuales leen estas variables al pintarse."""
-    global TEXT, TEXT2, BG, CARD, LINE, CHIP, OUTLINE, DARKMODE
-    t = DARK if dark else LIGHT
+def set_theme(dark: bool = False) -> None:
+    """Un solo tema (pastel claro). Los visuales leen estas variables al pintarse."""
+    global TEXT, TEXT2, BG, CARD, LINE, CHIP, OUTLINE
+    t = LIGHT
     TEXT, TEXT2, BG, CARD, LINE, CHIP, OUTLINE = (t[k] for k in ("TEXT", "TEXT2", "BG", "CARD", "LINE", "CHIP", "OUTLINE"))
     C.clear()
-    C.update(C_DARK if dark else C_LIGHT)
-    DARKMODE = dark
+    C.update(C_LIGHT)
 
 
-set_theme(False)
+set_theme()
+
+
+def pal(key: str | None) -> dict:
+    return PASTEL.get(key or "energy", PASTEL["energy"])
 
 
 def esc(s) -> str:
@@ -299,108 +312,126 @@ VISUALS = {"rings": v_rings, "ring": v_ring, "metric": v_metric, "readiness": v_
 
 
 # ---------------------------------------------------------------- piezas comunes
-def brand(i: int, n: int, fg: str | None = None, inner: str | None = None, pill: str | None = None) -> str:
-    fg, inner = fg or TEXT, inner or BG
-    count = (f'<div style="font-size:24px;font-weight:600;color:{fg};opacity:.75;padding:8px 20px;border-radius:999px;'
-             f'background:{pill or "rgba(127,127,127,.14)"}">{i}/{n}</div>') if n > 1 else ""
-    return f'''<div class="row" style="justify-content:space-between;align-items:center">
-      <div class="row" style="gap:16px;align-items:center">
-        <div style="width:56px;height:56px;border-radius:50%;background:conic-gradient(from 200deg,#D93025,#E8710A,#F6AE2D,#188038,#1A73E8,#5B5BD6,#D93025);display:grid;place-items:center">
-          <div style="width:40px;height:40px;border-radius:50%;background:{inner};display:grid;place-items:center">{icon("Favorite", "#D93025", 22)}</div></div>
-        <div style="font-size:34px;font-weight:600;color:{fg};letter-spacing:-.01em">Mi salud</div></div>{count}</div>'''
+LOGO = "conic-gradient(from 200deg,#F28B82,#FCAD70,#FDD663,#81C995,#8AB4F8,#AFADFF,#F28B82)"
 
 
-def kicker(s: dict, c: str) -> str:
+def brand() -> str:
+    """Marca en una cápsula blanca centrada arriba."""
+    return f'''<div class="row" style="justify-content:center"><div class="row" style="gap:12px;align-items:center;padding:10px 24px 10px 10px;
+      border-radius:999px;background:rgba(255,255,255,.72);box-shadow:0 4px 18px rgba(60,50,90,.08)">
+      <div style="width:44px;height:44px;border-radius:50%;background:{LOGO};display:grid;place-items:center">
+        <div style="width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center">{icon("Favorite", "#E8607A", 17)}</div></div>
+      <div style="font-size:27px;font-weight:650;color:{INK};letter-spacing:-.01em">Mi salud</div></div></div>'''
+
+
+def dots(i: int, n: int, accent: str) -> str:
+    if n < 2:
+        return ""
+    d = "".join(f'<div style="height:12px;width:{38 if k == i else 12}px;border-radius:9px;background:{accent if k == i else "rgba(29,27,44,.18)"}"></div>'
+                for k in range(1, n + 1))
+    return f'<div class="row" style="gap:10px;justify-content:center">{d}</div>'
+
+
+def chip(text: str, bg: str, fg: str = INK, rot: float = 0, size: int = 30, icon_name: str | None = None, shadow: bool = True) -> str:
+    ic = icon(icon_name, fg, round(size * 1.1)) if icon_name else ""
+    return (f'<div class="row free" style="gap:10px;align-items:center;padding:14px 28px;border-radius:999px;background:{bg};color:{fg};'
+            f'font-size:{size}px;font-weight:700;transform:rotate({rot}deg);white-space:nowrap;'
+            f'{"box-shadow:0 10px 26px rgba(60,50,90,.13);" if shadow else ""}">{ic}{esc(text)}</div>')
+
+
+def kicker(s: dict, accent: str) -> str:
     if not s.get("kicker"):
         return ""
-    return (f'<div class="row" style="gap:12px;align-items:center;align-self:flex-start;padding:12px 24px 12px 16px;border-radius:999px;'
-            f'background:{mix(c, .16, CARD)};color:{c};font-size:28px;font-weight:650">{icon(s.get("icon", "AutoAwesome"), c, 34)}{esc(s["kicker"])}</div>')
+    return f'<div class="row" style="justify-content:center">{chip(s["kicker"], "#FFFFFF", accent, -2.5, 27, s.get("icon"))}</div>'
 
 
-def sticker(text: str, bg: str = YELLOW, fg: str = "#1F1F1F", rot: float = -4) -> str:
-    return (f'<div style="align-self:flex-start;transform:rotate({rot}deg);padding:14px 30px;border-radius:18px;background:{bg};color:{fg};'
-            f'font-size:34px;font-weight:750;letter-spacing:.01em;box-shadow:0 10px 30px rgba(0,0,0,.18)">{esc(text)}</div>')
+def blobs(p: dict, seed: int) -> str:
+    """Manchas pastel difuminadas en el fondo (cambian de sitio en cada diapositiva)."""
+    spots = [[(-160, -120, 620), (680, 860, 680)], [(640, -180, 640), (-220, 760, 700)], [(-120, 520, 560), (700, 140, 520)]][seed % 3]
+    return "".join(f'<div class="deco" style="position:absolute;left:{x}px;top:{y}px;width:{r}px;height:{r}px;border-radius:50%;'
+                   f'background:{c};filter:blur(70px);opacity:.9"></div>' for (x, y, r), c in zip(spots, p["blobs"]))
 
 
-def swipe(fg: str, bg: str) -> str:
-    return (f'<div class="row" style="align-self:flex-end;gap:12px;align-items:center;padding:14px 26px;border-radius:999px;background:{bg};'
-            f'color:{fg};font-size:28px;font-weight:650">Desliza {icon("ArrowForward", fg, 30)}</div>')
+def card(inner: str, tilt: float = 0, tag: str | None = None, tag_bg: str = YELLOW, extra: str = "") -> str:
+    t = (f'<div class="free" style="position:absolute;top:-30px;right:34px;z-index:2">{chip(tag, tag_bg, INK, 5, 28)}</div>') if tag else ""
+    return f'<div style="position:relative;transform:rotate({tilt}deg)">{t}<div class="card" style="{extra}">{inner}</div></div>'
 
 
 # ---------------------------------------------------------------- diapositivas
-def slide_html(post: dict, s: dict, i: int, n: int) -> str:
-    dark = bool(s.get("dark", post.get("dark", False)))
-    set_theme(dark)
-    c = col(s.get("color") or post.get("color"))
+def slide_html(post: dict, s: dict, i: int, n: int, k: int = 0) -> str:
+    set_theme()
+    key = s.get("color") or post.get("color") or "energy"
+    p = pal(key)
+    accent = p["accent"]
+    hl = mix(accent, .28, "#FFFFFF")  # subrayador de la palabra clave
     layout = s.get("layout", "cover")
-    bg = mix(c, .05 if dark else .07) if layout in ("cover", "big", "versus") else BG
-    example = s.get("example", ("visual" in s or layout == "versus") and layout != "cta")
-    fg_title, top, foot_color, accent = TEXT, brand(i, n), "#9AA0A6", c
+    bg = p["bg"]
+    example = s.get("example", ("visual" in s or layout == "versus") and layout not in ("cta", "hook"))
+    title = lambda size, extra="": f'<div class="title" style="font-size:{size}px;{extra}">{rich(s["title"])}</div>'  # noqa: E731
+    lead = lambda extra="": f'<div class="lead" style="{extra}">{rich(s["body"])}</div>' if s.get("body") else ""  # noqa: E731
+
     if layout == "hook":
-        # gancho a pantalla completa: color sólido (o casi negro) y texto enorme en blanco
-        solid = s.get("bg", "color")
-        pc = post.get("color", "energy")
-        if solid == "dark":
-            bg, accent = "#0B0D11", C_DARK.get(pc, pc)
-        else:
-            bg, accent = C_LIGHT.get(pc, pc), YELLOW
-        fg_title = "#FFFFFF"
-        top = brand(i, n, "#FFFFFF", bg, "rgba(255,255,255,.16)")
-        foot_color = "rgba(255,255,255,.55)"
-        st = sticker(s["sticker"], s.get("stickerBg") or (YELLOW if solid != "dark" else accent)) if s.get("sticker") else ""
-        body = f'''<div style="flex:1"></div>{st}
-          <div class="title" style="font-size:{s.get("size", 118)}px;margin-top:20px">{rich(s["title"])}</div>
-          {f'<div class="lead" style="color:rgba(255,255,255,.82);font-size:40px">{rich(s["body"])}</div>' if s.get("body") else ''}
-          <div style="flex:1.15"></div>{swipe("#1F1F1F", "#FFFFFF") if s.get("swipe", n > 1 and i == 1) else ''}'''
+        floats = s.get("floats") or []
+        cloud = "".join(chip(t, ["#FFFFFF", YELLOW, mix(accent, .22, "#FFFFFF")][j % 3], INK, [-5, 4, -2, 6][j % 4], 28) for j, t in enumerate(floats))
+        st = f'<div class="row" style="justify-content:center">{chip(s["sticker"], YELLOW, INK, -5, 34)}</div>' if s.get("sticker") else ""
+        swipe = (f'<div class="row" style="justify-content:flex-end">{chip("Desliza", "#FFFFFF", INK, 0, 26, None)}</div>'
+                 if s.get("swipe", n > 1 and i == 1) else "")
+        body = f'''<div style="flex:1"></div>{st}{title(s.get("size", 112), "text-align:center;margin-top:16px")}
+          {lead("text-align:center;align-self:center;font-size:38px")}
+          {f'<div class="row" style="gap:18px;justify-content:center;flex-wrap:wrap;margin-top:22px">{cloud}</div>' if cloud else ''}
+          <div style="flex:1.1"></div>{swipe}'''
     elif layout == "cover":
         vis = s.get("visual")
-        body = f'''{kicker(s, c)}
-          <div class="title" style="font-size:{s.get("size", 96)}px">{rich(s["title"])}</div>
-          {f'<div class="lead">{rich(s["body"])}</div>' if s.get("body") else ''}
+        body = f'''{kicker(s, accent)}{title(s.get("size", 86), "text-align:center")}{lead("text-align:center;align-self:center")}
           <div style="flex:1"></div>
-          {f'<div class="card">{VISUALS[vis["type"]](vis)}</div>' if vis else ''}'''
+          {card(VISUALS[vis["type"]](vis), s.get("tilt", [-2, 2, -1.5][k % 3]), s.get("tag")) if vis else ''}<div style="flex:.25"></div>'''
     elif layout == "points":
-        few = len(s["points"]) <= 3  # con pocos puntos, letra más grande
-        pts = "".join(f'''<div class="row" style="gap:30px;align-items:flex-start">{bubble(p.get("icon", "CheckCircle"), col(p.get("color") or s.get("color") or post.get("color")), 96 if few else 88)}
-            <div class="col" style="gap:8px;padding-top:6px"><div style="font-size:{44 if few else 40}px;font-weight:650;letter-spacing:-.015em;line-height:1.15">{rich(p["title"])}</div>
-              <div style="font-size:{34 if few else 31}px;line-height:1.38;color:{TEXT2}">{rich(p["body"])}</div></div></div>''' for p in s["points"])
-        vis = s.get("visual")
-        body = f'''<div style="flex:.55"></div>{kicker(s, c)}<div class="title" style="font-size:{s.get("size", 84)}px">{rich(s["title"])}</div>
-          <div class="col" style="gap:{58 if few else 48}px;margin-top:34px">{pts}</div><div style="flex:1"></div>
-          {f'<div class="card">{VISUALS[vis["type"]](vis)}</div>' if vis else ''}'''
+        pts = s["points"]
+        tiles = []
+        for j, q in enumerate(pts):
+            qp = pal(q.get("color") or key)
+            wide = len(pts) == 3 and j == 0
+            tiles.append(f'''<div class="col" style="grid-column:{'1 / -1' if wide else 'auto'};gap:14px;padding:36px 34px 38px;border-radius:42px;
+                background:{mix(qp["bg"], .85, "#FFFFFF")};box-shadow:0 10px 30px rgba(60,50,90,.07);transform:rotate({[-1, 1, 1, -1][j % 4] * (0 if wide else 1)}deg)">
+              <div style="width:76px;height:76px;border-radius:24px;background:#fff;display:grid;place-items:center">{icon(q.get("icon", "CheckCircle"), qp["accent"], 42)}</div>
+              <div style="font-size:{40 if wide else 35}px;font-weight:700;letter-spacing:-.02em;line-height:1.12">{rich(q["title"])}</div>
+              <div style="font-size:{30 if wide else 28}px;line-height:1.36;color:{INK2}">{rich(q["body"])}</div></div>''')
+        body = f'''<div style="flex:1"></div>{kicker(s, accent)}{title(s.get("size", 80), "text-align:center")}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px">{"".join(tiles)}</div><div style="flex:1.2"></div>'''
     elif layout == "versus":
-        def side(x: dict) -> str:
+        def side(x: dict, rot: float) -> str:
             good = x.get("tone") == "good"
-            k = C["activity"] if good else C["heart"]
-            lines = "".join(f'<div style="font-size:27px;line-height:1.35;color:{TEXT2}">{rich(t)}</div>' for t in x.get("lines", []))
-            return f'''<div class="card col" style="flex:1;gap:16px;padding:36px 34px;{f'outline:4px solid {k};' if good else ''}">
-              <div class="row" style="gap:10px;align-items:center;color:{k};font-size:26px;font-weight:700;letter-spacing:.02em">
-                {icon("CheckCircle" if good else "Cancel", k, 34)}{esc(x["label"]).upper()}</div>
-              <div style="font-size:{x.get("size", 74)}px;font-weight:650;letter-spacing:-.035em;line-height:1">{esc(x["value"])}
-                <span style="font-size:26px;color:{TEXT2};font-weight:400;letter-spacing:0">{esc(x.get("unit", ""))}</span></div>
+            kp = pal("activity" if good else "heart")
+            lines = "".join(f'<div style="font-size:26px;line-height:1.35;color:{INK2}">{rich(t)}</div>' for t in x.get("lines", []))
+            return f'''<div class="card col" style="flex:1;gap:14px;padding:34px 32px;transform:rotate({rot}deg);background:{mix(kp["bg"], .55, "#FFFFFF")}">
+              <div class="row" style="gap:10px;align-items:center;color:{kp["accent"]};font-size:24px;font-weight:750;letter-spacing:.03em">
+                {icon("CheckCircle" if good else "Cancel", kp["accent"], 32)}{esc(x["label"]).upper()}</div>
+              <div style="font-size:{x.get("size", 74)}px;font-weight:700;letter-spacing:-.035em;line-height:1">{esc(x["value"])}
+                <span style="font-size:26px;color:{INK2};font-weight:500;letter-spacing:0">{esc(x.get("unit", ""))}</span></div>
               <div class="col" style="gap:8px">{lines}</div></div>'''
-        body = f'''{kicker(s, c)}<div class="title" style="font-size:{s.get("size", 80)}px">{rich(s["title"])}</div>
-          <div style="flex:1"></div><div class="row" style="gap:26px;align-items:stretch">{side(s["left"])}{side(s["right"])}</div>
-          {f'<div class="lead" style="margin-top:8px">{rich(s["body"])}</div>' if s.get("body") else ''}<div style="flex:.6"></div>'''
+        vs = (f'<div class="free" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);width:96px;height:96px;'
+              f'border-radius:50%;background:{YELLOW};display:grid;place-items:center;font-size:34px;font-weight:800;color:{INK};'
+              f'box-shadow:0 10px 26px rgba(60,50,90,.18);z-index:2">VS</div>')
+        body = f'''{kicker(s, accent)}{title(s.get("size", 76), "text-align:center")}<div style="flex:1"></div>
+          <div class="row" style="position:relative;gap:30px;align-items:stretch">{side(s["left"], -2.5)}{side(s["right"], 2.5)}{vs}</div>
+          {lead("text-align:center;align-self:center;margin-top:14px")}<div style="flex:.7"></div>'''
     elif layout == "big":
-        body = f'''{kicker(s, c)}<div style="flex:1"></div>
-          <div style="font-size:{s.get("bigSize", 300)}px;font-weight:650;letter-spacing:-.05em;line-height:.9;color:{c}">{esc(s["big"])}</div>
-          <div class="title" style="font-size:{s.get("size", 72)}px;margin-top:28px">{rich(s["title"])}</div>
-          {f'<div class="lead">{rich(s["body"])}</div>' if s.get("body") else ''}<div style="flex:1.3"></div>'''
+        body = f'''{kicker(s, accent)}<div style="flex:1"></div>
+          <div style="position:relative;display:grid;place-items:center;height:{s.get("bigSize", 300) + 60}px">
+            <div class="deco" style="position:absolute;width:{s.get("bigSize", 300) + 200}px;height:{s.get("bigSize", 300) + 200}px;border-radius:50%;background:rgba(255,255,255,.6)"></div>
+            <div style="position:relative;font-size:{s.get("bigSize", 300)}px;font-weight:750;letter-spacing:-.05em;line-height:1;color:{accent}">{esc(s["big"])}</div></div>
+          {title(s.get("size", 68), "text-align:center;margin-top:34px")}{lead("text-align:center;align-self:center")}<div style="flex:1.2"></div>'''
     elif layout == "cta":
-        acts = "".join(f'''<div class="row" style="gap:14px;align-items:center;padding:20px 34px;border-radius:999px;background:{CARD};
-            box-shadow:0 2px 10px rgba(0,0,0,.08);font-size:30px;font-weight:600">{icon(a["icon"], c, 38)}{esc(a["text"])}</div>''' for a in s.get("actions", []))
+        acts = "".join(chip(a["text"], ["#FFFFFF", YELLOW][j % 2], INK, [-3, 3][j % 2], 30, a.get("icon")) for j, a in enumerate(s.get("actions", [])))
         body = f'''<div style="flex:1"></div>
-          <div style="width:180px;height:180px;border-radius:52px;margin:0 auto;display:grid;place-items:center;
-            background:conic-gradient(from 200deg,#D93025,#E8710A,#F6AE2D,#188038,#1A73E8,#5B5BD6,#D93025);box-shadow:0 24px 60px rgba(26,115,232,.28)">
-            {icon(s.get("icon", "AutoAwesome"), "#fff", 92)}</div>
-          <div class="title" style="font-size:{s.get("size", 84)}px;text-align:center;margin-top:56px">{rich(s["title"])}</div>
-          {f'<div class="lead" style="text-align:center;align-self:center">{rich(s["body"])}</div>' if s.get("body") else ''}
-          <div class="row" style="gap:20px;justify-content:center;margin-top:56px;flex-wrap:wrap">{acts}</div><div style="flex:1.2"></div>'''
-        bg = f"radial-gradient(120% 70% at 50% 0%, {mix(c, .20 if dark else .16)}, {BG} 70%)"
+          <div style="width:180px;height:180px;border-radius:56px;margin:0 auto;display:grid;place-items:center;transform:rotate(-6deg);
+            background:{LOGO};box-shadow:0 24px 60px rgba(60,50,90,.18)">{icon(s.get("icon", "AutoAwesome"), "#fff", 92)}</div>
+          {title(s.get("size", 84), "text-align:center;margin-top:56px")}{lead("text-align:center;align-self:center")}
+          <div class="row" style="gap:22px;justify-content:center;margin-top:50px;flex-wrap:wrap">{acts}</div><div style="flex:1.2"></div>'''
     else:
         raise ValueError(f"layout desconocido: {layout}")
-    foot = f'<div style="font-size:20px;color:{foot_color}">{"Datos de ejemplo" if example else ""}</div>'
+    foot = f'''<div class="row" style="justify-content:space-between;align-items:center;min-height:24px">
+      <div style="font-size:19px;color:rgba(29,27,44,.45);width:200px">{"Datos de ejemplo" if example else ""}</div>{dots(i, n, accent)}<div style="width:200px"></div></div>'''
     fonts = HERE / "fonts"
     return f'''<!doctype html><html lang="es"><head><meta charset="utf-8"><style>
       @font-face {{ font-family: GSF; font-weight: 1 1000; src: url("file://{fonts}/google-sans-flex-latin-wght-normal.woff2") format("woff2-variations");
@@ -408,19 +439,21 @@ def slide_html(post: dict, s: dict, i: int, n: int) -> str:
       @font-face {{ font-family: GSF; font-weight: 1 1000; src: url("file://{fonts}/google-sans-flex-latin-ext-wght-normal.woff2") format("woff2-variations");
         unicode-range: U+0100-02BA, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF; }}
       * {{ box-sizing: border-box; margin: 0; }}
-      body {{ width: {W}px; height: {H}px; font-family: GSF, system-ui, sans-serif; color: {TEXT}; -webkit-font-smoothing: antialiased; }}
-      .slide {{ width: {W}px; height: {H}px; padding: 64px 76px 52px; display: flex; flex-direction: column; gap: 30px; background: {bg}; overflow: hidden; }}
+      body {{ width: {W}px; height: {H}px; font-family: GSF, system-ui, sans-serif; color: {INK}; -webkit-font-smoothing: antialiased; }}
+      .slide {{ position: relative; width: {W}px; height: {H}px; background: {bg}; overflow: hidden; }}
+      .content {{ position: relative; height: 100%; padding: 56px 72px 46px; display: flex; flex-direction: column; gap: 28px; }}
       .row {{ display: flex; }} .col {{ display: flex; flex-direction: column; }} .center {{ align-items: center; }}
-      .title {{ font-weight: 650; letter-spacing: -.035em; line-height: 1.04; text-wrap: balance; color: {fg_title}; }}
-      .title b {{ color: {accent}; font-weight: 750; }}
-      .lead {{ font-size: 36px; line-height: 1.38; color: {TEXT2}; text-wrap: pretty; max-width: 900px; }}
-      .lead b {{ color: {TEXT}; font-weight: 600; }}
-      .card {{ background: {CARD}; border-radius: 48px; padding: 44px 48px; {'border: 1.5px solid rgba(255,255,255,.07);' if dark else ''} box-shadow: 0 2px 6px rgba(0,0,0,.04), 0 12px 40px rgba(0,0,0,{.25 if dark else .06}); }}
+      .title {{ font-weight: 700; letter-spacing: -.04em; line-height: 1.04; text-wrap: balance; color: {INK}; }}
+      .title b {{ font-weight: 750; color: {INK}; background: linear-gradient(transparent 56%, {hl} 56%, {hl} 90%, transparent 90%);
+        -webkit-box-decoration-break: clone; box-decoration-break: clone; padding: 0 .06em; }}
+      .lead {{ font-size: 34px; line-height: 1.38; color: {INK2}; text-wrap: pretty; max-width: 880px; }}
+      .lead b {{ color: {INK}; font-weight: 650; }}
+      .card {{ background: #FFFFFF; border-radius: 46px; padding: 42px 46px; box-shadow: 0 2px 6px rgba(60,50,90,.04), 0 22px 54px rgba(60,50,90,.12); }}
       .bubble {{ border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; }}
       .gauge {{ position: relative; }} .gc {{ position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }}
       .track {{ height: 14px; border-radius: 99px; overflow: hidden; }} .track > div {{ height: 100%; border-radius: 99px; }}
       b {{ font-weight: 650; }}
-    </style></head><body><div class="slide">{top}{body}{foot}</div></body></html>'''
+    </style></head><body><div class="slide">{blobs(p, k + i)}<div class="content">{brand()}{body}{foot}</div></div></body></html>'''
 
 
 # ---------------------------------------------------------------- salida
@@ -441,20 +474,20 @@ def main(path: str) -> None:
             n = len(post["slides"])
             for i, s in enumerate(post["slides"], 1):
                 tmp = out / "_slide.html"
-                tmp.write_text(slide_html(post, s, i, n), encoding="utf-8")
+                tmp.write_text(slide_html(post, s, i, n, k), encoding="utf-8")
                 pg.goto(tmp.as_uri())
                 pg.evaluate("document.fonts.ready")
                 pg.wait_for_timeout(150)
-                over = pg.evaluate("() => { const s = document.querySelector('.slide'); return s.scrollHeight - s.clientHeight; }")
+                over = pg.evaluate("() => { const s = document.querySelector('.content'); return s.scrollHeight - s.clientHeight; }")
                 if over > 1:
                     print(f"AVISO: {post['id']} diapositiva {i} no cabe ({over}px de más)")
                 wide = pg.evaluate("""() => [...document.querySelectorAll('.card')].map(c => {
                     const r = c.getBoundingClientRect(); let m = 0;
-                    c.querySelectorAll('*').forEach(e => { const q = e.getBoundingClientRect(); if (q.width) m = Math.max(m, q.right - (r.right - 24), (r.left + 24) - q.left); });
+                    c.querySelectorAll('*').forEach(e => { if (e.closest('.free')) return; const q = e.getBoundingClientRect(); if (q.width) m = Math.max(m, q.right - (r.right - 24), (r.left + 24) - q.left); });
                     return Math.round(m); }).filter(x => x > 1)""")
                 if wide:
                     print(f"AVISO: {post['id']} diapositiva {i}: algo se sale de la tarjeta ({wide}px)")
-                edge = pg.evaluate("""() => { let m = 0; document.querySelectorAll('.slide *').forEach(e => { const q = e.getBoundingClientRect();
+                edge = pg.evaluate("""() => { let m = 0; document.querySelectorAll('.content *').forEach(e => { if (e.closest('.deco, .free')) return; const q = e.getBoundingClientRect();
                     if (q.width) m = Math.max(m, q.right - (innerWidth - 40), 40 - q.left); }); return Math.round(m); }""")
                 if edge > 1:
                     print(f"AVISO: {post['id']} diapositiva {i}: algo se acerca demasiado al borde ({edge}px)")

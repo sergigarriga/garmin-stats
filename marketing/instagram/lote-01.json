@@ -5,15 +5,19 @@
     {
       "id": "presentacion",
       "title": "Tu reloj de 500 €",
-      "color": "energy",
-      "dark": true,
+      "color": "heart",
       "slides": [
         {
           "layout": "hook",
-          "bg": "dark",
           "sticker": "Confiesa",
           "title": "Tienes un reloj de **500 €** y lo usas para mirar la hora.",
-          "body": "Aquí aprendes a sacarle partido. Sin jerga y sin humo."
+          "body": "Aquí aprendes a sacarle partido. Sin jerga y sin humo.",
+          "floats": [
+            "HRV",
+            "Z2",
+            "Body Battery",
+            "Ritmos"
+          ]
         },
         {
           "layout": "points",
@@ -82,7 +86,12 @@
           "layout": "hook",
           "sticker": "Confiesa",
           "title": "Tienes un Garmin y **no sabes qué es la Z2**.",
-          "body": "Spoiler: es donde se hacen los corredores rápidos."
+          "body": "Spoiler: es donde se hacen los corredores rápidos.",
+          "floats": [
+            "114–133 lpm",
+            "Puedes hablar",
+            "80 % del tiempo"
+          ]
         },
         {
           "layout": "cover",
@@ -122,7 +131,8 @@
                 "range": "171–190"
               }
             ]
-          }
+          },
+          "tag": "Aquí, el 80 %"
         },
         {
           "layout": "versus",
@@ -203,7 +213,8 @@
                 "score": 48
               }
             ]
-          }
+          },
+          "tag": "Hoy: suave"
         },
         {
           "layout": "points",
@@ -264,7 +275,12 @@
           "layout": "hook",
           "sticker": "Red flag",
           "title": "Tu ritmo suave **no es suave**. Es ego.",
-          "body": "Y por eso llevas un año clavando la misma marca."
+          "body": "Y por eso llevas un año clavando la misma marca.",
+          "floats": [
+            "5:15 /km",
+            "168 lpm",
+            "«Hoy iba bien»"
+          ]
         },
         {
           "layout": "cover",
@@ -299,7 +315,8 @@
                 "value": "4:12"
               }
             ]
-          }
+          },
+          "tag": "Media en 1:45"
         },
         {
           "layout": "cover",
@@ -338,7 +355,8 @@
                 "color": "activity"
               }
             ]
-          }
+          },
+          "tag": "Se ajusta solo"
         }
       ],
       "caption": "Si haces la media en 1:45, tu rodaje suave va entre 5:49 y 6:34 el km. No a 5:15 «porque hoy me encontraba bien».\n\nCon una marca reciente, el modelo VDOT de Jack Daniels te da tus ritmos de entreno: suave, umbral, series y repeticiones. Lo difícil no es calcularlos. Lo difícil es respetarlos.\n\nGuárdalo y míralo antes de tu próximo rodaje.",
@@ -394,7 +412,8 @@
               44,
               41
             ]
-          }
+          },
+          "tag": "2 noches bajas"
         },
         {
           "layout": "points",
@@ -435,15 +454,18 @@
     {
       "id": "body-battery",
       "title": "Body Battery a 12",
-      "color": "energy",
-      "dark": true,
+      "color": "stress",
       "slides": [
         {
           "layout": "hook",
-          "bg": "dark",
           "sticker": "POV",
           "title": "Body Battery a **12** y tú pensando en la tirada larga.",
-          "body": "No es pereza. Es tu cuerpo pidiendo tregua."
+          "body": "No es pereza. Es tu cuerpo pidiendo tregua.",
+          "floats": [
+            "12 / 100",
+            "21:40",
+            "Tirada larga: no"
+          ]
         },
         {
           "layout": "cover",
@@ -472,7 +494,8 @@
                 "value": "+22"
               }
             ]
-          }
+          },
+          "tag": "Ahora"
         },
         {
           "layout": "cover",
@@ -533,7 +556,7 @@
     {
       "id": "gimnasio",
       "title": "Runners sin gimnasio",
-      "color": "gym",
+      "color": "heart",
       "slides": [
         {
           "layout": "cover",
@@ -566,7 +589,8 @@
                 "unit": " kg"
               }
             ]
-          }
+          },
+          "tag": "Sin levantarlo"
         },
         {
           "layout": "big",
@@ -599,7 +623,12 @@
           "sticker": "Dato incómodo",
           "title": "Duermes 5 horas y **le echas la culpa a las zapatillas**.",
           "size": 108,
-          "body": "El sueño es el suplemento más barato que existe."
+          "body": "El sueño es el suplemento más barato que existe.",
+          "floats": [
+            "5 h 12 min",
+            "Nota 54",
+            "Zapatillas de 200 €"
+          ]
         },
         {
           "layout": "cover",
@@ -632,7 +661,8 @@
               2.5
             ],
             "note": "La franja es tu horario habitual (±30 min). Los puntos claros son el fin de semana."
-          }
+          },
+          "tag": "Finde = jet lag"
         },
         {
           "layout": "points",
@@ -673,7 +703,7 @@
     {
       "id": "coach-ia",
       "title": "Tu plan de PDF",
-      "color": "stress",
+      "color": "activity",
       "slides": [
         {
           "layout": "cover",
@@ -694,7 +724,8 @@
                 "text": "Sin drama. Paso las series al sábado y bajo el volumen un 10 %. Tu HRV lleva dos noches baja: el martes, rodaje **suave** de 40 minutos."
               }
             ]
-          }
+          },
+          "tag": "Cada lunes"
         },
         {
           "layout": "points",

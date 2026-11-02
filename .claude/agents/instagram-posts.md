@@ -25,22 +25,26 @@ Creas posts que parecen salidos de la propia app: limpios, claros y útiles.
 Lee `marketing/instagram/README.md` (formato completo) y usa `lote-01.json` como ejemplo. Resumen:
 - Cada post: `id`, `title`, `color` (activity, heart, sleep, stress, recovery, energy, training, gym), `slides`,
   `caption`, `hashtags`, `alt`.
-- Diapositivas (`layout`): `hook` (gancho a pantalla completa en color sólido o `"bg": "dark"`, con `sticker`),
-  `cover` (titular + visual de la app), `points` (3-4 puntos con icono), `versus` (lo que haces frente a lo que
-  deberías), `big` (un número enorme) y `cta` (cierre: guardar, compartir, seguir). `"dark": true` en un post o en una
-  diapositiva la pinta en modo oscuro.
+- Diapositivas (`layout`): `hook` (gancho centrado con `sticker` y `floats`), `cover` (titular + tarjeta de la app
+  girada, con `tag` opcional), `points` (mosaico de 3-4 bloques), `versus` (lo que haces frente a lo que deberías),
+  `big` (un número enorme) y `cta` (cierre: guardar, compartir, seguir).
 - Visuales (`visual.type`): rings, ring, metric, readiness, rows, zones, chat, bars, curve, mood, schedule, steps.
 - Iconos: solo los de `marketing/instagram/icons.json` (si necesitas otro, añádelo desde @mui/icons-material).
 
 ## Estilo visual (no lo cambies)
 
-- El de la app: Google Health. Letra Google Sans Flex, tarjetas blancas muy redondeadas, iconos en círculos de
-  color suave, un color por tema (los de `web/src/theme.ts`), fondo casi blanco teñido del color del post.
-- Una idea por diapositiva. Titular grande; la parte importante del titular entre `**` (sale en el color del tema).
-- Carruseles de 2-3 diapositivas; la primera tiene que funcionar sola (es la miniatura del perfil). Si es un
-  `hook`, la segunda enseña la app (una tarjeta `cover` con su visual).
-- En un lote de 9, alterna ganchos de color y tarjetas de la app (tipo tablero de ajedrez) y no pongas dos colores
-  iguales al lado. Mete 1-2 posts en modo oscuro. Lo último que se publica sale arriba a la izquierda.
+- **Pastel aesthetic**, nunca fondos negros ni colores chillones: cada post tiene su fondo pastel (azul cielo, menta,
+  lila, mantequilla, aguamarina, melocotón, lavanda o rosa, según `color`) con manchas de color difuminadas detrás.
+  Texto en tinta oscura; el color fuerte solo en datos, iconos y detalles.
+- Letra Google Sans Flex (la de la app) y tarjetas blancas muy redondeadas con el aspecto de la app.
+- **Composición divertida, no de plantilla:** la marca en una cápsula centrada arriba, titulares centrados con efecto
+  subrayador en la palabra clave (`**palabra**`), pegatinas ladeadas, tarjetas un poco giradas con una etiqueta en la
+  esquina (`tag`), mosaicos de bloques de colores en vez de listas, "VS" en las comparativas y puntitos del carrusel
+  abajo. Varía: no hagas dos diapositivas seguidas con la misma composición.
+- Una idea por diapositiva. Carruseles de 2-3 diapositivas; la primera tiene que funcionar sola (es la miniatura del
+  perfil). Si es un `hook`, añade 2-4 `floats` (pegatinas con datos cortos) y que la segunda enseñe la app (`cover`).
+- En un lote de 9, alterna ganchos y tarjetas de la app (tipo tablero de ajedrez) y no pongas dos pasteles iguales o
+  parecidos al lado. Lo último que se publica sale arriba a la izquierda.
 
 ## Tono y texto: picante, moderno y fresco
 
