@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Reel "¿Sabes qué es la Z2?" (1080 x 1920, 15 s). Cada fotograma lo pinta render(t) a partir del tiempo t en segundos:
+     así se puede grabar fotograma a fotograma con render_video.py sin saltos. Estilo: el de los posts (pastel, limpio). -->
+<style>
+  @font-face { font-family: GSF; font-weight: 1 1000; src: url("../fonts/google-sans-flex-latin-wght-normal.woff2") format("woff2-variations");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212; }
+  @font-face { font-family: GSF; font-weight: 1 1000; src: url("../fonts/google-sans-flex-latin-ext-wght-normal.woff2") format("woff2-variations");
+    unicode-range: U+0100-02BA, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF; }
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1080px; height: 1920px; overflow: hidden; font-family: GSF, system-ui, sans-serif; color: #1D1B2C; -webkit-font-smoothing: antialiased; }
+  #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #DCEAFF; }
+  .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .9; }
+  .abs { position: absolute; left: 0; right: 0; }
+  .scene { position: absolute; inset: 0; padding: 0 84px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .title { font-weight: 700; letter-spacing: -.045em; line-height: 1.02; }
+  .w { display: inline-block; will-change: transform, opacity; }
+  .hl { background: linear-gradient(transparent 56%, #A9C7FA 56%, #A9C7FA 90%, transparent 90%) no-repeat; background-size: 0% 100%; padding: 0 .06em; }
+  .chip { display: inline-flex; align-items: center; gap: 12px; padding: 18px 34px; border-radius: 999px; font-weight: 750; font-size: 38px;
+    box-shadow: 0 12px 30px rgba(60,50,90,.14); white-space: nowrap; }
+  .card { background: #fff; border-radius: 54px; box-shadow: 0 2px 6px rgba(60,50,90,.04), 0 26px 64px rgba(60,50,90,.14); }
+  .zrow { display: flex; align-items: center; gap: 26px; padding: 22px 28px; border-radius: 30px; position: relative; overflow: hidden; }
+  .zrow .fill { position: absolute; inset: 0; border-radius: 30px; transform-origin: left center; }
+  .zrow > *:not(.fill) { position: relative; }
+  .zdot { width: 70px; height: 70px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 28px; }
+  .bubble { padding: 30px 38px; font-size: 40px; line-height: 1.3; max-width: 760px; text-align: left; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="blob" id="b1" style="width:820px;height:820px;background:#FFD6E5"></div>
+  <div class="blob" id="b2" style="width:760px;height:760px;background:#FFF0B8"></div>
+  <div class="blob" id="b3" style="width:620px;height:620px;background:#E5DFFF"></div>
+
+  <!-- marca -->
+  <div class="abs" id="brand" style="top:96px;display:flex;justify-content:center">
+    <div style="display:flex;gap:16px;align-items:center;padding:14px 32px 14px 14px;border-radius:999px;background:rgba(255,255,255,.75);box-shadow:0 6px 22px rgba(60,50,90,.08)">
+      <div style="width:60px;height:60px;border-radius:50%;background:conic-gradient(from 200deg,#F28B82,#FCAD70,#FDD663,#81C995,#8AB4F8,#AFADFF,#F28B82);display:grid;place-items:center">
+        <div style="width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#E8607A"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
+        </div></div>
+      <div style="font-size:38px;font-weight:700;letter-spacing:-.02em">Runch</div>
+    </div>
+  </div>
+
+  <!-- 1 · gancho -->
+  <div class="scene" id="s1">
+    <div class="chip" id="st1" style="background:#FFE58A;font-size:46px;margin-bottom:40px">Confiesa</div>
+    <div class="title" style="font-size:132px">
+      <span class="w">Tienes</span> <span class="w">un</span> <span class="w">Garmin</span><br>
+      <span class="w">y</span> <span class="w">no</span> <span class="w">sabes</span> <span class="w">qué</span> <span class="w">es</span> <span class="w"><span class="hl" id="hl1">la Z2.</span></span>
+    </div>
+    <div style="display:flex;gap:22px;margin-top:60px">
+      <div class="chip" id="f1" style="background:#fff">114–133 lpm</div>
+      <div class="chip" id="f2" style="background:#FFE58A">Puedes hablar</div>
+    </div>
+  </div>
+
+  <!-- 2 · zonas -->
+  <div class="scene" id="s2">
+    <div class="title" style="font-size:104px;margin-bottom:70px">
+      <span class="w">La</span> <span class="w">Z2</span> <span class="w">es</span> <span class="w">esta.</span>
+    </div>
+    <div style="position:relative;width:100%" id="zcardwrap">
+      <div class="chip" id="ztag" style="position:absolute;top:-38px;right:40px;background:#FFE58A;z-index:2">Aquí, el 80 %</div>
+      <div class="card" id="zcard" style="padding:46px 44px;display:flex;flex-direction:column;gap:18px;text-align:left">
+        <div class="zrow" id="z1"><div class="fill" style="background:#EEF0F4"></div><div class="zdot" style="background:#A6AEBB">Z1</div><div style="flex:1;font-size:40px">Muy suave</div><div style="font-size:42px;font-weight:700">95–114</div></div>
+        <div class="zrow" id="z2"><div class="fill" style="background:#D6E3FF"></div><div class="zdot" style="background:#5B8DEF">Z2</div><div style="flex:1;font-size:42px;font-weight:750">Suave (Z2)</div><div style="font-size:44px;font-weight:800">114–133</div></div>
+        <div class="zrow" id="z3"><div class="fill" style="background:#E2F4EA"></div><div class="zdot" style="background:#3FB37F">Z3</div><div style="flex:1;font-size:40px">Moderado</div><div style="font-size:42px;font-weight:700">133–152</div></div>
+        <div class="zrow" id="z4"><div class="fill" style="background:#FDEEDF"></div><div class="zdot" style="background:#F29A4A">Z4</div><div style="flex:1;font-size:40px">Umbral</div><div style="font-size:42px;font-weight:700">152–171</div></div>
+        <div class="zrow" id="z5"><div class="fill" style="background:#FDE3E6"></div><div class="zdot" style="background:#EB5E6F">Z5</div><div style="flex:1;font-size:40px">Máximo</div><div style="font-size:42px;font-weight:700">171–190</div></div>
+      </div>
+    </div>
+    <div id="znote" style="margin-top:34px;font-size:30px;color:#5E5B70">Pulso en lpm, con un máximo de 190 · Datos de ejemplo</div>
+  </div>
+
+  <!-- 3 · pulso y chat -->
+  <div class="scene" id="s3">
+    <div class="title" style="font-size:108px">
+      <span class="w">¿Puedes</span> <span class="w">hablar?</span><br><span class="w">Es</span> <span class="w"><span class="hl" id="hl3">Z2.</span></span>
+    </div>
+    <div class="card" id="hrcard" style="margin-top:70px;padding:44px 64px;display:flex;align-items:center;gap:36px">
+      <svg id="heart" viewBox="0 0 24 24" width="120" height="120" fill="#EB5E6F"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
+      <div style="text-align:left">
+        <div style="font-size:34px;color:#5E5B70">Tu pulso ahora</div>
+        <div style="font-size:150px;font-weight:750;letter-spacing:-.05em;line-height:1"><span id="hr">168</span><span style="font-size:48px;color:#5E5B70;font-weight:500;letter-spacing:0"> lpm</span></div>
+        <div id="hrz" style="font-size:38px;font-weight:750;color:#EB5E6F">Z4 · eso no es suave</div>
+      </div>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;gap:22px;margin-top:56px">
+      <div style="display:flex;justify-content:flex-end"><div class="bubble card" id="m1" style="background:#2F6FE4;color:#fff;border-radius:46px 46px 12px 46px">¿Y si voy jadeando?</div></div>
+      <div style="display:flex;justify-content:flex-start"><div class="bubble card" id="m2" style="border-radius:46px 46px 46px 12px">Entonces no es Z2. Baja el ritmo hasta poder <b>hablar sin cortarte</b>.</div></div>
+    </div>
+  </div>
+
+  <!-- 4 · versus -->
+  <div class="scene" id="s4">
+    <div class="title" style="font-size:96px;margin-bottom:90px">
+      <span class="w">Tu</span> <span class="w">rodaje</span> <span class="w">«suave»</span><br><span class="w">vs</span> <span class="w">uno</span> <span class="w"><span class="hl" id="hl4">de verdad</span></span>
+    </div>
+    <div style="position:relative;display:flex;gap:36px;width:100%">
+      <div class="card" id="vl" style="flex:1;padding:44px 40px;text-align:left;background:#FFEDF0">
+        <div style="color:#D23A5C;font-weight:800;font-size:30px;letter-spacing:.04em">✕ TU RODAJE SUAVE</div>
+        <div style="font-size:110px;font-weight:750;letter-spacing:-.04em;margin-top:14px">5:15<span style="font-size:36px;color:#5E5B70;font-weight:500;letter-spacing:0"> /km</span></div>
+        <div style="font-size:36px;color:#5E5B70;line-height:1.4;margin-top:8px">168 lpm<br>Jadeas en cada cuesta<br>Piernas de cemento</div>
+      </div>
+      <div class="card" id="vr" style="flex:1;padding:44px 40px;text-align:left;background:#E6F6EC;outline:5px solid #1E8E4E">
+        <div style="color:#1E8E4E;font-weight:800;font-size:30px;letter-spacing:.04em">✓ SUAVE DE VERDAD</div>
+        <div style="font-size:110px;font-weight:750;letter-spacing:-.04em;margin-top:14px">6:10<span style="font-size:36px;color:#5E5B70;font-weight:500;letter-spacing:0"> /km</span></div>
+        <div style="font-size:36px;color:#5E5B70;line-height:1.4;margin-top:8px">128 lpm · Z2<br>Puedes hablar<br>Mañana, series con ganas</div>
+      </div>
+      <div id="vs" style="position:absolute;left:50%;top:-50px;width:140px;height:140px;margin:0 0 0 -70px;border-radius:50%;background:#FFE58A;display:grid;place-items:center;font-size:52px;font-weight:850;box-shadow:0 14px 34px rgba(60,50,90,.2)">VS</div>
+    </div>
+  </div>
+
+  <!-- 5 · cierre -->
+  <div class="scene" id="s5">
+    <div style="display:flex;gap:40px;align-items:baseline">
+      <div id="o1" class="title" style="font-size:190px;color:#2F6FE4">80 %</div>
+      <div id="o1b" class="title" style="font-size:88px">suave</div>
+    </div>
+    <div style="display:flex;gap:40px;align-items:baseline;margin-top:10px">
+      <div id="o2" class="title" style="font-size:190px;color:#D23A5C">20 %</div>
+      <div id="o2b" class="title" style="font-size:88px">fuerte</div>
+    </div>
+    <div id="logo" style="margin-top:110px;width:220px;height:220px;border-radius:66px;background:conic-gradient(from 200deg,#F28B82,#FCAD70,#FDD663,#81C995,#8AB4F8,#AFADFF,#F28B82);display:grid;place-items:center;box-shadow:0 26px 70px rgba(60,50,90,.2)">
+      <svg viewBox="0 0 24 24" width="110" height="110" fill="#fff"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
+    </div>
+    <div id="wm" class="title" style="font-size:120px;margin-top:40px">Runch</div>
+    <div id="cta" class="chip" style="margin-top:34px;background:#fff">Síguenos y entrena con cabeza</div>
+  </div>
+</div>
+
+<script>
+  window.DURATION = 15;
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const p = (t, a, b) => clamp((t - a) / (b - a));
+  const eo = (x) => 1 - Math.pow(1 - x, 3);
+  const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const eb = (x) => { const c1 = 1.70158, c3 = c1 + 1; return x <= 0 ? 0 : 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+  const set = (el, o = 1, x = 0, y = 0, s = 1, r = 0) => { el.style.opacity = o; el.style.transform = `translate(${x}px,${y}px) scale(${s}) rotate(${r}deg)`; };
+
+  /** Escena visible entre a y b: entra desde abajo y sale hacia arriba. */
+  function scene(el, t, a, b) {
+    const i = eo(p(t, a, a + 0.35)), o = eio(p(t, b - 0.35, b));
+    el.style.visibility = t < a || t > b ? 'hidden' : 'visible';
+    set(el, i * (1 - o), 0, (1 - i) * 60 - o * 120);
+  }
+  /** Palabras que aparecen una tras otra con un rebote. */
+  function words(el, t, start, step = 0.11) {
+    el.querySelectorAll('.w').forEach((w, k) => { const q = p(t, start + k * step, start + k * step + 0.45); set(w, clamp(q * 2), 0, (1 - eb(q)) * 70, 0.9 + 0.1 * eb(q)); });
+  }
+  const pop = (el, t, a, rot = 0, dur = 0.45) => { const q = p(t, a, a + dur); set(el, clamp(q * 3), 0, 0, eb(q), rot * (1 - q) + rot * 0.3); };
+  const sweep = (el, t, a, b) => { el.style.backgroundSize = `${eio(p(t, a, b)) * 100}% 100%`; };
+
+  window.render = function (t) {
+    // fondo: manchas que se mueven despacio y cambian de tono con la escena
+    const bgs = ['#DCEAFF', '#DCEAFF', '#FFE1E8', '#E2F5E9', '#E5DFFF'];
+    const sc = t < 3 ? 0 : t < 6.5 ? 1 : t < 9.7 ? 2 : t < 12.7 ? 3 : 4;
+    $('stage').style.background = bgs[sc];
+    $('stage').style.transition = 'none';
+    set($('b1'), 1, -260 + 120 * Math.sin(t * 0.5), -200 + 80 * Math.cos(t * 0.4));
+    set($('b2'), 1, 560 + 90 * Math.cos(t * 0.45), 1250 + 110 * Math.sin(t * 0.35));
+    set($('b3'), 1, 620 + 70 * Math.sin(t * 0.3), 200 + 90 * Math.cos(t * 0.5));
+    set($('brand'), eo(p(t, 0, 0.5)), 0, (1 - eo(p(t, 0, 0.5))) * -40);
+
+    // 1 · gancho
+    scene($('s1'), t, 0, 3.2);
+    words($('s1'), t, 0.25, 0.1);
+    sweep($('hl1'), t, 1.35, 1.85);
+    pop($('st1'), t, 1.5, -6);
+    pop($('f1'), t, 2.0, -4); pop($('f2'), t, 2.15, 5);
+
+    // 2 · zonas
+    scene($('s2'), t, 3.0, 6.6);
+    words($('s2'), t, 3.15, 0.1);
+    const c = eb(p(t, 3.45, 3.95)); set($('zcardwrap'), clamp(p(t, 3.45, 3.7) * 2), 0, (1 - c) * 220, 1, -2 * c);
+    ['z1', 'z2', 'z3', 'z4', 'z5'].forEach((id, k) => {
+      const q = eo(p(t, 3.75 + k * 0.12, 4.25 + k * 0.12));
+      $(id).querySelector('.fill').style.transform = `scaleX(${q})`;
+      $(id).style.opacity = clamp(q * 2) * (id === 'z2' || t < 4.7 ? 1 : 1 - 0.45 * eo(p(t, 4.7, 5.0)));
+    });
+    const z2 = p(t, 4.7, 5.0);
+    $('z2').style.outline = z2 > 0 ? `${5 * z2}px solid #5B8DEF` : 'none';
+    $('z2').style.transform = `scale(${1 + 0.04 * eo(z2) + (t > 5 ? 0.015 * Math.sin((t - 5) * 7) : 0)})`;
+    pop($('ztag'), t, 5.1, 6);
+    set($('znote'), eo(p(t, 4.4, 4.8)));
+
+    // 3 · pulso y chat
+    scene($('s3'), t, 6.4, 9.8);
+    words($('s3'), t, 6.55, 0.1);
+    sweep($('hl3'), t, 7.0, 7.4);
+    pop($('hrcard'), t, 6.9, 0, 0.5);
+    const hr = Math.round(168 - 40 * eio(p(t, 7.4, 8.4)));
+    $('hr').textContent = hr;
+    $('hrz').textContent = hr > 152 ? 'Z4 · eso no es suave' : hr > 133 ? 'Z3 · aún no…' : 'Z2 · ahora sí';
+    $('hrz').style.color = hr > 152 ? '#EB5E6F' : hr > 133 ? '#3FB37F' : '#2F6FE4';
+    const beat = 1 + 0.09 * Math.pow(Math.max(0, Math.sin(t * (hr / 60) * Math.PI)), 6);
+    $('heart').style.transform = `scale(${beat})`;
+    pop($('m1'), t, 8.45, 0, 0.4); pop($('m2'), t, 8.9, 0, 0.4);
+
+    // 4 · versus
+    scene($('s4'), t, 9.6, 12.8);
+    words($('s4'), t, 9.75, 0.09);
+    sweep($('hl4'), t, 10.25, 10.65);
+    const l = eb(p(t, 10.3, 10.9)), r = eb(p(t, 10.5, 11.1));
+    set($('vl'), clamp(p(t, 10.3, 10.5) * 2), (1 - l) * -700, 0, 1, -3 - 12 * (1 - l));
+    set($('vr'), clamp(p(t, 10.5, 10.7) * 2), (1 - r) * 700, 0, 1, 3 + 12 * (1 - r));
+    const v = p(t, 11.2, 11.5); set($('vs'), clamp(v * 3), 0, 0, 2.2 - 1.2 * eo(v), -8);
+
+    // 5 · cierre
+    scene($('s5'), t, 12.6, 15.2);
+    pop($('o1'), t, 12.85, -3); pop($('o1b'), t, 13.05, 0);
+    pop($('o2'), t, 13.3, 3); pop($('o2b'), t, 13.5, 0);
+    const lg = p(t, 13.75, 14.3); set($('logo'), clamp(lg * 3), 0, 0, eb(lg), -180 * (1 - eo(lg)) - 6);
+    pop($('wm'), t, 14.0, 0); pop($('cta'), t, 14.25, -3);
+  };
+  render(0);
+</script>
+</body>
+</html>

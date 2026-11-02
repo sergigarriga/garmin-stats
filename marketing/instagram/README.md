@@ -54,3 +54,20 @@ Publica los posts en orden (01 primero). Los carruseles se suben como una sola p
 - Iconos: los nombres de `icons.json` (iconos "Rounded" de Material).
 
 El script avisa si un texto no cabe o algo se sale de una tarjeta. Todos los números deben ser de ejemplo.
+
+## Vídeos (Reels)
+
+Animaciones hechas con código (HTML + una función `render(t)` que pinta cada fotograma), con el mismo estilo que los
+posts. Se graban fotograma a fotograma, sin saltos, y se montan en MP4 vertical (1080 x 1920, 30 fps, sin audio: el
+audio se elige en Instagram).
+
+```bash
+uv run --no-project --with playwright python marketing/instagram/video/render_video.py marketing/instagram/video/showreel.html
+```
+
+- `video/showreel.html`: presentación de Runch en 15 s (logo, cintas de texto, móvil en 3D con la app, zonas, coach y
+  comunidad).
+- `video/reel-z2.html`: "¿Tienes un Garmin y no sabes qué es la Z2?" en 15 s.
+- Salida en `out/video/<nombre>.mp4` y una portada `<nombre>-portada.png`. Necesita `ffmpeg`.
+- Para hacer uno nuevo: copia un HTML, cambia las escenas y sus tiempos en `render(t)` y ajusta `window.DURATION`.
+  Deja libre el cuarto inferior de la pantalla: Instagram pone ahí el texto y los botones.

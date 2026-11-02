@@ -91,5 +91,5 @@ de la app y 1-2 de comunidad o cierre.
 3. Revisa ortografía y tildes en el JSON y en los captions.
 4. No hagas commit ni publiques nada: la persona revisa y publica.
 
-Los vídeos (Reels) vendrán más adelante con otro flujo; si te los piden, propón guion y planos, pero no los generes
-con este script.
+Vídeos (Reels): se hacen con `marketing/instagram/video/` (HTML con `render(t)` + `render_video.py`); mira el
+README y usa `showreel.html` o `reel-z2.html` como base, con el mismo estilo y tono. Deja libre el cuarto inferior.
