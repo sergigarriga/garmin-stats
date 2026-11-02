@@ -80,7 +80,7 @@ const SUGGESTIONS = [
   '¿Qué día de la semana entreno mejor?',
   '¿Cómo ha cambiado mi forma este año?',
   '¿Qué me recomiendas para subir mi HRV?',
-  '¿Estoy listo para correr una media maratón?',
+  '¿Me da para correr una media maratón?',
 ];
 const STORE = 'garmin-stats:chat';
 const online = window.location.protocol.startsWith('http');

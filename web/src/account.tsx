@@ -145,7 +145,7 @@ export function DeleteAccountDialog({ open, onClose }: { open: boolean; onClose:
   );
 }
 
-// ------------------------------------------------------------------ invitadas (solo el dueño)
+// ------------------------------------------------------------------ invitaciones (solo el dueño)
 interface AdminUser {
   email: string; name: string; role: 'owner' | 'friend'; status: Me['status']; budgetUsd: number; monthSpendUsd: number;
   invitedAt?: number; joinedAt?: number; lastSync?: number; syncStatus?: string;

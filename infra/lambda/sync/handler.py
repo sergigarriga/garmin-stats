@@ -9,7 +9,7 @@
 Estado en S3 (por persona):
   users/<uid>/state/garmin.sqlite, *.json, *.log, fit/   base de datos, plan, ajustes, caché y gasto de IA
   users/<uid>/state/sync_status.json                      candado y estado de la sincronización
-  site/u/<uid>/data.js, acts/                             su web (CloudFront solo se la sirve a ella)
+  site/u/<uid>/data.js, acts/                             su web (CloudFront solo se la sirve a esa persona)
 Antes de cada persona se vacían /tmp/gs y la caché de Garmin: nada pasa de una persona a otra.
 """
 

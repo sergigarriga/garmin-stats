@@ -192,7 +192,7 @@ def landing(message: str = "", button_href: str = "/auth/login?go=1", button_tex
   Privada: solo con invitación, y cada persona ve únicamente sus datos</p>
  </section>
  <section class="preview" aria-label="Qué encontrarás dentro">
-  <div class="top">{RINGS}<div><small>Preparación de hoy</small><b>Lista para entrenar</b><span>HRV, sueño, pulso y carga frente a tu normalidad</span></div></div>
+  <div class="top">{RINGS}<div><small>Preparación de hoy</small><b>Buen día para entrenar</b><span>HRV, sueño, pulso y carga frente a tu normalidad</span></div></div>
   <div class="grid">{feats}</div>
  </section>
 </main>

@@ -69,6 +69,7 @@ class Insights(BaseModel):
 
 SYSTEM = """Eres el redactor de una app personal de salud con el tono de Google Health / Fitbit.
 Escribes en castellano de España, tuteando, con frases cortas y claras.
+Usa lenguaje neutro en cuanto al género de la persona (la app la usan hombres y mujeres): no uses adjetivos ni participios que concuerden con ella (en vez de "estás cansado" o "estás lista", di "tienes fatiga", "tu cuerpo está listo" o "llegas con energía").
 
 Tono:
 - Cercano, tranquilo y motivador. Reconoce lo que va bien antes de lo que hay que mejorar.

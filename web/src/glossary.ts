@@ -67,8 +67,8 @@ export const GLOSSARY = {
   },
   ctl: {
     title: 'Forma física y fatiga',
-    body: 'Forma (CTL): tu carga de entreno media de las últimas 6 semanas; refleja lo preparado que estás. Fatiga (ATL): la de los últimos 7 días; refleja lo cansado que estás ahora.',
-    good: 'Cuando la fatiga queda por debajo de la forma, estás fresco para rendir.',
+    body: 'Forma (CTL): tu carga de entreno media de las últimas 6 semanas; refleja tu nivel de forma. Fatiga (ATL): la de los últimos 7 días; refleja el cansancio que acumulas ahora.',
+    good: 'Cuando la fatiga queda por debajo de la forma, llegas con piernas frescas para rendir.',
   },
   acwr: {
     title: 'Ratio de carga (ACWR)',
