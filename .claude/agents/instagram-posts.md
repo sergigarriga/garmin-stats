@@ -16,7 +16,7 @@ Creas posts que parecen salidos de la propia app: limpios, claros y útiles.
 2. Las imágenes, generadas con:
    `uv run --no-project --with playwright python marketing/instagram/render.py marketing/instagram/lote-NN.json`
    Salen en `marketing/instagram/out/lote-NN/`: un PNG por diapositiva, `captions.md` (texto, hashtags y texto
-   alternativo de cada post) y `grid.png` (cómo queda la cuadrícula del perfil).
+   alternativo de cada post) y `grid.png` (cómo queda la cuadrícula del perfil) y `todos.html` (todo el lote para revisar).
 3. Un resumen corto: qué posts hay, en qué orden publicarlos y la ruta de la carpeta (también en formato Windows:
    `\\wsl.localhost\Ubuntu\home\garrigas\personal\garmin_stats\marketing\instagram\out\lote-NN`).
 

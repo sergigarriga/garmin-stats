@@ -479,7 +479,38 @@ def main(path: str) -> None:
         grid.unlink()
         b.close()
     (out / "captions.md").write_text("\n".join(md), encoding="utf-8")
+    write_overview(lote, out)
     print(f"{len(lote['posts'])} posts en {out}")
+
+
+def write_overview(lote: dict, out: Path) -> None:
+    """todos.html: cada post en una fila con sus imágenes en orden y, debajo, el texto y los hashtags."""
+    rows = []
+    for k, post in enumerate(lote["posts"], 1):
+        imgs = "".join(f'<a href="{k:02d}-{post["id"]}-{i}.png" target="_blank"><img src="{k:02d}-{post["id"]}-{i}.png" alt="Diapositiva {i}"></a>'
+                       for i in range(1, len(post["slides"]) + 1))
+        n = len(post["slides"])
+        rows.append(f'''<section><div class="head"><span class="num">{k}</span><h2>{esc(post["title"])}</h2>
+          <span class="meta">{n} {"imágenes · carrusel" if n > 1 else "imagen"}</span></div>
+          <div class="imgs">{imgs}</div>
+          <details open><summary>Texto del post</summary><p>{esc(post["caption"]).replace(chr(10), "<br>")}</p>
+          <p class="tags">{esc(" ".join(post.get("hashtags", [])))}</p><p class="alt">Texto alternativo: {esc(post.get("alt", ""))}</p></details></section>''')
+    fonts = HERE / "fonts"
+    (out / "todos.html").write_text(f'''<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Instagram · lote {lote["lote"]}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1"><style>
+      @font-face {{ font-family: GSF; font-weight: 1 1000; src: url("../../fonts/google-sans-flex-latin-wght-normal.woff2") format("woff2-variations"); }}
+      body {{ margin: 0; background: #F0F2F5; font-family: GSF, system-ui, sans-serif; color: #1F1F1F; }}
+      header {{ padding: 28px 32px 8px; }} header h1 {{ margin: 0; font-size: 28px; }} header p {{ margin: 6px 0 0; color: #5F6368; }}
+      section {{ background: #fff; margin: 18px 24px; padding: 20px 22px; border-radius: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }}
+      .head {{ display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }} h2 {{ margin: 0; font-size: 21px; }}
+      .num {{ width: 34px; height: 34px; border-radius: 50%; background: #1A73E8; color: #fff; display: grid; place-items: center; font-weight: 700; }}
+      .meta {{ color: #5F6368; font-size: 14px; margin-left: auto; }}
+      .imgs {{ display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px; }}
+      .imgs img {{ height: min(52vh, 460px); aspect-ratio: 4/5; border-radius: 14px; display: block; box-shadow: 0 1px 6px rgba(0,0,0,.12); }}
+      details {{ margin-top: 12px; }} summary {{ cursor: pointer; color: #0B57D0; font-weight: 600; }}
+      details p {{ max-width: 760px; line-height: 1.5; margin: 10px 0 0; }} .tags {{ color: #0B57D0; }} .alt {{ color: #5F6368; font-size: 14px; }}
+      </style></head><body><header><h1>Instagram · lote {lote["lote"]}</h1><p>{esc(lote.get("notes", ""))}</p></header>
+      {"".join(rows)}</body></html>''', encoding="utf-8")
 
 
 if __name__ == "__main__":

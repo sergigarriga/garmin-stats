@@ -13,6 +13,7 @@ Salida en `out/lote-01/` (no se sube a git):
 - `01-presentacion-1.png`, `01-presentacion-2.png`… una imagen por diapositiva (1080 x 1350, formato 4:5).
 - `captions.md`: texto del post, hashtags y texto alternativo de cada uno.
 - `grid.png`: cómo quedará la cuadrícula del perfil cuando estén todos publicados.
+- `todos.html`: página para revisar el lote: cada post en una fila con sus imágenes en orden, su texto y sus hashtags.
 
 Publica los posts en orden (01 primero). Los carruseles se suben como una sola publicación con varias imágenes.
 
