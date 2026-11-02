@@ -153,7 +153,7 @@
     </div>
     <div class="title" id="Gword" style="font-size:180px;margin-top:50px">Runch</div>
     <div id="Gtag" style="font-size:48px;font-weight:600;color:#5E5B70;margin-top:8px">Tu coach de running con IA</div>
-    <div class="chip" id="Gcta" style="margin-top:50px;background:#FFE58A">Síguenos</div>
+    <div class="chip" id="Gcta" style="margin-top:50px;background:#FFE58A">Síguenos en @runch.run</div>
   </div>
 </div>
 
@@ -199,15 +199,15 @@
   const AV = ['AG', 'MR', 'LS', 'JP', 'NC', 'EV', 'IB', 'TM'];
   $('Forbit').innerHTML = AV.map((a, i) => `<div class="av" style="position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;background:${CH[(i % 6) + 1]};border:6px solid #fff;display:grid;place-items:center;font-size:40px;font-weight:800;box-shadow:0 10px 26px rgba(60,50,90,.15)">${a}</div>`).join('');
 
-  window.render = function (t) {
+  window.render = function (t, rt = t) {
     // fondo: el color cambia con cada escena
     const BG = [[0, '#F6F3FF'], [1.6, '#FFF3E8'], [3.6, '#EAF2FF'], [8.0, '#EEF6FF'], [10.0, '#F3EEFF'], [12.0, '#FFF0F5'], [13.6, '#F6F3FF']];
     let bg = BG[0][1];
     for (let i = 1; i < BG.length; i++) if (t >= BG[i][0]) bg = lerpC(BG[i - 1][1], BG[i][1], eio(p(t, BG[i][0], BG[i][0] + 0.5)));
     $('stage').style.background = bg;
-    tr($('b1'), { x: -300 + 160 * Math.sin(t * .6), y: -260 + 120 * Math.cos(t * .5) });
-    tr($('b2'), { x: 540 + 120 * Math.cos(t * .55), y: 1300 + 140 * Math.sin(t * .4) });
-    tr($('b3'), { x: 600 + 100 * Math.sin(t * .35), y: 260 + 120 * Math.cos(t * .6) });
+    tr($('b1'), { x: -300 + 160 * Math.sin(rt * .6), y: -260 + 120 * Math.cos(rt * .5) });
+    tr($('b2'), { x: 540 + 120 * Math.cos(rt * .55), y: 1300 + 140 * Math.sin(rt * .4) });
+    tr($('b3'), { x: 600 + 100 * Math.sin(rt * .35), y: 260 + 120 * Math.cos(rt * .6) });
     const br = eo(p(t, 1.4, 1.8)) * (1 - eo(p(t, 13.5, 13.8)));
     tr($('brand'), { o: br, y: (1 - br) * -50 });
 
@@ -227,7 +227,7 @@
     show($('B'), t, 1.6, 3.75);
     const bin = eo(p(t, 1.6, 2.0)), bout = eio(p(t, 3.4, 3.75));
     tr($('Bblock'), { o: bin * (1 - bout), r: -9, s: 1 + 0.15 * bout });
-    document.querySelectorAll('.Brow').forEach((row, r) => { const dir = r % 2 ? 1 : -1; tr(row, { x: dir * (t - 1.6) * (260 + r * 40) - (dir > 0 ? 900 : 0) }); });
+    document.querySelectorAll('.Brow').forEach((row, r) => { const dir = r % 2 ? 1 : -1; tr(row, { x: dir * rt * (200 + r * 30) - (dir > 0 ? 1500 : 300) }); });  // cintas en tiempo real: nunca se paran
     const bc = p(t, 2.05, 2.5); tr($('Bcard'), { o: clamp(bc * 3) * (1 - bout), s: eb(bc) * (1 - 0.3 * bout), r: 3 * (1 - bc) - 2 });
     sweep($('Bhl'), t, 2.5, 2.9);
 
@@ -243,7 +243,7 @@
     const dt = p(t, 7.05, 7.3); $('bbdot').setAttribute('opacity', dt); $('bbdot').setAttribute('r', 16 * eb(dt));
     $('bbn').textContent = Math.round(58 + 36 * (1 - ln));
     [['Cs1', 4.6, -6], ['Cs2', 4.8, 5], ['Cs3', 5.0, -4], ['Cs4', 7.1, 6]].forEach(([id, a, r]) => {
-      const q = p(t, a, a + 0.4); tr($(id), { o: clamp(q * 3) * (1 - pout), s: eb(q), r, y: 14 * Math.sin((t + a) * 3) - pout * 300 });
+      const q = p(t, a, a + 0.4); tr($(id), { o: clamp(q * 3) * (1 - pout), s: eb(q), r, y: 14 * Math.sin((rt + a) * 3) - pout * 300 });
     });
 
     // D · zonas (8.0 – 10.1)
@@ -269,7 +269,7 @@
     pop($('Em1'), t, 10.25, 0, 0.35);
     const typing = p(t, 10.55, 10.6) * (1 - p(t, 11.0, 11.05));
     tr($('Etyping'), { o: typing * (1 - eout), s: 0.6 + 0.4 * eb(p(t, 10.55, 10.8)) });
-    $('Etyping').querySelectorAll('.dot').forEach((d, k) => tr(d, { y: -14 * Math.max(0, Math.sin((t * 9) - k * 0.9)) }));
+    $('Etyping').querySelectorAll('.dot').forEach((d, k) => tr(d, { y: -14 * Math.max(0, Math.sin((rt * 9) - k * 0.9)) }));
     pop($('Em2'), t, 11.0, 0, 0.35);
     [$('Em1'), $('Em2')].forEach((e) => { e.style.opacity = Number(e.style.opacity) * (1 - eout); });
     const st = p(t, 11.3, 11.55); tr($('Estamp'), { o: clamp(st * 4) * (1 - eout), s: 2.4 - 1.4 * eo(st), r: -8 });
@@ -289,13 +289,13 @@
       tr(c, { x: Math.cos(ang) * sp * age, y: Math.sin(ang) * sp * age + 900 * age * age, r: age * 400 * (rnd(i + 5) - .5), o: clamp(1.6 - age) * (1 - fout) });
     });
     document.querySelectorAll('.av').forEach((a, i) => {
-      const q = eb(p(t, 12.3 + i * 0.05, 12.7 + i * 0.05)), ang = (i / AV.length) * Math.PI * 2 + (t - 12) * 0.9;
+      const q = eb(p(t, 12.3 + i * 0.05, 12.7 + i * 0.05)), ang = (i / AV.length) * Math.PI * 2 + rt * 0.5;
       tr(a, { o: clamp(q * 3) * (1 - fout), x: Math.cos(ang) * 420 * q, y: Math.sin(ang) * 640 * q, s: q });
     });
 
     // G · cierre (13.6 – 15)
     show($('G'), t, 13.6, 15.1);
-    const gl = p(t, 13.65, 14.15); tr($('Glogo'), { o: clamp(gl * 3), s: eb(gl), r: -200 * (1 - eo(gl)) - 6 + 3 * Math.sin(t * 3) * p(t, 14.2, 15) });
+    const gl = p(t, 13.65, 14.15); tr($('Glogo'), { o: clamp(gl * 3), s: eb(gl), r: -200 * (1 - eo(gl)) - 6 + 3 * Math.sin(rt * 3) * p(t, 14.2, 15) });
     $('Gword').style.letterSpacing = `${-0.045 + 0.12 * (1 - eo(p(t, 13.9, 14.4)))}em`;
     tr($('Gword'), { o: p(t, 13.9, 14.2), y: (1 - eo(p(t, 13.9, 14.3))) * 60 });
     tr($('Gtag'), { o: p(t, 14.15, 14.45), y: (1 - eo(p(t, 14.15, 14.45))) * 40 });

@@ -8,11 +8,16 @@ Genera en marketing/instagram/out/video/:
   <nombre>-voz.wav       la voz: Amazon Polly ("voice": "polly:Lucia:generative:eu-central-1", natural, con la cuenta de
                          AWS) o Piper ("voice": "es_ES-davefx-medium", sin conexión, más robótica)
   <nombre>-musica.wav    base musical compuesta por código (sin derechos de autor) + efectos sincronizados
-  <nombre>.captions.json subtítulos con el tiempo de cada palabra (los pinta render_video.py dentro del vídeo)
+  <nombre>.captions.json subtítulos en trozos de 2-5 palabras con el tiempo de cada palabra (los pinta render_video.py)
+  <nombre>.timing.json   sincronía voz-animación (la usa render_video.py)
   <nombre>.srt           subtítulos en archivo aparte
 
-Guion: {"duration", "bpm", "voice", "speed" (Piper), "tempo" (acelera la voz sin cambiar el tono), "lines": [{"t", "text", "say"?}], "sfx": [{"t", "type", "pitch"?}]}
+Guion: {"anim_duration", "lead", "tail", "bpm", "voice", "tempo", "lines": [{"scene", "text", "say"?}], "sfx": [{"t", "type", "pitch"?}]}
+  Todo el guion se graba en UNA toma (entonación natural, como habla una persona). Cada parte lleva "scene": el segundo
+  de la animación en el que empieza su escena; la animación espera a la voz (timewarp.py). El vídeo dura lo que la voz.
   text = lo que sale en el subtítulo; say = cómo debe pronunciarlo la voz (p. ej. "Ranch" para que suene bien "Runch").
+  Los efectos (sfx) van en segundos de animación. tempo = acelera la voz sin cambiar el tono (1,1 suena a creador de
+  contenido). anim_duration = duración de la animación; lead/tail = silencio antes y cierre después de la voz.
   Efectos: whoosh, pop, tick, ding, stamp, swell, sparkle.
 """
 
@@ -25,6 +30,8 @@ import wave
 from pathlib import Path
 
 import numpy as np
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parent / "out" / "video"
@@ -237,50 +244,116 @@ def srt_time(s: float) -> str:
     return f"{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}"
 
 
+def voice_take(text: str, spec: dict) -> tuple[np.ndarray, list | None]:
+    vname = spec.get("voice", "es_ES-davefx-medium")
+    if vname.startswith("polly:"):
+        raw, marks = polly(text, vname)
+    else:
+        raw, marks = synth(text, vname, spec.get("speed", 1.0)), None
+    audio, cut = trim(raw)
+    marks = marks and [(max(0.0, m[0] - cut), m[1]) for m in marks]
+    if spec.get("tempo", 1.0) != 1.0:  # acelerar sin cambiar el tono
+        audio = tempo(audio, spec["tempo"])
+        marks = marks and [(m[0] / spec["tempo"], m[1]) for m in marks]
+    return audio, marks
+
+
+def pauses(x: np.ndarray, min_s: float = 0.06, thr: float = 0.012) -> list[tuple[float, float]]:
+    """Silencios dentro de la toma: [(inicio, fin)] en segundos."""
+    hop = int(0.01 * SR)
+    rms = np.sqrt(np.convolve(x ** 2, np.ones(hop) / hop, mode="same"))[::hop]
+    quiet = rms < thr
+    out, start = [], None
+    for i, q in enumerate(quiet):
+        if q and start is None:
+            start = i
+        elif not q and start is not None:
+            if (i - start) * 0.01 >= min_s:
+                out.append((start * 0.01, i * 0.01))
+            start = None
+    return out
+
+
+def chunks(words: list[str], size: int = 5) -> list[list[int]]:
+    """Trozos de subtítulo de 2-5 palabras, cortando preferentemente tras una coma o un punto."""
+    out, cur = [], []
+    for i, w in enumerate(words):
+        cur.append(i)
+        punct = w[-1] in ",.;:?!…»"
+        if len(cur) >= size or (punct and len(cur) >= 2) or (punct and w[-1] in ".?!…"):
+            out.append(cur)
+            cur = []
+    if cur:
+        if out and len(cur) == 1:
+            out[-1] += cur
+        else:
+            out.append(cur)
+    return out
+
+
 def main(path: str) -> None:
+    """Una sola toma de voz para todo el guion (entonación natural). Cada parte del guion lleva "scene": el segundo de la
+    animación en el que empieza su escena; la animación se sincroniza con la voz (ver timewarp.py)."""
+    from timewarp import unwarp
     spec = json.loads(Path(path).read_text())
     name = Path(path).name.replace(".voz.json", "")
     OUT.mkdir(parents=True, exist_ok=True)
-    dur = float(spec["duration"])
+    lines = spec["lines"]
+    said = [ln.get("say", ln["text"]) for ln in lines]
+    take, marks = voice_take(" ".join(said), spec)
+    T = len(take) / SR
+    # dónde empieza cada parte dentro de la toma
+    shown = [ln["text"].split() for ln in lines]
+    spoken = [x.split() for x in said]
+    starts, ends = [0.0], []
+    if marks and len(marks) == sum(len(w) for w in spoken):
+        k = 0
+        for w in spoken[:-1]:
+            k += len(w)
+            starts.append(marks[k][0])
+    else:  # sin marcas: se buscan los silencios cerca de donde tocaría cada corte
+        sizes = [len(voice_take(x, spec)[0]) / SR for x in said] if len(said) > 1 else [T]
+        gaps = pauses(take)
+        cum = np.cumsum(sizes) / sum(sizes) * T
+        for e in cum[:-1]:
+            cand = [g for g in gaps if g[1] > starts[-1] + 0.3 and abs((g[0] + g[1]) / 2 - e) < 1.2]
+            starts.append(min(cand, key=lambda g: abs((g[0] + g[1]) / 2 - e))[1] if cand else float(e))
+    gaps = pauses(take)
+    for i in range(len(lines)):
+        nxt = starts[i + 1] if i + 1 < len(lines) else T
+        g = [x for x in gaps if starts[i] < x[0] < nxt and x[1] >= nxt - 0.02]
+        ends.append(g[-1][0] if g else nxt)
+    lead, tail = spec.get("lead", 0.35), spec.get("tail", 1.8)
+    dur = lead + T + tail
+    anchors = [(0.0, 0.0)] + [(lead + starts[i], float(ln["scene"])) for i, ln in enumerate(lines)] + [(dur, float(spec["anim_duration"]))]
     voice = np.zeros(int(dur * SR))
+    place(voice, take, lead)
     captions = []
-    for ln in spec["lines"]:
-        vname = spec.get("voice", "es_ES-davefx-medium")
-        if vname.startswith("polly:"):
-            raw, marks = polly(ln.get("say", ln["text"]), vname)
+    for i, ln in enumerate(lines):
+        t0, t1 = lead + starts[i], lead + ends[i]
+        words = shown[i]
+        if marks and len(marks) == sum(len(w) for w in spoken) and len(spoken[i]) == len(words):
+            k0 = sum(len(w) for w in spoken[:i])
+            edges = np.array([lead + marks[k0 + j][0] for j in range(len(words))] + [t1])
         else:
-            raw, marks = synth(ln.get("say", ln["text"]), vname, spec.get("speed", 1.0)), None
-        audio, cut = trim(raw)
-        if spec.get("tempo", 1.0) != 1.0:  # acelerar sin cambiar el tono (atempo de ffmpeg)
-            audio = tempo(audio, spec["tempo"])
-            marks = marks and [(m[0] / spec["tempo"], m[1]) for m in marks]
-            cut /= spec["tempo"]
-        t0, t1 = ln["t"], ln["t"] + len(audio) / SR
-        if t1 > dur:
-            print(f"AVISO: «{ln['text']}» acaba en {t1:.2f} s, después del final del vídeo ({dur} s)")
-        place(voice, audio, t0)
-        # tiempo de cada palabra: repartido según su longitud
-        words = ln["text"].split()
-        if marks and len(marks) == len(words):  # tiempo exacto de cada palabra (marcas de la voz)
-            starts = [t0 + max(0.0, m[0] - cut) for m in marks]
-            edges = np.array(starts + [t1])
-        else:  # repartido según la longitud de cada palabra
-            weights = np.array([len(w.strip(".,;:¡!¿?«»")) + 1.5 for w in words], dtype=float)
+            weights = np.array([len(w.strip(".,;:¡!¿?«»…")) + 1.5 for w in words], dtype=float)
             edges = t0 + np.concatenate([[0], np.cumsum(weights / weights.sum())]) * (t1 - t0)
-        captions.append({"text": ln["text"], "t0": round(t0, 3), "t1": round(t1, 3),
-                         "words": [{"w": w, "t0": round(edges[i], 3), "t1": round(edges[i + 1], 3)} for i, w in enumerate(words)]})
-        print(f"  {t0:5.2f}–{t1:5.2f} s  {ln['text']}")
+        for ch in chunks(words):
+            captions.append({"text": " ".join(words[j] for j in ch), "t0": round(float(edges[ch[0]]), 3), "t1": round(float(edges[ch[-1] + 1]), 3),
+                             "words": [{"w": words[j], "t0": round(float(edges[j]), 3), "t1": round(float(edges[j + 1]), 3)} for j in ch]})
+        print(f"  {t0:5.2f}–{t1:5.2f} s  (escena {ln['scene']})  {ln['text']}")
     m = music(dur, spec.get("bpm", 104))
-    for e in spec.get("sfx", []):
-        place(m, sfx(e["type"], e.get("pitch", 1.0)), e["t"])
+    for e in spec.get("sfx", []):  # los efectos van en tiempo de animación: se pasan a tiempo real
+        place(m, sfx(e["type"], e.get("pitch", 1.0)), unwarp(e["t"], anchors))
     write_wav(OUT / f"{name}-voz.wav", voice * 0.95)
     write_wav(OUT / f"{name}-musica.wav", m * 0.8)
     (OUT / f"{name}.captions.json").write_text(json.dumps(captions, ensure_ascii=False, indent=1), encoding="utf-8")
+    (OUT / f"{name}.timing.json").write_text(json.dumps({"duration": round(dur, 3), "anchors": anchors}), encoding="utf-8")
     srt = []
     for i, c in enumerate(captions, 1):
-        srt += [str(i), f"{srt_time(c['t0'])} --> {srt_time(min(dur, c['t1'] + 0.25))}", c["text"], ""]
+        srt += [str(i), f"{srt_time(c['t0'])} --> {srt_time(c['t1'] + 0.15)}", c["text"], ""]
     (OUT / f"{name}.srt").write_text("\n".join(srt), encoding="utf-8")
-    print(f"Voz, música y subtítulos en {OUT}")
+    print(f"Voz de {T:.1f} s, vídeo de {dur:.1f} s. Voz, música, subtítulos y sincronía en {OUT}")
 
 
 if __name__ == "__main__":

@@ -439,7 +439,9 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int = 0) -> str:
           <div style="width:180px;height:180px;border-radius:56px;margin:0 auto;display:grid;place-items:center;transform:rotate(-6deg);
             background:{LOGO};box-shadow:0 24px 60px rgba(60,50,90,.18)">{icon(s.get("icon", "AutoAwesome"), "#fff", 92)}</div>
           {title(s.get("size", 84), "text-align:center;margin-top:56px")}{lead("text-align:center;align-self:center")}
-          <div class="row" style="gap:22px;justify-content:center;margin-top:50px;flex-wrap:wrap">{acts}</div><div style="flex:1.2"></div>'''
+          <div class="row" style="gap:22px;justify-content:center;margin-top:50px;flex-wrap:wrap">{acts}</div>
+          {f'<div style="text-align:center;font-size:34px;font-weight:750;color:{accent};margin-top:34px;letter-spacing:-.01em">{esc(STYLE["handle"])}</div>' if STYLE.get("handle") else ''}
+          <div style="flex:1.2"></div>'''
     else:
         raise ValueError(f"layout desconocido: {layout}")
     foot = f'''<div class="row" style="justify-content:space-between;align-items:center;min-height:24px">
@@ -473,6 +475,7 @@ def main(path: str) -> None:
     from playwright.sync_api import sync_playwright
     lote = json.loads(Path(path).read_text())
     STYLE.update(lote.get("style") or {})
+    STYLE["handle"] = lote.get("handle")  # p. ej. "@runch.run": sale en las diapositivas de cierre
     out = HERE / "out" / f"lote-{lote['lote']}"
     out.mkdir(parents=True, exist_ok=True)
     for f in out.glob("*.png"):

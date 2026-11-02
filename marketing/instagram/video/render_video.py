@@ -22,6 +22,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from timewarp import warp  # noqa: E402
+
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parent / "out" / "video"
 
@@ -61,7 +64,7 @@ CAPTION_JS = r"""
 """
 
 
-def frames(page_path: Path, dest: Path, fps: int, captions: list | None) -> float:
+def frames(page_path: Path, dest: Path, fps: int, captions: list | None, timing: dict | None = None) -> float:
     from playwright.sync_api import sync_playwright
     shutil.rmtree(dest, ignore_errors=True)
     dest.mkdir(parents=True)
@@ -75,16 +78,17 @@ def frames(page_path: Path, dest: Path, fps: int, captions: list | None) -> floa
             pg.evaluate(f"window.CAPTIONS = {json.dumps(captions, ensure_ascii=False)}")
             pg.evaluate(CAPTION_JS)
         pg.wait_for_timeout(300)
-        duration = float(pg.evaluate("window.DURATION"))
+        duration = float(timing["duration"]) if timing else float(pg.evaluate("window.DURATION"))
         n = round(duration * fps)
         for i in range(n):
             t = i / fps
-            pg.evaluate(f"render({t}); window.__caption && window.__caption({t})")
+            a = warp(t, timing["anchors"]) if timing else t  # la animación sigue a la voz
+            pg.evaluate(f"render({a}, {t}); window.__caption && window.__caption({t})")
             pg.screenshot(path=str(dest / f"{i:05d}.jpg"), type="jpeg", quality=94)
             if i % 90 == 0:
                 print(f"  fotograma {i}/{n}")
         # portada: un fotograma del gancho, sin subtítulos
-        pg.evaluate(f"render({min(2.6, duration / 2)}); window.__caption && window.__caption(-9)")
+        pg.evaluate(f"render(2.6, 2.6); window.__caption && window.__caption(-9)")
         pg.screenshot(path=str(OUT / f"{page_path.stem}-portada.png"))
         b.close()
     return duration
@@ -129,7 +133,9 @@ def main() -> None:
     caps, voice, music = OUT / f"{name}.captions.json", OUT / f"{name}-voz.wav", OUT / f"{name}-musica.wav"
     tmp = OUT / f"_frames-{name}"
     with_audio = caps.exists() and voice.exists()
-    duration = frames(page, tmp, a.fps, json.loads(caps.read_text()) if with_audio else None)
+    tfile = OUT / f"{name}.timing.json"
+    timing = json.loads(tfile.read_text()) if with_audio and tfile.exists() else None
+    duration = frames(page, tmp, a.fps, json.loads(caps.read_text()) if with_audio else None, timing)
     final = OUT / f"{name}.mp4"
     if not with_audio:
         encode(tmp, a.fps, final)

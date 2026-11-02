@@ -1,22 +1,144 @@
 {
-  "duration": 16,
   "bpm": 108,
   "voice": "polly:Lucia:generative:eu-central-1",
-  "tempo": 1.05,
+  "tempo": 1.1,
   "lines": [
-    {"t": 0.35, "text": "¿Tienes un Garmin y no sabes qué es la Z2?", "say": "¿Tienes un Garmin y no sabes qué es la zeta dos?"},
-    {"t": 3.30, "text": "La Z2 es esta. Y es más lenta de lo que crees.", "say": "La zeta dos es esta. Y es más lenta de lo que crees."},
-    {"t": 6.70, "text": "¿Puedes hablar mientras corres? Es Z2.", "say": "¿Puedes hablar mientras corres? Es zeta dos."},
-    {"t": 9.90, "text": "Tu rodaje suave, contra uno suave de verdad."},
-    {"t": 12.75, "text": "80 % suave. 20 % fuerte. Síguenos.", "say": "Ochenta suave. Veinte fuerte. Síguenos."}
+    {
+      "scene": 0.3,
+      "text": "A ver, confiesa: tienes un Garmin de 500 €… y no tienes ni idea de qué es la Z2.",
+      "say": "A ver, confiesa: tienes un Garmin de quinientos euros… y no tienes ni idea de qué es la zeta dos."
+    },
+    {
+      "scene": 3.3,
+      "text": "Tranqui, que te lo explico rápido. Es esta franja de aquí, y es bastante más lenta de lo que te imaginas.",
+      "say": "Tranqui, que te lo explico rápido. Es esta franja de aquí, y es bastante más lenta de lo que te imaginas."
+    },
+    {
+      "scene": 6.7,
+      "text": "El truco es muy fácil: si puedes ir hablando mientras corres, estás en Z2. Si vas jadeando… pues no.",
+      "say": "El truco es muy fácil: si puedes ir hablando mientras corres, estás en zeta dos. Si vas jadeando… pues no."
+    },
+    {
+      "scene": 9.9,
+      "text": "Y sí, seguramente tu rodaje suave se parece más a esto. Pero el suave de verdad es este otro."
+    },
+    {
+      "scene": 12.8,
+      "text": "La regla: 80 % suave y 20 % fuerte. Guárdatelo, y síguenos para más.",
+      "say": "La regla: ochenta por ciento suave, y veinte fuerte. Guárdatelo, y síguenos para más."
+    }
   ],
   "sfx": [
-    {"t": 0.0, "type": "swell"}, {"t": 1.5, "type": "pop", "pitch": 0.9}, {"t": 2.0, "type": "pop", "pitch": 1.2}, {"t": 2.15, "type": "pop", "pitch": 1.4},
-    {"t": 3.0, "type": "whoosh"}, {"t": 3.75, "type": "tick"}, {"t": 3.87, "type": "tick"}, {"t": 3.99, "type": "tick"}, {"t": 4.11, "type": "tick"}, {"t": 4.23, "type": "tick"},
-    {"t": 4.7, "type": "ding"}, {"t": 5.1, "type": "pop", "pitch": 1.3},
-    {"t": 6.4, "type": "whoosh"}, {"t": 6.9, "type": "pop"}, {"t": 8.4, "type": "ding"}, {"t": 8.45, "type": "pop", "pitch": 1.2}, {"t": 8.9, "type": "pop", "pitch": 1.4},
-    {"t": 9.6, "type": "whoosh"}, {"t": 10.3, "type": "whoosh"}, {"t": 11.2, "type": "stamp"},
-    {"t": 12.6, "type": "whoosh"}, {"t": 12.85, "type": "pop", "pitch": 1.0}, {"t": 13.3, "type": "pop", "pitch": 1.3},
-    {"t": 13.75, "type": "swell"}, {"t": 14.25, "type": "ding"}
-  ]
+    {
+      "t": 0.0,
+      "type": "swell"
+    },
+    {
+      "t": 1.5,
+      "type": "pop",
+      "pitch": 0.9
+    },
+    {
+      "t": 2.0,
+      "type": "pop",
+      "pitch": 1.2
+    },
+    {
+      "t": 2.15,
+      "type": "pop",
+      "pitch": 1.4
+    },
+    {
+      "t": 3.0,
+      "type": "whoosh"
+    },
+    {
+      "t": 3.75,
+      "type": "tick"
+    },
+    {
+      "t": 3.87,
+      "type": "tick"
+    },
+    {
+      "t": 3.99,
+      "type": "tick"
+    },
+    {
+      "t": 4.11,
+      "type": "tick"
+    },
+    {
+      "t": 4.23,
+      "type": "tick"
+    },
+    {
+      "t": 4.7,
+      "type": "ding"
+    },
+    {
+      "t": 5.1,
+      "type": "pop",
+      "pitch": 1.3
+    },
+    {
+      "t": 6.4,
+      "type": "whoosh"
+    },
+    {
+      "t": 6.9,
+      "type": "pop"
+    },
+    {
+      "t": 8.4,
+      "type": "ding"
+    },
+    {
+      "t": 8.45,
+      "type": "pop",
+      "pitch": 1.2
+    },
+    {
+      "t": 8.9,
+      "type": "pop",
+      "pitch": 1.4
+    },
+    {
+      "t": 9.6,
+      "type": "whoosh"
+    },
+    {
+      "t": 10.3,
+      "type": "whoosh"
+    },
+    {
+      "t": 11.2,
+      "type": "stamp"
+    },
+    {
+      "t": 12.6,
+      "type": "whoosh"
+    },
+    {
+      "t": 12.85,
+      "type": "pop",
+      "pitch": 1.0
+    },
+    {
+      "t": 13.3,
+      "type": "pop",
+      "pitch": 1.3
+    },
+    {
+      "t": 13.75,
+      "type": "swell"
+    },
+    {
+      "t": 14.25,
+      "type": "ding"
+    }
+  ],
+  "anim_duration": 16,
+  "lead": 0.3,
+  "tail": 1.9
 }

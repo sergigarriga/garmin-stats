@@ -1,4 +1,4 @@
-# Instagram de "Runch"
+# Instagram de "Runch" (@runch.run)
 
 Posts con el mismo estilo que la app (letra Google Sans Flex, colores y tarjetas de `web/src/theme.ts`).
 El agente `.claude/agents/instagram-posts.md` los crea: pídele "usa el agente de Instagram para hacer el lote 2".
@@ -22,6 +22,7 @@ Publica los posts en orden (01 primero). Los carruseles se suben como una sola p
 ```json
 {
   "lote": "02",
+  "handle": "@runch.run",
   "notes": "Para quien publica",
   "posts": [{
     "id": "hrv", "title": "HRV", "color": "recovery",
@@ -69,9 +70,12 @@ uv run --no-project --with playwright python marketing/instagram/video/render_vi
   comunidad).
 - `video/reel-z2.html`: "¿Tienes un Garmin y no sabes qué es la Z2?" en 15 s.
 - Salida en `out/video/<nombre>.mp4` y una portada `<nombre>-portada.png`. Necesita `ffmpeg`.
-- **Voz, música y subtítulos:** escribe el guion en `video/<nombre>.voz.json` (frase, segundo en que empieza y, si hace
-  falta, cómo pronunciarla: `"say": "Ranch"` para que la voz diga bien "Runch") y los efectos (`whoosh`, `pop`, `tick`,
-  `ding`, `stamp`, `swell`, `sparkle`). Luego:
+- **Voz, música y subtítulos:** escribe el guion en `video/<nombre>.voz.json` como habla una persona (frases naturales,
+  con ritmo de creador de contenido, nada de frases sueltas de robot). Cada parte lleva `"scene"` (segundo de la
+  animación en que empieza su escena) y, si hace falta, cómo pronunciarla (`"say": "Ranch"` para que suene "Runch",
+  "zeta dos" para "Z2", "quinientos euros" para "500 €"). Todo se graba en una sola toma y la animación espera a la voz,
+  así que el vídeo dura lo que dura la voz (unos 30 s). Efectos: `whoosh`, `pop`, `tick`, `ding`, `stamp`, `swell`,
+  `sparkle`, en segundos de animación. Luego:
   `uv run --no-project --with piper-tts --with numpy python marketing/instagram/video/voiceover.py marketing/instagram/video/showreel.voz.json`
   y vuelve a lanzar `render_video.py`. Sale `<nombre>.mp4` completo (voz + música + subtítulos) y `<nombre>.srt`.
 - Voz: Amazon Polly con la cuenta de AWS (`"voice": "polly:Lucia:generative:eu-central-1"`; también Sergio generativa, o

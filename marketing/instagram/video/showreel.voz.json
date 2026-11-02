@@ -1,25 +1,151 @@
 {
-  "duration": 15,
   "bpm": 104,
   "voice": "polly:Lucia:generative:eu-central-1",
-  "tempo": 1.05,
+  "tempo": 1.1,
   "lines": [
-    {"t": 0.85, "text": "Esto es Runch.", "say": "Esto es Ranch."},
-    {"t": 2.05, "text": "Tus datos, por fin claros."},
-    {"t": 4.10, "text": "Tu preparación, tu sueño y tu energía, de un vistazo."},
-    {"t": 8.15, "text": "Entrena en tu zona."},
-    {"t": 10.20, "text": "Con un entrenador que te escucha."},
-    {"t": 12.20, "text": "Mejor en compañía."},
-    {"t": 13.62, "text": "Runch. Síguenos.", "say": "Ranch. Síguenos."}
+    {
+      "scene": 0.3,
+      "text": "¿Te pasa que miras el reloj después de correr y no entiendes ni la mitad de los datos?"
+    },
+    {
+      "scene": 2.0,
+      "text": "Pues para eso hemos hecho Runch: tus datos, por fin explicados en cristiano.",
+      "say": "Pues para eso hemos hecho Ranch: tus datos, por fin explicados en cristiano."
+    },
+    {
+      "scene": 4.0,
+      "text": "Abres la app y ves de un vistazo cómo has dormido, cómo llegas hoy y cuánta energía te queda."
+    },
+    {
+      "scene": 8.1,
+      "text": "Te dice a qué ritmo entrenar, para que dejes de correrlo todo en modo ego."
+    },
+    {
+      "scene": 10.1,
+      "text": "Y tienes un entrenador con IA que te escucha y te ajusta el plan cada semana."
+    },
+    {
+      "scene": 12.1,
+      "text": "Porque correr mola… pero en compañía, mola mucho más."
+    },
+    {
+      "scene": 13.7,
+      "text": "Esto es Runch. Síguenos y nos vemos en la próxima.",
+      "say": "Esto es Ranch. Síguenos, y nos vemos en la próxima."
+    }
   ],
   "sfx": [
-    {"t": 0.0, "type": "whoosh"}, {"t": 0.62, "type": "pop", "pitch": 0.8}, {"t": 0.9, "type": "swell"},
-    {"t": 1.6, "type": "whoosh"}, {"t": 2.05, "type": "pop"},
-    {"t": 3.6, "type": "whoosh"}, {"t": 4.6, "type": "pop", "pitch": 1.2}, {"t": 4.8, "type": "pop", "pitch": 1.4}, {"t": 5.0, "type": "pop", "pitch": 1.6},
-    {"t": 5.8, "type": "whoosh"}, {"t": 7.05, "type": "ding"},
-    {"t": 8.0, "type": "whoosh"}, {"t": 8.8, "type": "tick"}, {"t": 8.88, "type": "tick"}, {"t": 8.96, "type": "tick"}, {"t": 9.04, "type": "tick"}, {"t": 9.12, "type": "tick"},
-    {"t": 10.0, "type": "whoosh"}, {"t": 10.25, "type": "pop"}, {"t": 11.0, "type": "pop", "pitch": 1.3}, {"t": 11.3, "type": "stamp"},
-    {"t": 12.0, "type": "whoosh"}, {"t": 12.1, "type": "sparkle"},
-    {"t": 13.6, "type": "whoosh"}, {"t": 13.7, "type": "swell"}, {"t": 14.35, "type": "ding"}
-  ]
+    {
+      "t": 0.0,
+      "type": "whoosh"
+    },
+    {
+      "t": 0.62,
+      "type": "pop",
+      "pitch": 0.8
+    },
+    {
+      "t": 0.9,
+      "type": "swell"
+    },
+    {
+      "t": 1.6,
+      "type": "whoosh"
+    },
+    {
+      "t": 2.05,
+      "type": "pop"
+    },
+    {
+      "t": 3.6,
+      "type": "whoosh"
+    },
+    {
+      "t": 4.6,
+      "type": "pop",
+      "pitch": 1.2
+    },
+    {
+      "t": 4.8,
+      "type": "pop",
+      "pitch": 1.4
+    },
+    {
+      "t": 5.0,
+      "type": "pop",
+      "pitch": 1.6
+    },
+    {
+      "t": 5.8,
+      "type": "whoosh"
+    },
+    {
+      "t": 7.05,
+      "type": "ding"
+    },
+    {
+      "t": 8.0,
+      "type": "whoosh"
+    },
+    {
+      "t": 8.8,
+      "type": "tick"
+    },
+    {
+      "t": 8.88,
+      "type": "tick"
+    },
+    {
+      "t": 8.96,
+      "type": "tick"
+    },
+    {
+      "t": 9.04,
+      "type": "tick"
+    },
+    {
+      "t": 9.12,
+      "type": "tick"
+    },
+    {
+      "t": 10.0,
+      "type": "whoosh"
+    },
+    {
+      "t": 10.25,
+      "type": "pop"
+    },
+    {
+      "t": 11.0,
+      "type": "pop",
+      "pitch": 1.3
+    },
+    {
+      "t": 11.3,
+      "type": "stamp"
+    },
+    {
+      "t": 12.0,
+      "type": "whoosh"
+    },
+    {
+      "t": 12.1,
+      "type": "sparkle"
+    },
+    {
+      "t": 13.6,
+      "type": "whoosh"
+    },
+    {
+      "t": 13.7,
+      "type": "swell"
+    },
+    {
+      "t": 14.35,
+      "type": "ding"
+    }
+  ],
+  "anim_duration": 15,
+  "lead": 0.35,
+  "tail": 1.6
 }
