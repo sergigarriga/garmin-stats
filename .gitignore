@@ -14,3 +14,6 @@ web/public/data.js
 .env
 *.key
 infra/build/
+
+# Imágenes generadas de Instagram (se regeneran con marketing/instagram/render.py)
+marketing/instagram/out/
