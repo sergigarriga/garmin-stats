@@ -56,6 +56,7 @@ def daily(store: Store) -> pd.DataFrame:
             "bb_min": _g(r, "bodyBattery", "minValue"),
             "bb_charged": _g(r, "bodyBattery", "chargedValue"),
             "bb_drained": _g(r, "bodyBattery", "drainedValue"),
+            "bb_now": _g(r, "bodyBattery", "latestValue"),  # el último valor que ha mandado el reloj ese día
             "resp_avg": _g(r, "respiration", "avgValue"),
             "spo2_avg": _g(r, "pulseOx", "avgValue"),
             "hydration_ml": _g(r, "hydration", "consumedInMl"),
@@ -191,6 +192,8 @@ def activities(store: Store) -> pd.DataFrame:
             "te_aerobic": a.get("aerobicTrainingEffectMessage"),
             "te_label": a.get("trainingEffectLabel"),
             "bb_delta": a.get("differenceBodyBattery"),
+            "swolf": a.get("averageSwolf"),
+            "pool_m": (a.get("poolLength") or 0) / 100 or None,  # Garmin lo da en cm (2500 = 25 m, 2286 = 25 yd)
             "best_1k_s": a.get("fastestSplit_1000"),
             "best_5k_s": a.get("fastestSplit_5000"),
             "best_10k_s": a.get("fastestSplit_10000"),

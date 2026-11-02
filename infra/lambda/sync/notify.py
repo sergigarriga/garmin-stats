@@ -7,7 +7,11 @@ Con {"uid", "message"} (botón "probar aviso") solo avisa a esa persona.
 
 import json
 import os
+import time
 from datetime import date
+
+os.environ["TZ"] = "CET-1CEST,M3.5.0,M10.5.0/3"  # hora de Madrid sin tzdata
+time.tzset()
 
 import boto3
 from pywebpush import WebPushException, webpush

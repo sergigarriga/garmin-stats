@@ -15,15 +15,45 @@ import Bolt from '@mui/icons-material/Bolt';
 import Speed from '@mui/icons-material/Speed';
 import FitnessCenter from '@mui/icons-material/FitnessCenter';
 import TipsAndUpdates from '@mui/icons-material/TipsAndUpdates';
-import { isoLocal, lastWith, mean, toDate, type GarminData, type Day } from '../data';
+import { isoLocal, lastWith, mean, toDate, useNow, type GarminData, type Day } from '../data';
 import { dateLong, dateShort, hm, int, dec1, pace } from '../format';
 import { useCat } from '../theme';
-import { AiBadge, AiCards, CARD_SX, IconBubble, InsightList, MetricCard, PageHeader, RingCard, SectionTitle } from '../ui';
+import { AiBadge, AiCards, CARD_SX, IconBubble, InsightList, MetricCard, PageHeader, RingCard, SectionTitle, chartSx } from '../ui';
 import Stack from '@mui/material/Stack';
 import { SportIcon } from './sport';
 import { Rich } from '../rich';
 import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import { Alerts, Goals, ReadinessCard, WeekCard } from './TodayExtras';
+import { CheckIn } from './Wellness';
+import { LineChart } from '@mui/x-charts/LineChart';
+
+const minutes = (hm: string) => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
+const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(Math.round(min % 60)).padStart(2, '0')}`;
+
+/** Tu energía y tu pulso de hoy, hora a hora (lo que el reloj ha mandado hasta ahora). */
+function TodayCurve({ bb, hr, asOf }: { bb?: [string, number][]; hr?: [string, number][]; asOf?: string }) {
+  const cat = useCat();
+  if (!bb?.length && !hr?.length) return null;
+  const xs = [...new Set([...(bb ?? []), ...(hr ?? [])].map((p) => minutes(p[0])))].sort((a, b) => a - b);
+  const pick = (s?: [string, number][]) => { const m = new Map((s ?? []).map((p) => [minutes(p[0]), p[1]])); return xs.map((x) => m.get(x) ?? null); };
+  return (
+    <Card sx={{ ...CARD_SX, mt: 2 }}>
+      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
+        <Typography variant="subtitle1">Tu día, hora a hora</Typography>
+        {asOf && <Typography variant="caption" color="text.secondary">hasta las {asOf}</Typography>}
+      </Stack>
+      <LineChart height={190} sx={chartSx} grid={{ horizontal: true }} margin={{ left: 0, right: 0, top: 16, bottom: 0 }}
+        xAxis={[{ data: xs, scaleType: 'linear', min: 0, max: Math.max(24 * 60, xs[xs.length - 1] ?? 0), disableLine: true, disableTicks: true,
+          tickInterval: [0, 360, 720, 1080, 1440], valueFormatter: (v: number) => hhmm(v) }]}
+        yAxis={[{ id: 'bb', min: 0, max: 100, disableLine: true, disableTicks: true, width: 32 },
+          { id: 'hr', position: 'right', disableLine: true, disableTicks: true, width: 36 }]}
+        series={[
+          ...(bb?.length ? [{ data: pick(bb), yAxisId: 'bb', label: 'Body Battery', color: cat('energy'), connectNulls: true, showMark: true, curve: 'linear' as const, valueFormatter: (v: number | null) => (v == null ? '–' : `${v}`) }] : []),
+          ...(hr?.length ? [{ data: pick(hr), yAxisId: 'hr', label: 'Pulso', color: cat('heart'), connectNulls: true, showMark: false, curve: 'monotoneX' as const, valueFormatter: (v: number | null) => (v == null ? '–' : `${v} lpm`) }] : []),
+        ]} />
+    </Card>
+  );
+}
 
 function series(days: Day[], pick: (d: Day) => number | undefined, n = 30) {
   return days.slice(-n).map(pick).filter((v): v is number => v != null);
@@ -54,6 +84,11 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
   const loadDay = days[days.length - 1];
   const today = new Date();
   const isToday = !!latest;
+  const now = useNow(60_000);
+  const live = data.live?.date === todayIso ? data.live : undefined;
+  const bbNow = live?.bbNow ?? latest?.bbNow;
+  // El reloj solo manda datos cuando se sincroniza con el móvil: si hace rato, se avisa.
+  const staleMin = live?.asOf ? now.getHours() * 60 + now.getMinutes() - minutes(live.asOf) : null;
 
   const hrvStatus = hrvDay?.hrv != null && hrvDay.hrvLow != null && hrvDay.hrvHigh != null
     ? hrvDay.hrv < hrvDay.hrvLow ? 'Por debajo de tu rango normal'
@@ -66,7 +101,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
     <Box>
       <PageHeader
         title="Hoy"
-        subtitle={`${dateLong(today).replace(/^\w/, (c) => c.toUpperCase())}${!isToday && lastSync ? ` · aún no hay datos de hoy (últimos del ${dateShort(toDate(lastSync.d))})` : ''}`}
+        subtitle={`${dateLong(today).replace(/^\w/, (c) => c.toUpperCase())}${!isToday && lastSync ? ` · aún no hay datos de hoy (últimos del ${dateShort(toDate(lastSync.d))})` : ''}${live?.asOf ? ` · datos del reloj hasta las ${live.asOf}` : ''}`}
       />
 
       <Alerts alerts={data.alerts} />
@@ -95,10 +130,20 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
           sub={night ? (night.sleepScore != null ? `Puntuación ${night.sleepScore}` : undefined) : 'sin datos de anoche'}
           caption={night ? 'Anoche' : 'Sin datos de anoche'} />
         <RingCard icon={<BatteryChargingFull />} color={cat('energy')} label="Body Battery" help="bodyBattery"
-          value={latest?.bbMax ?? 0} max={100}
-          center={latest?.bbMax != null ? int(latest.bbMax) : '—'} sub={latest?.bbMax != null ? 'máximo del día' : 'sin datos de hoy'}
-          caption={latest?.bbMin != null ? `Mínimo ${latest.bbMin} · cargado +${latest.bbCharged ?? '–'}` : 'Sin datos de hoy'} />
+          value={bbNow ?? 0} max={100}
+          center={bbNow != null ? int(bbNow) : '—'} sub={bbNow != null ? (live?.asOf ? `ahora · ${live.asOf}` : 'ahora') : 'sin datos de hoy'}
+          caption={latest?.bbMax != null ? `Máximo ${latest.bbMax} · mínimo ${latest.bbMin ?? '–'}` : 'Sin datos de hoy'} />
       </Box>
+      {staleMin != null && staleMin > 90 && (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+          El último dato del reloj es de las {live!.asOf}. Garmin solo recibe datos nuevos cuando el reloj se sincroniza con
+          el móvil: abre Garmin Connect y después pulsa actualizar.
+        </Typography>
+      )}
+      <TodayCurve bb={live?.bbSeries} hr={live?.hrSeries} asOf={live?.asOf} />
+
+      <SectionTitle>Cómo estás</SectionTitle>
+      <CheckIn data={data} />
 
       <SectionTitle>Tus métricas</SectionTitle>
       <Box sx={{ display: 'grid', gap: { xs: 1.25, sm: 2 }, gridTemplateColumns: { xs: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>

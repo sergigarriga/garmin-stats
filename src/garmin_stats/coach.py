@@ -24,6 +24,7 @@ from pydantic import BaseModel, Field, ValidationError
 from . import DATA_DIR
 from . import ai
 from . import settings
+from . import wellness
 
 log = logging.getLogger(__name__)
 
@@ -38,7 +39,9 @@ MODEL = "claude-opus-5-5"  # el plan es lo más difícil y se llama poco: Opus 5
 STATE = DATA_DIR / "coach.json"
 RUN_TYPES = ("easy", "long", "tempo", "intervals", "race")
 
-SessionType = Literal["easy", "long", "tempo", "intervals", "race", "strength", "cross", "rest"]
+SessionType = Literal["easy", "long", "tempo", "intervals", "race", "strength", "swim", "cross", "rest"]
+PaceRef = Literal["easy", "marathon", "half", "10k", "5k", "threshold", "interval", "repetition"]
+DONE_RATIO = 0.85  # al menos el 85 % de lo previsto cuenta como hecha
 
 
 class Step(BaseModel):
@@ -50,6 +53,10 @@ class Step(BaseModel):
     pace_slow: str | None = Field(description="Ritmo más lento del rango, 'm:ss' por km (solo si target=pace)")
     hr_low: int | None = Field(description="Pulso mínimo en lpm (solo si target=hr)")
     hr_high: int | None = Field(description="Pulso máximo en lpm (solo si target=hr)")
+    pace_ref: PaceRef | None = Field(default=None, description="Ritmo de referencia del atleta en el que se basa el paso "
+                                     "(solo si target=pace): así el ritmo se actualiza solo cuando mejora")
+    pace_ref_offset_s: int | None = Field(default=None, description="Segundos por km sobre el ritmo de referencia "
+                                          "(negativo = más rápido), p. ej. -5; 0 o null si es justo ese ritmo")
     name: str = Field(description="Nombre corto del paso, máx. 15 caracteres, p. ej. 'Calentamiento', '1 km ritmo'")
 
 
@@ -133,6 +140,21 @@ Principios:
 - Peso: usa "peso_registrado" para valorar la tendencia hacia su objetivo de físico (sin dar dietas).
 - Si el objetivo incluye definición, añade en la descripción de alguna sesión un consejo breve y práctico
   (proteína, sueño), sin dietas ni cifras de calorías.
+- Ritmos de referencia: usa "ritmos_de_referencia" (modelo VDOT de Daniels con su marca o su VO2max) para fijar
+  los ritmos: suave para rodajes y tiradas, umbral para tempo, series (interval) para VO2max, etc. Si el ritmo suave
+  real del atleta es más lento que el de referencia, respeta el real en los rodajes. En los pasos del entreno
+  estructurado rellena pace_ref (y pace_ref_offset_s si hace falta) además de pace_fast/pace_slow.
+- Molestias y lesiones ("molestias_y_lesiones"): si hay alguna activa, adapta el plan para no agravarla (menos
+  impacto o volumen, sin series ni cuestas si afecta a piernas, alternativas como bici o natación) y dilo en la
+  descripción. Intensidad 4-5/5: sin sesiones de calidad hasta que mejore. Si se ha recuperado, vuelve poco a poco.
+- Cómo se encuentra ("como_se_encuentra_14_dias"): ánimo bajo o agujetas fuertes varios días seguidos son señal
+  de fatiga: baja la carga esa semana.
+- Natación: si el atleta nada o lo pide en sus notas, puedes programar sesiones "swim" (distance_km en km, p. ej.
+  1.5) con las series en la descripción (p. ej. "8 x 100 m a 2:05/100 m, salida cada 2:30") usando sus zonas de
+  "natacion" por 100 m (CSS). Cuenta como sesión cruzada suave para las piernas.
+- Gimnasio: mira "gimnasio_series_por_musculo" (series por semana de cada músculo, últimas 4 semanas) y sus récords
+  (1RM estimado). Reparte el volumen entre grupos (unas 6-12 series por músculo y semana si el objetivo es fuerza
+  e hipertrofia compatible con correr) y usa el 1RM para proponer cargas (p. ej. 3 x 8 al 70-75 % del 1RM).
 - La memoria son aprendizajes sobre ESTE atleta (cómo responde, qué tolera, sus ritmos reales, sus preferencias).
   Cada aprendizaje en una frase con su dato. No repitas reglas generales de entrenamiento."""
 
@@ -206,6 +228,14 @@ def profile(data: dict) -> dict:
         "semanas": data.get("weeks"),
         "gimnasio_registrado_por_el_reloj": data.get("strength"),
         "peso_registrado": (data.get("weights") or [])[-12:],
+        "ritmos_de_referencia": _paces_for_ai(data.get("paces")),
+        "natacion": _swim_for_ai(data.get("swim")),
+        "gimnasio_series_por_musculo": (data.get("gym") or {}).get("muscleAvg4w"),
+        "gimnasio_records_1rm": [{"ejercicio": r["ex"], "1rm_estimado_kg": (r.get("best") or {}).get("e1rm"),
+                                  "mejor_serie": r.get("best") and f"{r['best']['reps']} x {r['best']['kg']} kg",
+                                  "fecha": (r.get("best") or {}).get("d")}
+                                 for r in ((data.get("gym") or {}).get("records") or [])[:12]],
+        **wellness.for_coach(),
         "huecos_sin_reloj": settings.watch_gaps(),
         "nota_huecos": "Los periodos de 'huecos_sin_reloj' NO son parones: el reloj no registraba. Las ventanas "
                        "de km/carreras ya se calculan saltándolos (últimas semanas registradas). No planifiques "
@@ -213,24 +243,70 @@ def profile(data: dict) -> dict:
     }
 
 
+# ======================================================================== perfil: bloques nuevos
+def _paces_for_ai(p: dict | None) -> dict | None:
+    if not p:
+        return None
+    from .training import mmss
+    return {"vdot": p["vdot"], "fuente": p["sourceLabel"],
+            "ritmos_min_km": {x["key"]: mmss(x["sec"]) for x in p["list"]},
+            "rango_suave": f"{mmss(p['easyRange'][0])}-{mmss(p['easyRange'][1])}",
+            "zonas_de_ritmo": [f"Z{z['zone']} {z['name']}: {mmss(z['fast'])}-{mmss(z['slow'])}" for z in p["zones"]]}
+
+
+def _swim_for_ai(s: dict | None) -> dict | None:
+    if not s:
+        return None
+    from .training import mmss
+    return {"css_por_100m": mmss(s.get("css")), "fuente_css": {"test": "test 400/200", "estimate": "estimado con su mejor nado"}.get(s.get("cssSource")),
+            "zonas_por_100m": [f"Z{z['zone']} {z['name']}: {mmss(z['fast'])}-{mmss(z['slow'])}" for z in s.get("zones") or []],
+            "piscina_m": s.get("poolM"), "ultimas_sesiones": (s.get("sessions") or [])[-5:], "totales": s.get("totals")}
+
+
 # ======================================================================== cumplimiento
+def _ratio(actual: float, planned: float | None) -> float | None:
+    return round(actual / planned, 2) if planned else None
+
+
 def _match(session: dict, acts_by_day: dict) -> dict:
+    """Estado de una sesión y cuánto se parece lo hecho a lo previsto (distancia, tiempo, ritmo o series)."""
     acts = acts_by_day.get(session["date"], [])
     t = session["type"]
     today = date.today().isoformat()
     if t in RUN_TYPES:
         done = [a for a in acts if a["group"] in ("Correr", "Cinta")]
+    elif t == "swim":
+        done = [a for a in acts if a["group"] == "Natación"]
+    elif t == "strength":
+        done = [a for a in acts if a["group"] == "Fuerza" or a.get("type") == "strength_training"] or \
+               [a for a in acts if a["group"] not in ("Correr", "Cinta")]
     elif t == "rest":
         done = []
     else:
         done = [a for a in acts if a["group"] not in ("Correr", "Cinta")] or acts
     km = round(sum(a.get("km") or 0 for a in done), 2)
     mins = round(sum(a.get("min") or 0 for a in done))
+    comp = None
+    status: str
     if t == "rest":
         status = "rest"
     elif done:
-        planned = session.get("distance_km") or 0
-        status = "done" if not planned or km >= 0.75 * planned else "partial"
+        p_km, p_min = session.get("distance_km") or None, session.get("duration_min") or None
+        comp = {"distRatio": _ratio(km, p_km), "timeRatio": _ratio(mins, p_min)}
+        if t in RUN_TYPES and p_km and p_min and km > 0:
+            a_pace = sum((a.get("pace") or 0) * (a.get("km") or 0) for a in done) / km  # min/km medio
+            if a_pace:
+                comp["paceDeltaS"] = round((a_pace - p_min / p_km) * 60)  # + = más lento que lo previsto
+        if t == "strength":
+            planned_sets = sum(int(x.get("sets") or 0) for x in session.get("strength") or [])
+            done_sets = sum(len(a.get("sets") or []) for a in done)
+            if planned_sets and done_sets:
+                comp.update(setsDone=done_sets, setsPlanned=planned_sets, setsRatio=round(done_sets / planned_sets, 2))
+            main = comp.get("setsRatio")  # sin series del reloj: la sesión registrada cuenta como hecha
+        else:
+            main = comp["distRatio"] if comp["distRatio"] is not None else comp["timeRatio"]
+        status = "done" if main is None or main >= DONE_RATIO else "partial"
+        comp = {k: v for k, v in comp.items() if v is not None}
     elif session["date"] < today:
         status = "missed"
     elif session["date"] == today:
@@ -241,7 +317,7 @@ def _match(session: dict, acts_by_day: dict) -> dict:
     if done:
         a = max(done, key=lambda x: x.get("km") or x.get("min") or 0)
         actual = {"id": a["id"], "km": km, "min": mins, "pace": a.get("pace"), "hr": a.get("hr"), "name": a.get("name")}
-    return {"status": status, "actual": actual}
+    return {"status": status, "actual": actual, "compliance": comp or None}
 
 
 def with_compliance(state: dict, data: dict) -> dict | None:
@@ -268,8 +344,29 @@ def with_compliance(state: dict, data: dict) -> dict | None:
             "memory": state.get("memory", []), "history": state.get("history", [])[-6:]}
 
 
+def _wellness_tip(s: dict, hard: bool) -> str | None:
+    """Aviso por molestias activas o por cómo te encuentras hoy (lo que apuntas en la web)."""
+    if s["type"] == "rest":
+        return None
+    st = wellness.load()
+    inj = sorted(wellness.active_injuries(st), key=lambda i: -i.get("severity", 0))
+    today = st["log"].get(date.today().isoformat()) or {}
+    if inj and inj[0].get("severity", 0) >= 3:
+        i = inj[0]
+        return (f"Tienes una molestia activa en **{i['area']}** ({i['severity']}/5): "
+                + ("cambia esta sesión por algo suave que no duela (bici, natación o descanso)." if hard
+                   else "haz la sesión solo si no duele; si aparece dolor, para."))
+    if (today.get("soreness") or 0) >= 4 and hard:
+        return "Tienes agujetas fuertes: haz la sesión más suave (sin series) o muévela a otro día."
+    if inj:
+        return f"Ojo con la molestia en {inj[0]['area']}: si aumenta, para y apúntalo."
+    if (today.get("mood") or 5) <= 2 and hard:
+        return "Hoy no te encuentras bien: escucha a tu cuerpo y no pasa nada por hacerla más suave."
+    return None
+
+
 def today_advice(plan: dict | None, readiness: dict | None) -> dict | None:
-    """Consejo del día sin IA: cruza la sesión de hoy con tu preparación."""
+    """Consejo del día sin IA: cruza la sesión de hoy con tu preparación, tus molestias y cómo te encuentras."""
     if not plan:
         return None
     today = date.today().isoformat()
@@ -277,8 +374,13 @@ def today_advice(plan: dict | None, readiness: dict | None) -> dict | None:
     if not s:
         return None
     score = (readiness or {}).get("score")
+    if (readiness or {}).get("date") != today:
+        score = None  # la preparación de otro día no vale para hoy
     hard = s["type"] in ("tempo", "intervals", "long", "race")
-    if score is None:
+    warn = _wellness_tip(s, hard)
+    if warn:
+        tip = warn
+    elif score is None:
         tip = None
     elif s["type"] == "rest":
         tip = "Hoy toca descanso: aprovecha para dormir bien." if score < 60 else "Hoy descansas. Tu cuerpo está bien; mañana lo notarás."
@@ -474,6 +576,9 @@ repeat > 1 que contiene el paso de esfuerzo y el de recuperación) y vuelta a la
 - Respeta exactamente las distancias, tiempos y ritmos de la descripción y del objetivo.
 - Rodajes suaves y tiradas: un paso por distancia con rango de ritmo, o con pulso si el objetivo es por pulso/zona.
 - Ritmos como 'm:ss' por km; el rango de ritmo debe tener 10-20 s de margen.
+- Si te paso los ritmos de referencia del atleta, en cada paso con ritmo pon también pace_ref (easy, marathon, half,
+  10k, 5k, threshold, interval o repetition) y pace_ref_offset_s (segundos por km sobre ese ritmo, negativo = más
+  rápido) que correspondan a lo que pide la sesión.
 - Si el objetivo es una zona de pulso, usa las zonas del atleta (lpm) que te paso.
 - Nombres de paso cortos, en castellano."""
 
@@ -498,7 +603,8 @@ def structure_week(week_start: str) -> dict:
     model = ai.pick_model(ai.PREMIUM)
     extra = ai.FALLBACKS if model != ai.MODEL else {}
     client = _client()
-    prompt = (f"Zonas de pulso del atleta (lpm desde Z1..Z5): {zones}\n\nSesiones:\n"
+    prompt = (f"Zonas de pulso del atleta (lpm desde Z1..Z5): {zones}\n\n"
+              f"Ritmos de referencia del atleta: {json.dumps(_paces_for_ai(data.get('paces')), ensure_ascii=False)}\n\nSesiones:\n"
               + json.dumps([{k: s.get(k) for k in ("date", "type", "title", "distance_km", "duration_min", "target", "description")}
                             for s in todo], ensure_ascii=False))
     resp = client.beta.messages.parse(model=model, max_tokens=12000, output_config={"effort": "low"}, system=STRUCT_SYSTEM,

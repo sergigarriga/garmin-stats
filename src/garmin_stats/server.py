@@ -93,6 +93,17 @@ def _context() -> str:
         "plan_de_entreno": (data.get("coach") or {}).get("plan") and {
             k: data["coach"]["plan"].get(k) for k in ("goal", "raceDate", "goalTime", "summary", "memory")},
         "plan_hoy": (data.get("coach") or {}).get("today"),
+        "ahora_segun_el_reloj": {k: v for k, v in (data.get("live") or {}).items() if not k.endswith("Series")} or None,
+        "nota_ahora": "bbNow = Body Battery actual (asOf = hora del último dato del reloj); bbMax = máximo del día.",
+        "ritmos_de_referencia": data.get("paces") and {k: data["paces"].get(k) for k in ("vdot", "sourceLabel", "refs", "zones", "races")},
+        "nota_ritmos": "refs y zones en segundos por km (fast = extremo rápido).",
+        "natacion": data.get("swim") and {k: data["swim"].get(k) for k in ("css", "cssSource", "zones", "totals", "best")},
+        "nota_natacion": "css y zonas de natación en segundos por 100 m.",
+        "gimnasio": data.get("gym") and {"series_por_musculo_4_semanas": data["gym"].get("muscleAvg4w"),
+                                         "records": [{k: r.get(k) for k in ("ex", "best", "maxKg", "maxReps", "sets")}
+                                                     for r in (data["gym"].get("records") or [])[:15]]},
+        "como_se_encuentra": (data.get("wellness") or {}) and {
+            "ultimos_dias": data["wellness"].get("recent"), "molestias": data["wellness"].get("injuries")},
     }
     text = json.dumps(ctx, ensure_ascii=False, separators=(",", ":"))
     _ctx_cache.update(mtime=mtime, text=text)

@@ -5,7 +5,7 @@ export interface Day {
   steps?: number; stepGoal?: number; walkKm?: number; floors?: number; cal?: number; calActive?: number;
   rhr?: number; hrMin?: number; hrMax?: number; imMod?: number; imVig?: number;
   stress?: number; stressHighH?: number; stressRestH?: number;
-  bbMax?: number; bbMin?: number; bbCharged?: number; bbDrained?: number; resp?: number; spo2?: number;
+  bbMax?: number; bbMin?: number; bbNow?: number; bbCharged?: number; bbDrained?: number; resp?: number; spo2?: number;
   sleepH?: number; deepH?: number; remH?: number; lightH?: number; awakeH?: number; sleepScore?: number;
   sleepNeedH?: number; bed?: number; wake?: number; sleepStress?: number;
   hrv?: number; hrvLow?: number; hrvHigh?: number;
@@ -16,7 +16,7 @@ export interface Activity {
   id: number; start: string; name?: string; type: string; group: string;
   km?: number; min?: number; pace?: number; hr?: number; hrMax?: number; trimp?: number;
   ef?: number; dec?: number; vo2?: number; cad?: number; elev?: number; cal?: number;
-  z: number[]; pr?: boolean;
+  z: number[]; pr?: boolean; swolf?: number; poolM?: number;
   sets?: { ex: string; reps: number; kg?: number | null; dur?: number }[] | null;
 }
 
@@ -51,13 +51,31 @@ export interface ActivityDetail {
   stride?: number; gct?: number; vertOsc?: number; power?: number; location?: string; teLabel?: string;
 }
 
-export type SessionType = 'easy' | 'long' | 'tempo' | 'intervals' | 'race' | 'strength' | 'cross' | 'rest';
+export type SessionType = 'easy' | 'long' | 'tempo' | 'intervals' | 'race' | 'strength' | 'swim' | 'cross' | 'rest';
+export type PaceRef = 'easy' | 'marathon' | 'half' | '10k' | '5k' | 'threshold' | 'interval' | 'repetition';
+export interface WorkoutStep {
+  kind: 'warmup' | 'active' | 'recovery' | 'cooldown' | 'rest';
+  duration: 'distance' | 'time' | 'open'; value?: number | null;
+  target: 'pace' | 'hr' | 'open'; pace_fast?: string | null; pace_slow?: string | null;
+  hr_low?: number | null; hr_high?: number | null; name: string;
+  pace_ref?: PaceRef | null; pace_ref_offset_s?: number | null;
+}
+export interface WorkoutBlock { repeat: number; steps: WorkoutStep[] }
+export interface StrengthItem {
+  label: string; category_id: number | null; name_id: number | null; sets: number; reps: number;
+  seconds?: number | null; weight_kg?: number | null; rest_s: number;
+}
+export interface Compliance {
+  distRatio?: number; timeRatio?: number; paceDeltaS?: number; setsDone?: number; setsPlanned?: number; setsRatio?: number;
+}
 export interface PlanSession {
   date: string; type: SessionType; title: string; distance_km?: number | null; duration_min?: number | null;
   target: string; description: string;
   status: 'done' | 'partial' | 'missed' | 'today' | 'upcoming' | 'rest';
   actual?: { id: number; km: number; min: number; pace?: number; hr?: number; name?: string } | null;
   feedback?: { rating: number; note: string } | null;
+  compliance?: Compliance | null;
+  workout?: WorkoutBlock[] | null; strength?: StrengthItem[] | null;
 }
 export interface PlanWeek { start: string; focus: string; sessions: PlanSession[]; plannedKm: number; actualKm: number; compliance?: number | null }
 export interface Plan {
@@ -88,6 +106,42 @@ export interface AiUsage {
   monthCostUsd?: number; monthlyBudgetUsd?: number; safeLimitUsd?: number;
 }
 
+/** Lo último que ha mandado el reloj hoy (Body Battery actual, curvas y la hora del último dato). */
+export interface Live {
+  date: string; asOf?: string; bbNow?: number; bbMax?: number; bbMin?: number; bbCharged?: number; bbDrained?: number;
+  bbSeries?: [string, number][]; bbFeedback?: string; hrLast?: number; hrLastAt?: string; hrSeries?: [string, number][]; respNow?: number;
+}
+export interface PaceZone { zone: number; name: string; fast: number; slow: number }
+export interface Paces {
+  vdot: number; source: 'race' | 'recent' | 'watch'; sourceLabel: string; sourceDate?: string | null; stale: boolean;
+  others: { kind: string; vdot: number; label: string }[];
+  refs: Record<PaceRef, number>; easyRange: [number, number];
+  list: { key: PaceRef; label: string; use: string; sec: number }[];
+  zones: PaceZone[]; races: { distance: string; time: number }[];
+  test?: { distance_m: number; time_s: number; date: string } | null;
+}
+export interface SwimSession { id: number; d: string; m: number; min?: number; pace?: number | null; swolf?: number | null; pool?: number | null; open?: boolean }
+export interface Swim {
+  css?: number | null; cssSource?: 'test' | 'estimate' | null; test?: { t400_s: number; t200_s: number; date: string } | null;
+  poolM: number; zones: PaceZone[]; weeks: { start: string; m: number; sessions: number }[]; sessions: SwimSession[];
+  best?: { d: string; m: number; pace: number; id: number } | null; longest?: SwimSession | null;
+  totals: { sessions: number; km: number; sessions90: number; km90: number };
+}
+export interface GymRecord {
+  ex: string; muscle?: string | null; label: string; sets: number; maxReps: number; last?: string;
+  best?: { e1rm: number; kg: number; reps: number; d: string; id: number } | null;
+  maxKg?: { kg: number; reps: number; d: string; id: number } | null;
+  trend: { d: string; e1rm: number }[];
+}
+export interface Gym {
+  weeks: { start: string; sessions: number; sets: number; kg: number; muscles: Record<string, number> }[];
+  records: GymRecord[]; muscleAvg4w: { muscle: string; label: string; sets: number }[];
+  muscles: { key: string; label: string }[]; totals: { sessions: number; withSets: number; sets: number };
+}
+export interface WellnessDay { d: string; mood?: number; soreness?: number; note?: string }
+export interface Injury { id: string; area: string; severity: number; start: string; end?: string | null; notes?: string }
+export interface Wellness { today?: WellnessDay | null; recent: WellnessDay[]; injuries: Injury[] }
+
 export interface GarminData {
   generatedAt: string;
   lastSync?: string;
@@ -111,6 +165,37 @@ export interface GarminData {
   coach?: CoachView;
   weights?: { d: string; kg: number; fat?: number; muscle?: number }[];
   push?: { vapidPublicKey?: string | null } | null;
+  live?: Live | null;
+  paces?: Paces | null;
+  swim?: Swim | null;
+  gym?: Gym | null;
+  wellness?: Wellness | null;
+}
+
+/** Pide a la app que vuelva a leer data.js (la API ya lo ha actualizado tras un cambio). */
+export const refreshData = () => window.dispatchEvent(new Event('gs-refresh'));
+
+/** s → "m:ss". */
+export const mmss = (sec?: number | null) => {
+  if (sec == null || !isFinite(sec)) return '–';
+  const s = Math.round(sec);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
+
+/** Rango de ritmo (rápido, lento) en s/km de un paso: con su ritmo de referencia (si lo tiene) y tus ritmos actuales. */
+export function stepPace(st: WorkoutStep, refs?: Partial<Record<PaceRef, number>> | null): [number, number] | null {
+  if (st.pace_ref && refs?.[st.pace_ref]) {
+    const base = refs[st.pace_ref]! + (st.pace_ref_offset_s ?? 0);
+    const m = st.pace_ref === 'easy' ? 12 : 5;
+    return [base - m, base + m];
+  }
+  const sec = (p?: string | null) => {
+    if (!p || !p.includes(':')) return null;
+    const [m, s] = p.split(':').map(Number);
+    return Number.isFinite(m) && Number.isFinite(s) ? m * 60 + s : null;
+  };
+  const f = sec(st.pace_fast), s = sec(st.pace_slow);
+  return f && s ? [Math.min(f, s), Math.max(f, s)] : null;
 }
 
 declare global {

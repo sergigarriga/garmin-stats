@@ -3,7 +3,7 @@ import glob, json, os, sys
 from playwright.sync_api import sync_playwright
 
 URL = os.environ["SITE_URL"].rstrip("/") + "/"  # p. ej. https://xxxx.cloudfront.net
-PAGES = ["hoy", "sueno", "corazon", "actividad", "plan", "entreno", "progreso", "analisis"]
+PAGES = ["hoy", "sueno", "corazon", "actividad", "plan", "entreno", "ritmos", "gimnasio", "progreso", "analisis"]
 WIDTHS = [int(w) for w in (sys.argv[1] if len(sys.argv) > 1 else "360,390,768").split(",")]
 SHOTS = os.environ.get("SHOTS")
 JS = r"""() => {
@@ -23,6 +23,7 @@ JS = r"""() => {
       p = p.parentElement;
     }
     if (scroller) continue;
+    if (el.closest('.leaflet-container')) continue;  // el mapa recorta sus capas (overflow: hidden): no se ven fuera
     const text = (el.textContent || el.tagName).trim().replace(/\s+/g, ' ').slice(0, 70);
     if (r.right > vw + 1 || r.left < -1) out.push(['pantalla', text, Math.round(r.right - vw)]);
     else if (card) { const c = card.getBoundingClientRect(); const o = Math.max(r.right - c.right, c.left - r.left);

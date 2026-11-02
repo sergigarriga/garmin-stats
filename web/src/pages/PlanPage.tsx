@@ -59,7 +59,11 @@ const TOPIC: Record<string, { icon: ReactNode; color: { light: string; dark: str
   peso: { icon: <MonitorWeightOutlined />, color: { light: '#188038', dark: '#81C995' } },
   preferencias: { icon: <TuneRounded2 />, color: { light: '#80868B', dark: '#BDC1C6' } },
 };
-import { isoLocal, toDate, type CoachView, type GarminData, type PlanSession, type SessionType } from '../data';
+import { isoLocal, mmss, stepPace, toDate, type CoachView, type GarminData, type PaceRef, type PlanSession, type SessionType } from '../data';
+import { call } from '../account';
+import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
+import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
+type Refs = Partial<Record<PaceRef, number>> | null | undefined;
 import { dateLong, dateShort, dec1, duration, pace } from '../format';
 import { useResolvedMode } from '../theme';
 import { CARD_SX, IconBubble, PageHeader, SectionTitle, chartSx } from '../ui';
@@ -73,6 +77,7 @@ const TYPE: Record<SessionType, { label: string; light: string; dark: string }> 
   intervals: { label: 'Series', light: '#D93025', dark: '#F28B82' },
   race: { label: 'Carrera', light: '#5B5BD6', dark: '#AFADFF' },
   strength: { label: 'Fuerza', light: '#9334E6', dark: '#D7AEFB' },
+  swim: { label: 'Natación', light: '#00838F', dark: '#78D9EC' },
   cross: { label: 'Cruzado', light: '#00838F', dark: '#78D9EC' },
   rest: { label: 'Descanso', light: '#80868B', dark: '#9AA0A6' },
 };
@@ -112,6 +117,104 @@ function StatusIcon({ s }: { s: PlanSession['status'] }) {
 
 function plannedText(s: PlanSession) {
   return [s.distance_km ? `${dec1(s.distance_km)} km` : null, s.duration_min ? `${s.duration_min} min` : null].filter(Boolean).join(' · ');
+}
+
+/** Cuánto se parece lo hecho a lo previsto: "95 % · 8 s/km más rápido" o "7 de 10 series". */
+export function complianceText(s: PlanSession): string | null {
+  const c = s.compliance;
+  if (!c) return null;
+  const bits: string[] = [];
+  if (c.setsPlanned) bits.push(`${c.setsDone} de ${c.setsPlanned} series`);
+  else if (c.distRatio != null) bits.push(`${Math.round(c.distRatio * 100)} % de la distancia`);
+  else if (c.timeRatio != null) bits.push(`${Math.round(c.timeRatio * 100)} % del tiempo`);
+  if (c.paceDeltaS != null && Math.abs(c.paceDeltaS) >= 3) bits.push(`${Math.abs(c.paceDeltaS)} s/km más ${c.paceDeltaS < 0 ? 'rápido' : 'lento'}`);
+  else if (c.paceDeltaS != null) bits.push('al ritmo previsto');
+  return bits.join(' · ') || null;
+}
+
+const KIND: Record<string, string> = { warmup: 'Calentamiento', active: '', recovery: 'Recuperación', cooldown: 'Vuelta a la calma', rest: 'Descanso' };
+const REF_NAME: Record<string, string> = { easy: 'suave', marathon: 'de maratón', half: 'de media', '10k': 'de 10K', '5k': 'de 5K', threshold: 'umbral', interval: 'de series', repetition: 'de repeticiones' };
+
+/** Los pasos del entreno, con los ritmos calculados con tus ritmos de referencia de AHORA. */
+function WorkoutSteps({ s, refs }: { s: PlanSession; refs: Refs }) {
+  if (!s.workout?.length && !s.strength?.length) return null;
+  const step = (st: NonNullable<PlanSession['workout']>[number]['steps'][number]) => {
+    const what = st.duration === 'distance' && st.value ? (st.value >= 1 ? `${dec1(st.value).replace(',0', '')} km` : `${Math.round(st.value * 1000)} m`)
+      : st.duration === 'time' && st.value ? `${dec1(st.value).replace(',0', '')} min` : 'hasta pulsar vuelta';
+    const rng = st.target === 'pace' ? stepPace(st, refs) : null;
+    const tgt = rng ? `${mmss(rng[0])}-${mmss(rng[1])} /km${st.pace_ref && refs?.[st.pace_ref] ? ` (ritmo ${REF_NAME[st.pace_ref]}${st.pace_ref_offset_s ? ` ${st.pace_ref_offset_s > 0 ? '+' : '−'}${Math.abs(st.pace_ref_offset_s)} s` : ''})` : ''}`
+      : st.target === 'hr' && st.hr_low && st.hr_high ? `${st.hr_low}-${st.hr_high} lpm` : '';
+    return <><b>{st.name || KIND[st.kind]}</b> {what}{tgt ? ` · ${tgt}` : ''}</>;
+  };
+  return (
+    <Box component="ul" sx={{ m: 0, mt: 1, pl: 2.25, color: 'text.secondary', fontSize: 14, '& li': { mb: 0.25 }, '& b': { color: 'text.primary', fontWeight: 500 } }}>
+      {s.workout?.map((b, i) => b.repeat > 1
+        ? <li key={i}><b>{b.repeat} ×</b> {b.steps.map((st, j) => <span key={j}>{j ? ' + ' : ''}{step(st)}</span>)}</li>
+        : b.steps.map((st, j) => <li key={`${i}-${j}`}>{step(st)}</li>))}
+      {!s.workout?.length && s.strength?.map((it, i) => (
+        <li key={i}><b>{it.label}</b> {it.sets} × {it.seconds ? `${it.seconds} s` : `${it.reps} rep.`}{it.weight_kg ? ` · ${dec1(it.weight_kg).replace(',0', '')} kg` : ''} · descanso {it.rest_s} s</li>
+      ))}
+    </Box>
+  );
+}
+
+/** Ventana "Calendario": enlace privado para ver el plan en Google Calendar, el iPhone u Outlook. */
+function CalendarDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [path, setPath] = useState<string | null | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (!open || !online) return;
+    setErr(null); setCopied(false);
+    call<{ path: string | null }>('./api/calendar').then((r) => setPath(r.path)).catch((e) => setErr(e.message));
+  }, [open]);
+  const act = async (action: string) => {
+    setBusy(true); setErr(null); setCopied(false);
+    try { setPath((await call<{ path: string | null }>('./api/calendar', { action })).path); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  const url = path ? `${window.location.origin}${path}` : null;
+  const webcal = url?.replace(/^https?:/, 'webcal:');
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: '28px', m: 2, width: 'calc(100% - 32px)' } } }}>
+      <DialogTitle sx={{ pb: 1 }}>Tu plan en el calendario</DialogTitle>
+      <DialogContent>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          Suscríbete una vez y cada sesión aparecerá en tu calendario con sus ritmos. Se actualiza sola cuando el coach reajusta el plan (los calendarios lo revisan cada pocas horas).
+        </Typography>
+        {err && <Alert severity="error" sx={{ borderRadius: '14px', mb: 2 }}>{err}</Alert>}
+        {path === undefined && !err && <CircularProgress size={22} />}
+        {path === null && (
+          <Button variant="contained" disableElevation disabled={busy} onClick={() => act('enable')} startIcon={<CalendarMonthOutlined />} sx={{ borderRadius: 999 }}>
+            {busy ? 'Creando…' : 'Crear mi enlace'}
+          </Button>
+        )}
+        {url && (
+          <Stack spacing={2}>
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              <TextField size="small" fullWidth value={url} slotProps={{ htmlInput: { readOnly: true, onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select() } }} />
+              <Tooltip title={copied ? 'Copiado' : 'Copiar'}>
+                <IconButton onClick={async () => { try { await navigator.clipboard.writeText(url); setCopied(true); } catch { /* sin portapapeles */ } }}><ContentCopyRounded /></IconButton>
+              </Tooltip>
+            </Stack>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1 }}>
+              <Button variant="contained" disableElevation href={webcal!} sx={{ borderRadius: 999 }}>Añadir en el iPhone o Mac</Button>
+              <Button variant="outlined" target="_blank" rel="noopener" sx={{ borderRadius: 999 }}
+                href={`https://calendar.google.com/calendar/r?cid=${encodeURIComponent(webcal!)}`}>Añadir a Google Calendar</Button>
+            </Stack>
+            <Typography variant="body2" color="text.secondary">
+              Outlook: Agregar calendario → Suscribirse desde la web → pega el enlace. El enlace es privado: quien lo tenga ve tu plan con las notas del coach. Si lo compartes sin querer, cámbialo.
+            </Typography>
+            <Stack direction="row" spacing={1}>
+              <Button size="small" disabled={busy} onClick={() => act('rotate')} startIcon={<EventRepeatRounded />} sx={{ borderRadius: 999 }}>Cambiar el enlace</Button>
+              <Button size="small" color="error" disabled={busy} onClick={() => act('disable')} sx={{ borderRadius: 999 }}>Desactivar</Button>
+            </Stack>
+          </Stack>
+        )}
+        <Box sx={{ textAlign: 'right', mt: 1 }}><Button onClick={onClose} sx={{ borderRadius: 999 }}>Cerrar</Button></Box>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 // ------------------------------------------------------------------ crear
@@ -255,6 +358,7 @@ function DayCard({ s, go, onSaved, sets }: { s: PlanSession; go: (k: string) => 
           {(() => { const st = sets?.(s.actual!.id); return st && st.length ? ` · ${new Set(st.map((x) => x.ex)).size} ejercicios, ${st.length} series` : ''; })()}
         </Typography>
       )}
+      {complianceText(s) && <Typography variant="caption" color={s.status === 'partial' ? 'warning.main' : 'text.secondary'}>{complianceText(s)}</Typography>}
       <FeedbackStars s={s} onSaved={onSaved} />
     </Card>
   );
@@ -279,7 +383,7 @@ function DayRow({ s, go, first }: { s: PlanSession; go: (k: string) => void; fir
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography variant="body2" noWrap sx={{ fontWeight: 600, color: s.type === 'rest' ? 'text.secondary' : 'text.primary' }}>{s.title}</Typography>
         <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
-          {s.actual ? `Hecho: ${s.actual.km ? `${dec1(s.actual.km)} km` : `${s.actual.min} min`}` : s.type === 'rest' ? 'Descanso' : [TYPE[s.type].label, plannedText(s)].filter(Boolean).join(' · ')}
+          {s.actual ? [`Hecho: ${s.actual.km ? `${dec1(s.actual.km)} km` : `${s.actual.min} min`}`, complianceText(s)].filter(Boolean).join(' · ') : s.type === 'rest' ? 'Descanso' : [TYPE[s.type].label, plannedText(s)].filter(Boolean).join(' · ')}
         </Typography>
       </Box>
       <StatusIcon s={s.status} />
@@ -288,24 +392,23 @@ function DayRow({ s, go, first }: { s: PlanSession; go: (k: string) => void; fir
 }
 
 /** Ventana "Pasar al reloj": prepara los entrenos de la semana y explica cómo copiarlos. */
-function WatchDialog({ open, onClose, weekStart, sessions, onView }: {
-  open: boolean; onClose: () => void; weekStart: string; sessions: PlanSession[]; onView: (v: CoachView) => void;
+function WatchDialog({ open, onClose, weekStart, sessions, onView, refs }: {
+  open: boolean; onClose: () => void; weekStart: string; sessions: PlanSession[]; onView: (v: CoachView) => void; refs: Refs;
 }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const runs = sessions.filter((x) => ['easy', 'long', 'tempo', 'intervals', 'race'].includes(x.type));
   const gym = sessions.filter((x) => x.type === 'strength');
-  type Wk = PlanSession & { workout?: unknown; strength?: unknown };
   const go = async () => {
     setBusy(true); setMsg(null);
     try {
       let list = sessions;
-      if (runs.some((x) => !(x as Wk).workout) || gym.some((x) => !(x as Wk).strength)) {
+      if (runs.some((x) => !x.workout) || gym.some((x) => !x.strength)) {
         const v = await api('./api/plan/structure', { week: weekStart });
         onView(v);
         list = v.plan?.weeks.find((w) => w.start === weekStart)?.sessions ?? sessions;
       }
-      const n = downloadWeek(list, weekStart);
+      const n = downloadWeek(list, weekStart, refs);
       setMsg(n ? `Descargados ${n} entrenos. Ahora cópialos al reloj (pasos de abajo).` : 'Esta semana no tiene sesiones para el reloj.');
     } catch (e) { setMsg((e as Error).message); } finally { setBusy(false); }
   };
@@ -345,6 +448,8 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const [err, setErr] = useState<string | null>(null);
   const [moreSummary, setMoreSummary] = useState(false);
   const [watchOpen, setWatchOpen] = useState(false);
+  const [calOpen, setCalOpen] = useState(false);
+  const refs = data.paces?.refs;
   const [confirm, setConfirm] = useState<null | { title: string; text: string; action: () => void }>(null);
   const [cancelling, setCancelling] = useState(false);
   const cancel = async () => { setCancelling(true); try { await api('./api/plan/cancel', {}); } catch { /* el polling lo resuelve */ } };
@@ -404,6 +509,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
       <PageHeader title="Plan" subtitle={`${plan.goal} · ${dateLong(toDate(plan.raceDate))}`}
         action={online ? (
           <Stack direction="row" spacing={1}>
+            <Tooltip title="Ver el plan en tu calendario"><IconButton onClick={() => setCalOpen(true)} aria-label="Calendario"><CalendarMonthOutlined /></IconButton></Tooltip>
             <Button variant="outlined" startIcon={busy ? <CircularProgress size={16} /> : <TuneRounded />} disabled={busy}
               onClick={() => ask('¿Reajustar el plan ahora?', 'El coach revisa tus últimos datos y rehace las semanas que quedan. Tarda 1-3 minutos y gasta unos 0,25-0,50 $ de tu tope de IA. Ya se reajusta solo cada lunes.', () => run('./api/plan/adapt'))}
               sx={{ borderRadius: 999 }}>{busy ? 'Reajustando…' : 'Reajustar ahora'}</Button>
@@ -411,6 +517,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           </Stack>
         ) : undefined} />
       {err && <Alert severity="error" sx={{ mb: 2, borderRadius: '14px' }}>{err}</Alert>}
+      <CalendarDialog open={calOpen} onClose={() => setCalOpen(false)} />
       {online && (
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2, flexWrap: 'wrap', rowGap: 1 }}>
           <Typography variant="body2" color="text.secondary">Nivel del plan</Typography>
@@ -482,6 +589,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
               <Typography variant="h5">{t.session.title}</Typography>
               <Typography color="text.secondary">{[plannedText(t.session), t.session.target].filter(Boolean).join(' · ')}</Typography>
               <Typography sx={{ mt: 1, color: 'text.secondary', '& b': { color: 'text.primary' } }}><Rich>{t.session.description}</Rich></Typography>
+              <WorkoutSteps s={t.session} refs={refs} />
             </Box>
             {t.tip && (
               <Box sx={{ p: 2, borderRadius: '16px', bgcolor: 'background.paper', maxWidth: { md: 360 } }}>
@@ -499,7 +607,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
         <Button variant="outlined" size="small" startIcon={<WatchRounded />} onClick={() => setWatchOpen(true)}
           sx={{ borderRadius: 999, flexShrink: 0, whiteSpace: 'nowrap' }}>Pasar al reloj</Button>
       </Stack>
-      <WatchDialog open={watchOpen} onClose={() => setWatchOpen(false)} weekStart={week.start} sessions={week.sessions} onView={setView} />
+      <WatchDialog open={watchOpen} onClose={() => setWatchOpen(false)} weekStart={week.start} sessions={week.sessions} onView={setView} refs={refs} />
       {small ? (
         <Card sx={{ ...CARD_SX, p: 0.5 }}>
           {week.sessions.map((s, i) => <DayRow key={`${s.date}-${s.type}`} s={s} go={go} first={i === 0} />)}
@@ -606,6 +714,8 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
                     </Stack>
                     {s.type !== 'rest' && <Typography variant="caption" color="text.secondary">{[plannedText(s), s.target].filter(Boolean).join(' · ')}</Typography>}
                     <Typography variant="body2" color="text.secondary">{s.description}</Typography>
+                    {complianceText(s) && <Typography variant="caption" color={s.status === 'partial' ? 'warning.main' : 'success.main'} sx={{ display: 'block' }}>Hecho: {complianceText(s)}</Typography>}
+                    <WorkoutSteps s={s} refs={refs} />
                   </Box>
                 </Stack>
               ))}

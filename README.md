@@ -275,3 +275,32 @@ La web admite personas invitadas (pensado para unos 5 amigos y amigas). Cada per
 - Borrar: cada persona invitada puede borrar su cuenta desde el menú y el dueño puede quitarla desde Invitaciones. Se borran todas
   las versiones de sus archivos, su clave y su entrada del registro.
 - `infra/migrate_multiuser.sh`: migración única de los datos del dueño (ya ejecutada el 01-11-2026).
+
+## Ritmos, gimnasio, natación, calendario y cómo te encuentras (02-11-2026)
+
+Ideas tomadas de otra app de entrenamiento y escritas de nuevo aquí (solo fórmulas públicas: Daniels, Epley, CSS).
+
+- **Energía de ahora:** la portada muestra la Body Battery **actual** (`bodyBattery.latestValue`) con la hora del último
+  dato del reloj, y la curva del día (energía y pulso). Antes enseñaba el máximo de la mañana. Si el último dato tiene
+  más de 90 min, avisa: Garmin solo recibe datos cuando el reloj se sincroniza con el móvil (`extras.live`, `data.live`).
+- **Hora de Madrid en AWS:** las Lambda iban en UTC (de 0:00 a 1:00/2:00 "hoy" era ayer). Ahora fijan
+  `TZ=CET-1CEST,M3.5.0,M10.5.0/3` (regla POSIX, no necesita tzdata).
+- **Ritmos y zonas** (Entreno → Ritmos, `training.paces_block`): VDOT de Daniels a partir de tu marca (si la pones), si no
+  de tu mejor tramo de los últimos 90 días, si no del VO2max del reloj. Da 8 ritmos de referencia, 5 zonas de ritmo y
+  los tiempos que puedes correr. Los pasos del plan llevan `pace_ref` (p. ej. "ritmo de 10K − 5 s"): la web, el reloj
+  (FIT) y el calendario calculan el ritmo con tus referencias **actuales**, así el plan se ajusta solo cuando mejoras.
+- **Natación** (`training.swim_block`): CSS con el test de 400 + 200 m (o estimado con tu mejor nado continuo), 5 zonas
+  por 100 m, metros por semana y SWOLF. El coach puede programar sesiones `swim` (sin archivo para el reloj).
+- **Gimnasio** (Entreno → Gimnasio, `training.gym_block`): 1RM estimado (Epley, series de hasta 12 repeticiones),
+  series por músculo y semana (los músculos que ayudan cuentan media serie), kilos totales y récords por ejercicio.
+- **Cumplimiento fino** (`coach._match`): % de distancia o tiempo, segundos por km más rápido o lento que lo previsto y
+  series hechas frente a las previstas. Cuenta como hecha a partir del 85 %.
+- **Cómo te encuentras** (portada): ánimo y agujetas de 1 a 5, nota, y molestias o lesiones (zona, intensidad, fechas).
+  Se guarda en `state/wellness.json`. El consejo del día y el reajuste del plan lo tienen en cuenta.
+- **Calendario:** Plan → icono de calendario → enlace privado `/api/cal/<código>.ics` para Google Calendar, iPhone u
+  Outlook. CloudFront lo deja pasar sin cookie solo con ese formato; el código se puede cambiar o desactivar
+  (`calToken` en `admin/users.json`).
+- API nueva: `POST /api/settings/race`, `/api/settings/swim`, `/api/wellness`, `/api/injury`, `GET|POST /api/calendar`.
+  Tras cada cambio la API recalcula esos bloques en `data.js` (sin esperar a la sincronización). La sincronización solo
+  **lee** `settings.json` y `wellness.json` (nunca los sube, para no pisar lo que guardes mientras corre).
+- Pruebas: `uv run --with pytest pytest -q` (fórmulas, natación, gimnasio, registro, calendario, cumplimiento, energía).

@@ -56,7 +56,9 @@ def cmd_report(args) -> None:
         T.write_tables(store, {**tables, "activity_metrics": am, "load": A["load"],
                                "day": A["day"].reset_index()})
         data = X.payload(A, am, store.state("last_sync"), sets)
-        from . import extras
+        from . import extras, training
+        data["live"] = extras.live(store)
+        training.enrich(data)
         n_det = extras.write_activity_details(am, SITE_DIR, prof.get("zones"))
         if n_det:
             log.info("Detalle de actividades: %d archivos", n_det)

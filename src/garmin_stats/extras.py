@@ -104,6 +104,47 @@ def readiness(day: pd.DataFrame) -> tuple[pd.Series, dict | None]:
     return score, latest
 
 
+# ======================================================================== ahora mismo
+def _hm_local(ms: int) -> str:
+    from datetime import datetime
+    return datetime.fromtimestamp(ms / 1000).strftime("%H:%M")
+
+
+def live(store, today: date | None = None) -> dict | None:
+    """Lo último que ha mandado el reloj HOY: Body Battery actual, curva de energía y pulso, y a qué hora.
+    Garmin solo lo tiene cuando el reloj se sincroniza con el móvil, así que se dice hasta qué hora hay datos."""
+    key = (today or date.today()).isoformat()
+    ds = store.get("daily_summary", key) or {}
+    bb = store.get("body_battery", key) or {}
+    hr = store.get("heart_rate", key) or {}
+    out: dict = {"date": key}
+    end = ((ds.get("wellnessChronology") or {}).get("endTimestampLocal") or "")[11:16]
+    if end:
+        out["asOf"] = end
+    bbd = ds.get("bodyBattery") or {}
+    for k_out, k_in in (("bbNow", "latestValue"), ("bbMax", "maxValue"), ("bbMin", "minValue"),
+                        ("bbCharged", "chargedValue"), ("bbDrained", "drainedValue")):
+        if bbd.get(k_in) is not None:
+            out[k_out] = bbd[k_in]
+    pts = [p for p in (bb.get("bodyBatteryValuesArray") or []) if isinstance(p, list) and len(p) >= 2 and p[1] is not None]
+    if pts:
+        out["bbSeries"] = [[_hm_local(p[0]), p[1]] for p in pts]
+        if "bbNow" not in out:
+            out["bbNow"] = pts[-1][1]
+    fb = bb.get("bodyBatteryDynamicFeedbackEvent") or bbd.get("dynamicFeedbackEvent") or {}
+    if fb.get("feedbackShortType"):
+        out["bbFeedback"] = fb["feedbackShortType"]
+    vals = [p for p in (hr.get("heartRateValues") or []) if isinstance(p, list) and len(p) >= 2 and p[1]]
+    if vals:
+        out["hrLast"], out["hrLastAt"] = vals[-1][1], _hm_local(vals[-1][0])
+        step = max(1, len(vals) // 96)  # unos 15 min por punto
+        out["hrSeries"] = [[_hm_local(p[0]), p[1]] for p in vals[::step]]
+    resp = ds.get("respiration") or {}
+    if resp.get("latestValue"):
+        out["respNow"] = resp["latestValue"]
+    return out if len(out) > 1 else None
+
+
 # ======================================================================== avisos
 def alerts(day: pd.DataFrame) -> list[dict]:
     """Avisos suaves cuando algo se sale de tu normalidad (solo con datos recientes)."""

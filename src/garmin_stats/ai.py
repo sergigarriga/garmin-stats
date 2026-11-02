@@ -132,6 +132,10 @@ def _summary(data: dict) -> dict:
         "trends": trends,
         "recent_activities": [{k: a.get(k) for k in ("start", "group", "name", "km", "min", "pace", "hr", "trimp", "vo2")} for a in acts],
         "predictions": data.get("predictions"),
+        "now_from_watch": {k: v for k, v in (data.get("live") or {}).items() if not k.endswith("Series")} or None,
+        "now_note": "now_from_watch = lo último que ha mandado el reloj hoy (asOf = hora). bbNow es la Body Battery "
+                    "actual; bbMax es el máximo del día (por la mañana). Si hablas de la energía de ahora, usa bbNow.",
+        "how_they_feel": __import__("garmin_stats.wellness", fromlist=["x"]).for_coach(),
         "rule_based_findings": data["insights"],
         "coverage": data.get("coverage"),
         "huecos_sin_reloj": __import__("garmin_stats.settings", fromlist=["x"]).watch_gaps(),

@@ -1,33 +1,17 @@
 // Entrenos del plan → archivos FIT de entrenamiento (formato oficial de Garmin) para copiar al reloj.
 import { Encoder, Profile } from '@garmin/fitsdk';
 import { zipSync } from 'fflate';
-import type { PlanSession } from './data';
+import { stepPace, type PaceRef, type PlanSession } from './data';
 
-export interface Step {
-  kind: 'warmup' | 'active' | 'recovery' | 'cooldown' | 'rest';
-  duration: 'distance' | 'time' | 'open'; value?: number | null;
-  target: 'pace' | 'hr' | 'open'; pace_fast?: string | null; pace_slow?: string | null;
-  hr_low?: number | null; hr_high?: number | null; name: string;
-}
-export interface Block { repeat: number; steps: Step[] }
-export interface StrengthItem {
-  label: string; category_id: number | null; name_id: number | null; sets: number; reps: number;
-  seconds?: number | null; weight_kg?: number | null; rest_s: number;
-}
-type WithWorkouts = PlanSession & { workout?: Block[] | null; strength?: StrengthItem[] | null };
+type Refs = Partial<Record<PaceRef, number>> | null | undefined;
+type WithWorkouts = PlanSession;
 
 // Los tipos del SDK no recogen todos los campos del perfil FIT: se pasan como mensaje genérico.
 const mesg = (o: Record<string, unknown>) => o as never;
 
-const paceToSpeed = (p?: string | null) => {
-  if (!p) return null;
-  const [m, s] = p.split(':').map(Number);
-  const sec = m * 60 + (s || 0);
-  return sec > 0 ? 1000 / sec : null; // m/s
-};
-
-/** Un archivo FIT de entrenamiento para una sesión (null si no tiene entreno estructurado). */
-export function sessionFit(s: WithWorkouts): Uint8Array | null {
+/** Un archivo FIT de entrenamiento para una sesión (null si no tiene entreno estructurado). Los pasos con ritmo de
+ * referencia usan tus ritmos ACTUALES (`refs`), así lo que llega al reloj está al día. */
+export function sessionFit(s: WithWorkouts, refs?: Refs): Uint8Array | null {
   if (s.strength?.length) return strengthFit(s);
   if (!s.workout?.length) return null;
   const steps: Record<string, unknown>[] = [];
@@ -42,9 +26,9 @@ export function sessionFit(s: WithWorkouts): Uint8Array | null {
       if (st.duration === 'time' && st.value) m.durationValue = Math.round(st.value * 60) * 1000;  // segundos exactos
       if (st.duration === 'distance' && st.value) m.durationValue = Math.round(st.value * 1000 * 100);
       if (st.target === 'pace') {
-        const fast = paceToSpeed(st.pace_fast), slow = paceToSpeed(st.pace_slow);
-        if (fast && slow) Object.assign(m, { targetType: 'speed', targetValue: 0,
-          customTargetValueLow: Math.round(Math.min(fast, slow) * 1000), customTargetValueHigh: Math.round(Math.max(fast, slow) * 1000) });
+        const rng = stepPace(st, refs);  // segundos por km (rápido, lento)
+        if (rng) Object.assign(m, { targetType: 'speed', targetValue: 0,
+          customTargetValueLow: Math.round((1000 / rng[1]) * 1000), customTargetValueHigh: Math.round((1000 / rng[0]) * 1000) });
       } else if (st.target === 'hr' && st.hr_low && st.hr_high) {
         Object.assign(m, { targetType: 'heartRate', targetValue: 0, customTargetValueLow: st.hr_low + 100, customTargetValueHigh: st.hr_high + 100 });
       }
@@ -97,16 +81,17 @@ function save(bytes: Uint8Array, name: string, type: string) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
-export function downloadSession(s: PlanSession) {
-  const f = sessionFit(s);
+export function downloadSession(s: PlanSession, refs?: Refs) {
+  const f = sessionFit(s, refs);
   if (f) save(f, fileName(s), 'application/vnd.ant.fit');
 }
 
 /** Todas las sesiones de carrera de la semana con entreno, en un .zip. Devuelve cuántas. */
-export function downloadWeek(sessions: PlanSession[], weekStart: string): number {
+export function downloadWeek(sessions: PlanSession[], weekStart: string, refs?: Refs): number {
   const files: Record<string, Uint8Array> = {};
   for (const s of sessions) {
-    const f = sessionFit(s);
+    if (s.type === 'swim') continue;  // la natación va en la descripción (sin archivo para el reloj)
+    const f = sessionFit(s, refs);
     if (f) files[fileName(s)] = f;
   }
   const n = Object.keys(files).length;

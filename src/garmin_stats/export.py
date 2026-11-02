@@ -37,7 +37,7 @@ DAY_FIELDS = {
     "rhr": ("rhr", 0), "hr_min": ("hrMin", 0), "hr_max": ("hrMax", 0),
     "im_moderate": ("imMod", 0), "im_vigorous": ("imVig", 0),
     "stress_avg": ("stress", 0), "stress_high_h": ("stressHighH", 2), "stress_rest_h": ("stressRestH", 2),
-    "bb_max": ("bbMax", 0), "bb_min": ("bbMin", 0), "bb_charged": ("bbCharged", 0), "bb_drained": ("bbDrained", 0),
+    "bb_max": ("bbMax", 0), "bb_min": ("bbMin", 0), "bb_now": ("bbNow", 0), "bb_charged": ("bbCharged", 0), "bb_drained": ("bbDrained", 0),
     "resp_avg": ("resp", 1), "spo2_avg": ("spo2", 0),
     "sleep_h": ("sleepH", 2), "deep_h": ("deepH", 2), "rem_h": ("remH", 2), "light_h": ("lightH", 2),
     "awake_h": ("awakeH", 2), "score": ("sleepScore", 0), "need_h": ("sleepNeedH", 2),
@@ -77,6 +77,8 @@ def payload(A: dict, am: pd.DataFrame, last_sync: str | None, sets: dict | None 
             "elev": _num(a.elev_gain, 0), "cal": _num(a.calories, 0),
             "z": [_num(getattr(a, f"z{i}_min"), 1) or 0 for i in range(1, 6)],
             "pr": bool(a.is_pr) or None,
+            "swolf": _num(getattr(a, "swolf", None), 0) if a.group == "Natación" else None,
+            "poolM": _num(getattr(a, "pool_m", None), 2) if a.group == "Natación" else None,
             "sets": (sets or {}).get(str(a.activity_id)) or None,
         }))
 

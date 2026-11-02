@@ -57,6 +57,10 @@ import Training from './pages/Training';
 import Insights from './pages/Insights';
 import Progress from './pages/Progress';
 import PlanPage from './pages/PlanPage';
+import Paces from './pages/Paces';
+import Gym from './pages/Gym';
+import SpeedRounded from '@mui/icons-material/SpeedRounded';
+import FitnessCenterRounded from '@mui/icons-material/FitnessCenterRounded';
 import ActivityDetail from './pages/ActivityDetail';
 import Chat from './Chat';
 
@@ -69,6 +73,8 @@ const PAGES: Page[] = [
   { key: 'actividad', label: 'Actividad', icon: <DirectionsWalkRounded />, render: (d) => <Activity data={d} /> },
   { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, render: (d, go) => <Training data={d} go={go} /> },
   { key: 'plan', label: 'Plan', icon: <EventNoteRounded />, render: (d, go) => <PlanPage data={d} go={go} /> },
+  { key: 'ritmos', label: 'Ritmos', icon: <SpeedRounded />, render: (d) => <Paces data={d} /> },
+  { key: 'gimnasio', label: 'Gimnasio', icon: <FitnessCenterRounded />, render: (d, go) => <Gym data={d} go={go} /> },
   { key: 'progreso', label: 'Progreso', icon: <TrendingUpRounded />, render: (d, go) => <Progress data={d} go={go} /> },
   { key: 'analisis', label: 'Análisis', icon: <InsightsRounded />, render: (d) => <Insights data={d} /> },
 ];
@@ -187,17 +193,19 @@ type Section = { key: string; label: string; icon: ReactElement; pages: string[]
 const SECTIONS: Section[] = [
   { key: 'hoy', label: 'Hoy', icon: <HomeRounded />, pages: ['hoy'] },
   { key: 'salud', label: 'Salud', icon: <FavoriteRounded />, pages: ['sueno', 'corazon', 'actividad'] },
-  { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, pages: ['plan', 'entreno'] },
+  { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, pages: ['plan', 'entreno', 'ritmos', 'gimnasio'] },
   { key: 'progreso', label: 'Progreso', icon: <TrendingUpRounded />, pages: ['progreso', 'analisis'] },
 ];
 const SUB_LABEL: Record<string, string> = {
-  sueno: 'Sueño', corazon: 'Corazón', actividad: 'Actividad', plan: 'Plan', entreno: 'Actividades', progreso: 'Progreso', analisis: 'Análisis',
+  sueno: 'Sueño', corazon: 'Corazón', actividad: 'Actividad', plan: 'Plan', entreno: 'Actividades', ritmos: 'Ritmos', gimnasio: 'Gimnasio',
+  progreso: 'Progreso', analisis: 'Análisis',
 };
 const sectionOf = (page: string) => SECTIONS.find((s) => s.pages.includes(page)) ?? SECTIONS[0];
 
 /** Selector de subpágina tipo "segmented control". */
 function SubTabs({ section, page, go }: { section: Section; page: string; go: (k: string) => void }) {
   if (section.pages.length < 2) return null;
+  const many = section.pages.length > 3;  // 4 pestañas en el móvil: letra y márgenes algo menores
   return (
     <Box sx={{ display: 'flex', p: 0.5, gap: 0.5, borderRadius: 999, mb: { xs: 2.5, sm: 3 }, width: { xs: '100%', sm: 'fit-content' },
       bgcolor: 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)' }}>
@@ -205,8 +213,8 @@ function SubTabs({ section, page, go }: { section: Section; page: string; go: (k
         const on = k === page;
         return (
           <Box key={k} component="button" onClick={() => go(k)}
-            sx={{ flex: { xs: 1, sm: 'none' }, px: { xs: 1, sm: 2.5 }, py: 1, border: 0, borderRadius: 999, cursor: 'pointer',
-              font: 'inherit', fontSize: 14, fontWeight: on ? 600 : 500, whiteSpace: 'nowrap',
+            sx={{ flex: { xs: 1, sm: 'none' }, px: { xs: many ? 0.5 : 1, sm: 2.5 }, py: 1, border: 0, borderRadius: 999, cursor: 'pointer',
+              font: 'inherit', fontSize: { xs: many ? 13 : 14, sm: 14 }, fontWeight: on ? 600 : 500, whiteSpace: 'nowrap', minWidth: 0,
               color: on ? 'text.primary' : 'text.secondary', bgcolor: on ? 'background.paper' : 'transparent',
               boxShadow: on ? '0 1px 3px rgba(0,0,0,.12)' : 'none', transition: 'all .2s' }}>
             {SUB_LABEL[k]}
@@ -266,6 +274,8 @@ export default function App() {
   // Ya hay datos en el servidor pero esta página se cargó antes: traerlos
   useEffect(() => { if (me?.hasData && !data) check(); }, [me?.hasData, data, check]);
   const { syncing, sync } = useManualSync(data, check, onSynced);
+  // Tras guardar algo (marca, test, cómo estás…) la API ya ha reescrito data.js: se vuelve a leer
+  useEffect(() => { const on = () => { check(); }; window.addEventListener('gs-refresh', on); return () => window.removeEventListener('gs-refresh', on); }, [check]);
 
   const actId = page.startsWith('act-') ? Number(page.slice(4)) : null;
   const pageKey = actId != null ? 'entreno' : (PAGES.some((p) => p.key === page) ? page : 'hoy');

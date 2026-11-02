@@ -475,6 +475,9 @@ Resources:
           // Archivos públicos sin datos: instalar la app e icono de la pantalla de inicio
           if (u === '/manifest.webmanifest' || u === '/sw.js' || u.indexOf('/icons/') === 0 || u === '/favicon.ico'
               || u === '/apple-touch-icon.png' || u === '/apple-touch-icon-precomposed.png') return req;
+          // Calendario del plan: las apps de calendario no mandan cookie. La dirección lleva un código secreto
+          // propio de cada persona que comprueba la API (solo lectura, solo el plan; se puede cambiar o desactivar).
+          if (/^\/api\/cal\/[A-Za-z0-9_-]{24,64}\.ics$/.test(u)) return req;
           // Las carpetas de datos de cada persona nunca se piden directamente
           if (u.indexOf('/u/') === 0) return { statusCode: 404, statusDescription: 'Not Found' };
           var c = req.cookies['gs_session'];

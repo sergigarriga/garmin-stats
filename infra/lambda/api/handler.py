@@ -18,8 +18,13 @@ import hmac
 import json
 import os
 import re
+import secrets
 import shutil
 import time
+
+# Hora de Madrid (Lambda va en UTC): "hoy" cambia a medianoche de aquí. Regla POSIX: no necesita tzdata.
+os.environ["TZ"] = "CET-1CEST,M3.5.0,M10.5.0/3"
+time.tzset()
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -46,7 +51,8 @@ s3 = boto3.client("s3")
 _lambda = boto3.client("lambda")
 _ssm = boto3.client("ssm")
 
-STATE = ["coach.json", "settings.json", "ai_usage.log", "ai_usage_lambda.log", "ai_cache.json"]
+STATE = ["coach.json", "settings.json", "wellness.json", "ai_usage.log", "ai_usage_lambda.log", "ai_cache.json"]
+CAL_RE = re.compile(r"^/api/cal/([A-Za-z0-9_-]{24,64})\.ics$")
 CUR: dict = {}  # persona de esta petición
 
 
@@ -127,12 +133,16 @@ def _read_data() -> dict:
 
 
 def _refresh_site(coach) -> None:
-    """Actualiza el bloque `coach` de su data.js para que la portada lo vea al momento."""
+    """Recalcula en su data.js lo que depende de lo que acaba de cambiar (plan, ritmos, natación, cómo se
+    encuentra) para que la web lo vea al momento, sin esperar a la próxima sincronización."""
     from datetime import datetime
+    from garmin_stats import training
     data = _read_data()
+    training.enrich(data)
     data["coach"] = coach.view(data)
     data["generatedAt"] = datetime.now().astimezone().isoformat(timespec="seconds")
     body = "window.__GARMIN__=" + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n"
+    (ROOT / "site" / "data.js").write_text(body, encoding="utf-8")  # la respuesta de esta petición ya lo ve
     s3.put_object(Bucket=BUCKET, Key=_site("data.js"), Body=body.encode(), ContentType="text/javascript; charset=utf-8",
                   CacheControl="no-store")
 
@@ -232,6 +242,9 @@ def handler(event, _ctx):
     headers = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
     if not hmac.compare_digest(headers.get("x-origin-verify", ""), ORIGIN_SECRET):
         return _json(403, {"error": "prohibido"})
+    m = CAL_RE.match(event.get("rawPath", ""))
+    if m:
+        return _calendar_feed(m.group(1))
     email = _session_email(event.get("cookies"))
     if not email:
         return _json(401, {"error": "login"})
@@ -276,6 +289,8 @@ def handler(event, _ctx):
     if path == "/api/chat/clear" and method == "POST":
         _put_json(_sp("chat.json"), {"messages": []})
         return _json(200, {"ok": True})
+    if path == "/api/calendar":
+        return _calendar_link(user, payload if method == "POST" else None)
     if path.startswith("/api/admin/"):
         if user.get("role") != "owner":
             return _json(403, {"error": "Solo el administrador."})
@@ -360,6 +375,18 @@ def handler(event, _ctx):
         _push("coach.json", "ai_usage_lambda.log")
         _refresh_site(coach)
         return _json(200, _with_job(coach.view(_read_data()), coach))
+    if path in ("/api/settings/race", "/api/settings/swim", "/api/wellness", "/api/injury"):
+        from garmin_stats import settings as S, wellness as W
+        fn = {"/api/settings/race": S.set_race_test, "/api/settings/swim": S.set_swim_test,
+              "/api/wellness": W.set_day, "/api/injury": W.injury}[path]
+        try:
+            fn(payload)
+        except ValueError as e:
+            return _json(400, {"error": str(e)})
+        _push("settings.json" if "settings" in path else "wellness.json")
+        _refresh_site(coach)
+        data = _read_data()
+        return _json(200, {k: data.get(k) for k in ("paces", "swim", "wellness", "coach")})
     if path == "/api/plan/feedback":
         coach.feedback(payload["date"], payload.get("rating", 3), payload.get("note", ""))
     elif path == "/api/plan/delete":
@@ -369,6 +396,43 @@ def handler(event, _ctx):
     _push("coach.json")
     _refresh_site(coach)
     return _json(200, _with_job(coach.view(_read_data()), coach))
+
+
+# ------------------------------------------------------------------ calendario
+def _calendar_link(user: dict, payload: dict | None):
+    """Enlace privado al calendario del plan. POST {"action": "enable" | "rotate" | "disable"}."""
+    if payload is not None:
+        action = payload.get("action")
+        if action in ("enable", "rotate"):
+            if action == "rotate" or not user.get("calToken"):
+                user = U.update(s3, BUCKET, user["uid"], calToken=secrets.token_urlsafe(32)) or user
+        elif action == "disable":
+            user = U.update(s3, BUCKET, user["uid"], calToken=None) or user
+        else:
+            return _json(400, {"error": "Acción no válida."})
+    tok = user.get("calToken")
+    return _json(200, {"path": f"/api/cal/{tok}.ics" if tok else None})
+
+
+def _calendar_feed(token: str):
+    """El calendario (.ics) de quien tenga este enlace secreto. Solo lectura: el plan, sin datos de salud."""
+    user = next((u for u in U.load(s3, BUCKET) if u.get("calToken") and hmac.compare_digest(u["calToken"], token)), None)
+    if not user:
+        return {"statusCode": 404, "headers": {"content-type": "text/plain; charset=utf-8", "cache-control": "no-store"},
+                "body": "Este enlace ya no es válido."}
+    _use(user)
+    _pull()
+    from garmin_stats import calendar_ics, coach
+    state = coach.load()
+    refs = None
+    try:
+        refs = (_read_data().get("paces") or {}).get("refs")
+    except (OSError, ValueError):
+        pass
+    name = "Plan de entreno" + (f" · {state['plan']['goal']}" if state.get("plan") else "")
+    body = calendar_ics.build(state.get("plan"), refs, name)
+    return {"statusCode": 200, "headers": {"content-type": "text/calendar; charset=utf-8", "cache-control": "no-store",
+                                           "content-disposition": 'inline; filename="plan.ics"'}, "body": body}
 
 
 # ------------------------------------------------------------------ cuenta

@@ -23,6 +23,10 @@ from pathlib import Path
 
 import boto3
 
+# Hora de Madrid (Lambda va en UTC): "hoy" y "esta semana" cambian a medianoche de aquí. Regla POSIX: no necesita tzdata.
+os.environ["TZ"] = "CET-1CEST,M3.5.0,M10.5.0/3"
+time.tzset()
+
 ROOT = Path("/tmp/gs")
 HOME = Path("/tmp/home")
 os.environ["GARMIN_STATS_ROOT"] = str(ROOT)
@@ -36,7 +40,9 @@ API_FUNCTION = os.environ.get("API_FUNCTION", "garmin-stats-api")
 s3 = boto3.client("s3")
 ssm = boto3.client("ssm")
 lam = boto3.client("lambda")
-STATE = ["garmin.sqlite", "coach.json", "settings.json", "ai_cache.json", "ai_usage.log", "ai_usage_lambda.log"]
+STATE = ["garmin.sqlite", "coach.json", "settings.json", "wellness.json", "ai_cache.json", "ai_usage.log", "ai_usage_lambda.log"]
+# Los escribe la web (API) mientras esta sincronización corre: aquí solo se leen, nunca se suben (se pisarían los cambios).
+READ_ONLY = {"settings.json", "wellness.json", "ai_usage_lambda.log"}
 STALE = 960      # una sincronización "en marcha" de hace más de 16 min se da por muerta
 SYNC_SECONDS = 420  # trabajo con Garmin por ejecución; el resto queda para recalcular, IA y subir
 MAX_PARTS = 15   # tandas como mucho en la primera descarga
@@ -115,7 +121,7 @@ def _push(uid: str) -> None:
     sp, site = users.state_prefix(uid), users.site_prefix(uid)
     for name in STATE:
         p = ROOT / "data" / name
-        if p.exists() and name != "ai_usage_lambda.log":  # ese lo escribe la Lambda de la API
+        if p.exists() and name not in READ_ONLY:
             s3.upload_file(str(p), BUCKET, sp + name)
     js = {"ContentType": "text/javascript; charset=utf-8", "CacheControl": "no-store"}
     if (ROOT / "site" / "data.js").exists():
