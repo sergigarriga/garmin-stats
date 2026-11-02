@@ -33,31 +33,34 @@ CAPTION_JS = r"""
 (() => {
   const box = document.createElement('div');
   box.id = '__cap';
-  box.style.cssText = 'position:absolute;left:90px;right:150px;top:1395px;display:flex;justify-content:center;z-index:99;pointer-events:none';
-  box.innerHTML = '<div id="__capin" style="display:inline-flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;max-width:840px;padding:20px 34px;border-radius:34px;' +
-    'background:rgba(255,255,255,.94);box-shadow:0 14px 40px rgba(60,50,90,.18);font-family:GSF,system-ui,sans-serif;font-size:54px;font-weight:750;' +
-    'letter-spacing:-.02em;line-height:1.18;color:#1D1B2C;text-align:center"></div>';
+  // centrada; su ancho máximo (780 px) queda fuera de la columna de botones de Instagram (derecha)
+  box.style.cssText = 'position:absolute;left:0;right:0;top:1440px;display:flex;justify-content:center;z-index:99;pointer-events:none';
+  box.innerHTML = '<div style="max-width:780px;padding:16px 30px 18px;border-radius:30px;background:rgba(255,255,255,.95);' +
+    'box-shadow:0 12px 34px rgba(60,50,90,.16);font-family:GSF,system-ui,sans-serif;font-size:52px;font-weight:750;' +
+    'letter-spacing:-.025em;word-spacing:.02em;line-height:1.2;color:#1D1B2C;text-align:center;text-wrap:balance"></div>';
   (document.getElementById('stage') || document.body).appendChild(box);
   const inner = box.firstChild;
   let shown = null;
   window.__caption = (t) => {
     const caps = window.CAPTIONS || [];
-    const c = caps.find((x) => t >= x.t0 - 0.05 && t <= x.t1 + 0.25);
+    const c = caps.find((x) => t >= x.t0 - 0.05 && t <= x.t1 + 0.2);
     if (!c) { box.style.opacity = 0; shown = null; return; }
     if (shown !== c) {
-      inner.innerHTML = c.words.map((w) => `<span style="padding:0 8px;border-radius:14px">${w.w}</span>`).join('');
+      // texto corrido con espacios normales; el resaltado va detrás de la palabra sin cambiar su sitio
+      inner.innerHTML = c.words.map((w) => `<span style="border-radius:12px;padding:0 .12em;margin:0 -.12em;` +
+        `-webkit-box-decoration-break:clone;box-decoration-break:clone">${w.w}</span>`).join(' ');
       shown = c;
     }
-    const q = Math.min(1, Math.max(0, (t - c.t0 + 0.05) / 0.18));
+    const q = Math.min(1, Math.max(0, (t - c.t0 + 0.05) / 0.16));
     const back = 1 + 2.4 * Math.pow(q - 1, 3) + 1.4 * Math.pow(q - 1, 2);
-    const out = Math.min(1, Math.max(0, (t - c.t1 - 0.1) / 0.15));
+    const out = Math.min(1, Math.max(0, (t - c.t1 - 0.08) / 0.12));
     box.style.opacity = q * (1 - out);
-    box.style.transform = `translateY(${(1 - q) * 30}px) scale(${0.9 + 0.1 * back})`;
+    box.style.transform = `translateY(${(1 - q) * 24}px) scale(${0.92 + 0.08 * back})`;
     [...inner.children].forEach((s, i) => {
       const w = c.words[i];
-      const on = t >= w.t0 && t < w.t1 + (i === c.words.length - 1 ? 0.3 : 0);
+      const on = t >= w.t0 && t < w.t1 + (i === c.words.length - 1 ? 0.25 : 0);
       s.style.background = on ? '#FFE58A' : 'transparent';
-      s.style.color = t < w.t0 ? 'rgba(29,27,44,.45)' : '#1D1B2C';
+      s.style.color = t < w.t0 ? 'rgba(29,27,44,.4)' : '#1D1B2C';
     });
   };
 })();

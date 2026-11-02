@@ -274,15 +274,29 @@ def pauses(x: np.ndarray, min_s: float = 0.06, thr: float = 0.012) -> list[tuple
     return out
 
 
+WEAK = {"de", "del", "la", "el", "los", "las", "un", "una", "y", "o", "que", "en", "a", "al", "con", "por", "para", "tu", "tus",
+        "mi", "se", "te", "lo", "le", "es", "no", "ni", "más", "muy", "su", "sus", "como"}
+
+
 def chunks(words: list[str], size: int = 5) -> list[list[int]]:
-    """Trozos de subtítulo de 2-5 palabras, cortando preferentemente tras una coma o un punto."""
+    """Trozos de subtítulo de 2-5 palabras: se corta tras una coma o un punto, y nunca justo después de una palabra
+    corta (de, la, un, y, que…), que se pasa al trozo siguiente para que cada trozo se lea como una frase."""
     out, cur = [], []
     for i, w in enumerate(words):
         cur.append(i)
         punct = w[-1] in ",.;:?!…»"
-        if len(cur) >= size or (punct and len(cur) >= 2) or (punct and w[-1] in ".?!…"):
-            out.append(cur)
+        if punct and (len(cur) >= 2 or w[-1] in ".?!…"):
+            if len(cur) == 1 and out and len(out[-1]) <= 5 and words[out[-1][-1]][-1] not in ".?!…":
+                out[-1] += cur  # una palabra suelta al final de frase ("ego.") va con el trozo anterior
+            else:
+                out.append(cur)
             cur = []
+        elif len(cur) >= size:
+            keep = cur
+            while len(keep) > 2 and words[keep[-1]].lower().strip("¿¡«") in WEAK:
+                keep = keep[:-1]
+            out.append(keep)
+            cur = cur[len(keep):]
     if cur:
         if out and len(cur) == 1:
             out[-1] += cur
@@ -303,7 +317,7 @@ def main(path: str) -> None:
     take, marks = voice_take(" ".join(said), spec)
     T = len(take) / SR
     # dónde empieza cada parte dentro de la toma
-    shown = [ln["text"].split() for ln in lines]
+    shown = [[w for w in ln["text"].strip().split(" ") if w] for ln in lines]  # el espacio fino (80\u00a0%) no corta
     spoken = [x.split() for x in said]
     starts, ends = [0.0], []
     if marks and len(marks) == sum(len(w) for w in spoken):
