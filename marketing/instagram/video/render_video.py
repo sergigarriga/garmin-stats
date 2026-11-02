@@ -4,11 +4,8 @@ Uso:
   uv run --no-project --with playwright python marketing/instagram/video/render_video.py marketing/instagram/video/showreel.html
 
 Si existen en marketing/instagram/out/video/ los archivos de voiceover.py (<nombre>.captions.json, <nombre>-voz.wav y
-<nombre>-musica.wav), saca tres versiones:
-  <nombre>.mp4             subtítulos + voz + música (lista para publicar)
-  <nombre>-voz.mp4         subtítulos + solo voz (para poner debajo un audio de moda de Instagram)
-  <nombre>-limpio.mp4      sin subtítulos ni audio
-Si no existen, solo la limpia (como <nombre>.mp4). También deja la portada <nombre>-portada.png.
+<nombre>-musica.wav), el vídeo sale completo: subtítulos + voz + música, listo para publicar. Si no, sin audio ni
+subtítulos. También deja la portada <nombre>-portada.png (sin subtítulos).
 
 Cada fotograma se pinta llamando a render(t) (sin animaciones CSS, así no hay saltos) y se monta con ffmpeg (H.264,
 1080 x 1920). El audio se mezcla con la música bajando sola cuando habla la voz y se normaliza a -14 LUFS.
@@ -86,9 +83,9 @@ def frames(page_path: Path, dest: Path, fps: int, captions: list | None) -> floa
             pg.screenshot(path=str(dest / f"{i:05d}.jpg"), type="jpeg", quality=94)
             if i % 90 == 0:
                 print(f"  fotograma {i}/{n}")
-        if captions is None:
-            pg.evaluate(f"render({min(2.6, duration / 2)})")
-            pg.screenshot(path=str(OUT / f"{page_path.stem}-portada.png"))
+        # portada: un fotograma del gancho, sin subtítulos
+        pg.evaluate(f"render({min(2.6, duration / 2)}); window.__caption && window.__caption(-9)")
+        pg.screenshot(path=str(OUT / f"{page_path.stem}-portada.png"))
         b.close()
     return duration
 
@@ -131,22 +128,20 @@ def main() -> None:
     name = page.stem
     caps, voice, music = OUT / f"{name}.captions.json", OUT / f"{name}-voz.wav", OUT / f"{name}-musica.wav"
     tmp = OUT / f"_frames-{name}"
-    duration = frames(page, tmp, a.fps, None)
-    if not (caps.exists() and voice.exists()):
-        encode(tmp, a.fps, OUT / f"{name}.mp4")
+    with_audio = caps.exists() and voice.exists()
+    duration = frames(page, tmp, a.fps, json.loads(caps.read_text()) if with_audio else None)
+    final = OUT / f"{name}.mp4"
+    if not with_audio:
+        encode(tmp, a.fps, final)
         shutil.rmtree(tmp)
-        print(f"Vídeo: {OUT / f'{name}.mp4'} ({duration:.0f} s, sin audio ni subtítulos)")
+        print(f"Vídeo: {final} ({duration:.0f} s, sin audio ni subtítulos)")
         return
-    encode(tmp, a.fps, OUT / f"{name}-limpio.mp4")
-    frames(page, tmp, a.fps, json.loads(caps.read_text()))
     silent = OUT / f"_{name}-subs.mp4"
     encode(tmp, a.fps, silent)
     shutil.rmtree(tmp)
-    mux(silent, voice, music if music.exists() else None, OUT / f"{name}.mp4")
-    mux(silent, voice, None, OUT / f"{name}-voz.mp4")
+    mux(silent, voice, music if music.exists() else None, final)
     silent.unlink()
-    print(f"Vídeos en {OUT}: {name}.mp4 (completo), {name}-voz.mp4 (solo voz), {name}-limpio.mp4 ({duration:.0f} s)")
-
+    print(f"Vídeo: {final} ({duration:.0f} s, voz + música + subtítulos)")
 
 if __name__ == "__main__":
     main()

@@ -5,12 +5,13 @@ Uso:
       marketing/instagram/video/showreel.voz.json
 
 Genera en marketing/instagram/out/video/:
-  <nombre>-voz.wav       la voz (Piper, sin conexión; el modelo se baja una vez a ~/.cache/runch-tts/)
+  <nombre>-voz.wav       la voz: Amazon Polly ("voice": "polly:Lucia:generative:eu-central-1", natural, con la cuenta de
+                         AWS) o Piper ("voice": "es_ES-davefx-medium", sin conexión, más robótica)
   <nombre>-musica.wav    base musical compuesta por código (sin derechos de autor) + efectos sincronizados
   <nombre>.captions.json subtítulos con el tiempo de cada palabra (los pinta render_video.py dentro del vídeo)
   <nombre>.srt           subtítulos en archivo aparte
 
-Guion: {"duration", "bpm", "voice", "speed", "lines": [{"t", "text", "say"?}], "sfx": [{"t", "type", "pitch"?}]}
+Guion: {"duration", "bpm", "voice", "speed" (Piper), "tempo" (acelera la voz sin cambiar el tono), "lines": [{"t", "text", "say"?}], "sfx": [{"t", "type", "pitch"?}]}
   text = lo que sale en el subtítulo; say = cómo debe pronunciarlo la voz (p. ej. "Ranch" para que suene bien "Runch").
   Efectos: whoosh, pop, tick, ding, stamp, swell, sparkle.
 """
@@ -44,6 +45,26 @@ def voice_model(voice: str) -> Path:
     return path
 
 
+def polly(text: str, voice: str) -> tuple[np.ndarray, list[tuple[float, str]] | None]:
+    """Voz de Amazon Polly con la cuenta de AWS configurada (perfil por defecto). voice = "polly:Lucia:generative:eu-central-1".
+    Devuelve el audio a 44,1 kHz y, si el motor lo permite (neural, long-form), el inicio de cada palabra."""
+    _, vid, engine, region = voice.split(":")
+    mp3 = OUT / "_line.mp3"
+    base = ["aws", "polly", "synthesize-speech", "--region", region, "--engine", engine, "--voice-id", vid, "--text", text]
+    subprocess.run(base + ["--output-format", "mp3", "--sample-rate", "24000", str(mp3)], check=True, capture_output=True)
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", str(mp3), "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"],
+                         check=True, capture_output=True).stdout
+    mp3.unlink()
+    audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768
+    marks = None
+    if engine != "generative":  # el motor generativo no da marcas de palabra
+        mk = OUT / "_marks.json"
+        subprocess.run(base + ["--output-format", "json", "--speech-mark-types", "word", str(mk)], check=True, capture_output=True)
+        marks = [(json.loads(x)["time"] / 1000, json.loads(x)["value"]) for x in mk.read_text().splitlines() if x.strip()]
+        mk.unlink()
+    return audio, marks
+
+
 def synth(text: str, voice: str, speed: float) -> np.ndarray:
     from piper import PiperVoice, SynthesisConfig
     v = PiperVoice.load(str(voice_model(voice)))
@@ -56,6 +77,13 @@ def synth(text: str, voice: str, speed: float) -> np.ndarray:
     # a 44,1 kHz
     x = np.linspace(0, len(data) - 1, int(len(data) * SR / sr))
     return np.interp(x, np.arange(len(data)), data)
+
+
+def tempo(x: np.ndarray, factor: float) -> np.ndarray:
+    raw = (np.clip(x, -1, 1) * 32767).astype("<i2").tobytes()
+    out = subprocess.run(["ffmpeg", "-loglevel", "error", "-f", "s16le", "-ar", str(SR), "-ac", "1", "-i", "-", "-filter:a", f"atempo={factor}",
+                          "-f", "s16le", "-"], input=raw, check=True, capture_output=True).stdout
+    return np.frombuffer(out, dtype=np.int16).astype(np.float32) / 32768
 
 
 def trim(x: np.ndarray, thr: float = 0.01) -> tuple[np.ndarray, float]:
@@ -217,15 +245,28 @@ def main(path: str) -> None:
     voice = np.zeros(int(dur * SR))
     captions = []
     for ln in spec["lines"]:
-        audio, _ = trim(synth(ln.get("say", ln["text"]), spec.get("voice", "es_ES-davefx-medium"), spec.get("speed", 1.0)))
+        vname = spec.get("voice", "es_ES-davefx-medium")
+        if vname.startswith("polly:"):
+            raw, marks = polly(ln.get("say", ln["text"]), vname)
+        else:
+            raw, marks = synth(ln.get("say", ln["text"]), vname, spec.get("speed", 1.0)), None
+        audio, cut = trim(raw)
+        if spec.get("tempo", 1.0) != 1.0:  # acelerar sin cambiar el tono (atempo de ffmpeg)
+            audio = tempo(audio, spec["tempo"])
+            marks = marks and [(m[0] / spec["tempo"], m[1]) for m in marks]
+            cut /= spec["tempo"]
         t0, t1 = ln["t"], ln["t"] + len(audio) / SR
         if t1 > dur:
             print(f"AVISO: «{ln['text']}» acaba en {t1:.2f} s, después del final del vídeo ({dur} s)")
         place(voice, audio, t0)
         # tiempo de cada palabra: repartido según su longitud
         words = ln["text"].split()
-        weights = np.array([len(w.strip(".,;:¡!¿?«»")) + 1.5 for w in words], dtype=float)
-        edges = t0 + np.concatenate([[0], np.cumsum(weights / weights.sum())]) * (t1 - t0)
+        if marks and len(marks) == len(words):  # tiempo exacto de cada palabra (marcas de la voz)
+            starts = [t0 + max(0.0, m[0] - cut) for m in marks]
+            edges = np.array(starts + [t1])
+        else:  # repartido según la longitud de cada palabra
+            weights = np.array([len(w.strip(".,;:¡!¿?«»")) + 1.5 for w in words], dtype=float)
+            edges = t0 + np.concatenate([[0], np.cumsum(weights / weights.sum())]) * (t1 - t0)
         captions.append({"text": ln["text"], "t0": round(t0, 3), "t1": round(t1, 3),
                          "words": [{"w": w, "t0": round(edges[i], 3), "t1": round(edges[i + 1], 3)} for i, w in enumerate(words)]})
         print(f"  {t0:5.2f}–{t1:5.2f} s  {ln['text']}")

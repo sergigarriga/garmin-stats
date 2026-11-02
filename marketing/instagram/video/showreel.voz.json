@@ -1,8 +1,8 @@
 {
   "duration": 15,
   "bpm": 104,
-  "voice": "es_ES-davefx-medium",
-  "speed": 0.92,
+  "voice": "polly:Lucia:generative:eu-central-1",
+  "tempo": 1.05,
   "lines": [
     {"t": 0.85, "text": "Esto es Runch.", "say": "Esto es Ranch."},
     {"t": 2.05, "text": "Tus datos, por fin claros."},
@@ -10,7 +10,7 @@
     {"t": 8.15, "text": "Entrena en tu zona."},
     {"t": 10.20, "text": "Con un entrenador que te escucha."},
     {"t": 12.20, "text": "Mejor en compañía."},
-    {"t": 13.70, "text": "Runch. Síguenos.", "say": "Ranch. Síguenos."}
+    {"t": 13.62, "text": "Runch. Síguenos.", "say": "Ranch. Síguenos."}
   ],
   "sfx": [
     {"t": 0.0, "type": "whoosh"}, {"t": 0.62, "type": "pop", "pitch": 0.8}, {"t": 0.9, "type": "swell"},

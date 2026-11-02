@@ -14,7 +14,7 @@
   #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #DCEAFF; }
   .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .9; }
   .abs { position: absolute; left: 0; right: 0; }
-  .scene { position: absolute; inset: 0; padding: 0 84px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+  .scene { position: absolute; inset: 0; padding: 0 84px 380px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
   .title { font-weight: 700; letter-spacing: -.045em; line-height: 1.02; }
   .w { display: inline-block; will-change: transform, opacity; }
   .hl { background: linear-gradient(transparent 56%, #A9C7FA 56%, #A9C7FA 90%, transparent 90%) no-repeat; background-size: 0% 100%; padding: 0 .06em; }
@@ -135,7 +135,7 @@
 </div>
 
 <script>
-  window.DURATION = 15;
+  window.DURATION = 16;
   const $ = (id) => document.getElementById(id);
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
   const p = (t, a, b) => clamp((t - a) / (b - a));
@@ -213,7 +213,7 @@
     const v = p(t, 11.2, 11.5); set($('vs'), clamp(v * 3), 0, 0, 2.2 - 1.2 * eo(v), -8);
 
     // 5 · cierre
-    scene($('s5'), t, 12.6, 15.2);
+    scene($('s5'), t, 12.6, 16.2);
     pop($('o1'), t, 12.85, -3); pop($('o1b'), t, 13.05, 0);
     pop($('o2'), t, 13.3, 3); pop($('o2b'), t, 13.5, 0);
     const lg = p(t, 13.75, 14.3); set($('logo'), clamp(lg * 3), 0, 0, eb(lg), -180 * (1 - eo(lg)) - 6);

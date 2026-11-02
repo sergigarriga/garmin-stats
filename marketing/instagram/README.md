@@ -73,10 +73,11 @@ uv run --no-project --with playwright python marketing/instagram/video/render_vi
   falta, cómo pronunciarla: `"say": "Ranch"` para que la voz diga bien "Runch") y los efectos (`whoosh`, `pop`, `tick`,
   `ding`, `stamp`, `swell`, `sparkle`). Luego:
   `uv run --no-project --with piper-tts --with numpy python marketing/instagram/video/voiceover.py marketing/instagram/video/showreel.voz.json`
-  y vuelve a lanzar `render_video.py`. Salen tres vídeos: `<nombre>.mp4` (voz + música + subtítulos), `<nombre>-voz.mp4`
-  (voz y subtítulos, para poner debajo un audio de moda de Instagram) y `<nombre>-limpio.mp4`, más `<nombre>.srt`.
-- La voz es Piper (`es_ES-davefx-medium`, sin conexión). Sirve como borrador: para la versión final de la marca, mejor
-  tu propia voz o una voz con licencia comercial. La música la compone el script (sin derechos de autor) y baja sola
-  cuando habla la voz; el volumen final queda a -14 LUFS.
+  y vuelve a lanzar `render_video.py`. Sale `<nombre>.mp4` completo (voz + música + subtítulos) y `<nombre>.srt`.
+- Voz: Amazon Polly con la cuenta de AWS (`"voice": "polly:Lucia:generative:eu-central-1"`; también Sergio generativa, o
+  Alba y Raúl `long-form` en us-east-1, que además dan el tiempo exacto de cada palabra). Unas centésimas de dólar por
+  vídeo. `"tempo"` acelera la voz sin cambiar el tono. Muestras en `out/video/voces/`. Sin conexión queda Piper
+  (`"voice": "es_ES-davefx-medium"`, más robótica).
+- La música la compone el script (sin derechos de autor) y baja sola cuando habla la voz; volumen final a -14 LUFS.
 - Para hacer uno nuevo: copia un HTML, cambia las escenas y sus tiempos en `render(t)` y ajusta `window.DURATION`.
   Deja libre el cuarto inferior de la pantalla: Instagram pone ahí el texto y los botones.
