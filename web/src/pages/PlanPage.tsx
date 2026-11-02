@@ -509,7 +509,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
       <PageHeader title="Plan" subtitle={`${plan.goal} · ${dateLong(toDate(plan.raceDate))}`}
         action={online ? (
           <Stack direction="row" spacing={1}>
-            <Tooltip title="Ver el plan en tu calendario"><IconButton onClick={() => setCalOpen(true)} aria-label="Calendario"><CalendarMonthOutlined /></IconButton></Tooltip>
+            <Tooltip title="Ver el plan en tu calendario"><IconButton data-new="calendar" onClick={() => setCalOpen(true)} aria-label="Calendario"><CalendarMonthOutlined /></IconButton></Tooltip>
             <Button variant="outlined" startIcon={busy ? <CircularProgress size={16} /> : <TuneRounded />} disabled={busy}
               onClick={() => ask('¿Reajustar el plan ahora?', 'El coach revisa tus últimos datos y rehace las semanas que quedan. Tarda 1-3 minutos y gasta unos 0,25-0,50 $ de tu tope de IA. Ya se reajusta solo cada lunes.', () => run('./api/plan/adapt'))}
               sx={{ borderRadius: 999 }}>{busy ? 'Reajustando…' : 'Reajustar ahora'}</Button>
@@ -609,11 +609,11 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
       </Stack>
       <WatchDialog open={watchOpen} onClose={() => setWatchOpen(false)} weekStart={week.start} sessions={week.sessions} onView={setView} refs={refs} />
       {small ? (
-        <Card sx={{ ...CARD_SX, p: 0.5 }}>
+        <Card data-new="compliance" sx={{ ...CARD_SX, p: 0.5 }}>
           {week.sessions.map((s, i) => <DayRow key={`${s.date}-${s.type}`} s={s} go={go} first={i === 0} />)}
         </Card>
       ) : (
-        <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { sm: 'repeat(4, 1fr)', lg: 'repeat(7, 1fr)' } }}>
+        <Box data-new="compliance" sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { sm: 'repeat(4, 1fr)', lg: 'repeat(7, 1fr)' } }}>
           {week.sessions.map((s) => <DayCard key={`${s.date}-${s.type}`} s={s} go={go} onSaved={setView} sets={(id) => data.activities.find((x) => x.id === id)?.sets} />)}
         </Box>
       )}

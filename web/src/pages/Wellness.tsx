@@ -74,7 +74,7 @@ export function CheckIn({ data }: { data: GarminData }) {
   const color = cat('recovery');
 
   return (
-    <Card sx={{ ...CARD_SX, mb: 2 }}>
+    <Card data-new="checkin" sx={{ ...CARD_SX, mb: 2 }}>
       <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2 }}>
         <IconBubble color={color}><HealingRounded /></IconBubble>
         <Box sx={{ flex: 1, minWidth: 0 }}>

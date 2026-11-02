@@ -304,3 +304,14 @@ Ideas tomadas de otra app de entrenamiento y escritas de nuevo aquí (solo fórm
   Tras cada cambio la API recalcula esos bloques en `data.js` (sin esperar a la sincronización). La sincronización solo
   **lee** `settings.json` y `wellness.json` (nunca los sube, para no pisar lo que guardes mientras corre).
 - Pruebas: `uv run --with pytest pytest -q` (fórmulas, natación, gimnasio, registro, calendario, cumplimiento, energía).
+
+## Novedades de cada versión (pantalla "Novedades")
+
+La primera vez que cada persona entra después de publicar una versión con novedades, la web le enseña una pantalla
+"Novedades" (a pantalla completa en el móvil). Se ve **una vez por persona**: al pulsar Continuar se guarda en su
+cuenta (`seenRelease` en `admin/users.json`, `POST /api/whatsnew/seen`), así que no vuelve a salir en otro dispositivo.
+Quien se da de alta después de la fecha de la versión no la ve. Siempre se puede abrir desde el menú → **Novedades**.
+
+**Cada vez que se publiquen novedades:** añadir una entrada al principio de `RELEASES` en `web/src/whatsnew.tsx`
+(id nuevo `AAAA-MM-DD`, título, subtítulo y 3-7 novedades con icono, color, texto corto y la página a la que llevan),
+compilar la web y desplegar. Sin entrada nueva no se anuncia nada.

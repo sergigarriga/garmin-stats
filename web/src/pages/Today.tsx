@@ -129,10 +129,10 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
           center={night?.sleepH != null ? hm(night.sleepH).replace(' min', '') : '—'}
           sub={night ? (night.sleepScore != null ? `Puntuación ${night.sleepScore}` : undefined) : 'sin datos de anoche'}
           caption={night ? 'Anoche' : 'Sin datos de anoche'} />
-        <RingCard icon={<BatteryChargingFull />} color={cat('energy')} label="Body Battery" help="bodyBattery"
+        <Box data-new="energy" sx={{ height: '100%', minWidth: 0 }}><RingCard icon={<BatteryChargingFull />} color={cat('energy')} label="Body Battery" help="bodyBattery"
           value={bbNow ?? 0} max={100}
           center={bbNow != null ? int(bbNow) : '—'} sub={bbNow != null ? (live?.asOf ? `ahora · ${live.asOf}` : 'ahora') : 'sin datos de hoy'}
-          caption={latest?.bbMax != null ? `Máximo ${latest.bbMax} · mínimo ${latest.bbMin ?? '–'}` : 'Sin datos de hoy'} />
+          caption={latest?.bbMax != null ? `Máximo ${latest.bbMax} · mínimo ${latest.bbMin ?? '–'}` : 'Sin datos de hoy'} /></Box>
       </Box>
       {staleMin != null && staleMin > 90 && (
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>

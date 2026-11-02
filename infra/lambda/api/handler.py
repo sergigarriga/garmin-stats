@@ -271,6 +271,13 @@ def handler(event, _ctx):
         return _me(user)
     if path == "/api/sync":
         return _sync(method, user)
+    if path == "/api/whatsnew/seen" and method == "POST":  # ya ha visto las novedades de esta versión
+        rel = str(payload.get("release") or "")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}(-\d{1,2})?", rel):
+            return _json(400, {"error": "Versión no válida."})
+        if user.get("seenRelease") != rel:
+            U.update(s3, BUCKET, user["uid"], seenRelease=rel)
+        return _json(200, {"ok": True})
     if path == "/api/onboarding/consent" and method == "POST":  # aceptó la privacidad (puede conectar Garmin más tarde)
         if not user.get("consentAt"):
             U.update(s3, BUCKET, user["uid"], consentAt=U.now())
@@ -447,6 +454,8 @@ def _me(user: dict):
         "hasData": _exists(_site("data.js")), "hasGoal": bool(onb.get("goal")), "hasPlan": bool(coach.get("plan")),
         "planJob": coach.get("job"), "sync": _get_json(_sp("sync_status.json"), {}),
         "owner": OWNER,
+        "seenRelease": user.get("seenRelease"),
+        "since": user.get("consentAt") or user.get("joinedAt") or user.get("invitedAt"),
     })
 
 

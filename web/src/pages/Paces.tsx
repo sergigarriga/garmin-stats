@@ -173,7 +173,7 @@ export default function Paces({ data }: { data: GarminData }) {
 
       {p ? (
         <>
-          <Card sx={{ ...CARD_SX, mb: 2 }}>
+          <Card data-new="paces" sx={{ ...CARD_SX, mb: 2 }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
               <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flex: 1, minWidth: 0 }}>
                 <IconBubble color={cat('training')} size={48}><SpeedRounded /></IconBubble>
@@ -235,7 +235,7 @@ export default function Paces({ data }: { data: GarminData }) {
           </Box>
         </>
       ) : (
-        <Card sx={{ ...CARD_SX, mb: 2 }}>
+        <Card data-new="paces" sx={{ ...CARD_SX, mb: 2 }}>
           <Typography sx={{ mb: 2 }}>Aún no hay datos para calcular tus ritmos. Pon una marca reciente (una carrera o un test a tope).</Typography>
           <Button variant="contained" disableElevation startIcon={<FlagRounded />} onClick={() => setRaceOpen(true)} disabled={!online} sx={{ borderRadius: 999 }}>Poner una marca</Button>
         </Card>
@@ -268,7 +268,7 @@ export default function Paces({ data }: { data: GarminData }) {
       <SectionTitle>Natación</SectionTitle>
       {sw?.css ? (
         <>
-          <Card sx={{ ...CARD_SX, mb: 2 }}>
+          <Card data-new="swim" sx={{ ...CARD_SX, mb: 2 }}>
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
               <Stack direction="row" spacing={2} sx={{ alignItems: 'center', flex: 1, minWidth: 0 }}>
                 <IconBubble color={swimColor} size={48}><PoolRounded /></IconBubble>
@@ -314,7 +314,7 @@ export default function Paces({ data }: { data: GarminData }) {
           </Box>
         </>
       ) : (
-        <Card sx={{ ...CARD_SX }}>
+        <Card data-new="swim" sx={{ ...CARD_SX }}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ alignItems: { sm: 'center' } }}>
             <IconBubble color={swimColor}><PoolRounded /></IconBubble>
             <Typography sx={{ flex: 1 }}>Si nadas, haz el test de 400 + 200 m: con él salen tus zonas por 100 m y el coach puede programarte natación.</Typography>

@@ -27,6 +27,8 @@ export interface Me {
   email: string; name: string; role: 'owner' | 'friend'; status: 'invited' | 'onboarding' | 'active' | 'key_invalid';
   budgetUsd: number; monthSpendUsd: number; consented?: boolean; hasData: boolean; hasGoal: boolean; hasPlan: boolean;
   planJob?: { status: string; action: string } | null; sync: SyncState; owner: string;
+  /** Última versión de novedades vista y desde cuándo tiene cuenta (epoch s). */
+  seenRelease?: string | null; since?: number | null;
 }
 
 /** Llamada a la API de la web. Lanza un Error con el mensaje del servidor si algo falla. */

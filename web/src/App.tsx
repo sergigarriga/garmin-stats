@@ -63,6 +63,9 @@ import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import FitnessCenterRounded from '@mui/icons-material/FitnessCenterRounded';
 import ActivityDetail from './pages/ActivityDetail';
 import Chat from './Chat';
+import { LATEST, WhatsNew } from './whatsnew';
+import { Spotlight } from './spotlight';
+import NewReleasesOutlined from '@mui/icons-material/NewReleasesOutlined';
 
 type Page = { key: string; label: string; icon: ReactElement; render: (d: GarminData, go: (k: string) => void) => ReactElement };
 
@@ -148,6 +151,10 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
             {me.name ? `${me.name} · ` : ''}{me.email}
           </Typography>
         )}
+        <MenuItem onClick={() => { setAnchor(null); window.dispatchEvent(new Event('open-whatsnew')); }}>
+          <ListItemIcon><NewReleasesOutlined fontSize="small" /></ListItemIcon>
+          <ListItemText primary="Novedades" secondary="Lo último que hemos añadido" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+        </MenuItem>
         {me?.role === 'owner' && (
           <MenuItem onClick={() => { setAnchor(null); onAccount('admin'); }}>
             <ListItemIcon><GroupAddOutlined fontSize="small" /></ListItemIcon>
@@ -302,7 +309,7 @@ export default function App() {
       <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: 'color-mix(in srgb, var(--mui-palette-background-default) 82%, transparent)',
         backdropFilter: 'blur(16px) saturate(160%)', WebkitBackdropFilter: 'blur(16px) saturate(160%)' }}>
         <Container maxWidth="lg">
-          <Toolbar disableGutters sx={{ gap: 1.5, minHeight: { xs: 56, sm: 68 } }}>
+          <Toolbar disableGutters sx={{ gap: { xs: 0.75, sm: 1.5 }, minHeight: { xs: 56, sm: 68 } }}>
             <Box sx={{ width: 30, height: 30, borderRadius: '50%', display: 'grid', placeItems: 'center', flexShrink: 0,
               background: 'conic-gradient(from 200deg, #D93025, #E8710A, #F6AE2D, #188038, #1A73E8, #5B5BD6, #D93025)' }}>
               <Box sx={{ width: 21, height: 21, borderRadius: '50%', bgcolor: 'background.default', display: 'grid', placeItems: 'center' }}>
@@ -340,6 +347,13 @@ export default function App() {
                     <RefreshRounded fontSize="small" />
                   </IconButton>
                 </Stack>
+              </Tooltip>
+            )}
+            {Date.now() - new Date(`${LATEST.date}T00:00:00`).getTime() < 30 * 864e5 && (
+              <Tooltip title="Novedades">
+                <IconButton data-new="news-button" aria-label="Novedades" onClick={() => window.dispatchEvent(new Event('open-whatsnew'))} sx={{ color: 'primary.main', p: { xs: 0.75, sm: 1 } }}>
+                  <NewReleasesOutlined />
+                </IconButton>
               </Tooltip>
             )}
             <ModeMenu vapid={data.push?.vapidPublicKey ?? undefined} onInfo={setInfo} me={me} onAccount={setDialog} />
@@ -381,6 +395,8 @@ export default function App() {
       {mobile && <PullToRefresh onRefresh={sync} busy={syncing} />}
 
       <Chat showFab={!mobile} />
+      <WhatsNew me={me} go={go} ready={!!me} />
+      <Spotlight />
       <Snackbar open={!!info} autoHideDuration={9000} onClose={() => setInfo(null)} message={info}
         anchorOrigin={{ vertical: mobile ? 'top' : 'bottom', horizontal: 'center' }} sx={{ '& .MuiSnackbarContent-root': { maxWidth: 520 } }} />
       <Snackbar open={fresh} autoHideDuration={4000} onClose={clearFresh} message="Datos actualizados"

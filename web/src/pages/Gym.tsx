@@ -39,7 +39,7 @@ export default function Gym({ data, go }: { data: GarminData; go: (k: string) =>
     return (
       <Box>
         <PageHeader title="Gimnasio" subtitle="Tus series, tus récords y el volumen de cada músculo" />
-        <Card sx={{ ...CARD_SX }}>
+        <Card data-new="gym" sx={{ ...CARD_SX }}>
           <Typography color="text.secondary">Aún no hay sesiones de fuerza. Graba el gimnasio en el reloj (actividad "Fuerza") y confirma repeticiones y peso al acabar cada serie.</Typography>
         </Card>
       </Box>
@@ -74,7 +74,7 @@ export default function Gym({ data, go }: { data: GarminData; go: (k: string) =>
       )}
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1.4fr' } }}>
-        <Card sx={{ ...CARD_SX }}>
+        <Card data-new="gym" sx={{ ...CARD_SX }}>
           <Typography variant="subtitle1">Series por músculo</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>Media semanal de las últimas 4 semanas. Los ejercicios que ayudan cuentan media serie.</Typography>
           {g.muscleAvg4w.length ? (
