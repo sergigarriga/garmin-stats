@@ -46,7 +46,7 @@ Lee `marketing/instagram/README.md` (formato completo) y usa `lote-01.json` como
 - Una idea por diapositiva. Carruseles de 2-3 diapositivas; la primera tiene que funcionar sola (es la miniatura del
   perfil). Si es un `hook`, añade 2-4 `floats` (pegatinas con datos cortos) y que la segunda enseñe la app (`cover`).
 - En un lote de 9, alterna ganchos y tarjetas de la app (tipo tablero de ajedrez) y no pongas dos pasteles iguales o
-  parecidos al lado. Lo último que se publica sale arriba a la izquierda. Pon `"handle": "@runch.run"` en cada lote.
+  parecidos al lado. Lo último que se publica sale arriba a la izquierda. Pon `"handle": "@runch.run"` en cada lote. Perfil (nombre, bio): `marketing/instagram/perfil.md`.
 
 ## Tono y texto: picante, moderno y fresco
 
