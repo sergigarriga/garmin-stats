@@ -69,5 +69,14 @@ uv run --no-project --with playwright python marketing/instagram/video/render_vi
   comunidad).
 - `video/reel-z2.html`: "¿Tienes un Garmin y no sabes qué es la Z2?" en 15 s.
 - Salida en `out/video/<nombre>.mp4` y una portada `<nombre>-portada.png`. Necesita `ffmpeg`.
+- **Voz, música y subtítulos:** escribe el guion en `video/<nombre>.voz.json` (frase, segundo en que empieza y, si hace
+  falta, cómo pronunciarla: `"say": "Ranch"` para que la voz diga bien "Runch") y los efectos (`whoosh`, `pop`, `tick`,
+  `ding`, `stamp`, `swell`, `sparkle`). Luego:
+  `uv run --no-project --with piper-tts --with numpy python marketing/instagram/video/voiceover.py marketing/instagram/video/showreel.voz.json`
+  y vuelve a lanzar `render_video.py`. Salen tres vídeos: `<nombre>.mp4` (voz + música + subtítulos), `<nombre>-voz.mp4`
+  (voz y subtítulos, para poner debajo un audio de moda de Instagram) y `<nombre>-limpio.mp4`, más `<nombre>.srt`.
+- La voz es Piper (`es_ES-davefx-medium`, sin conexión). Sirve como borrador: para la versión final de la marca, mejor
+  tu propia voz o una voz con licencia comercial. La música la compone el script (sin derechos de autor) y baja sola
+  cuando habla la voz; el volumen final queda a -14 LUFS.
 - Para hacer uno nuevo: copia un HTML, cambia las escenas y sus tiempos en `render(t)` y ajusta `window.DURATION`.
   Deja libre el cuarto inferior de la pantalla: Instagram pone ahí el texto y los botones.

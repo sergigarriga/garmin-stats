@@ -394,9 +394,9 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int = 0) -> str:
           <div style="flex:1.1"></div>{swipe}'''
     elif layout == "cover":
         vis = s.get("visual")
-        body = f'''{kicker(s, accent)}{title(s.get("size", 86), "text-align:center")}{lead("text-align:center;align-self:center")}
-          <div style="flex:1"></div>
-          {card(VISUALS[vis["type"]](vis), s.get("tilt", [-2, 2, -1.5][k % 3]), s.get("tag")) if vis else ''}<div style="flex:.25"></div>'''
+        # texto y tarjeta van juntos y el bloque se centra en vertical (sin hueco entre el titular y la imagen)
+        body = f'''<div style="flex:1"></div>{kicker(s, accent)}{title(s.get("size", 86), "text-align:center")}{lead("text-align:center;align-self:center")}
+          {f'<div style="margin-top:34px">{card(VISUALS[vis["type"]](vis), s.get("tilt", [-2, 2, -1.5][k % 3]), s.get("tag"))}</div>' if vis else ''}<div style="flex:1"></div>'''
     elif layout == "points":
         pts = s["points"]
         tiles = []
@@ -424,9 +424,9 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int = 0) -> str:
         vs = (f'<div class="free" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-8deg);width:96px;height:96px;'
               f'border-radius:50%;background:{YELLOW};display:grid;place-items:center;font-size:34px;font-weight:800;color:{INK};'
               f'box-shadow:0 10px 26px rgba(60,50,90,.18);z-index:2">VS</div>')
-        body = f'''{kicker(s, accent)}{title(s.get("size", 76), "text-align:center")}<div style="flex:1"></div>
-          <div class="row" style="position:relative;gap:30px;align-items:stretch">{side(s["left"], -2.5)}{side(s["right"], 2.5)}{vs}</div>
-          {lead("text-align:center;align-self:center;margin-top:14px")}<div style="flex:.7"></div>'''
+        body = f'''<div style="flex:1"></div>{kicker(s, accent)}{title(s.get("size", 76), "text-align:center")}
+          <div class="row" style="position:relative;gap:30px;align-items:stretch;margin-top:40px">{side(s["left"], -2.5)}{side(s["right"], 2.5)}{vs}</div>
+          {lead("text-align:center;align-self:center;margin-top:14px")}<div style="flex:1"></div>'''
     elif layout == "big":
         body = f'''{kicker(s, accent)}<div style="flex:1"></div>
           <div style="position:relative;display:grid;place-items:center;height:{s.get("bigSize", 300) + 60}px">

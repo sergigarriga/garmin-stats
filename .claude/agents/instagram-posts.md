@@ -41,6 +41,8 @@ Lee `marketing/instagram/README.md` (formato completo) y usa `lote-01.json` como
   subrayador en la palabra clave (`**palabra**`), pegatinas ladeadas, tarjetas un poco giradas con una etiqueta en la
   esquina (`tag`), mosaicos de bloques de colores en vez de listas, "VS" en las comparativas y puntitos del carrusel
   abajo. Varía: no hagas dos diapositivas seguidas con la misma composición.
+- El titular y su tarjeta van juntos y centrados en vertical (sin hueco entre texto e imagen). Si queda mucho aire,
+  sube `size` del titular o añade un `body`, nunca separes el texto de la tarjeta.
 - Una idea por diapositiva. Carruseles de 2-3 diapositivas; la primera tiene que funcionar sola (es la miniatura del
   perfil). Si es un `hook`, añade 2-4 `floats` (pegatinas con datos cortos) y que la segunda enseñe la app (`cover`).
 - En un lote de 9, alterna ganchos y tarjetas de la app (tipo tablero de ajedrez) y no pongas dos pasteles iguales o
@@ -93,3 +95,5 @@ de la app y 1-2 de comunidad o cierre.
 
 Vídeos (Reels): se hacen con `marketing/instagram/video/` (HTML con `render(t)` + `render_video.py`); mira el
 README y usa `showreel.html` o `reel-z2.html` como base, con el mismo estilo y tono. Deja libre el cuarto inferior.
+Para voz, música y subtítulos escribe el guion `<nombre>.voz.json` (frases cortas que quepan en su escena, `say` para
+pronunciar bien "Runch" como "Ranch") y lanza `voiceover.py` antes de `render_video.py`.

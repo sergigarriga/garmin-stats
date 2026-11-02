@@ -1,0 +1,25 @@
+{
+  "duration": 15,
+  "bpm": 104,
+  "voice": "es_ES-davefx-medium",
+  "speed": 0.92,
+  "lines": [
+    {"t": 0.85, "text": "Esto es Runch.", "say": "Esto es Ranch."},
+    {"t": 2.05, "text": "Tus datos, por fin claros."},
+    {"t": 4.10, "text": "Tu preparación, tu sueño y tu energía, de un vistazo."},
+    {"t": 8.15, "text": "Entrena en tu zona."},
+    {"t": 10.20, "text": "Con un entrenador que te escucha."},
+    {"t": 12.20, "text": "Mejor en compañía."},
+    {"t": 13.70, "text": "Runch. Síguenos.", "say": "Ranch. Síguenos."}
+  ],
+  "sfx": [
+    {"t": 0.0, "type": "whoosh"}, {"t": 0.62, "type": "pop", "pitch": 0.8}, {"t": 0.9, "type": "swell"},
+    {"t": 1.6, "type": "whoosh"}, {"t": 2.05, "type": "pop"},
+    {"t": 3.6, "type": "whoosh"}, {"t": 4.6, "type": "pop", "pitch": 1.2}, {"t": 4.8, "type": "pop", "pitch": 1.4}, {"t": 5.0, "type": "pop", "pitch": 1.6},
+    {"t": 5.8, "type": "whoosh"}, {"t": 7.05, "type": "ding"},
+    {"t": 8.0, "type": "whoosh"}, {"t": 8.8, "type": "tick"}, {"t": 8.88, "type": "tick"}, {"t": 8.96, "type": "tick"}, {"t": 9.04, "type": "tick"}, {"t": 9.12, "type": "tick"},
+    {"t": 10.0, "type": "whoosh"}, {"t": 10.25, "type": "pop"}, {"t": 11.0, "type": "pop", "pitch": 1.3}, {"t": 11.3, "type": "stamp"},
+    {"t": 12.0, "type": "whoosh"}, {"t": 12.1, "type": "sparkle"},
+    {"t": 13.6, "type": "whoosh"}, {"t": 13.7, "type": "swell"}, {"t": 14.35, "type": "ding"}
+  ]
+}
