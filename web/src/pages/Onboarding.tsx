@@ -14,6 +14,7 @@ import BedtimeRounded from '@mui/icons-material/BedtimeRounded';
 import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import FavoriteRounded from '@mui/icons-material/FavoriteRounded';
 import LockOutlined from '@mui/icons-material/LockOutlined';
+import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
 import { call, GarminKeyForm, GarminKeySteps, type Me } from '../account';
 import { CARD_SX, IconBubble } from '../ui';
 import { CreateForm } from './PlanPage';
@@ -21,7 +22,7 @@ import { CreateForm } from './PlanPage';
 type Step = 'welcome' | 'garmin' | 'goal' | 'download';
 
 function stepFor(me: Me, skippedGoal: boolean): Step {
-  if (me.status !== 'active' && me.status !== 'key_invalid') return 'welcome';
+  if (me.status !== 'active' && me.status !== 'key_invalid') return me.consented ? 'garmin' : 'welcome';
   if (me.status === 'key_invalid') return 'garmin';
   if (!me.hasGoal && !skippedGoal) return 'goal';
   return 'download';
@@ -36,6 +37,15 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
   const [skippedGoal, setSkippedGoal] = useState(false);
   const [step, setStep] = useState<Step>(() => stepFor(me, false));
   const [consent, setConsent] = useState(false);
+  const [later, setLater] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const start = async () => {
+    try { await call('./api/onboarding/consent', {}); } catch { /* se vuelve a guardar al poner la clave */ }
+    setStep('garmin');
+  };
+  const copyLink = async () => {
+    try { await navigator.clipboard.writeText(window.location.origin); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* sin portapapeles */ }
+  };
   const first = (me.name || '').split(' ')[0];
 
   // Mientras descarga, pregunta cada 5 s; cuando ya hay datos, entra en la app
@@ -101,13 +111,33 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
                 </Box>
               </Stack>
             </Card>
-            <Button variant="contained" disableElevation size="large" disabled={!consent} onClick={() => setStep('garmin')} sx={{ borderRadius: 999, alignSelf: 'flex-start', px: 4 }}>
+            <Button variant="contained" disableElevation size="large" disabled={!consent} onClick={start} sx={{ borderRadius: 999, alignSelf: 'flex-start', px: 4 }}>
               Empezar
             </Button>
           </Stack>
         )}
 
-        {step === 'garmin' && (
+        {step === 'garmin' && later && (
+          <Stack spacing={3}>
+            <Box>
+              <Typography sx={{ fontSize: { xs: 26, sm: 30 }, fontWeight: 500, lineHeight: 1.2 }}>Sin problema, lo dejamos aquí</Typography>
+              <Typography color="text.secondary" sx={{ mt: 1 }}>
+                Ya has aceptado la privacidad. Cuando tengas un momento, abre la app desde el ordenador (es más cómodo para crear la clave
+                de Garmin) y entrarás directo a este paso.
+              </Typography>
+            </Box>
+            <Card sx={{ ...CARD_SX, p: 2.5 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>Enlace de la app</Typography>
+              <Typography sx={{ fontWeight: 500, overflowWrap: 'anywhere', mb: 1.5 }}>{window.location.host}</Typography>
+              <Button variant="outlined" startIcon={<ContentCopyRounded />} onClick={copyLink} sx={{ borderRadius: 999 }}>
+                {copied ? 'Copiado' : 'Copiar enlace'}
+              </Button>
+            </Card>
+            <Button onClick={() => setLater(false)} sx={{ borderRadius: 999, alignSelf: 'flex-start' }}>Conectar Garmin ahora</Button>
+          </Stack>
+        )}
+
+        {step === 'garmin' && !later && (
           <Stack spacing={3}>
             <Box>
               <Typography sx={{ fontSize: { xs: 26, sm: 30 }, fontWeight: 500, lineHeight: 1.2 }}>Conecta tu Garmin</Typography>
@@ -119,7 +149,10 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
               <Alert severity="warning" sx={{ borderRadius: '14px' }}>Garmin ya no acepta tu clave anterior (puede haber caducado). Crea una nueva.</Alert>
             )}
             <Card sx={{ ...CARD_SX, p: 2.5 }}><GarminKeySteps /></Card>
-            <GarminKeyForm consent={consent || me.status === 'key_invalid'} onDone={async () => { const m = await refresh(); if (m) setStep(stepFor(m, skippedGoal)); }} />
+            <GarminKeyForm consent={consent || !!me.consented || me.status === 'key_invalid'} onDone={async () => { const m = await refresh(); if (m) setStep(stepFor(m, skippedGoal)); }} />
+            {me.status !== 'key_invalid' && (
+              <Button onClick={() => setLater(true)} sx={{ borderRadius: 999, alignSelf: 'flex-start' }}>Ahora no, lo haré luego</Button>
+            )}
           </Stack>
         )}
 

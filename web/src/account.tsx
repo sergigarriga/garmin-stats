@@ -25,7 +25,7 @@ const DIALOG_SX = { paper: { sx: { borderRadius: '28px', m: 2, width: 'calc(100%
 export interface SyncState { status?: 'running' | 'done' | 'error' | 'key_invalid'; at?: number; finished?: number; backfill?: boolean; part?: number; backfillDone?: boolean }
 export interface Me {
   email: string; name: string; role: 'owner' | 'friend'; status: 'invited' | 'onboarding' | 'active' | 'key_invalid';
-  budgetUsd: number; monthSpendUsd: number; hasData: boolean; hasGoal: boolean; hasPlan: boolean;
+  budgetUsd: number; monthSpendUsd: number; consented?: boolean; hasData: boolean; hasGoal: boolean; hasPlan: boolean;
   planJob?: { status: string; action: string } | null; sync: SyncState; owner: string;
 }
 

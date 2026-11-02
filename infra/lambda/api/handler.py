@@ -258,6 +258,10 @@ def handler(event, _ctx):
         return _me(user)
     if path == "/api/sync":
         return _sync(method, user)
+    if path == "/api/onboarding/consent" and method == "POST":  # aceptó la privacidad (puede conectar Garmin más tarde)
+        if not user.get("consentAt"):
+            U.update(s3, BUCKET, user["uid"], consentAt=U.now())
+        return _json(200, {"ok": True})
     if path == "/api/onboarding/key" and method == "POST":
         return _onboarding_key(user, payload)
     if path == "/api/onboarding/goal" and method == "POST":
@@ -375,6 +379,7 @@ def _me(user: dict):
         "email": user["email"], "name": user.get("name") or "", "role": user.get("role", "friend"),
         "status": user.get("status"), "budgetUsd": user.get("budgetUsd") or FRIEND_BUDGET,
         "monthSpendUsd": _month_spend(user["uid"]),
+        "consented": bool(user.get("consentAt")),
         "hasData": _exists(_site("data.js")), "hasGoal": bool(onb.get("goal")), "hasPlan": bool(coach.get("plan")),
         "planJob": coach.get("job"), "sync": _get_json(_sp("sync_status.json"), {}),
         "owner": OWNER,
