@@ -1,4 +1,4 @@
-"""Genera los posts de Instagram (1080 x 1350, 4:5) con el estilo de la app "Mi salud".
+"""Genera los posts de Instagram (1080 x 1350, 4:5) con el estilo de la app "Runch".
 
 Uso:
   uv run --no-project --with playwright python marketing/instagram/render.py marketing/instagram/lote-01.json
@@ -59,6 +59,18 @@ def set_theme(dark: bool = False) -> None:
 
 
 set_theme()
+
+
+# Estilo del lote ("style" en el JSON): fondo "plain" (pastel liso) o "blobs" (manchas difuminadas), y "rotate":
+# cada diapositiva del carrusel cambia de pastel.
+STYLE = {"background": "blobs", "rotate": False}
+ROTATION = ["energy", "stress", "heart", "activity", "sleep", "training", "recovery", "gym"]
+
+
+def slide_key(key: str, i: int) -> str:
+    if not STYLE.get("rotate") or i == 1 or key not in ROTATION:
+        return key
+    return ROTATION[(ROTATION.index(key) + (i - 1) * 3) % len(ROTATION)]
 
 
 def pal(key: str | None) -> dict:
@@ -321,7 +333,7 @@ def brand() -> str:
       border-radius:999px;background:rgba(255,255,255,.72);box-shadow:0 4px 18px rgba(60,50,90,.08)">
       <div style="width:44px;height:44px;border-radius:50%;background:{LOGO};display:grid;place-items:center">
         <div style="width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center">{icon("Favorite", "#E8607A", 17)}</div></div>
-      <div style="font-size:27px;font-weight:650;color:{INK};letter-spacing:-.01em">Mi salud</div></div></div>'''
+      <div style="font-size:27px;font-weight:650;color:{INK};letter-spacing:-.01em">Runch</div></div></div>'''
 
 
 def dots(i: int, n: int, accent: str) -> str:
@@ -360,7 +372,7 @@ def card(inner: str, tilt: float = 0, tag: str | None = None, tag_bg: str = YELL
 # ---------------------------------------------------------------- diapositivas
 def slide_html(post: dict, s: dict, i: int, n: int, k: int = 0) -> str:
     set_theme()
-    key = s.get("color") or post.get("color") or "energy"
+    key = s.get("color") or slide_key(post.get("color") or "energy", i)
     p = pal(key)
     accent = p["accent"]
     hl = mix(accent, .28, "#FFFFFF")  # subrayador de la palabra clave
@@ -453,13 +465,14 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int = 0) -> str:
       .gauge {{ position: relative; }} .gc {{ position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }}
       .track {{ height: 14px; border-radius: 99px; overflow: hidden; }} .track > div {{ height: 100%; border-radius: 99px; }}
       b {{ font-weight: 650; }}
-    </style></head><body><div class="slide">{blobs(p, k + i)}<div class="content">{brand()}{body}{foot}</div></div></body></html>'''
+    </style></head><body><div class="slide">{blobs(p, k + i) if STYLE.get("background") == "blobs" else ""}<div class="content">{brand()}{body}{foot}</div></div></body></html>'''
 
 
 # ---------------------------------------------------------------- salida
 def main(path: str) -> None:
     from playwright.sync_api import sync_playwright
     lote = json.loads(Path(path).read_text())
+    STYLE.update(lote.get("style") or {})
     out = HERE / "out" / f"lote-{lote['lote']}"
     out.mkdir(parents=True, exist_ok=True)
     for f in out.glob("*.png"):

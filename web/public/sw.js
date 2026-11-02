@@ -1,5 +1,5 @@
-// Service worker de "Mi salud": abre al instante (guarda la última versión de la página) y recibe los avisos.
-const CACHE = 'mi-salud-v2';
+// Service worker de "Runch": abre al instante (guarda la última versión de la página) y recibe los avisos.
+const CACHE = 'runch-v1';
 
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
@@ -23,9 +23,9 @@ self.addEventListener('fetch', (e) => {
 self.addEventListener('push', (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data && e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(d.title || 'Mi salud', {
+  e.waitUntil(self.registration.showNotification(d.title || 'Runch', {
     body: d.body || '', icon: '/icons/icon-192.png', badge: '/icons/badge-96.png',
-    tag: d.tag || 'mi-salud', renotify: true, data: { url: d.url || '/#hoy' },
+    tag: d.tag || 'runch', renotify: true, data: { url: d.url || '/#hoy' },
   }));
 });
 

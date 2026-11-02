@@ -183,7 +183,7 @@ export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => v
   };
   const site = window.location.origin;
   const message = invite
-    ? `¡Hola${invite.name ? ` ${invite.name}` : ''}! Te he invitado a Mi salud, mi app con tus datos de Garmin y un coach con IA que te hace un plan de entreno. `
+    ? `¡Hola${invite.name ? ` ${invite.name}` : ''}! Te he invitado a Runch, mi app con tus datos de Garmin y un coach con IA que te hace un plan de entreno. `
       + `Entra con tu cuenta de Google (${invite.email}) aquí: ${site} y sigue los pasos. Tardas 5 minutos y te pedirá una clave de tu Garmin Connect.`
     : '';
   const copy = async () => { try { await navigator.clipboard.writeText(message); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* sin portapapeles */ } };

@@ -388,7 +388,7 @@ Resources:
     Type: AWS::SNS::Topic
     Properties:
       TopicName: garmin-stats-alerts
-      DisplayName: Mi salud
+      DisplayName: Runch
       Subscription: [{ Protocol: email, Endpoint: !Ref BudgetEmail }]
 
   SyncErrorsAlarm:

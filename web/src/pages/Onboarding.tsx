@@ -66,7 +66,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
               <FavoriteRounded sx={{ fontSize: 12, color: '#D93025' }} />
             </Box>
           </Box>
-          <Typography variant="h6" sx={{ fontSize: 20 }}>Mi salud</Typography>
+          <Typography variant="h6" sx={{ fontSize: 20 }}>Runch</Typography>
         </Stack>
 
         <Stack direction="row" spacing={0.75} sx={{ mb: 1 }}>
@@ -81,7 +81,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
                 ¡Hola{first ? `, ${first}` : ''}! 👋
               </Typography>
               <Typography color="text.secondary" sx={{ mt: 1, fontSize: 17 }}>
-                Te han invitado a Mi salud: tus datos de Garmin, claros y en un solo sitio, con un coach con IA que te prepara un plan y lo ajusta cada semana.
+                Te han invitado a Runch: tus datos de Garmin, claros y en un solo sitio, con un coach con IA que te prepara un plan y lo ajusta cada semana.
               </Typography>
             </Box>
             <Stack spacing={1.5}>

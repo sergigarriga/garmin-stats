@@ -1,4 +1,4 @@
-# Instagram de "Mi salud"
+# Instagram de "Runch"
 
 Posts con el mismo estilo que la app (letra Google Sans Flex, colores y tarjetas de `web/src/theme.ts`).
 El agente `.claude/agents/instagram-posts.md` los crea: pídele "usa el agente de Instagram para hacer el lote 2".

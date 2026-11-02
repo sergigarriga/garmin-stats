@@ -312,7 +312,7 @@ def handler(event, _ctx):
         return _json(200, {"ok": True, "devices": len(subs[-10:])})
     if path == "/api/push/test":
         _lambda.invoke(FunctionName=os.environ["NOTIFY_FUNCTION"], InvocationType="Event",
-                       Payload=json.dumps({"uid": user["uid"], "message": {"title": "Mi salud", "body": "¡Listo! Así te llegará el aviso de cada mañana.",
+                       Payload=json.dumps({"uid": user["uid"], "message": {"title": "Runch", "body": "¡Listo! Así te llegará el aviso de cada mañana.",
                                                                            "url": "/#hoy", "tag": "test"}}).encode())
         return _json(200, {"ok": True})
 

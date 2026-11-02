@@ -173,15 +173,15 @@ def landing(message: str = "", button_href: str = "/auth/login?go=1", button_tex
     msg = f'<p class="msg">{message}</p>' if message else ""
     html = f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="light dark">
-<meta name="robots" content="noindex,nofollow"><title>Mi salud</title>
+<meta name="robots" content="noindex,nofollow"><title>Runch</title>
 <link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#F6F8FC" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0E0E0F" media="(prefers-color-scheme: dark)">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mi salud">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Runch">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23D93025' d='M12 21s-7.5-4.6-9.4-9.3C1.2 8.2 3.4 4.5 7 4.5c2 0 3.5 1.1 5 2.9 1.5-1.8 3-2.9 5-2.9 3.6 0 5.8 3.7 4.4 7.2C19.5 16.4 12 21 12 21z'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..600&display=swap" rel="stylesheet">
 <style>{CSS}</style></head><body><div class="glow"></div>
-<header>{HEART}Mi salud</header>
+<header>{HEART}Runch</header>
 <main>
  <section class="hero">
   {RINGS}

@@ -187,7 +187,7 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
             <li>Abre esta web en <b>Safari</b>.</li>
             <li>Pulsa el botón <b>Compartir</b> (el cuadrado con la flecha hacia arriba).</li>
             <li>Elige <b>Añadir a pantalla de inicio</b> y pulsa <b>Añadir</b>.</li>
-            <li>Abre <b>Mi salud</b> desde el icono y activa los <b>Avisos de la mañana</b> en este menú.</li>
+            <li>Abre <b>Runch</b> desde el icono y activa los <b>Avisos de la mañana</b> en este menú.</li>
           </Typography>
           <Button onClick={() => setIosHelp(false)} sx={{ mt: 2, borderRadius: 999 }} variant="contained" disableElevation>Entendido</Button>
         </DialogContent>
@@ -318,13 +318,13 @@ export default function App() {
             </Box>
             {mobile ? (
               <Box sx={{ flex: 1, minWidth: 0, lineHeight: 1 }}>
-                <Typography variant="h6" sx={{ fontSize: 19, color: 'text.primary', lineHeight: 1.2 }}>Mi salud</Typography>
+                <Typography variant="h6" sx={{ fontSize: 19, color: 'text.primary', lineHeight: 1.2 }}>Runch</Typography>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }} noWrap>
                   {syncing ? 'Conectando con Garmin…' : `Actualizado ${relative(generated, now)}`}
                 </Typography>
               </Box>
             ) : (
-              <Typography variant="h6" sx={{ fontSize: 22, color: 'text.primary' }}>Mi salud</Typography>
+              <Typography variant="h6" sx={{ fontSize: 22, color: 'text.primary' }}>Runch</Typography>
             )}
             {mobile && (
               <IconButton onClick={sync} disabled={syncing} aria-label="Actualizar con Garmin ahora" sx={{ color: 'text.secondary',

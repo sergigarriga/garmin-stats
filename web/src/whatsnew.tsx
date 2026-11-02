@@ -25,6 +25,7 @@ import FitnessCenterRounded from '@mui/icons-material/FitnessCenterRounded';
 import TaskAltRounded from '@mui/icons-material/TaskAltRounded';
 import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
+import NewReleasesRounded from '@mui/icons-material/NewReleasesRounded';
 import { call, type Me } from './account';
 import { useResolvedMode } from './theme';
 import { spotlight } from './spotlight';
@@ -42,6 +43,15 @@ const C = {
 
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
+  {
+    id: '2026-11-02-2', date: '2026-11-02', title: 'Ahora somos Runch', subtitle: 'Mismo coach, nombre nuevo',
+    features: [
+      { icon: <AutoAwesomeRounded />, color: C.orange, title: 'Nuevo nombre: Runch', where: 'Hoy', go: 'hoy',
+        body: 'Run + brunch: correr, recuperar y disfrutarlo. Tus datos, tu plan y tu coach siguen exactamente igual.' },
+      { icon: <NewReleasesRounded />, color: C.blue, title: 'Si tienes la app instalada', where: 'Menú',
+        body: 'El icono de tu pantalla de inicio puede seguir con el nombre antiguo. Bórralo y vuelve a instalarla desde el menú.' },
+    ],
+  },
   {
     id: '2026-11-02', date: '2026-11-02', title: 'Novedades', subtitle: 'Tu entreno, más a tu medida',
     features: [
@@ -73,13 +83,18 @@ const SlideUp = forwardRef(function SlideUp(props: TransitionProps & { children:
 const readLocal = () => { try { return localStorage.getItem(LOCAL); } catch { return null; } };
 const writeLocal = (id: string) => { try { localStorage.setItem(LOCAL, id); } catch { /* sin almacenamiento */ } };
 
-/** ¿Hay que enseñarle la última versión? Una vez por persona; quien llegó después de la versión no la ve. */
+const releaseTs = (r: Release) => new Date(`${r.date}T00:00:00`).getTime() / 1000;
+
+/** Versiones que aún no ha visto (la más reciente primero). Quien llegó después de una versión no la ve. */
+export function pending(me: Me | null, local: string | null = readLocal()): Release[] {
+  if (!me) return [];  // sin cuenta (p. ej. abierta como archivo): no molestar
+  const seen = [me.seenRelease ?? '', local ?? ''].sort().pop() ?? '';
+  return RELEASES.filter((r) => r.id > seen && !(me.since && me.since >= releaseTs(r) + 86400));
+}
+
+/** ¿Hay que enseñarle novedades? Una vez por persona y versión. */
 export function shouldShow(me: Me | null, local: string | null = readLocal()): boolean {
-  if (local === LATEST.id || me?.seenRelease === LATEST.id) return false;
-  if (!me) return false;  // sin cuenta (p. ej. abierta como archivo): no molestar
-  const releaseTs = new Date(`${LATEST.date}T00:00:00`).getTime() / 1000;
-  if (me.since && me.since >= releaseTs + 86400) return false;
-  return true;
+  return pending(me, local).length > 0;
 }
 
 /** Pantalla de novedades. Se abre sola la primera vez y desde el menú ("Novedades"). */
@@ -113,7 +128,9 @@ export function WhatsNew({ me, go, ready }: { me: Me | null; go: (k: string) => 
     }
   }, [auto, go]);
 
-  const r = LATEST;
+  // Al abrirse sola: todas las versiones pendientes juntas (la más reciente manda en la cabecera). Desde el menú: la última.
+  const list = auto ? pending(me) : [];
+  const r: Release = list.length > 1 ? { ...list[0], features: list.flatMap((x) => x.features) } : LATEST;
   const accent = mode === 'dark' ? '#8AB4F8' : '#0B57D0';
   return (
     <Dialog open={open} onClose={() => close()} fullScreen={full} slots={{ transition: SlideUp }} scroll="paper"
