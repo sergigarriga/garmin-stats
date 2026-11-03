@@ -28,6 +28,9 @@ import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import NewReleasesRounded from '@mui/icons-material/NewReleasesRounded';
 import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
 import WbSunnyRounded from '@mui/icons-material/WbSunnyRounded';
+import RestaurantRounded from '@mui/icons-material/RestaurantRounded';
+import BalanceRounded from '@mui/icons-material/BalanceRounded';
+import LockOutlined from '@mui/icons-material/LockOutlined';
 import { call, type Me } from './account';
 import { useResolvedMode } from './theme';
 import { spotlight } from './spotlight';
@@ -45,6 +48,17 @@ const C = {
 
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
+  {
+    id: '2026-11-03-3', date: '2026-11-03', title: 'Tu comida, con una foto', subtitle: 'Lo que comes frente a lo que gastas',
+    features: [
+      { icon: <RestaurantRounded />, color: C.teal, title: 'Haz una foto y listo', target: 'food', where: 'Salud · Comida', go: 'comida',
+        body: 'La IA estima alimentos, gramos, calorías y macros. Puedes corregirlo todo o repetir una comida con un toque.' },
+      { icon: <BalanceRounded />, color: C.green, title: 'Comido frente a gastado', target: 'food', where: 'Salud · Comida', go: 'comida',
+        body: 'Tu día y tu tendencia frente a lo que gastas según el reloj, con la proteína por kilo y un objetivo opcional.' },
+      { icon: <LockOutlined />, color: C.indigo, title: 'Tú decides', where: 'Salud · Comida', go: 'comida',
+        body: 'Está apagado hasta que lo activas. La foto no se guarda: solo los datos. Y si quieres, ocultas las calorías.' },
+    ],
+  },
   {
     id: '2026-11-03-2', date: '2026-11-03', title: 'Tu plan, a tu medida', subtitle: 'Con tu tiempo y con el tiempo que hará',
     features: [

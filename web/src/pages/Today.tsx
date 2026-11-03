@@ -27,6 +27,7 @@ import { Alerts, Goals, ReadinessCard, WeekCard } from './TodayExtras';
 import { CheckIn } from './Wellness';
 import { LineChart } from '@mui/x-charts/LineChart';
 import { WeatherIcon } from './PlanTime';
+import { FoodTodayCard } from './Food';
 
 const minutes = (hm: string) => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(Math.round(min % 60)).padStart(2, '0')}`;
@@ -158,6 +159,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
 
       <SectionTitle>Cómo estás</SectionTitle>
       <CheckIn data={data} />
+      <FoodTodayCard go={go} />
 
       <SectionTitle>Tus métricas</SectionTitle>
       <Box sx={{ display: 'grid', gap: { xs: 1.25, sm: 2 }, gridTemplateColumns: { xs: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>

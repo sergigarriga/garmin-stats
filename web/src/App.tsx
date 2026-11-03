@@ -59,6 +59,7 @@ import Progress from './pages/Progress';
 import PlanPage from './pages/PlanPage';
 import Paces from './pages/Paces';
 import Gym from './pages/Gym';
+import Food from './pages/Food';
 import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import FitnessCenterRounded from '@mui/icons-material/FitnessCenterRounded';
 import ActivityDetail from './pages/ActivityDetail';
@@ -74,6 +75,7 @@ const PAGES: Page[] = [
   { key: 'sueno', label: 'Sueño', icon: <BedtimeRounded />, render: (d) => <Sleep data={d} /> },
   { key: 'corazon', label: 'Corazón', icon: <FavoriteRounded />, render: (d) => <Heart data={d} /> },
   { key: 'actividad', label: 'Actividad', icon: <DirectionsWalkRounded />, render: (d) => <Activity data={d} /> },
+  { key: 'comida', label: 'Comida', icon: <FavoriteRounded />, render: (d) => <Food data={d} /> },
   { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, render: (d, go) => <Training data={d} go={go} /> },
   { key: 'plan', label: 'Plan', icon: <EventNoteRounded />, render: (d, go) => <PlanPage data={d} go={go} /> },
   { key: 'ritmos', label: 'Ritmos', icon: <SpeedRounded />, render: (d) => <Paces data={d} /> },
@@ -199,12 +201,12 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
 type Section = { key: string; label: string; icon: ReactElement; pages: string[] };
 const SECTIONS: Section[] = [
   { key: 'hoy', label: 'Hoy', icon: <HomeRounded />, pages: ['hoy'] },
-  { key: 'salud', label: 'Salud', icon: <FavoriteRounded />, pages: ['sueno', 'corazon', 'actividad'] },
+  { key: 'salud', label: 'Salud', icon: <FavoriteRounded />, pages: ['sueno', 'corazon', 'actividad', 'comida'] },
   { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, pages: ['plan', 'entreno', 'ritmos', 'gimnasio'] },
   { key: 'progreso', label: 'Progreso', icon: <TrendingUpRounded />, pages: ['progreso', 'analisis'] },
 ];
 const SUB_LABEL: Record<string, string> = {
-  sueno: 'Sueño', corazon: 'Corazón', actividad: 'Actividad', plan: 'Plan', entreno: 'Actividades', ritmos: 'Ritmos', gimnasio: 'Gimnasio',
+  sueno: 'Sueño', corazon: 'Corazón', actividad: 'Actividad', comida: 'Comida', plan: 'Plan', entreno: 'Actividades', ritmos: 'Ritmos', gimnasio: 'Gimnasio',
   progreso: 'Progreso', analisis: 'Análisis',
 };
 const sectionOf = (page: string) => SECTIONS.find((s) => s.pages.includes(page)) ?? SECTIONS[0];

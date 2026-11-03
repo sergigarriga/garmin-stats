@@ -5,6 +5,7 @@ usuarias (S3 admin/users.json), su id. Todo lo que se lee o escribe va a SU carp
   site/u/<uid>/data.js           su web (la escribe la sincronización)
   users/<uid>/state/coach.json   su plan, memoria del coach y valoraciones
   users/<uid>/state/*.log        su gasto de IA (tope mensual propio: budgetUsd en el registro)
+  users/<uid>/state/food.json    lo que come (módulo Comida; la foto no se guarda, solo los datos estimados)
   /garmin-stats/users/<uid>/garmin-key (SSM, cifrado)  su clave de Garmin
 Antes de cada petición se vacía /tmp/gs: una Lambda caliente nunca mezcla datos de dos personas.
 
@@ -51,7 +52,9 @@ s3 = boto3.client("s3")
 _lambda = boto3.client("lambda")
 _ssm = boto3.client("ssm")
 
-STATE = ["coach.json", "settings.json", "wellness.json", "weather.json", "ai_usage.log", "ai_usage_lambda.log", "ai_cache.json"]
+STATE = ["coach.json", "settings.json", "wellness.json", "weather.json", "food.json", "ai_usage.log", "ai_usage_lambda.log",
+         "ai_cache.json"]
+MAX_BODY = 2_200_000  # la foto de Comida llega en base64 (máx. 1,5 MB); el resto de peticiones son pequeñas
 CAL_RE = re.compile(r"^/api/cal/([A-Za-z0-9_-]{24,64})\.ics$")
 CUR: dict = {}  # persona de esta petición
 
@@ -255,6 +258,8 @@ def handler(event, _ctx):
     method = event["requestContext"]["http"]["method"]
     path = event.get("rawPath", "")
     body = event.get("body") or ""
+    if len(body) > MAX_BODY:  # nunca se registra el cuerpo (puede llevar una foto)
+        return _json(413, {"error": "La petición es demasiado grande (máx. 1,5 MB de foto)."})
     if event.get("isBase64Encoded"):
         body = base64.b64decode(body).decode()
     try:
@@ -323,7 +328,10 @@ def handler(event, _ctx):
 
     # --- chat y plan (necesitan sus datos)
     _setup_key()
-    if not _pull():
+    has_data = _pull()
+    if path == "/api/food" or path.startswith("/api/food/"):
+        return _food(path, method, payload, has_data)
+    if not has_data:
         return _json(409, {"error": "Aún no hay datos: termina de conectar tu Garmin."})
     from garmin_stats import coach, server
 
@@ -412,6 +420,97 @@ def handler(event, _ctx):
     _push("coach.json")
     _refresh_site(coach)
     return _json(200, _with_job(coach.view(_read_data()), coach))
+
+
+# ------------------------------------------------------------------ comida
+def _food(path: str, method: str, payload: dict, has_data: bool):
+    """Módulo Comida. La foto llega en la petición, la IA la analiza en memoria y se descarta: en S3 solo se guarda
+    food.json (alimentos, gramos, kcal y macros). Sin datos de Garmin funciona igual, sin el gasto del día."""
+    from garmin_stats import coach, food as F
+    data = _read_data() if has_data else {}
+
+    def out(status=200, entry=None):
+        extra = {"entry": F.present(entry)} if entry is not None else {}
+        return _json(status, {**extra, **F.view(data, None, coach.load())})
+
+    def fresh():  # relee food.json justo antes de cambiarlo: no pisa una comida guardada a la vez desde otro móvil
+        p = ROOT / "data" / "food.json"
+        try:
+            s3.download_file(BUCKET, _sp("food.json"), str(p))
+        except s3.exceptions.ClientError:
+            p.unlink(missing_ok=True)
+
+    if path == "/api/food" and method == "GET":
+        return out()
+    if method != "POST":
+        return _json(405, {"error": "método no permitido"})
+    if path == "/api/food/prefs":
+        fresh()
+        try:
+            F.set_prefs(payload)
+        except ValueError as e:
+            return _json(400, {"error": str(e)})
+        _push("food.json")
+        return out()
+    if not F.prefs()["enabled"]:
+        return _json(409, {"error": "Activa primero el módulo Comida."})
+    if path in ("/api/food/add", "/api/food/reanalyze"):
+        image, media = None, "image/jpeg"
+        try:
+            if path.endswith("add"):
+                entry = F.new_entry(payload)
+            else:
+                entry = F.find(str(payload.get("id") or ""))
+                if not entry:
+                    return _json(404, {"error": "Esa comida ya no existe."})
+                entry = dict(entry)
+                if "note" in payload:
+                    entry["note"] = " ".join(str(payload["note"] or "").split())[:300]
+            if payload.get("photo"):
+                image, media = F.decode_photo(payload["photo"])
+        except OverflowError as e:
+            return _json(413, {"error": str(e)})
+        except ValueError as e:
+            return _json(400, {"error": str(e)})
+        analyze = bool(image) or (path.endswith("reanalyze")) or (bool(entry["text"]) and not entry["items"])
+        if path.endswith("add") and not (image or entry["text"] or entry["items"]):
+            return _json(400, {"error": "Añade una foto, escribe lo que has comido o apunta los alimentos."})
+        if not payload.get("analyze", True) and not entry["items"]:
+            return _json(400, {"error": "Apunta al menos un alimento."})
+        if analyze and payload.get("analyze", True):
+            try:
+                res = F.analyze(entry, image, media)
+                F.apply_analysis(entry, *res, from_photo=bool(image))
+            except F.BudgetExceeded as e:
+                return _json(409, {"error": str(e), "budget": True})
+            except F.FoodAIError as e:  # no se guarda nada: la web conserva la foto y deja reintentar o apuntarlo a mano
+                return _json(502, {"error": str(e)})
+            finally:
+                image = None  # la foto no se guarda en ningún sitio
+                _push("ai_usage_lambda.log")
+        fresh()
+        F.upsert(entry)
+        _push("food.json")
+        return out(entry=entry)
+    if path in ("/api/food/update", "/api/food/delete", "/api/food/repeat"):
+        eid = str(payload.get("id") or "")
+        fresh()
+        try:
+            if path.endswith("update"):
+                entry = F.update_entry(eid, payload)
+            elif path.endswith("repeat"):
+                entry = F.repeat_entry(eid, payload)
+            else:
+                if not F.delete_entry(eid):
+                    return _json(404, {"error": "Esa comida ya no existe."})
+                entry = None
+        except LookupError as e:
+            return _json(404, {"error": str(e)})
+        except ValueError as e:
+            return _json(400, {"error": str(e)})
+        _push("food.json")
+        return out(entry=entry) if entry else out()
+    return _json(404, {"error": "no encontrado"})
 
 
 # ------------------------------------------------------------------ calendario

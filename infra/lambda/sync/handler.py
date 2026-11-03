@@ -41,10 +41,10 @@ API_FUNCTION = os.environ.get("API_FUNCTION", "garmin-stats-api")
 s3 = boto3.client("s3")
 ssm = boto3.client("ssm")
 lam = boto3.client("lambda")
-STATE = ["garmin.sqlite", "coach.json", "settings.json", "wellness.json", "weather.json", "ai_cache.json", "ai_usage.log",
-         "ai_usage_lambda.log"]
+STATE = ["garmin.sqlite", "coach.json", "settings.json", "wellness.json", "weather.json", "food.json", "ai_cache.json",
+         "ai_usage.log", "ai_usage_lambda.log"]
 # Los escribe la web (API) mientras esta sincronización corre: aquí solo se leen, nunca se suben (se pisarían los cambios).
-READ_ONLY = {"settings.json", "wellness.json", "ai_usage_lambda.log"}
+READ_ONLY = {"settings.json", "wellness.json", "food.json", "ai_usage_lambda.log"}
 STALE = 960      # una sincronización "en marcha" de hace más de 16 min se da por muerta
 SYNC_SECONDS = 420  # trabajo con Garmin por ejecución; el resto queda para recalcular, IA y subir
 MAX_PARTS = 15   # tandas como mucho en la primera descarga

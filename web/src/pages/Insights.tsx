@@ -121,7 +121,7 @@ function AiUsageCard({ data }: { data: GarminData }) {
   if (!u) return null;
   const color = CATEGORY.energy[mode];
   const usd = (v?: number | null, d = 3) => (v == null ? '–' : `${v.toFixed(d).replace('.', ',')} $`);
-  const KIND: Record<string, string> = { textos: 'Textos diarios', chat: 'Chat', weekly: 'Resumen semanal', 'plan-create': 'Crear el plan', 'plan-adapt': 'Ajustes del plan', 'plan-structure': 'Entrenos para el reloj · carrera', 'plan-structure-gym': 'Entrenos para el reloj · gimnasio' };
+  const KIND: Record<string, string> = { textos: 'Textos diarios', chat: 'Chat', weekly: 'Resumen semanal', 'plan-create': 'Crear el plan', 'plan-adapt': 'Ajustes del plan', 'plan-structure': 'Entrenos para el reloj · carrera', 'plan-structure-gym': 'Entrenos para el reloj · gimnasio', comida: 'Comida (fotos)' };
   const MODEL: Record<string, string> = { 'claude-haiku-5-5': 'Haiku 5.5', 'claude-sonnet-5-5': 'Sonnet 5.5', 'claude-opus-5-5': 'Opus 5.5' };
   const month = u.monthCostUsd ?? 0, budget = u.monthlyBudgetUsd ?? 50;
   const tiles = [

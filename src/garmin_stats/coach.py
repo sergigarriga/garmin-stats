@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from . import DATA_DIR
 from . import ai
+from . import food
 from . import settings
 from . import weather
 from . import wellness
@@ -145,7 +146,12 @@ Principios:
   pide en la descripción que confirme el peso en el reloj al terminar cada serie.
 - Peso: usa "peso_registrado" para valorar la tendencia hacia su objetivo de físico (sin dar dietas).
 - Si el objetivo incluye definición, añade en la descripción de alguna sesión un consejo breve y práctico
-  (proteína, sueño), sin dietas ni cifras de calorías.
+  (proteína, sueño), sin dietas.
+- Comida ("nutricion_7_dias", solo si la persona apunta lo que come en la app): puedes comentar cómo se alimenta para
+  entrenar con sus propias cifras (hidratos antes y después de la tirada larga y de las sesiones de calidad, proteína
+  por kg, balance medio si come bastante menos de lo que gasta en semanas de carga). Son estimaciones aproximadas.
+  Nunca prescribas dietas ni menús, ni hables de comida buena o mala, de culpa o de "quemar" lo comido.
+  Si "oculta_calorias" es true, no menciones cifras de calorías. Sin ese bloque, no des cifras de calorías.
 - Ritmos de referencia: usa "ritmos_de_referencia" (modelo VDOT de Daniels con su marca o su VO2max) para fijar
   los ritmos: suave para rodajes y tiradas, umbral para tempo, series (interval) para VO2max, etc. Si el ritmo suave
   real del atleta es más lento que el de referencia, respeta el real en los rodajes. En los pasos del entreno
@@ -258,6 +264,7 @@ def profile(data: dict) -> dict:
                                   "fecha": (r.get("best") or {}).get("d")}
                                  for r in ((data.get("gym") or {}).get("records") or [])[:12]],
         **wellness.for_coach(),
+        **({"nutricion_7_dias": nut} if (nut := food.for_coach(data)) else {}),
         "huecos_sin_reloj": settings.watch_gaps(),
         "nota_huecos": "Los periodos de 'huecos_sin_reloj' NO son parones: el reloj no registraba. Las ventanas "
                        "de km/carreras ya se calculan saltándolos (últimas semanas registradas). No planifiques "

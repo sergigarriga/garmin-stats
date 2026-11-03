@@ -330,6 +330,40 @@ Ideas tomadas de otra app de entrenamiento y escritas de nuevo aquí (solo fórm
   `GET /api/geo?q=`. data.js lleva `availability`, `weather` y `lastRunArea`.
 - Pruebas: `tests/test_time_weather.py` (validación, franjas, caché, consejo del día, prompts, comprobación y rutas de la API).
 
+## Comida: lo que comes frente a lo que gastas (03-11-2026)
+
+Módulo opcional (Salud → **Comida**), apagado hasta que cada persona lo activa. Código: `src/garmin_stats/food.py`,
+`web/src/pages/Food.tsx`.
+
+- **Apuntar:** "Añadir comida" → hacer una foto o elegirla de la galería (el navegador la reduce a ~1024 px en JPEG,
+  normalmente < 300 KB; máx. 1,5 MB), o escribir lo que has comido. Nota opcional ("sin aceite", "media ración"), tipo de
+  comida (por defecto según la hora) y día/hora. También a mano, sin IA, y **Repetir** una comida anterior o favorita sin
+  gastar IA.
+- **La foto no se guarda:** llega en la petición, Claude la analiza en memoria y se descarta. Solo se guardan los datos
+  (alimentos, gramos, kcal, proteína, hidratos, grasa, fibra y, si se puede, azúcar, saturada y sodio; supuestos, nota,
+  tipo y hora) en `users/<uid>/state/food.json`. "Volver a estimar" usa los alimentos guardados y la nota nueva como texto;
+  para que la IA mire otra foto, se añade otra vez.
+- **IA:** una llamada de Claude Sonnet 5.5 por comida (visión + salida estructurada, `effort: low`, prompt en castellano con
+  cocina española y aceites ocultos). Tarda unos segundos; si falla o tarda más de 45 s no se guarda nada y la web deja
+  reintentar. Coste: unos 1.900 tokens de entrada (la foto ~1.000) y ~600-900 de salida, **~1-1,5 céntimos por foto**
+  (menos con solo texto). Va al registro de gasto de cada persona (`kind=comida`) y respeta su tope mensual: al 80 % pasa a
+  Haiku y al 100 % solo se puede apuntar a mano. Precisión: ±20-30 % (la web lo dice).
+- **Editar:** gramos de cada alimento (kcal y macros se recalculan en proporción), quitar o añadir alimentos, toda la ración
+  (½, ¾, ×1,5, ×2), día, hora, tipo, nota, favorita y borrar.
+- **Balance:** gasto de Garmin = `cal` del día (reposo + actividad). Hoy va a medias, así que se usa tu reposo típico de un
+  día entero (mediana de 28 días) + la actividad de hoy hasta ahora. Si el reloj no da calorías, solo se ve lo comido.
+  Tarjeta del día (comido, gastado, diferencia, macros y proteína por kg con tu último peso; referencia 1,2-1,6 g/kg),
+  tendencia de 7 y 30 días y el peso. Las medias cuentan los días completos con algo apuntado.
+- **Objetivo opcional:** mantener, bajar o subir (poco a poco o moderado), siempre con límites: nunca más de un 20 % por
+  debajo de lo que gastas ni por debajo de tu gasto en reposo, y como mucho +15 %. Los días de tirada larga o calidad del
+  plan, un recordatorio de comer hidratos antes y después.
+- **Ocultar calorías:** la API quita todas las cifras de kcal y la web enseña solo alimentos, raciones y macros.
+- **Coach:** si el módulo está activo y hay algo apuntado en 7 días, `coach.profile` lleva `nutricion_7_dias` (medias,
+  balance, proteína por kg, objetivo) y puede comentar cómo comes para entrenar, sin dietas ni juicios.
+- API: `GET /api/food`, `POST /api/food/prefs`, `/api/food/add`, `/api/food/update`, `/api/food/reanalyze`,
+  `/api/food/repeat`, `/api/food/delete`. Peticiones de más de 2,2 MB → 413. La sincronización solo **lee** `food.json`.
+- Pruebas: `tests/test_food.py` (IA simulada, sin fotos reales: una cabecera JPEG sintética).
+
 ## Novedades de cada versión (pantalla "Novedades")
 
 La primera vez que cada persona entra después de publicar una versión con novedades, la web le enseña una pantalla
