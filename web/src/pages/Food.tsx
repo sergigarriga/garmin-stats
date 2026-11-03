@@ -47,6 +47,7 @@ import { dateLong, dateShort, dec1, int } from '../format';
 import { bandAxis, timeAxis, yClean } from '../charts';
 import { useResolvedMode } from '../theme';
 import { CARD_SX, ChartCard, IconBubble, PageHeader, RangeToggle, SectionTitle, chartSx } from '../ui';
+import { ShoppingEntryCard } from './Shopping';
 
 // ------------------------------------------------------------------ tipos (los manda /api/food)
 export type Meal = 'desayuno' | 'comida' | 'merienda' | 'cena' | 'picoteo';
@@ -654,7 +655,7 @@ function Intro({ onEnable }: { onEnable: () => Promise<void> }) {
 }
 
 // ------------------------------------------------------------------ página
-export default function Food({ data }: { data: GarminData }) {
+export default function Food({ data, go }: { data: GarminData; go: (k: string) => void }) {
   const mode = useResolvedMode() as Mode;
   const { view: v, error, load, act } = useFood();
   // Cuando llegan datos nuevos de Garmin (cada hora o al actualizar), el gasto del día cambia: se vuelve a pedir
@@ -683,6 +684,7 @@ export default function Food({ data }: { data: GarminData }) {
       <Box>
         <PageHeader title="Comida" subtitle="Lo que comes frente a lo que gastas" />
         <Intro onEnable={async () => { await act('prefs', { enabled: true }); }} />
+        <Box sx={{ mt: 2, maxWidth: 640 }}><ShoppingEntryCard go={go} /></Box>
       </Box>
     );
   }
@@ -709,6 +711,7 @@ export default function Food({ data }: { data: GarminData }) {
       {v.fuel && (
         <Alert icon={<BoltRounded />} severity="info" sx={{ borderRadius: '16px', mb: 2 }}>{v.fuel.text}</Alert>
       )}
+      <Box sx={{ mb: 2 }}><ShoppingEntryCard go={go} /></Box>
       {!v.hasBurned && !hide && (
         <Alert severity="info" sx={{ borderRadius: '16px', mb: 2 }}>Tu reloj aún no nos da las calorías gastadas: de momento ves solo lo que comes.</Alert>
       )}

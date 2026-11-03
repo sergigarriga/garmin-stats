@@ -36,6 +36,8 @@ JS = r"""() => {
   if (document.documentElement.scrollWidth > vw + 1) out.push(['scroll-horizontal', 'la página entera', document.documentElement.scrollWidth - vw]);
   return out;
 }"""
+if not os.environ.get("PAGES"):  # Menú y compra: subpágina de Comida
+    PAGES.insert(PAGES.index("comida") + 1, "compra")
 exe = glob.glob(os.path.expanduser("~/.cache/ms-playwright/chromium_headless_shell-1208/*/chrome-headless-shell"))[0]
 res = {}
 with sync_playwright() as p:

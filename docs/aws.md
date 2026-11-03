@@ -61,3 +61,9 @@ Desplegado. Sincronización 100 % en AWS (Lambda `garmin-stats-sync`, 1 GB, unos
 la capa gratuita). El PC no ejecuta nada y no guarda datos. Pruebas de acceso superadas: sin sesión, con firma
 falsa, con otro email, con la sesión caducada o accediendo directamente a S3 o a las Lambda se recibe 302, 401
 o 403.
+
+## Catálogo de la lista de la compra (03-11-2026)
+
+Lambda `garmin-stats-catalog` (EventBridge Scheduler, lunes 05:00 hora de Madrid, sin reintentos) → tienda de Mercadona
+(con su permiso, pocas peticiones) → `admin/catalog/` del bucket privado, que solo lee la Lambda de la API. Detalle en el
+README ("Menú y compra de la semana").

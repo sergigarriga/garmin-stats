@@ -60,6 +60,7 @@ import PlanPage from './pages/PlanPage';
 import Paces from './pages/Paces';
 import Gym from './pages/Gym';
 import Food from './pages/Food';
+import Shopping from './pages/Shopping';
 import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import FitnessCenterRounded from '@mui/icons-material/FitnessCenterRounded';
 import ActivityDetail from './pages/ActivityDetail';
@@ -75,7 +76,8 @@ const PAGES: Page[] = [
   { key: 'sueno', label: 'Sueño', icon: <BedtimeRounded />, render: (d) => <Sleep data={d} /> },
   { key: 'corazon', label: 'Corazón', icon: <FavoriteRounded />, render: (d) => <Heart data={d} /> },
   { key: 'actividad', label: 'Actividad', icon: <DirectionsWalkRounded />, render: (d) => <Activity data={d} /> },
-  { key: 'comida', label: 'Comida', icon: <FavoriteRounded />, render: (d) => <Food data={d} /> },
+  { key: 'comida', label: 'Comida', icon: <FavoriteRounded />, render: (d, go) => <Food data={d} go={go} /> },
+  { key: 'compra', label: 'Menú y compra', icon: <FavoriteRounded />, render: (_d, go) => <Shopping go={go} /> },
   { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, render: (d, go) => <Training data={d} go={go} /> },
   { key: 'plan', label: 'Plan', icon: <EventNoteRounded />, render: (d, go) => <PlanPage data={d} go={go} /> },
   { key: 'ritmos', label: 'Ritmos', icon: <SpeedRounded />, render: (d) => <Paces data={d} /> },
@@ -201,7 +203,7 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
 type Section = { key: string; label: string; icon: ReactElement; pages: string[] };
 const SECTIONS: Section[] = [
   { key: 'hoy', label: 'Hoy', icon: <HomeRounded />, pages: ['hoy'] },
-  { key: 'salud', label: 'Salud', icon: <FavoriteRounded />, pages: ['sueno', 'corazon', 'actividad', 'comida'] },
+  { key: 'salud', label: 'Salud', icon: <FavoriteRounded />, pages: ['sueno', 'corazon', 'actividad', 'comida', 'compra'] },
   { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, pages: ['plan', 'entreno', 'ritmos', 'gimnasio'] },
   { key: 'progreso', label: 'Progreso', icon: <TrendingUpRounded />, pages: ['progreso', 'analisis'] },
 ];
@@ -210,16 +212,19 @@ const SUB_LABEL: Record<string, string> = {
   progreso: 'Progreso', analisis: 'Análisis',
 };
 const sectionOf = (page: string) => SECTIONS.find((s) => s.pages.includes(page)) ?? SECTIONS[0];
+/** Subpáginas sin pestaña propia: se ven bajo la pestaña de su página "madre" (Menú y compra cuelga de Comida). */
+const SUB_PARENT: Record<string, string> = { compra: 'comida' };
 
 /** Selector de subpágina tipo "segmented control". */
 function SubTabs({ section, page, go }: { section: Section; page: string; go: (k: string) => void }) {
-  if (section.pages.length < 2) return null;
-  const many = section.pages.length > 3;  // 4 pestañas en el móvil: letra y márgenes algo menores
+  const tabs = section.pages.filter((k) => !SUB_PARENT[k]);
+  if (tabs.length < 2) return null;
+  const many = tabs.length > 3;  // 4 pestañas en el móvil: letra y márgenes algo menores
   return (
     <Box sx={{ display: 'flex', p: 0.5, gap: 0.5, borderRadius: 999, mb: { xs: 2.5, sm: 3 }, width: { xs: '100%', sm: 'fit-content' },
       bgcolor: 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)' }}>
-      {section.pages.map((k) => {
-        const on = k === page;
+      {tabs.map((k) => {
+        const on = k === (SUB_PARENT[page] ?? page);
         return (
           <Box key={k} component="button" onClick={() => go(k)}
             sx={{ flex: { xs: 1, sm: 'none' }, px: { xs: many ? 0.5 : 1, sm: 2.5 }, py: 1, border: 0, borderRadius: 999, cursor: 'pointer',

@@ -364,6 +364,55 @@ Módulo opcional (Salud → **Comida**), apagado hasta que cada persona lo activ
   `/api/food/repeat`, `/api/food/delete`. Peticiones de más de 2,2 MB → 413. La sincronización solo **lee** `food.json`.
 - Pruebas: `tests/test_food.py` (IA simulada, sin fotos reales: una cabecera JPEG sintética).
 
+## Menú y compra de la semana (03-11-2026)
+
+Módulo opcional (Salud → Comida → **Plan de comidas y compra semanal**, página `#compra`), apagado hasta que cada persona
+lo activa. Código: `src/garmin_stats/shopping.py`, `ingredients.py`, `catalog.py`, `web/src/pages/Shopping.tsx`.
+
+- **Ajustes:** personas (1-4), comidas (desayuno, comida, cena, snacks; por defecto las tres primeras), vegetariano, sin
+  lactosa, sin gluten, sin pescado, alergias (texto libre), cocina rápida o normal y presupuesto en €/semana (opcional).
+  La energía sale del objetivo de Comida (con sus mismos límites: nunca más de un 20 % por debajo de lo que gastas ni por
+  debajo del reposo) y del gasto de Garmin; los días de tirada larga, carrera, ritmo o series del plan, algo más (+5-12 %).
+- **IA (una llamada por menú):** Claude Sonnet 5.5 con salida estructurada propone 7 días × las comidas elegidas (platos
+  sencillos de cocina española y mediterránea, raciones por persona, notas de cocinar doble) y la lista de ingredientes
+  GENÉRICOS con cantidades. Va en segundo plano (la API se invoca a sí misma; la web pregunta cada 4 s). Coste real medido:
+  ~4.100 tokens de entrada y ~3.300 de salida, **unos 4 céntimos por menú** (`kind=compra` en el registro de gasto; respeta
+  el tope mensual y al 80 % pasa a Haiku). Tono neutro, sin dietas extremas, y respeta exclusiones y alergias.
+- **Sin IA (emparejamiento):** cada ingrediente se busca en el catálogo con la tabla `ingredients.py` (unos 130
+  ingredientes: pasillos, palabras que tienen que estar y las que no, gramos por unidad, despensa, si dura semanas). Se elige
+  el producto que cubre la cantidad al menor coste razonable (envases enteros, packs "6 x 1 l", piezas sueltas, "12 ud" y a
+  peso con su mínimo), con preferencia por el nombre que mejor encaja y la marca propia. Lo que sobra de un envase que dura
+  (arroz, latas, aceite) cuenta como ahorro hasta otra semana. Si el total pasa del presupuesto, se repite eligiendo siempre
+  lo más barato y, si aun así se pasa, avisa con lo que más pesa. Vegetariano/sin pescado/alergias quitan ingredientes (con
+  aviso); sin lactosa/sin gluten buscan esa versión. Dos ingredientes que caen en el mismo producto van en una sola línea.
+- **Lista:** por pasillos, con producto, envases, precio, €/kg, enlace a la ficha y casillas. Cambiar de producto (5
+  alternativas), quitar o volver a poner, "ya lo tengo" de la despensa (aceite, sal, especias, café, miel: no cuentan en el
+  total salvo que digas que lo necesitas), copiar o compartir como texto. Total en caja y lo que usa el menú esta semana.
+  Resumen de nutrición por persona y día con la del catálogo (sin los valores marcados como dudosos) frente a la referencia.
+- **Datos de Mercadona (permiso del 03-11-2026, solo para esta función):** nombre, formato, precio, €/kg y nutrición. La web
+  cita "Productos y precios: Mercadona (tienda.mercadona.es), con su permiso · Precios del <fecha>, CP <código postal>" y enlaza cada
+  ficha; nunca se compara con otras cadenas. Si lo piden, se borra `admin/catalog/` y se apaga el refresco. Si Runch pasa a
+  ser comercial o pública, hay que avisarles. Nutrición: Open Food Facts (ODbL) y USDA FoodData Central.
+- **Los datos NO están en el repositorio** (es público): el catálogo vive en el bucket privado,
+  `admin/catalog/mercadona-latest.json` (el que lee la API, en memoria 10 min) y una copia por semana
+  `admin/catalog/mercadona-<fecha>.json`. Solo comida (~2.800 productos, 1,4 MB). La web nunca sirve `admin/` (solo `site/`).
+- **Refresco semanal:** Lambda `garmin-stats-catalog`, **lunes a las 05:00 (hora de Madrid)**. Pide solo los listados de las
+  categorías de comida (traen el precio; ~120 peticiones con 0,75 s entre una y otra, ~3 min) y la ficha solo de los productos
+  nuevos (+ nutrición de Open Food Facts por EAN). User-Agent descriptivo. Al primer 403/429 o respuesta que no sea JSON se
+  para, sin reintentos (ni la Lambda ni el programador repiten), se queda el último catálogo bueno y llega un email (alarma
+  `garmin-stats-catalogo-falla`). Tampoco publica un catálogo con menos del 70 % de productos que el anterior. Resultado en
+  `admin/catalog/refresh-status.json`. Código postal: `CATALOG_POSTCODE` en `~/.config/garmin/deploy.env` (dato privado, nunca en el repositorio), que
+  `infra/deploy.sh` pasa al parámetro `CatalogPostcode` del stack; la web resuelve el almacén con él.
+  Probar sin escribir nada: `aws lambda invoke --function-name garmin-stats-catalog --payload '{"probe": true}' …`
+  (3 peticiones; probado el 03-11-2026 desde AWS: responde bien).
+- **Plan B si un día bloquean la Lambda:** el mismo refresco desde este PC:
+  `PYTHONPATH=src uv run --with boto3 python -m garmin_stats.catalog refresh --bucket <bucket>` (con un temporizador semanal
+  de systemd de usuario). Subir un catálogo completo de `research/`: `… catalog build <json> --date AAAA-MM-DD --bucket <bucket>`.
+- API: `GET /api/shopping`, `POST /api/shopping/prefs`, `/api/shopping/generate` (`{"start": "today" | "monday"}`, 202),
+  `/api/shopping/item` (`{"key", "checked"?, "removed"?, "need"?, "productId"?}` o `{"action": "uncheck-all"}`),
+  `/api/shopping/delete`. Estado en `users/<uid>/state/shopping.json`. Desactivar no borra el menú.
+- Pruebas: `tests/test_shopping.py` (catálogo sintético mínimo; IA, S3 y la tienda simulados).
+
 ## Novedades de cada versión (pantalla "Novedades")
 
 La primera vez que cada persona entra después de publicar una versión con novedades, la web le enseña una pantalla

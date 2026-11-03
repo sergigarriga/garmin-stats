@@ -23,6 +23,10 @@ Parameters:
   VapidPublicKey:
     Type: String
     Description: Clave pública VAPID (notificaciones push)
+  CatalogPostcode:
+    Type: String
+    Default: ""
+    Description: Código postal de la tienda para los precios de la lista de la compra (un solo almacén por ahora; vacío = el del último catálogo)
 
 Resources:
   # ------------------------------------------------------------------ almacenamiento
@@ -170,6 +174,9 @@ Resources:
               - Effect: Allow
                 Action: [s3:ListBucket, s3:ListBucketVersions]
                 Resource: !GetAtt SiteBucket.Arn
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub ${SiteBucket.Arn}/admin/catalog/*
               - Effect: Allow
                 Action: ssm:GetParameter
                 Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
@@ -383,6 +390,83 @@ Resources:
         Arn: !GetAtt NotifyFunction.Arn
         RoleArn: !GetAtt NotifySchedulerRole.Arn
 
+  # ------------------------------------------------------------------ catálogo de la lista de la compra (refresco semanal)
+  # Con permiso de Mercadona (03-11-2026): pocas peticiones, una vez por semana. Si responde 403/429 se para (sin
+  # reintentos: ni la Lambda ni el programador repiten) y la API sigue con el último catálogo bueno.
+  CatalogRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: lambda.amazonaws.com }, Action: sts:AssumeRole }]
+      ManagedPolicyArns: [arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole]
+      Policies:
+        - PolicyName: catalog-access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: [s3:GetObject, s3:PutObject]
+                Resource: !Sub ${SiteBucket.Arn}/admin/catalog/*
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !GetAtt SiteBucket.Arn
+
+  CatalogFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: garmin-stats-catalog
+      Runtime: python3.12
+      Architectures: [x86_64]
+      Handler: catalog_job.handler
+      Code: api
+      Role: !GetAtt CatalogRole.Arn
+      Timeout: 900
+      MemorySize: 512
+      Environment:
+        Variables:
+          BUCKET: !Ref SiteBucket
+          CATALOG_POSTCODE: !Ref CatalogPostcode
+          CATALOG_GAP: "0.75"
+
+  CatalogInvokeConfig:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref CatalogFunction
+      Qualifier: $LATEST
+      MaximumRetryAttempts: 0
+
+  CatalogLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: /aws/lambda/garmin-stats-catalog
+      RetentionInDays: 30
+
+  CatalogSchedulerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: scheduler.amazonaws.com }, Action: sts:AssumeRole }]
+      Policies:
+        - PolicyName: invoke-catalog
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement: [{ Effect: Allow, Action: lambda:InvokeFunction, Resource: !GetAtt CatalogFunction.Arn }]
+
+  WeeklyCatalog:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: garmin-stats-catalog-weekly
+      Description: Precios de la lista de la compra (una vez por semana)
+      ScheduleExpression: cron(0 5 ? * MON *)
+      ScheduleExpressionTimezone: Europe/Madrid
+      FlexibleTimeWindow: { Mode: "OFF" }
+      Target:
+        Arn: !GetAtt CatalogFunction.Arn
+        RoleArn: !GetAtt CatalogSchedulerRole.Arn
+        RetryPolicy: { MaximumRetryAttempts: 0 }
+
   # ------------------------------------------------------------------ alarmas (email si algo falla)
   AlertsTopic:
     Type: AWS::SNS::Topic
@@ -423,6 +507,22 @@ Resources:
       Threshold: 1
       ComparisonOperator: LessThanThreshold
       TreatMissingData: breaching
+      AlarmActions: [!Ref AlertsTopic]
+
+  CatalogErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: garmin-stats-catalogo-falla
+      AlarmDescription: El refresco semanal de precios de la lista de la compra ha fallado (se mantiene el catálogo anterior).
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions: [{ Name: FunctionName, Value: !Ref CatalogFunction }]
+      Statistic: Sum
+      Period: 86400
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
       AlarmActions: [!Ref AlertsTopic]
 
   NotifyErrorsAlarm:

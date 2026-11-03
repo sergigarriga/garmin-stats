@@ -8,6 +8,7 @@ export AWS_PROFILE=${AWS_PROFILE:-default} AWS_REGION=${AWS_REGION:-eu-west-1} A
 STACK=garmin-stats
 # Datos personales (email del dueño y cuenta de AWS esperada) en un archivo local, fuera del repositorio:
 #   ~/.config/garmin/deploy.env  con  OWNER_EMAIL=tu@gmail.com  y  AWS_ACCOUNT_ID=123456789012
+#   (y CATALOG_POSTCODE=<código postal> para los precios de la lista de la compra)
 CONF=~/.config/garmin/deploy.env
 [ -f "$CONF" ] || { echo "Falta $CONF (OWNER_EMAIL y AWS_ACCOUNT_ID)." >&2; exit 1; }
 # shellcheck disable=SC1090
@@ -74,7 +75,7 @@ rm -rf infra/build && mkdir -p infra/build/api
 uv pip install --quiet --target infra/build/api --python-version 3.12 --python-platform x86_64-manylinux_2_28 \
   --only-binary :all: "anthropic>=2.3" "pydantic>=2" "garmin-connect-personal-api-python>=1.0"
 cp -r src/garmin_stats infra/build/api/ && find infra/build/api -name __pycache__ -prune -exec rm -rf {} +
-cp infra/lambda/api/handler.py infra/build/api/
+cp infra/lambda/api/handler.py infra/lambda/catalog/catalog_job.py infra/build/api/
 # Paquete de la sincronización: todas las dependencias del proyecto (pandas, fitdecode, cliente de Garmin...)
 mkdir -p infra/build/sync
 # Binarios para Linux siempre que existan; los paquetes de Python puro sin binario (http-ece) se compilan.
@@ -92,7 +93,8 @@ aws cloudformation package --template-file infra/build/stack.yaml --s3-bucket "$
   --output-template-file infra/build/packaged.yaml >/dev/null
 aws cloudformation deploy --stack-name "$STACK" --template-file infra/build/packaged.yaml \
   --capabilities CAPABILITY_IAM --no-fail-on-empty-changeset \
-  --parameter-overrides AllowedEmails="$EMAIL" BudgetEmail="$EMAIL" SessionSecret="$SESSION" OriginSecret="$ORIGIN" VapidPublicKey="$VAPID_PUBLIC"
+  --parameter-overrides AllowedEmails="$EMAIL" BudgetEmail="$EMAIL" SessionSecret="$SESSION" OriginSecret="$ORIGIN" VapidPublicKey="$VAPID_PUBLIC" \
+  CatalogPostcode="${CATALOG_POSTCODE:-}"
 
 out() { aws cloudformation describe-stacks --stack-name "$STACK" --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text; }
 BUCKET=$(out Bucket); URL=$(out Url)

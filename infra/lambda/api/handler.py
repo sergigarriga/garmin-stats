@@ -6,6 +6,8 @@ usuarias (S3 admin/users.json), su id. Todo lo que se lee o escribe va a SU carp
   users/<uid>/state/coach.json   su plan, memoria del coach y valoraciones
   users/<uid>/state/*.log        su gasto de IA (tope mensual propio: budgetUsd en el registro)
   users/<uid>/state/food.json    lo que come (módulo Comida; la foto no se guarda, solo los datos estimados)
+  users/<uid>/state/shopping.json  su menú de la semana y su lista de la compra
+  admin/catalog/mercadona-latest.json  catálogo de productos (privado; solo lectura desde aquí)
   /garmin-stats/users/<uid>/garmin-key (SSM, cifrado)  su clave de Garmin
 Antes de cada petición se vacía /tmp/gs: una Lambda caliente nunca mezcla datos de dos personas.
 
@@ -52,8 +54,8 @@ s3 = boto3.client("s3")
 _lambda = boto3.client("lambda")
 _ssm = boto3.client("ssm")
 
-STATE = ["coach.json", "settings.json", "wellness.json", "weather.json", "food.json", "ai_usage.log", "ai_usage_lambda.log",
-         "ai_cache.json"]
+STATE = ["coach.json", "settings.json", "wellness.json", "weather.json", "food.json", "shopping.json", "ai_usage.log",
+         "ai_usage_lambda.log", "ai_cache.json"]
 MAX_BODY = 2_200_000  # la foto de Comida llega en base64 (máx. 1,5 MB); el resto de peticiones son pequeñas
 CAL_RE = re.compile(r"^/api/cal/([A-Za-z0-9_-]{24,64})\.ics$")
 CUR: dict = {}  # persona de esta petición
@@ -193,6 +195,8 @@ def _with_job(view: dict, coach) -> dict:
 # ------------------------------------------------------------------ trabajos en segundo plano
 def _run_job(event):
     """Crear o reajustar el plan de una persona (lo lanza la propia API o la sincronización)."""
+    if event.get("job") == "shopping":
+        return _run_shopping(event)
     user = U.find(U.load(s3, BUCKET), uid=event.get("uid"))
     if not user:
         return {"ok": False}
@@ -331,6 +335,8 @@ def handler(event, _ctx):
     has_data = _pull()
     if path == "/api/food" or path.startswith("/api/food/"):
         return _food(path, method, payload, has_data)
+    if path == "/api/shopping" or path.startswith("/api/shopping/"):
+        return _shopping(path, method, payload, user)
     if not has_data:
         return _json(409, {"error": "Aún no hay datos: termina de conectar tu Garmin."})
     from garmin_stats import coach, server
@@ -511,6 +517,96 @@ def _food(path: str, method: str, payload: dict, has_data: bool):
         _push("food.json")
         return out(entry=entry) if entry else out()
     return _json(404, {"error": "no encontrado"})
+
+
+# ------------------------------------------------------------------ menú y compra semanal
+SHOP_STALE = 600  # un menú "generándose" desde hace más de 10 min se da por fallido
+
+
+def _shopping(path: str, method: str, payload: dict, user: dict):
+    """Plan de comidas y lista de la compra. Generar el menú (IA, ~30-60 s) va en segundo plano como el plan."""
+    from garmin_stats import catalog as CAT, food as F, shopping as SH
+    cat = CAT.load_s3(s3, BUCKET)
+
+    def out(status=200):
+        st = SH.load()
+        job = st.get("job") or {}
+        if job.get("status") == "running" and time.time() - job.get("at", 0) > SHOP_STALE:
+            st["job"] = {"status": "error", "error": "El menú ha tardado demasiado. Inténtalo de nuevo.", "at": job.get("at")}
+        return _json(status, SH.view(cat, st, F.load()))
+
+    def fresh():  # relee shopping.json justo antes de cambiarlo (otro móvil o el menú que acaba de generarse)
+        p = ROOT / "data" / "shopping.json"
+        try:
+            s3.download_file(BUCKET, _sp("shopping.json"), str(p))
+        except s3.exceptions.ClientError:
+            p.unlink(missing_ok=True)
+
+    if path == "/api/shopping" and method == "GET":
+        return out()
+    if method != "POST":
+        return _json(405, {"error": "método no permitido"})
+    if path == "/api/shopping/prefs":
+        fresh()
+        try:
+            SH.set_prefs(payload)
+        except ValueError as e:
+            return _json(400, {"error": str(e)})
+        _push("shopping.json")
+        return out()
+    if not SH.prefs()["enabled"]:
+        return _json(409, {"error": "Activa primero el plan de comidas y compra semanal."})
+    if path == "/api/shopping/generate":
+        from garmin_stats import ai
+        fresh()
+        st = SH.load()
+        job = st.get("job") or {}
+        if job.get("status") == "running" and time.time() - job.get("at", 0) < SHOP_STALE:
+            return _json(409, {"error": "Ya se está preparando tu menú. Espera un momento."})
+        if ai.over_budget():
+            return _json(409, {"error": f"Has llegado al tope de IA de este mes ({ai.budget():.0f} $). "
+                                        "El menú se podrá generar el día 1.", "budget": True})
+        start = payload.get("start") if payload.get("start") in ("today", "monday") else None
+        st["job"] = {"status": "running", "at": int(time.time()), "start": start}
+        SH.save(st)
+        _push("shopping.json")
+        _lambda.invoke(FunctionName=FUNCTION_NAME, InvocationType="Event",
+                       Payload=json.dumps({"job": "shopping", "uid": user["uid"], "body": {"start": start}}).encode())
+        return out(202)
+    if path in ("/api/shopping/item", "/api/shopping/delete"):
+        fresh()
+        try:
+            SH.update_item(payload) if path.endswith("item") else SH.delete_plan()
+        except LookupError as e:
+            return _json(404, {"error": str(e)})
+        _push("shopping.json")
+        return out()
+    return _json(404, {"error": "no encontrado"})
+
+
+def _run_shopping(event):
+    """Genera el menú de la semana de una persona (una llamada a la IA) y deja la lista lista para la web."""
+    user = U.find(U.load(s3, BUCKET), uid=event.get("uid"))
+    if not user:
+        return {"ok": False}
+    _use(user)
+    _setup_key()
+    has_data = _pull()
+    from garmin_stats import coach, food, shopping as SH
+    data = _read_data() if has_data else {}
+    try:
+        SH.generate(data, coach.load(), food.load(), (event.get("body") or {}).get("start"))
+        job = {"status": "done", "at": int(time.time())}
+    except SH.ShoppingError as e:
+        job = {"status": "error", "error": str(e)[:300], "at": int(time.time())}
+    except Exception as e:  # noqa: BLE001 - se enseña un mensaje genérico; el detalle va al log
+        print(f"menú: error {type(e).__name__}: {str(e)[:300]}")
+        job = {"status": "error", "error": "No se ha podido preparar el menú. Inténtalo de nuevo.", "at": int(time.time())}
+    st = SH.load()
+    st["job"] = job
+    SH.save(st)
+    _push("shopping.json", "ai_usage_lambda.log")
+    return {"ok": job["status"] == "done"}
 
 
 # ------------------------------------------------------------------ calendario

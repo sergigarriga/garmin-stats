@@ -31,6 +31,9 @@ import WbSunnyRounded from '@mui/icons-material/WbSunnyRounded';
 import RestaurantRounded from '@mui/icons-material/RestaurantRounded';
 import BalanceRounded from '@mui/icons-material/BalanceRounded';
 import LockOutlined from '@mui/icons-material/LockOutlined';
+import ShoppingCartRounded from '@mui/icons-material/ShoppingCartRounded';
+import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
+import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
 import { call, type Me } from './account';
 import { useResolvedMode } from './theme';
 import { spotlight } from './spotlight';
@@ -48,6 +51,17 @@ const C = {
 
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
+  {
+    id: '2026-11-03-4', date: '2026-11-03', title: 'Tu compra de la semana', subtitle: 'Un menú para tu entreno y la lista del súper',
+    features: [
+      { icon: <ShoppingCartRounded />, color: C.orange, title: 'Menú según tu plan', target: 'shopping', where: 'Salud · Comida · Menú y compra', go: 'compra',
+        body: 'El coach te propone 7 días de comidas sencillas, con más hidratos alrededor de la tirada larga y las series.' },
+      { icon: <ReceiptLongRounded />, color: C.green, title: 'La lista, con precios', target: 'shopping', where: 'Salud · Comida · Menú y compra', go: 'compra',
+        body: 'Productos reales de Mercadona (con su permiso): cuánto coger, el precio, el total y el enlace a cada uno.' },
+      { icon: <SwapHorizRounded />, color: C.indigo, title: 'A tu manera', where: 'Salud · Comida · Menú y compra', go: 'compra',
+        body: 'Personas, comidas, vegetariano, sin lactosa, sin gluten o sin pescado y presupuesto. Cambia productos y comparte la lista.' },
+    ],
+  },
   {
     id: '2026-11-03-3', date: '2026-11-03', title: 'Tu comida, con una foto', subtitle: 'Lo que comes frente a lo que gastas',
     features: [
