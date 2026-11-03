@@ -62,6 +62,11 @@ const TOPIC: Record<string, { icon: ReactNode; color: { light: string; dark: str
 import { isoLocal, mmss, stepPace, toDate, type CoachView, type GarminData, type PaceRef, type PlanSession, type SessionType, type WeatherDay } from '../data';
 import { TimeEditor, TimeTag, WeatherBadge, WeatherCard } from './PlanTime';
 import WbSunnyRounded from '@mui/icons-material/WbSunnyRounded';
+import AirRounded from '@mui/icons-material/AirRounded';
+import ThermostatRounded from '@mui/icons-material/ThermostatRounded';
+import ThunderstormRounded from '@mui/icons-material/ThunderstormRounded';
+import UmbrellaRounded from '@mui/icons-material/UmbrellaRounded';
+import AcUnitRounded from '@mui/icons-material/AcUnitRounded';
 import { call } from '../account';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
 import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
@@ -121,12 +126,25 @@ function plannedText(s: PlanSession) {
   return [s.distance_km ? `${dec1(s.distance_km)} km` : null, s.duration_min ? `${s.duration_min} min` : null].filter(Boolean).join(' · ');
 }
 
+/** Icono de la nota del tiempo según lo que dice (tormenta, lluvia, nieve, viento, calor o frío). */
+function NoteIcon({ text }: { text: string }) {
+  const sx = { fontSize: 14, mt: '1px', flexShrink: 0 };
+  const t = text.toLowerCase();
+  if (/tormenta/.test(t)) return <ThunderstormRounded sx={{ ...sx, color: 'warning.main' }} />;
+  if (/lluvi|llueve|chubasc|aguacero/.test(t)) return <UmbrellaRounded sx={{ ...sx, color: 'info.main' }} />;
+  if (/niev|nevad|hielo|helad/.test(t)) return <AcUnitRounded sx={{ ...sx, color: 'info.main' }} />;
+  if (/viento|racha/.test(t)) return <AirRounded sx={{ ...sx, color: 'text.secondary' }} />;
+  if (/calor|bochorno|humedad/.test(t)) return <WbSunnyRounded sx={{ ...sx, color: 'warning.main' }} />;
+  if (/fr[ií]o|capas|°c/.test(t)) return <ThermostatRounded sx={{ ...sx, color: 'info.main' }} />;
+  return <WbSunnyRounded sx={{ ...sx, color: 'warning.main' }} />;
+}
+
 /** Nota del coach por el tiempo previsto ("31 °C por la tarde: sal antes de las 9 · 07:00-09:00"). */
 function WeatherNote({ s, sx }: { s: PlanSession; sx?: object }) {
   if (!s.weather_note && !s.best_time) return null;
   return (
     <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-start', lineHeight: 1.35, ...sx }}>
-      <WbSunnyRounded sx={{ fontSize: 14, mt: '1px', color: 'warning.main', flexShrink: 0 }} />
+      <NoteIcon text={s.weather_note || ''} />
       <span>{s.weather_note}{s.weather_note && s.best_time ? ' · ' : ''}
         {s.best_time && <Box component="span" sx={{ whiteSpace: 'nowrap' }}>mejor {s.best_time}</Box>}</span>
     </Typography>
