@@ -19,7 +19,7 @@ Publica los posts en orden (01 primero). Los carruseles se suben como una sola p
 
 ## Sistema visual (editorial)
 
-Crema, espresso y terracota (más salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva
+Blanco roto cálido (`cream` #F7F3EC, interiores `paper` #FCFAF6, desde el lote 02), espresso y terracota (más salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva
 terracota, textos en Google Sans Flex, etiquetas en mayúsculas espaciadas y gráficos de línea fina. Maqueta fija:
 "Runch" y "Nº 01 · TEMA" arriba; @runch.run, "Datos de ejemplo" y "Desliza →" abajo. Sirve igual para los datos de
 la app que, más adelante, para fotos de quedadas y estilo de vida (formato `photo`). La versión anterior (pastel) queda en

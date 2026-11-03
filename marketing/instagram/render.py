@@ -25,8 +25,8 @@ W, H = 1080, 1350
 # ---------------------------------------------------------------- sistema visual
 # Fondos (uno por diapositiva): tinta, tinta secundaria, acento, línea fina.
 THEMES = {
-    "cream":      {"bg": "#F3ECE2", "ink": "#221A15", "ink2": "#76695F", "accent": "#D4542F", "line": "rgba(34,26,21,.16)", "soft": "#EAE0D2"},
-    "paper":      {"bg": "#FAF6F0", "ink": "#221A15", "ink2": "#76695F", "accent": "#D4542F", "line": "rgba(34,26,21,.14)", "soft": "#F1EADF"},
+    "cream":      {"bg": "#F7F3EC", "ink": "#221A15", "ink2": "#76695F", "accent": "#D4542F", "line": "rgba(34,26,21,.16)", "soft": "#EEE7DB"},
+    "paper":      {"bg": "#FCFAF6", "ink": "#221A15", "ink2": "#76695F", "accent": "#D4542F", "line": "rgba(34,26,21,.14)", "soft": "#F3EEE6"},
     "terracotta": {"bg": "#D4542F", "ink": "#FBF3E8", "ink2": "rgba(251,243,232,.78)", "accent": "#FFE1A3", "line": "rgba(251,243,232,.3)", "soft": "#C64A27"},
     "espresso":   {"bg": "#221A15", "ink": "#F3ECE2", "ink2": "#B4A79A", "accent": "#EE7550", "line": "rgba(243,236,226,.18)", "soft": "#2E241E"},
     "sage":       {"bg": "#CBD3B8", "ink": "#221A15", "ink2": "#53584A", "accent": "#B1432A", "line": "rgba(34,26,21,.16)", "soft": "#BFC8AA"},
