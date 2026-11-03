@@ -124,3 +124,25 @@ Tópicos catalanes contados con cariño y humor (nunca políticos). En catalán;
 76. **«Ja t'ho diré.»** → *—Vens diumenge a la quedada? —Ja t'ho diré. (Ho sabem tots: vine, que hi ha esmorzar.)*
 77. **Caga tió (desembre).** → *Caga tió… un pla d'entrenament per al gener!*
 78. **«Adéu» en entrar a l'ascensor.** → *Dir «adéu» en entrar al grup de WhatsApp de la quedada. Molt nostre.*
+
+### Fútbol (Barça y compañía, con equilibrio) (03-11-2026)
+
+Guiños que entiende cualquiera, también quien no es del Barça. Sin escudos, camisetas, caras ni nombres de jugadores
+en la imagen; no usar «Més que un club» como lema de marca (es suyo), solo como guiño puntual.
+
+79. **«Més que un club.»** → *Més que un club de running: esmorzar inclòs.*
+80. **La Masia.** → *La Masia del running: primer la base (Z2), després els gols (sèries).*
+81. **Tiki-taka / rondo.** → *Tiki-taka a la quedada: relleus, xerrada i ningú perd la pilota.*
+82. **«La remuntada.»** → *La remuntada: de no córrer gens a fer 5 km en 8 setmanes.*
+83. **Triplet.** → *El triplet que importa: dormir, menjar i córrer.*
+84. **«Salid y disfrutad»** (Cruyff). → *El millor pla per al dia de la cursa.*
+85. **«En un momento dado»** (Cruyff). → *En un moment donat, el teu Garmin decideix que estàs improductiu.*
+86. **«Partido a partido»** (Simeone). → *Kilómetro a kilómetro.*
+87. **Equilibrio entre aficiones.** → *No som del Barça ni del Madrid: som de la Z2.* / *Culé o merengue, el rodaje suave es suave para todos.*
+88. **«Visca el Barça… i visca la Z2.»** → Guiño para el día de un clásico.
+
+## Equilibrio de cada lote de frases
+
+Sergi: «mantén un equilibrio». En un lote de 9: 2-3 memes de moda, 2 catalanades, 1-2 refranes clásicos (catalán o
+castellano), 1 meme político (tono Rajoy, sin nombre), 1 de fútbol (con guiño para todas las aficiones) y al menos
+1 inclusivo. Todos bilingües (catalán primero) y con humor que une.

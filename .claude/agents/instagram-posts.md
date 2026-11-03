@@ -94,7 +94,9 @@ nada de traducciones literales del castellano. Términos: córrer, rodatge, sèr
 agulletes, descans, quedada. Posts ilustrados de comunidad (quedadas, reto, «Tu turno», frases, plantillas de `marketing/marca/`): SIEMPRE
 carrusel bilingüe, diapositiva 1 en catalán y diapositiva 2 en castellano, mismo diseño; caption primero en
 catalán y debajo en castellano. Carruseles de datos (editoriales): un solo idioma por post. Hashtags útiles en catalán: #córrer #runningcatalunya #corredors.
-Serie "Frases míticas": ver `marketing/instagram/ideas.md` (humor que une, nunca político de bando).
+Serie "Frases míticas": ver `marketing/instagram/ideas.md` (humor que une, nunca político de bando) y su apartado
+"Equilibrio de cada lote de frases" (mezcla de memes de moda, catalanades, refranes, meme político, fútbol para todas
+las aficiones e inclusivo).
 
 ## Privacidad (obligatorio)
 
