@@ -69,3 +69,37 @@ insinuar que nadie nos apoya. Se juega con la frase, no con la persona.
 35. **«Más vale prevenir que curar.»** → Fuerza dos días por semana.
 36. **«No hay mal que cien años dure.»** → Ni agujetas que tres días duren.
 37. **«Ir pa' na es tontería.»** → Una tirada larga sin plan.
+
+### Frases "influencer" y memes de moda (03-11-2026)
+
+Tono de redes 2025-2026. Usar con naturalidad (una por post), sin abusar del inglés; en catalán, el meme se mantiene
+y el resto en catalán.
+
+**Memes y jerga de moda**
+38. **«Six seven» (6-7).** → *Tu ritmo suave: 6:7… no, 6:07. Y está perfecto.* / Reel: la mano de 6-7 eligiendo entre ritmo 6 y 7 en un rodaje.
+39. **Batalla de aura / «+1000 aura».** → *+1000 aura: rodaje en Z2 y llegar hablando. −500 aura: ir a tope y que te adelante una señora de 70.* (Ojo: la señora gana, nunca reírse de nadie.)
+40. **«Aura farming».** → *Aura farming: estirar 10 minutos después de correr mientras los demás se van corriendo al coche.*
+41. **«Main character energy».** → *Energía de protagonista: salir a las 7:00 con niebla y los auriculares a tope.*
+42. **«Lowkey / highkey».** → *Lowkey me gusta más el día de descanso que el de series. Highkey lo necesito.*
+43. **«Estoy cooked» / «Estic cuit».** → *Cooked: Body Battery a 9 y series a las 20:00. Mejor mañana.*
+44. **«Locked in».** → *Modo locked in: 12 semanas, un objetivo, cero rodajes a ritmo de ego.*
+45. **«Red flag / green flag».** → *Red flag: «corro todos los días a tope». Green flag: «hoy toca Z2».*
+46. **«POV:»** → *POV: miras tu Garmin al despertar y pone «Preparación: 23».*
+47. **«Delulu is the solulu».** → *Delulu: bajar 10 minutos en la media en un mes. Solulu: un plan que se adapta a ti.*
+48. **«It's giving…».** → *It's giving recuperación: HRV equilibrada, 8 h de sueño y rodaje suave.*
+49. **«NPC».** → *No seas NPC: no copies el plan de tu cuñado, tu cuerpo no es el suyo.*
+50. **«Brainrot».** → *Brainrot sano: mirar tus gráficas de sueño en vez de TikTok a la 1:00.*
+51. **«Chat, is this real?»** → *Chat, ¿es real? Mi VO2máx ha subido corriendo MÁS LENTO.*
+52. **«Ate and left no crumbs».** → *La tirada larga: ate and left no crumbs. El brunch de después, también.*
+53. **«Glow up».** → *Glow up de corredor: del «no llego a 5 km» al «hoy 10 suaves».*
+54. **«Es madre / está chetado».** → *El rodaje suave está chetado y nadie lo usa.*
+55. **«En plan… literal».** → *En plan, literal: el 80 % de tus km deberían ser lentos.*
+56. **«Quin flipe» (cat.).** → *Quin flipe: dormir bé i que el rellotge et digui «Preparació: 85».*
+57. **«Me renta».** → *¿Series con 5 horas dormidas? No me renta.*
+
+**Rajoy y clásicos de la política (siempre en tono de meme, sin nombre ni cara)**
+58. **«Haremos lo que tengamos que hacer… o no.»** → *Haremos las series que tengamos que hacer… o no, que tu HRV dice que no.*
+59. **«Cuanto peor, mejor para todos y cuanto peor para todos, mejor.»** → *Cuanto más rápido el rodaje suave, peor para todos. Y cuanto peor, más rápido. Bucle.*
+60. **«Fin de la cita.»** → *Z2 y punto. Fin de la cita.*
+61. **«Lo que nosotros hemos hecho, cosa que no hizo usted…»** → *Lo que nosotros hemos hecho, cosa que no hizo usted, es estirar.*
+62. **«Viva el vino.»** → *Viva el vino… pero tu HRV de mañana no opina igual.*
