@@ -1,7 +1,7 @@
 {
   "lote": "02",
   "handle": "@runch.run",
-  "notes": "Lote 02: lo que dicen de verdad las etiquetas del Garmin en español, empezar desde cero (2 posts) y la novedad del plan con el tiempo y tus minutos. Publicar en orden, uno al día; en el perfil el 9 queda arriba a la izquierda y la cuadrícula alterna crema y color. Cada carrusel acaba con una pregunta de respuesta corta para comentar (también al final del texto del post). Números de ejemplo. El post 4 es un reto con sorteo: la respuesta correcta está en el campo answer del JSON y no se publica en el post; poner la fecha en [FECHA LÍMITE] del texto al programarlo.",
+  "notes": "Lote 02: lo que dicen de verdad las etiquetas del Garmin en español, empezar desde cero (2 posts) y la novedad del plan con el tiempo y tus minutos. Publicar en orden, uno al día; en el perfil el 9 queda arriba a la izquierda y la cuadrícula alterna crema y color. Cada carrusel acaba con una pregunta de respuesta corta para comentar (también al final del texto del post). Números de ejemplo.",
   "posts": [
     {
       "id": "z2-garmin",
