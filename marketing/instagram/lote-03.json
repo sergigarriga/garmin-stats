@@ -1,0 +1,529 @@
+{
+ "lote": "03",
+ "handle": "@runch.run",
+ "notes": "Serie Frases míticas. Cada carrusel: 1 catalán, 2 castellano, 3 «El teu torn / Tu turno». Caption primero en catalán, luego castellano. Máx. 5 hashtags.",
+ "posts": [
+  {
+   "id": "avui-no-toca",
+   "title": "Avui no toca",
+   "bg": "cream",
+   "inner": "terracotta",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Dia de descans",
+     "title": "Avui no toca. **Toca recuperar.**",
+     "body": "El descans també és entrenament: és quan el cos assimila la feina. Fes un passeig i dorm bé.",
+     "facts": [
+      "Passeig suau",
+      "Dormir bé",
+      "Demà ja tocarà"
+     ],
+     "size": 122,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "terracotta",
+     "kicker": "Día de descanso",
+     "title": "Hoy no toca. **Toca recuperar.**",
+     "body": "El descanso también es entrenamiento: es cuando el cuerpo asimila el trabajo. Da un paseo y duerme bien.",
+     "facts": [
+      "Paseo suave",
+      "Dormir bien",
+      "Mañana ya tocará"
+     ],
+     "size": 122,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "cream",
+     "title": "El teu torn: **quin dia** descanses?",
+     "body": "Tu turno: ¿**qué día** descansas tú?",
+     "size": 62,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "Avui no toca. I no passa res.\n\nEl descans no és perdre el temps: és quan el cos assimila el que has entrenat. Un dia sense córrer, un passeig suau i una bona nit de son també compten com a pla.\n\n—\n\nHoy no toca. Y no pasa nada.\n\nDescansar no es perder el tiempo: es cuando el cuerpo asimila lo que has entrenado. Un día sin correr, un paseo suave y una buena noche de sueño también cuentan como plan.\n\nGuárdalo para tu próximo día de descanso.\n\nQuin dia descanses? / ¿Qué día descansas?",
+   "hashtags": [
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#descanso",
+    "#runch"
+   ],
+   "alt": "Carrusel con la frase «Avui no toca. Toca recuperar» en catalán y «Hoy no toca. Toca recuperar» en castellano, sobre día de descanso: paseo suave y dormir bien."
+  },
+  {
+   "id": "vaso-vaso",
+   "title": "Un vaso es un vaso",
+   "bg": "terracotta",
+   "inner": "cream",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Lliçó de rodatge",
+     "title": "Un rodatge és un rodatge i una sèrie **és una sèrie.**",
+     "body": "No les barregis: entremig hi ha la zona grisa, on ni recuperes ni treballes del tot.",
+     "facts": [
+      "Pots parlar",
+      "Pulsacions baixes",
+      "80 % del temps"
+     ],
+     "size": 108,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "cream",
+     "kicker": "Lección de rodaje",
+     "title": "Un rodaje es un rodaje y una serie **es una serie.**",
+     "body": "No las mezcles: en medio está la zona gris, donde ni recuperas ni trabajas del todo.",
+     "facts": [
+      "Puedes hablar",
+      "Pulso bajo",
+      "80 % del tiempo"
+     ],
+     "size": 108,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "terracotta",
+     "title": "El teu torn: **quin percentatge** del teu rodatge és suau?",
+     "body": "Tu turno: ¿**qué porcentaje** de tu semana es suave?",
+     "size": 56,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "Un got és un got i un plat és un plat. I un rodatge és un rodatge.\n\nLa regla del 80/20 diu que la major part dels teus entrenaments (al voltant del 80 % del temps) han de ser suaus, a un ritme en què pots parlar. Les sèries, curtes i ben fetes. El problema és el terme mitjà: massa fort per recuperar, massa suau per ser una sèrie.\n\n—\n\nUn vaso es un vaso y un plato es un plato. Y un rodaje es un rodaje.\n\nLa regla del 80/20 dice que la mayor parte de tus entrenos (alrededor del 80 % del tiempo) deben ser suaves, a un ritmo en el que puedes hablar. Las series, cortas y bien hechas. El problema es el término medio: demasiado fuerte para recuperar, demasiado suave para ser una serie.\n\nPásaselo a tu grupo de running.\n\nQuin percentatge del teu rodatge és suau? / ¿Qué porcentaje de tu semana es suave?",
+   "hashtags": [
+    "#zona2",
+    "#córrer",
+    "#running",
+    "#garmin",
+    "#runch"
+   ],
+   "alt": "Carrusel con la frase «Un rodatge és un rodatge i una sèrie és una sèrie» en catalán y «Un rodaje es un rodaje y una serie es una serie» en castellano, sobre la regla del 80/20 y la zona gris."
+  },
+  {
+   "id": "ja-soc-aqui",
+   "title": "Ja sóc aquí",
+   "bg": "cream",
+   "inner": "sage",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Tornar després d'una lesió",
+     "title": "Corredors i corredores: **ja sóc aquí!**",
+     "body": "Primera setmana: caminar i trotar, tres dies, amb l'alta del fisio. La tornada no és una cursa.",
+     "facts": [
+      "Alta del fisio",
+      "3 dies",
+      "A poc a poc"
+     ],
+     "size": 118,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "sage",
+     "kicker": "Volver tras una lesión",
+     "title": "Corredores y corredoras: **¡ya estoy aquí!**",
+     "body": "Primera semana: caminar y trotar, tres días, con el alta del fisio. La vuelta no es una carrera.",
+     "facts": [
+      "Alta del fisio",
+      "3 días",
+      "Poco a poco"
+     ],
+     "size": 118,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "cream",
+     "title": "El teu torn: **quantes setmanes** vas trigar a tornar?",
+     "body": "Tu turno: ¿**cuántas semanas** tardaste en volver?",
+     "size": 58,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "Ja sóc aquí. Després d'una lesió, la tornada té la seva gràcia.\n\nLa clau és no recuperar el temps perdut d'un cop: comença caminant i trotant tres dies a la setmana, amb un dia de descans entremig, i puja a poc a poc. Abans de tornar, l'alta del fisio.\n\n—\n\nYa estoy aquí. Tras una lesión, la vuelta tiene su gracia.\n\nLa clave es no recuperar el tiempo perdido de golpe: empieza caminando y trotando tres días por semana, con un día de descanso entre medias, y sube poco a poco. Antes de volver, el alta del fisio.\n\nGuárdalo para cuando te toque.\n\nQuantes setmanes vas trigar a tornar? / ¿Cuántas semanas tardaste en volver?",
+   "hashtags": [
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#lesion",
+    "#runch"
+   ],
+   "alt": "Carrusel con la frase «Corredors i corredores: ja sóc aquí!» en catalán y «Corredores y corredoras: ¡ya estoy aquí!» en castellano, sobre volver a correr tras una lesión caminando y trotando tres días."
+  },
+  {
+   "id": "kilometre-a-kilometre",
+   "title": "Kilómetro a kilómetro",
+   "bg": "sea",
+   "inner": "cream",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Mentalitat de cursa",
+     "title": "**Quilòmetre** a quilòmetre.",
+     "body": "Una mitja marató són 21 quilòmetres, però només n'has de córrer un cada vegada. Comença amb calma i guarda forces.",
+     "facts": [
+      "Sortida amb calma",
+      "Trams de 5 km",
+      "Un km cada cop"
+     ],
+     "size": 120,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "cream",
+     "kicker": "Mentalidad de carrera",
+     "title": "**Kilómetro** a kilómetro.",
+     "body": "Una media maratón son 21 kilómetros, pero solo tienes que correr uno cada vez. Empieza con calma y guarda fuerzas.",
+     "facts": [
+      "Salida con calma",
+      "Tramos de 5 km",
+      "Un km cada vez"
+     ],
+     "size": 120,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "sea",
+     "title": "El teu torn: **en quin quilòmetre** se't fa costa amunt?",
+     "body": "Tu turno: ¿**en qué kilómetro** se te hace cuesta arriba?",
+     "size": 58,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "Quilòmetre a quilòmetre. Així s'arriba a la meta.\n\nNo cal pensar en els 21 de la mitja marató: pensa en el que tens davant. Comença amb calma, divideix la cursa en trams de 5 km i guarda forces per al final.\n\n—\n\nKilómetro a kilómetro. Así se llega a la meta.\n\nNo hace falta pensar en los 21 de la media maratón: piensa en el que tienes delante. Empieza con calma, divide la carrera en tramos de 5 km y guarda fuerzas para el final.\n\nPásaselo a quien tiene carrera pronto.\n\nEn quin quilòmetre se't fa costa amunt? / ¿En qué kilómetro se te hace cuesta arriba?",
+   "hashtags": [
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#mediamaraton",
+    "#runch"
+   ],
+   "alt": "Carrusel con la frase «Quilòmetre a quilòmetre» en catalán y «Kilómetro a kilómetro» en castellano, sobre mentalidad de carrera: salida con calma y tramos de 5 km."
+  },
+  {
+   "id": "cada-ritme",
+   "title": "Cada ritme amb el seu grup",
+   "bg": "cream",
+   "inner": "terracotta",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Quedades de diumenge",
+     "title": "Cada ritme **amb el seu grup.**",
+     "body": "A una bona quedada hi ha grups per ritmes: ningú es queda enrere ni corre sol. Tu tries el teu.",
+     "facts": [
+      "Grups per ritme",
+      "Ningú enrere",
+      "Tria el teu"
+     ],
+     "size": 116,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "terracotta",
+     "kicker": "Quedadas de domingo",
+     "title": "Cada ritmo **con su grupo.**",
+     "body": "En una buena quedada hay grupos por ritmos: nadie se queda atrás ni corre solo. Tú eliges el tuyo.",
+     "facts": [
+      "Grupos por ritmo",
+      "Nadie atrás",
+      "Elige el tuyo"
+     ],
+     "size": 116,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "cream",
+     "title": "El teu torn: **a quina hora** quedes per córrer?",
+     "body": "Tu turno: ¿**a qué hora** quedas para correr?",
+     "size": 60,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "Cada ovella amb la seva parella. Cada ritme amb el seu grup.\n\nCorrer en grup és més fàcil quan tothom va a un ritme que pot sostenir. Per això les millors quedades fan grups per ritmes i no deixen ningú enrere.\n\n—\n\nCada oveja con su pareja. Cada ritmo con su grupo.\n\nCorrer en grupo es más fácil cuando todo el mundo va a un ritmo que puede sostener. Por eso las mejores quedadas hacen grupos por ritmos y no dejan a nadie atrás.\n\nPásaselo a tu grupo de running.\n\nA quina hora quedes per córrer? / ¿A qué hora quedas para correr?",
+   "hashtags": [
+    "#córrer",
+    "#runningcatalunya",
+    "#runningcommunity",
+    "#running",
+    "#runch"
+   ],
+   "alt": "Carrusel con la frase «Cada ritme amb el seu grup» en catalán y «Cada ritmo con su grupo» en castellano, sobre quedadas de running con grupos por ritmo donde nadie se queda atrás."
+  },
+  {
+   "id": "hasta-luego-lucas",
+   "title": "¡Hasta luego, Lucas!",
+   "bg": "espresso",
+   "inner": "cream",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Sabatilles gastades",
+     "title": "Sabatilles amb 800 km? **Bon vent i barca nova.**",
+     "body": "L'escuma perd amortiment amb els quilòmetres. Com a guia, entre 600 i 800 km, segons el model i el pes.",
+     "facts": [
+      "Mira la sola",
+      "Compta els km",
+      "Un parell nou"
+     ],
+     "size": 104,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "cream",
+     "kicker": "Zapatillas gastadas",
+     "title": "Zapatillas con 800 km: **¡hasta luego, Lucas!**",
+     "body": "La espuma pierde amortiguación con los kilómetros. Como guía, entre 600 y 800 km, según modelo y peso.",
+     "facts": [
+      "Mira la suela",
+      "Cuenta los km",
+      "Un par nuevo"
+     ],
+     "size": 104,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "espresso",
+     "title": "El teu torn: **quants km** tenen les teves sabatilles?",
+     "body": "Tu turno: ¿**cuántos km** llevan tus zapatillas?",
+     "size": 58,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "Bon vent i barca nova a les sabatilles que ja han fet massa quilòmetres.\n\nL'escuma perd amortiment amb l'ús. Com a guia es parla de 600 a 800 km, segons el model i el teu pes. Garmin Connect et deixa sumar els km de cada parell.\n\n—\n\n¡Hasta luego, Lucas! A las zapatillas que ya han hecho demasiados kilómetros.\n\nLa espuma pierde amortiguación con el uso. Como guía se habla de 600 a 800 km, según el modelo y tu peso. Garmin Connect te deja sumar los km de cada par.\n\nGuárdalo para revisar tus zapatillas.\n\nQuants km tenen les teves sabatilles? / ¿Cuántos km llevan tus zapatillas?",
+   "hashtags": [
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#zapatillas",
+    "#garmin"
+   ],
+   "alt": "Carrusel con «Sabatilles amb 800 km? Bon vent i barca nova» en catalán y «Zapatillas con 800 km: ¡hasta luego, Lucas!» en castellano, sobre la vida útil de las zapatillas de correr."
+  },
+  {
+   "id": "no-hi-ha-mal",
+   "title": "No hay mal que cien años dure",
+   "bg": "cream",
+   "inner": "butter",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Agulletes",
+     "title": "No hi ha mal que cent anys duri, **ni agulletes que tres dies.**",
+     "body": "Solen arribar al màxim entre 24 i 72 hores després de l'esforç i després van marxant.",
+     "facts": [
+      "Pic: 24–72 h",
+      "Caminar suau",
+      "Dolor agut: fisio"
+     ],
+     "size": 92,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "butter",
+     "kicker": "Agujetas",
+     "title": "No hay mal que cien años dure, **ni agujetas que tres días.**",
+     "body": "Suelen llegar al máximo entre 24 y 72 horas después del esfuerzo y luego se van yendo.",
+     "facts": [
+      "Pico: 24–72 h",
+      "Caminar suave",
+      "Dolor agudo: fisio"
+     ],
+     "size": 92,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "cream",
+     "title": "El teu torn: **quants dies** et duren les agulletes?",
+     "body": "Tu turno: ¿**cuántos días** te duran las agujetas?",
+     "size": 60,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "No hi ha mal que cent anys duri, ni agulletes que tres dies.\n\nLes agulletes solen arribar al màxim entre 24 i 72 hores després d'un esforç nou o fort, i després van marxant. Caminar suau i dormir bé ajuden. Si el dolor és agut, d'un sol punt o no marxa, parla amb el teu fisio.\n\n—\n\nNo hay mal que cien años dure, ni agujetas que tres días.\n\nLas agujetas suelen llegar al máximo entre 24 y 72 horas después de un esfuerzo nuevo o fuerte, y luego se van yendo. Caminar suave y dormir bien ayudan. Si el dolor es agudo, de un solo punto o no se va, habla con tu fisio.\n\nPásaselo a quien no puede bajar escaleras.\n\nQuants dies et duren les agulletes? / ¿Cuántos días te duran las agujetas?",
+   "hashtags": [
+    "#córrer",
+    "#runningcatalunya",
+    "#agujetas",
+    "#running",
+    "#runch"
+   ],
+   "alt": "Carrusel con la frase «No hi ha mal que cent anys duri, ni agulletes que tres dies» en catalán y «No hay mal que cien años dure, ni agujetas que tres días» en castellano, sobre la evolución de las agujetas."
+  },
+  {
+   "id": "qui-dia-passa",
+   "title": "Qui dia passa, any empeny",
+   "bg": "sage",
+   "inner": "cream",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Constància",
+     "title": "Qui dia passa, **any empeny.**",
+     "body": "Tres sortides a la setmana durant un any són 156 sortides. Això et fa córrer, no un dia heroic.",
+     "facts": [
+      "3 dies a la setmana",
+      "52 setmanes",
+      "156 sortides"
+     ],
+     "size": 122,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "cream",
+     "kicker": "Constancia",
+     "title": "Día tras día, **año tras año.**",
+     "body": "Tres salidas por semana durante un año son 156 salidas. Eso te hace correr, no un día heroico.",
+     "facts": [
+      "3 días por semana",
+      "52 semanas",
+      "156 salidas"
+     ],
+     "size": 122,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "sage",
+     "title": "El teu torn: **quantes sortides** fas a la setmana?",
+     "body": "Tu turno: ¿**cuántas salidas** haces por semana?",
+     "size": 58,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "Qui dia passa, any empeny. La constància guanya al talent.\n\nTres sortides a la setmana durant un any són 156 sortides. No et fa córrer el dia heroic, et fa córrer el dia normal que repeteixes sense fer soroll.\n\n—\n\nDía tras día, año tras año. La constancia le gana al talento.\n\nTres salidas por semana durante un año son 156 salidas. No te hace correr el día heroico, te hace correr el día normal que repites sin hacer ruido.\n\nGuárdalo para el día que no te apetezca salir.\n\nQuantes sortides fas a la setmana? / ¿Cuántas salidas haces por semana?",
+   "hashtags": [
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#constancia",
+    "#runch"
+   ],
+   "alt": "Carrusel con la frase «Qui dia passa, any empeny» en catalán y «Día tras día, año tras año» en castellano, sobre la constancia: tres salidas por semana son 156 al año."
+  },
+  {
+   "id": "mes-val-tard",
+   "title": "Més val tard que mai",
+   "bg": "cream",
+   "inner": "sea",
+   "topic": "Frases",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Començar a córrer",
+     "title": "Més val tard **que mai.**",
+     "body": "Començar als 50, 60 o 70 és començar. Alterna caminar i trotar tres dies a la setmana; si tens dubtes de salut, parla abans amb el teu metge.",
+     "facts": [
+      "Caminar i trotar",
+      "3 dies/setmana",
+      "Consulta el metge"
+     ],
+     "size": 112,
+     "example": true
+    },
+    {
+     "layout": "hook",
+     "bg": "sea",
+     "kicker": "Empezar a correr",
+     "title": "Más vale tarde **que nunca.**",
+     "body": "Empezar a los 50, 60 o 70 es empezar. Alterna caminar y trotar tres días por semana; si tienes dudas de salud, habla antes con tu médico.",
+     "facts": [
+      "Caminar y trotar",
+      "3 días/semana",
+      "Consulta al médico"
+     ],
+     "size": 112,
+     "example": true
+    },
+    {
+     "layout": "cta",
+     "bg": "cream",
+     "title": "El teu torn: **quina edat** tenies quan vas començar a córrer?",
+     "body": "Tu turno: ¿**qué edad** tenías cuando empezaste a correr?",
+     "size": 54,
+     "actions": [
+      "Comenta",
+      "Desa / Guarda",
+      "Envia / Envía"
+     ],
+     "example": false
+    }
+   ],
+   "caption": "Més val tard que mai. A córrer no s'hi arriba tard.\n\nComençar als 50, 60 o 70 és començar igual: alterna caminar i trotar tres dies a la setmana, amb un dia de descans entremig, i puja a poc a poc. Si tens dubtes de salut, parla primer amb el teu metge.\n\n—\n\nMás vale tarde que nunca. A correr no se llega tarde.\n\nEmpezar a los 50, 60 o 70 es empezar igual: alterna caminar y trotar tres días por semana, con un día de descanso entre medias, y sube poco a poco. Si tienes dudas de salud, habla primero con tu médico.\n\nPásaselo a quien lleva meses diciendo «a ver si empiezo».\n\nQuina edat tenies quan vas començar? / ¿Qué edad tenías cuando empezaste?",
+   "hashtags": [
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#empezarcorrer",
+    "#runch"
+   ],
+   "alt": "Carrusel con la frase «Més val tard que mai» en catalán y «Más vale tarde que nunca» en castellano, sobre empezar a correr a los 50, 60 o 70 años alternando caminar y trotar."
+  }
+ ]
+}
