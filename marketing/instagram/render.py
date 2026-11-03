@@ -94,12 +94,28 @@ def v_rows(v: dict) -> str:
     return f'<div class="col" style="gap:14px">{head}<div class="col">{rows}<div style="border-top:1.5px solid {T["line"]}"></div></div></div>'
 
 
+def smooth_path(xy: list) -> str:
+    """Curva suave que pasa por todos los puntos sin pasarse de ellos (cúbica monótona, como d3.curveMonotoneX)."""
+    n = len(xy)
+    if n < 3:
+        return "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in xy)
+    dx = [xy[i + 1][0] - xy[i][0] for i in range(n - 1)]
+    m = [(xy[i + 1][1] - xy[i][1]) / dx[i] for i in range(n - 1)]
+    t = [m[0]] + [0.0 if m[i - 1] * m[i] <= 0 else (dx[i - 1] + dx[i]) * 3 / ((2 * dx[i] + dx[i - 1]) / m[i - 1] + (dx[i] + 2 * dx[i - 1]) / m[i])
+                  for i in range(1, n - 1)] + [m[-1]]
+    d = f"M{xy[0][0]:.1f},{xy[0][1]:.1f}"
+    for i in range(n - 1):
+        (x0, y0), (x1, y1), h = xy[i], xy[i + 1], dx[i] / 3
+        d += f" C{x0 + h:.1f},{y0 + t[i] * h:.1f} {x1 - h:.1f},{y1 - t[i + 1] * h:.1f} {x1:.1f},{y1:.1f}"
+    return d
+
+
 def line_chart(points: list, w: int, h: int, band: list | None = None) -> str:
     lo, hi = min(points + (band or [])), max(points + (band or []))
     pad = (hi - lo) * .18 or 1
     lo, hi = lo - pad, hi + pad
     xy = [(i * w / (len(points) - 1), h - (p - lo) / (hi - lo) * h) for i, p in enumerate(points)]
-    d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in xy)
+    d = smooth_path(xy)
     out = f'<svg width="{w}" height="{h}" style="overflow:visible">'
     if band:
         y1, y2 = h - (band[1] - lo) / (hi - lo) * h, h - (band[0] - lo) / (hi - lo) * h
@@ -137,13 +153,13 @@ def v_curve(v: dict) -> str:
     w, h = 920, 330
     pts = v["points"]
     xy = [(p[0] / 24 * w, h - p[1] / 100 * h) for p in pts]
-    d = "M" + " L".join(f"{x:.0f},{y:.0f}" for x, y in xy)
+    d = smooth_path(xy)
     grid = "".join(f'<line x1="0" x2="{w}" y1="{h - g / 100 * h}" y2="{h - g / 100 * h}" stroke="{T["line"]}" stroke-width="1.5"/>' for g in (0, 50, 100))
     x, y = xy[-1]
     ticks = "".join(f'<div style="position:absolute;left:{0 if t == 0 else w - 80 if t == 24 else t / 24 * w - 40:.0f}px;width:80px;text-align:{"left" if t == 0 else "right" if t == 24 else "center"}">{t:02d}:00</div>' for t in (0, 6, 12, 18, 24))
-    tag = f'<div class="serif" style="position:absolute;right:{w - x - 6:.0f}px;top:{y - 74:.0f}px;font-size:40px;font-style:italic;color:{T["accent"]};white-space:nowrap">{esc(v.get("tag", ""))}</div>' if v.get("tag") else ""
+    tag = f'<div class="serif" style="position:absolute;right:{w - x - 6:.0f}px;top:{y - 118:.0f}px;font-size:40px;font-style:italic;color:{T["accent"]};white-space:nowrap">{esc(v.get("tag", ""))}</div>' if v.get("tag") else ""
     return f'''<div class="col" style="gap:16px">{label(v.get("title", ""))}<div style="position:relative;width:{w}px;height:{h}px">{tag}
-      <svg width="{w}" height="{h}" style="overflow:visible">{grid}<path d="{d}" fill="none" stroke="{T["ink"]}" stroke-width="3" stroke-linejoin="round"/>
+      <svg width="{w}" height="{h}" style="overflow:visible">{grid}<path d="{d}" fill="none" stroke="{T["ink"]}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
       <circle cx="{x:.0f}" cy="{y:.0f}" r="12" fill="{T["accent"]}"/></svg></div>
       <div style="position:relative;height:28px;font-size:20px;color:{T["ink2"]}">{ticks}</div></div>'''
 
