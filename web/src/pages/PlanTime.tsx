@@ -52,6 +52,12 @@ export function minLabel(m: number | null | undefined): string {
   return r ? `${h} h ${String(r).padStart(2, '0')}` : `${h} h`;
 }
 
+/** Versión corta para las casillas estrechas del móvil: "45m", "1h30", "2h". */
+function minShort(m: number | null | undefined): string {
+  if (m == null || m === 0) return minLabel(m);
+  return minLabel(m).replace(' min', 'm').replace(/ /g, '');
+}
+
 const weekday = (iso: string) => (toDate(iso).getDay() + 6) % 7;  // 0 = lunes
 
 /** Minutos de una fecha: el día concreto manda sobre la semana tipo. */
@@ -114,7 +120,9 @@ export function TimeTag({ avail, warn }: { avail?: number | null; warn?: { avail
         <Box component="span" sx={{ display: 'inline-flex', alignItems: 'flex-start', gap: 0.4, px: 0.75, py: 0.25, borderRadius: '10px', fontSize: 11.5, fontWeight: 600,
           lineHeight: 1.3, color: 'warning.main', bgcolor: (t) => alpha(t.palette.warning.main, 0.12), maxWidth: '100%' }}>
           <WarningAmberRounded sx={{ fontSize: 14, mt: '1px', flexShrink: 0 }} />
-          <span>{warn.avail === 0 ? `Día sin tiempo (${warn.planned} min)` : `No cabe: ${warn.planned} de ${warn.avail} min`}</span>
+          {/* sin cortar "62 de 60 min" por la mitad: si no cabe, baja entero a la línea siguiente */}
+          <span>{warn.avail === 0 ? 'Día sin tiempo' : 'No cabe:'}{' '}
+            <Box component="span" sx={{ whiteSpace: 'nowrap' }}>{warn.avail === 0 ? `(${warn.planned} min)` : `${warn.planned} de ${warn.avail} min`}</Box></span>
         </Box>
       </Tooltip>
     );
@@ -128,7 +136,7 @@ export function TimeTag({ avail, warn }: { avail?: number | null; warn?: { avail
 }
 
 // ------------------------------------------------------------------ "Tu tiempo"
-function Tile({ top, bottom, selected, marked, onClick }: { top: ReactNode; bottom: string; selected: boolean; marked?: boolean; onClick: () => void }) {
+function Tile({ top, bottom, short, selected, marked, onClick }: { top: ReactNode; bottom: string; short?: string; selected: boolean; marked?: boolean; onClick: () => void }) {
   return (
     <ButtonBase onClick={onClick} aria-pressed={selected} sx={{
       flexDirection: 'column', gap: 0.25, py: 1, px: 0.5, minWidth: 0, borderRadius: '14px', border: 1,
@@ -136,7 +144,10 @@ function Tile({ top, bottom, selected, marked, onClick }: { top: ReactNode; bott
       bgcolor: selected ? 'color-mix(in srgb, var(--mui-palette-primary-main) 14%, transparent)' : 'transparent',
       color: selected ? 'primary.main' : 'text.primary', position: 'relative' }}>
       <Typography variant="caption" sx={{ fontWeight: 700, lineHeight: 1.1, color: selected ? 'primary.main' : 'text.secondary', textTransform: 'capitalize' }}>{top}</Typography>
-      <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'nowrap' }}>{bottom}</Typography>
+      <Typography sx={{ fontSize: 13, fontWeight: 600, lineHeight: 1.2, whiteSpace: 'nowrap' }} aria-label={short ? bottom : undefined}>
+        {short ? <><Box component="span" sx={{ display: { xs: 'inline', sm: 'none' } }}>{short}</Box>
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>{bottom}</Box></> : bottom}
+      </Typography>
       {marked && <Box sx={{ position: 'absolute', top: 5, right: 6, width: 6, height: 6, borderRadius: '50%', bgcolor: 'primary.main' }} />}
     </ButtonBase>
   );
@@ -214,7 +225,7 @@ export function TimeEditor({ value, onSaved, onReplan, busy, warnings }: {
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: 0.75 }}>
           {LETTERS.map((l, i) => (
             <Tooltip key={l} title={DAY_NAMES[i]}><Box sx={{ display: 'grid', minWidth: 0 }}>
-              <Tile top={l} bottom={minLabel(draft.weekly[String(i)])} selected={sel.includes(String(i))} onClick={() => toggle(String(i))} />
+              <Tile top={l} bottom={minLabel(draft.weekly[String(i)])} short={minShort(draft.weekly[String(i)])} selected={sel.includes(String(i))} onClick={() => toggle(String(i))} />
             </Box></Tooltip>
           ))}
         </Box>

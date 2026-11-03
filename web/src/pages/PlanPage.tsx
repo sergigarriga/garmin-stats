@@ -127,7 +127,8 @@ function WeatherNote({ s, sx }: { s: PlanSession; sx?: object }) {
   return (
     <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-start', lineHeight: 1.35, ...sx }}>
       <WbSunnyRounded sx={{ fontSize: 14, mt: '1px', color: 'warning.main', flexShrink: 0 }} />
-      <span>{[s.weather_note, s.best_time && `mejor ${s.best_time}`].filter(Boolean).join(' · ')}</span>
+      <span>{s.weather_note}{s.weather_note && s.best_time ? ' · ' : ''}
+        {s.best_time && <Box component="span" sx={{ whiteSpace: 'nowrap' }}>mejor {s.best_time}</Box>}</span>
     </Typography>
   );
 }
@@ -401,14 +402,17 @@ function DayRow({ s, go, first, wx }: { s: PlanSession; go: (k: string) => void;
       </Box>
       <Box sx={{ width: 4, alignSelf: 'stretch', borderRadius: 999, bgcolor: s.type === 'rest' ? 'divider' : c, flexShrink: 0 }} />
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="body2" noWrap sx={{ fontWeight: 600, color: s.type === 'rest' ? 'text.secondary' : 'text.primary' }}>{s.title}</Typography>
-        <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.35, overflowWrap: 'anywhere', color: s.type === 'rest' ? 'text.secondary' : 'text.primary' }}>{s.title}</Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.4 }}>
           {s.actual ? [`Hecho: ${s.actual.km ? `${dec1(s.actual.km)} km` : `${s.actual.min} min`}`, complianceText(s)].filter(Boolean).join(' · ') : s.type === 'rest' ? 'Descanso' : [TYPE[s.type].label, plannedText(s)].filter(Boolean).join(' · ')}
+          {/* el tiempo va en esta línea (y baja a la siguiente si no cabe): así el título y las notas usan todo el ancho */}
+          {wx && s.status !== 'done' && s.status !== 'partial' && s.status !== 'missed' && (
+            <Box component="span" sx={{ display: 'inline-flex', ml: 1, verticalAlign: 'top' }}><WeatherBadge d={wx} compact /></Box>
+          )}
         </Typography>
         {s.timeWarn && <Box sx={{ mt: 0.25 }}><TimeTag warn={s.timeWarn} /></Box>}
         {(s.status === 'today' || s.status === 'upcoming') && <WeatherNote s={s} sx={{ mt: 0.25 }} />}
       </Box>
-      {s.status !== 'done' && s.status !== 'partial' && s.status !== 'missed' && <WeatherBadge d={wx} compact />}
       <StatusIcon s={s.status} />
     </Box>
   );

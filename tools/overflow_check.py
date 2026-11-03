@@ -1,9 +1,12 @@
-"""Detector de desbordes (uso: SITE_URL=https://… OK=<cookie gs_session> uv run --with playwright python tools/overflow_check.py 360,390,768)."""
+"""Detector de desbordes (uso: SITE_URL=https://… OK=<cookie gs_session> uv run --with playwright python tools/overflow_check.py 360,390,768).
+
+Opcional: PAGES=plan,hoy limita las páginas; SHOTS=<carpeta> guarda capturas. Sin OK no pone cookie
+(p. ej. contra un proxy local que sirve la web compilada y pide los datos a la web real)."""
 import glob, json, os, sys
 from playwright.sync_api import sync_playwright
 
 URL = os.environ["SITE_URL"].rstrip("/") + "/"  # p. ej. https://xxxx.cloudfront.net
-PAGES = ["hoy", "sueno", "corazon", "actividad", "comida", "plan", "entreno", "ritmos", "gimnasio", "progreso", "analisis"]
+PAGES = os.environ["PAGES"].split(",") if os.environ.get("PAGES") else ["hoy", "sueno", "corazon", "actividad", "comida", "plan", "entreno", "ritmos", "gimnasio", "progreso", "analisis"]
 WIDTHS = [int(w) for w in (sys.argv[1] if len(sys.argv) > 1 else "360,390,768").split(",")]
 SHOTS = os.environ.get("SHOTS")
 JS = r"""() => {
@@ -39,10 +42,11 @@ with sync_playwright() as p:
     b = p.chromium.launch(executable_path=exe, args=["--disable-renderer-backgrounding", "--disable-background-timer-throttling"])
     for w in WIDTHS:
         c = b.new_context(viewport={"width": w, "height": 900}, device_scale_factor=1, is_mobile=w < 600, has_touch=w < 600)
-        c.add_cookies([{"name": "gs_session", "value": os.environ["OK"], "domain": URL.split("/")[2], "path": "/", "secure": True}])
+        if os.environ.get("OK"):
+            c.add_cookies([{"name": "gs_session", "value": os.environ["OK"], "domain": URL.split("/")[2].split(":")[0], "path": "/", "secure": True}])
         pg = c.new_page(); pg.goto(URL + "#hoy"); pg.wait_for_timeout(2500)
         act = pg.evaluate("() => (window.__GARMIN__.activities.find(a => a.km) || {}).id")
-        for name in PAGES + [f"act-{act}"]:
+        for name in PAGES + ([f"act-{act}"] if not os.environ.get("PAGES") else []):
             pg.evaluate(f"location.hash = '{name}'"); pg.wait_for_timeout(1800)
             for f in pg.query_selector_all(".MuiAccordionSummary-root[aria-expanded=false]")[:2]:
                 try: f.click(); pg.wait_for_timeout(300)
