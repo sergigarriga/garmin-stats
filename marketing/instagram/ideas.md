@@ -43,3 +43,29 @@ insinuar que nadie nos apoya. Se juega con la frase, no con la persona.
 15. **«Salid y disfrutad.»** → El mejor plan para el día de la carrera.
 16. **«Vísteme despacio, que tengo prisa.»** → El lema oficial de la Z2.
 17. **«No por mucho madrugar amanece más temprano.»** → Dormir también es entrenar.
+
+### Más frases (03-11-2026)
+
+**Catalán**
+18. **«Qui dia passa, any empeny.»** → La constància guanya al talent.
+19. **«Cada ovella amb la seva parella.»** → Cada ritme amb el seu grup: a la quedada ningú es queda enrere.
+20. **«Anar a tota castanya.»** → *En un rodatge suau, no.*
+21. **«No diguis blat fins que no sigui al sac i ben lligat.»** → No celebris fins a la meta (puesta a punto).
+22. **«Més val tard que mai.»** → Començar a córrer als 50, als 60, als 70.
+23. **«Fer-ne cinc cèntims.»** → El teu Garmin explicat en cinc punts.
+24. **«Tenir més gana que un lladre.»** → Després de la tirada llarga, brunch.
+25. **«En un moment donat…»** → *…el teu Garmin decideix que estàs improductiu.*
+
+**Castellano**
+26. **«Partido a partido.»** → *Kilómetro a kilómetro.*
+27. **«Siempre positivo, nunca negativo.»** → Tu HRV, al revés.
+28. **«Los españoles son muy españoles y mucho españoles.»** → *Los rodajes suaves son muy suaves y mucho suaves.*
+29. **«It's very difficult todo esto.»** → Entender tu Garmin sin Runch.
+30. **«¡Hasta luego, Lucas!»** → Lo que le dices a la tirada larga cuando tu Body Battery está a 12.
+31. **«¡No puedorrr!»** → El día después de las sentadillas.
+32. **«¡Al ataquerrr!»** → Hoy sí tocan series.
+33. **«Que no panda el cúnico.»** → «Estado de VFC: desequilibrado».
+34. **«El que avisa no es traidor.»** → Tu HRV lleva dos noches avisando.
+35. **«Más vale prevenir que curar.»** → Fuerza dos días por semana.
+36. **«No hay mal que cien años dure.»** → Ni agujetas que tres días duren.
+37. **«Ir pa' na es tontería.»** → Una tirada larga sin plan.
