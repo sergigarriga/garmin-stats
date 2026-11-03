@@ -10,7 +10,8 @@ uv run --no-project --with playwright python marketing/instagram/render.py marke
 ```
 
 Salida en `out/lote-01/` (no se sube a git):
-- `01-presentacion-1.png`, `01-presentacion-2.png`… una imagen por diapositiva (1080 x 1350, formato 4:5).
+- `01-presentacion-1.png`, `01-presentacion-2.png`… una imagen por diapositiva (1080 x 1350, formato 4:5), y un
+  `.mp4` en las diapositivas con `"animate": true` (ver "Diapositivas animadas").
 - `captions.md`: texto del post, hashtags y texto alternativo de cada uno.
 - `grid.png`: cómo quedará la cuadrícula del perfil cuando estén todos publicados.
 - `todos.html`: página para revisar el lote: cada post en una fila con sus imágenes en orden, su texto y sus hashtags.
@@ -50,6 +51,29 @@ la app que, más adelante, para fotos de quedadas y estilo de vida (formato `pho
   `schedule`, `steps`. `example: false` quita "Datos de ejemplo".
 
 El script avisa si un texto no cabe o algo se acerca demasiado al borde. Todos los números deben ser de ejemplo.
+
+### Diapositivas animadas (vídeo dentro del carrusel)
+
+Añade `"animate": true` a una diapositiva (y, si quieres, `"duration": 6`, en segundos; 6 por defecto) y, además del
+PNG, sale `NN-id-i.mp4`: 1080 x 1350, H.264, 30 fps, sin audio. Solo se mueve el gráfico; el marco (Runch · Nº,
+título, texto, pie) queda quieto e idéntico al PNG. Empieza 0,4 s quieto con el gráfico vacío, anima unos 2-3 s y se
+queda quieto en el estado final al menos 2 s (el último fotograma es el PNG, así el bucle se lee bien). En el carrusel
+de Instagram se mezclan imágenes y vídeos: sube el `.mp4` en lugar del `.png` de esa diapositiva (el PNG sirve de
+portada o reserva). Al lado sale `NN-id-i-frames.png`, una hoja con 6 fotogramas para revisarlo sin abrir el vídeo.
+
+- `zones`: las filas entran una tras otra, los rangos cuentan hacia arriba y luego todas se apagan menos la destacada.
+- `readiness`: la nota cuenta hacia arriba; cada señal entra, su barra crece y su cifra cuenta; la etiqueta al final.
+- `rows`: las filas entran una tras otra y sus cifras cuentan (también ritmos 4:50 y rangos).
+- `metric`: la cifra cuenta, la franja se abre y la línea se dibuja con el punto en la punta; el texto en cursiva al final.
+- `ring`: el anillo se llena mientras el centro cuenta; los datos de al lado entran después.
+- `curve`: la línea se dibuja con el punto en la punta; la etiqueta aparece al final.
+- `chat`: los mensajes aparecen uno tras otro. `schedule`: la franja se abre y los puntos aparecen de izquierda a derecha.
+- `steps`: los pasos entran uno tras otro con su punto. `big` y `versus`: la cifra cuenta hacia arriba (en `big`, con
+  un barrido de abajo arriba).
+
+Las cifras cuentan desde 0 con frenada suave, respetan el formato (7,5 · 5:15 · <40 · +3 · %) y usan dígitos de
+ancho fijo mientras cuentan, así nada baila. Una diapositiva sin gráfico (p. ej. `hook`) avisa y solo deja el PNG.
+Necesita `ffmpeg`.
 
 ## Vídeos (Reels)
 

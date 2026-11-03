@@ -15,6 +15,8 @@ import html
 import json
 import math
 import os
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -53,6 +55,13 @@ def icon(name: str, color: str, size: int = 36) -> str:
     return f'<svg viewBox="0 0 24 24" width="{size}" height="{size}" fill="{color}">{paths}</svg>'
 
 
+def A(kind: str, d: float = 0, t: float = .7, **kw) -> str:
+    """Marca un elemento del gráfico para el vídeo (`animate`): tipo de animación, inicio y duración en segundos.
+    Los atributos data-* no cambian nada en el PNG; solo los lee ANIM_JS al grabar el vídeo."""
+    extra = "".join(f' data-{k}="{v}"' for k, v in kw.items())
+    return f' data-a="{kind}" data-d="{d:g}" data-t="{t:g}"{extra}'
+
+
 def label(text: str, color: str | None = None, size: int = 21) -> str:
     return f'<div class="lab" style="font-size:{size}px;color:{color or T["ink2"]}">{esc(text)}</div>'
 
@@ -60,38 +69,45 @@ def label(text: str, color: str | None = None, size: int = 21) -> str:
 # ---------------------------------------------------------------- gráficos de línea fina
 def v_zones(v: dict) -> str:
     hi = v.get("highlight", 2)
-    rows = []
-    for z in v["rows"]:
+    rows, dim = [], (len(v["rows"]) - 1) * .2 + 1.0
+    for j, z in enumerate(v["rows"]):
         on = z["zone"] == hi
         col = T["accent"] if on else T["ink"]
-        rows.append(f'''<div class="row" style="align-items:center;gap:26px;padding:20px 0;border-top:1.5px solid {T["line"]};opacity:{1 if on else .55}">
+        rows.append(f'''<div class="row" style="align-items:center;gap:26px;padding:20px 0;border-top:1.5px solid {T["line"]};opacity:{1 if on else .55}"{A("zone", j * .2, .8, d2=f"{dim:g}")}>
           <div class="serif" style="width:84px;font-size:44px;color:{col}">Z{z["zone"]}</div>
           <div style="flex:1;font-size:32px;font-weight:{650 if on else 450}">{esc(z["name"])}</div>
-          <div class="serif" style="font-size:40px;color:{col}">{esc(z["range"])}</div>
+          <div class="serif" style="font-size:40px;color:{col}"{A("count", j * .2 + .1, 1.6, al="right", **{"in": 0})}>{esc(z["range"])}</div>
           <div style="width:30px;font-size:20px;color:{T["ink2"]}">{esc(v.get("unit", ""))}</div></div>''')
     return f'<div class="col">{"".join(rows)}<div style="border-top:1.5px solid {T["line"]}"></div></div>'
 
 
 def v_readiness(v: dict) -> str:
-    parts = "".join(f'''<div class="row" style="align-items:center;gap:22px;padding:14px 0;border-top:1.5px solid {T["line"]}">
+    parts = "".join(f'''<div class="row" style="align-items:center;gap:22px;padding:14px 0;border-top:1.5px solid {T["line"]}"{A("rise", .25 + j * .18, .6)}>
         <div style="width:250px;font-size:28px">{esc(p["label"])}</div>
-        <div style="flex:1;height:4px;background:{T["line"]};position:relative"><div style="position:absolute;left:0;top:-1px;height:6px;width:{p["score"]}%;background:{T["accent"]}"></div></div>
-        <div class="serif" style="width:64px;text-align:right;font-size:34px">{p["score"]}</div></div>''' for p in v["parts"])
+        <div style="flex:1;height:4px;background:{T["line"]};position:relative"><div style="position:absolute;left:0;top:-1px;height:6px;width:{p["score"]}%;background:{T["accent"]}"{A("grow-x", .45 + j * .18, 1.4)}></div></div>
+        <div class="serif" style="width:64px;text-align:right;font-size:34px"{A("count", .45 + j * .18, 1.6, **{"in": 0})}>{p["score"]}</div></div>''' for j, p in enumerate(v["parts"]))
     return f'''<div class="col" style="gap:26px"><div class="row" style="align-items:baseline;gap:18px">
-        <div class="serif" style="font-size:190px;line-height:.85;letter-spacing:-.04em">{v["score"]}</div>
+        <div class="serif" style="font-size:190px;line-height:.85;letter-spacing:-.04em"{A("count", 0, 2.4, al="right")}>{v["score"]}</div>
         <div class="serif" style="font-size:52px;color:{T["ink2"]}">/100</div>
-        <div class="serif" style="margin-left:auto;font-size:60px;font-style:italic;color:{T["accent"]}">{esc(v["label"])}</div></div>
+        <div class="serif" style="margin-left:auto;font-size:60px;font-style:italic;color:{T["accent"]}"{A("fade", 2.0, .6)}>{esc(v["label"])}</div></div>
       <div class="col">{parts}</div></div>'''
 
 
 def v_rows(v: dict) -> str:
-    rows = "".join(f'''<div class="row" style="align-items:baseline;justify-content:space-between;gap:24px;padding:20px 0;border-top:1.5px solid {T["line"]}">
-        <div class="col" style="gap:4px"><div style="font-size:33px;font-weight:600">{esc(r["label"])}</div>
-          {f'<div style="font-size:23px;color:{T["ink2"]}">{esc(r["detail"])}</div>' if r.get("detail") else ''}</div>
-        <div class="serif" style="font-size:52px;white-space:nowrap;letter-spacing:-.02em">{esc(r["value"])}<span style="font-family:GSF;font-size:22px;color:{T["ink2"]}"> {esc(r.get("unit", v.get("unit", "")))}</span></div></div>'''
-                   for r in v["rows"])
+    """Tabla limpia: nombre + detalle a la izquierda; a la derecha el valor, en la línea del nombre (cifras en tinta,
+    palabras más pequeñas en gris), filetes finos y filas compactas."""
+    def value(r: dict, j: int) -> str:
+        num = any(c.isdigit() for c in str(r["value"]))
+        unit = r.get("unit", v.get("unit", ""))
+        style = f'font-size:{40 if num else 33}px;color:{T["ink"] if num else T["ink2"]};white-space:nowrap;letter-spacing:-.01em'
+        return (f'''<div class="serif" style="{style}"{A("count", j * .35 + .1, 1.6, al="right", fb="none", **{"in": 0})}>{esc(r["value"])}'''
+                f'''{f'<span style="font-family:GSF;font-size:19px;color:{T["ink2"]}"> {esc(unit)}</span>' if unit else ''}</div>''')
+    rows = "".join(f'''<div class="row" style="align-items:baseline;justify-content:space-between;gap:24px;padding:15px 0;border-top:1px solid {T["line"]}"{A("rise", j * .35, .8)}>
+        <div class="col" style="gap:3px"><div style="font-size:30px;font-weight:600">{esc(r["label"])}</div>
+          {f'<div style="font-size:21px;color:{T["ink2"]}">{esc(r["detail"])}</div>' if r.get("detail") else ''}</div>
+        {value(r, j)}</div>''' for j, r in enumerate(v["rows"]))
     head = label(v["title"], T["accent"]) if v.get("title") else ""
-    return f'<div class="col" style="gap:14px">{head}<div class="col">{rows}<div style="border-top:1.5px solid {T["line"]}"></div></div></div>'
+    return f'<div class="col" style="gap:14px">{head}<div class="col">{rows}<div style="border-top:1px solid {T["line"]}"></div></div></div>'
 
 
 def smooth_path(xy: list) -> str:
@@ -119,17 +135,17 @@ def line_chart(points: list, w: int, h: int, band: list | None = None) -> str:
     out = f'<svg width="{w}" height="{h}" style="overflow:visible">'
     if band:
         y1, y2 = h - (band[1] - lo) / (hi - lo) * h, h - (band[0] - lo) / (hi - lo) * h
-        out += f'<rect x="0" y="{y1:.1f}" width="{w}" height="{y2 - y1:.1f}" fill="{T["soft"]}"/>'
-    out += f'<path d="{d}" fill="none" stroke="{T["ink"]}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>'
+        out += f'<rect x="0" y="{y1:.1f}" width="{w}" height="{y2 - y1:.1f}" fill="{T["soft"]}"{A("grow-y", 0, .8)}/>'
+    out += f'<path d="{d}" fill="none" stroke="{T["ink"]}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"{A("draw", .2, 2.4)}/>'
     x, y = xy[-1]
-    return out + f'<circle cx="{x:.1f}" cy="{y:.1f}" r="11" fill="{T["accent"]}"/></svg>'
+    return out + f'<circle cx="{x:.1f}" cy="{y:.1f}" r="11" fill="{T["accent"]}"{A("head", .2, 2.4)}/></svg>'
 
 
 def v_metric(v: dict) -> str:
     return f'''<div class="col" style="gap:18px">{label(v["label"])}
-      <div class="row" style="align-items:baseline;gap:14px"><div class="serif" style="font-size:180px;line-height:.85;letter-spacing:-.04em">{esc(v["value"])}</div>
+      <div class="row" style="align-items:baseline;gap:14px"><div class="serif" style="font-size:180px;line-height:.85;letter-spacing:-.04em"{A("count", 0, 2.4, al="right")}>{esc(v["value"])}</div>
         <div class="serif" style="font-size:54px;color:{T["ink2"]}">{esc(v.get("unit", ""))}</div></div>
-      <div class="serif" style="font-size:40px;font-style:italic;color:{T["accent"]}">{esc(v.get("caption", ""))}</div>
+      <div class="serif" style="font-size:40px;font-style:italic;color:{T["accent"]}"{A("fade", 2.2, .6)}>{esc(v.get("caption", ""))}</div>
       <div style="margin-top:24px">{line_chart(v["points"], 920, 210, v.get("band"))}</div>
       {f'<div style="font-size:22px;color:{T["ink2"]}">{esc(v["note"])}</div>' if v.get("note") else ""}</div>'''
 
@@ -138,14 +154,14 @@ def v_ring(v: dict) -> str:
     size, stroke = 380, 10
     r = (size - stroke) / 2
     circ = 2 * math.pi * r
-    side = "".join(f'''<div class="col" style="gap:2px;padding:16px 0;border-top:1.5px solid {T["line"]}">{label(s["label"])}
-        <div class="serif" style="font-size:52px">{esc(s["value"])}</div></div>''' for s in v.get("side", []))
+    side = "".join(f'''<div class="col" style="gap:2px;padding:16px 0;border-top:1.5px solid {T["line"]}"{A("rise", .6 + j * .2, .7)}>{label(s["label"])}
+        <div class="serif" style="font-size:52px">{esc(s["value"])}</div></div>''' for j, s in enumerate(v.get("side", [])))
     return f'''<div class="row" style="gap:64px;align-items:center">
       <div style="position:relative;width:{size}px;height:{size}px"><svg width="{size}" height="{size}" style="transform:rotate(-90deg)">
         <circle cx="{size/2}" cy="{size/2}" r="{r}" fill="none" stroke="{T["line"]}" stroke-width="{stroke}"/>
-        <circle cx="{size/2}" cy="{size/2}" r="{r}" fill="none" stroke="{T["accent"]}" stroke-width="{stroke}" stroke-linecap="round" stroke-dasharray="{circ * v["value"] / v.get("max", 100)} {circ}"/></svg>
+        <circle cx="{size/2}" cy="{size/2}" r="{r}" fill="none" stroke="{T["accent"]}" stroke-width="{stroke}" stroke-linecap="round" stroke-dasharray="{circ * v["value"] / v.get("max", 100)} {circ}"{A("arc", .1, 2.4)}/></svg>
         <div style="position:absolute;inset:0;display:grid;place-content:center;text-align:center">
-          <div class="serif" style="font-size:150px;line-height:.9">{esc(v["center"])}</div><div style="font-size:24px;color:{T["ink2"]}">{esc(v.get("sub", ""))}</div></div></div>
+          <div class="serif" style="font-size:150px;line-height:.9"{A("count", .1, 2.6, al="center")}>{esc(v["center"])}</div><div style="font-size:24px;color:{T["ink2"]}">{esc(v.get("sub", ""))}</div></div></div>
       <div class="col" style="flex:1">{side}<div style="border-top:1.5px solid {T["line"]}"></div></div></div>'''
 
 
@@ -157,20 +173,20 @@ def v_curve(v: dict) -> str:
     grid = "".join(f'<line x1="0" x2="{w}" y1="{h - g / 100 * h}" y2="{h - g / 100 * h}" stroke="{T["line"]}" stroke-width="1.5"/>' for g in (0, 50, 100))
     x, y = xy[-1]
     ticks = "".join(f'<div style="position:absolute;left:{0 if t == 0 else w - 80 if t == 24 else t / 24 * w - 40:.0f}px;width:80px;text-align:{"left" if t == 0 else "right" if t == 24 else "center"}">{t:02d}:00</div>' for t in (0, 6, 12, 18, 24))
-    tag = f'<div class="serif" style="position:absolute;right:{w - x - 6:.0f}px;top:{y - 118:.0f}px;font-size:40px;font-style:italic;color:{T["accent"]};white-space:nowrap">{esc(v.get("tag", ""))}</div>' if v.get("tag") else ""
+    tag = f'<div class="serif" style="position:absolute;right:{w - x - 6:.0f}px;top:{y - 118:.0f}px;font-size:40px;font-style:italic;color:{T["accent"]};white-space:nowrap"{A("fade", 2.4, .6)}>{esc(v.get("tag", ""))}</div>' if v.get("tag") else ""
     return f'''<div class="col" style="gap:16px">{label(v.get("title", ""))}<div style="position:relative;width:{w}px;height:{h}px">{tag}
-      <svg width="{w}" height="{h}" style="overflow:visible">{grid}<path d="{d}" fill="none" stroke="{T["ink"]}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
-      <circle cx="{x:.0f}" cy="{y:.0f}" r="12" fill="{T["accent"]}"/></svg></div>
+      <svg width="{w}" height="{h}" style="overflow:visible">{grid}<path d="{d}" fill="none" stroke="{T["ink"]}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"{A("draw", 0, 2.6)}/>
+      <circle cx="{x:.0f}" cy="{y:.0f}" r="12" fill="{T["accent"]}"{A("head", 0, 2.6)}/></svg></div>
       <div style="position:relative;height:28px;font-size:20px;color:{T["ink2"]}">{ticks}</div></div>'''
 
 
 def v_chat(v: dict) -> str:
     out = []
-    for m in v["messages"]:
+    for j, m in enumerate(v["messages"]):
         me = m["from"] == "user"
         out.append(f'''<div class="row" style="justify-content:{'flex-end' if me else 'flex-start'}">
           <div style="max-width:760px;padding:26px 32px;border-radius:{'34px 34px 8px 34px' if me else '34px 34px 34px 8px'};font-size:31px;line-height:1.38;
-            {f'background:{T["ink"]};color:{T["bg"]}' if me else f'border:1.5px solid {T["ink"]};color:{T["ink"]}'}">
+            {f'background:{T["ink"]};color:{T["bg"]}' if me else f'border:1.5px solid {T["ink"]};color:{T["ink"]}'}"{A("pop", j * 1.2, .7, s=.88, o="bottom right" if me else "bottom left")}>
             {'' if me else f'<div class="lab" style="font-size:18px;color:{T["accent"]};margin-bottom:8px">Coach Runch</div>'}{rich(m["text"])}</div></div>''')
     return f'<div class="col" style="gap:22px">{"".join(out)}</div>'
 
@@ -180,18 +196,18 @@ def v_schedule(v: dict) -> str:
     w, h, lo, hi = 760, 300, 0, 4.5
     band = v.get("band", [1.5, 2.5])
     y = lambda t: h - (t - lo) / (hi - lo) * h  # noqa: E731
-    dots = "".join(f'<circle cx="{i * w / (len(pts) - 1):.0f}" cy="{y(t):.0f}" r="12" fill="{T["ink"] if band[0] <= t <= band[1] else T["accent"]}"/>' for i, t in enumerate(pts))
+    dots = "".join(f'<circle cx="{i * w / (len(pts) - 1):.0f}" cy="{y(t):.0f}" r="12" fill="{T["ink"] if band[0] <= t <= band[1] else T["accent"]}"{A("pop", .3 + i * .12, .45)}/>' for i, t in enumerate(pts))
     labels = "".join(f'<div style="position:absolute;left:-104px;top:{y(t) - 14:.0f}px;font-size:20px;color:{T["ink2"]}">{lab}</div>' for t, lab in ((0, "21:00"), (2, "23:00"), (4, "01:00")))
     return f'''<div class="col" style="gap:20px">{label(v.get("title", ""))}<div style="position:relative;margin-left:104px;width:{w}px;height:{h}px">{labels}
-      <svg width="{w}" height="{h}" style="overflow:visible"><rect x="-20" y="{y(band[1]):.0f}" width="{w + 40}" height="{y(band[0]) - y(band[1]):.0f}" fill="{T["soft"]}"/>{dots}</svg></div>
+      <svg width="{w}" height="{h}" style="overflow:visible"><rect x="-20" y="{y(band[1]):.0f}" width="{w + 40}" height="{y(band[0]) - y(band[1]):.0f}" fill="{T["soft"]}"{A("grow-y", 0, .7)}/>{dots}</svg></div>
       <div style="font-size:22px;color:{T["ink2"]}">{esc(v.get("note", ""))}</div></div>'''
 
 
 def v_steps(v: dict) -> str:
-    rows = "".join(f'''<div class="row" style="align-items:center;gap:24px;padding:20px 0;border-top:1.5px solid {T["line"]}">
-        <div style="width:14px;height:14px;border-radius:50%;background:{T["accent"] if s.get("hot") else T["ink2"]}"></div>
+    rows = "".join(f'''<div class="row" style="align-items:center;gap:24px;padding:20px 0;border-top:1.5px solid {T["line"]}"{A("rise", j * .45, .8)}>
+        <div style="width:14px;height:14px;border-radius:50%;background:{T["accent"] if s.get("hot") else T["ink2"]}"{A("pop", j * .45 + .3, .5)}></div>
         <div class="col" style="flex:1;gap:2px"><div style="font-size:31px;font-weight:600">{esc(s["name"])}</div><div style="font-size:22px;color:{T["ink2"]}">{esc(s.get("detail", ""))}</div></div>
-        <div class="serif" style="font-size:40px;white-space:nowrap">{esc(s["pace"])}</div></div>''' for s in v["steps"])
+        <div class="serif" style="font-size:40px;white-space:nowrap">{esc(s["pace"])}</div></div>''' for j, s in enumerate(v["steps"]))
     return f'<div class="col" style="gap:14px">{label(v.get("kicker", ""), T["accent"])}<div class="serif" style="font-size:44px">{esc(v.get("title", ""))}</div><div class="col" style="margin-top:8px">{rows}<div style="border-top:1.5px solid {T["line"]}"></div></div></div>'
 
 
@@ -241,10 +257,10 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int) -> str:
         body = f'''<div style="flex:.6"></div>{kick}{title(s.get("size", 82), "margin-top:16px;margin-bottom:40px")}
           <div class="col">{items}<div style="border-top:1.5px solid {T["line"]}"></div></div><div style="flex:1"></div>'''
     elif layout == "versus":
-        def side(x: dict, good: bool) -> str:
+        def side(x: dict, good: bool) -> str:  # con `animate`, las dos cifras cuentan hacia arriba
             lines = "".join(f'<div style="font-size:27px;line-height:1.4;color:{T["ink2"]}">{rich(t)}</div>' for t in x.get("lines", []))
             return f'''<div class="col" style="flex:1;gap:16px">{label(x["label"], T["accent"] if good else T["ink2"])}
-              <div class="serif" style="font-size:130px;line-height:.9;letter-spacing:-.04em;{f'color:{T["accent"]}' if good else ''}">{esc(x["value"])}</div>
+              <div class="serif" style="font-size:130px;line-height:.9;letter-spacing:-.04em;{f'color:{T["accent"]}' if good else ''}"{A("count", .5 if good else 0, 2.2, fb="rise")}>{esc(x["value"])}</div>
               <div style="font-size:22px;color:{T["ink2"]};margin-top:-6px">{esc(x.get("unit", ""))}</div><div class="col" style="gap:6px;margin-top:10px">{lines}</div></div>'''
         body = f'''<div style="flex:.5"></div>{kick}{title(s.get("size", 80), "margin-top:16px")}<div style="flex:1"></div>
           <div class="row" style="gap:48px;align-items:stretch;padding:40px 0;border-top:1.5px solid {T["line"]};border-bottom:1.5px solid {T["line"]}">
@@ -252,7 +268,7 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int) -> str:
           {lead("margin-top:30px")}<div style="flex:.6"></div>'''
     elif layout == "big":
         body = f'''<div style="flex:1"></div>{kick}
-          <div class="serif" style="font-size:{s.get("bigSize", 380)}px;line-height:.82;letter-spacing:-.05em;color:{T["accent"]};margin-top:10px">{esc(s["big"])}</div>
+          <div class="serif" style="font-size:{s.get("bigSize", 380)}px;line-height:.82;letter-spacing:-.05em;color:{T["accent"]};margin-top:10px"{A("count", 0, 2.6, mask=1)}>{esc(s["big"])}</div>
           {title(s.get("size", 70), "margin-top:36px")}{lead("margin-top:24px")}<div style="flex:.6"></div>'''
     elif layout == "photo":  # para cuando haya fotos (quedadas, estilo de vida): imagen a sangre + texto abajo
         body = f'''<div style="flex:1"></div>{kick}{title(s.get("size", 100), "margin-top:16px")}{lead("margin-top:22px")}<div style="flex:.2"></div>'''
@@ -296,6 +312,158 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int) -> str:
     </style></head><body><div class="slide">{photo}<div class="content">{frame_top(post, k, s)}{body}{frame_bottom(i, n, example)}</div></div></body></html>'''
 
 
+# ---------------------------------------------------------------- vídeo de una diapositiva (`"animate": true`)
+# Solo se mueve el gráfico: cada elemento marcado con A() se pinta en función del tiempo con window.__render(t) (sin
+# animaciones CSS ni reloj real, así cada fotograma es exacto). Al terminar su animación, cada elemento recupera su
+# estilo original, de modo que el último fotograma es idéntico al PNG.
+LEAD, HOLD, FPS = .4, 2.0, 30  # quieto al principio, mínimo quieto al final, fotogramas por segundo
+ANIM_JS = r"""(() => {
+  const clamp = (x) => Math.min(1, Math.max(0, x));
+  const out3 = (p) => 1 - Math.pow(1 - p, 3), out5 = (p) => 1 - Math.pow(1 - p, 5);
+  const back = (p) => 1 + 2.2 * Math.pow(p - 1, 3) + 1.2 * Math.pow(p - 1, 2);
+  // cifras dentro del texto: 12 · 7,5 · 12.500 · ritmos 5:15 / 1:45:00 (cuentan en segundos); prefijos (<, +, −),
+  // sufijos (%, unidades) y rangos (95–114, 5:49–6:34) se respetan. Sin cifras: `data-fb` (fundido por defecto)
+  const NUM = /\d+(?::\d{2})+|\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?/g;
+  const parse = (num) => {
+    if (num.includes(':')) return { clock: num.split(':').length, to: num.split(':').reduce((s, x) => s * 60 + +x, 0) };
+    const tsep = /^\d{1,3}(\.\d{3})+/.test(num) ? '.' : '', body = tsep ? num.split('.').join('') : num;
+    const dm = body.match(/[.,](\d+)$/);
+    return { tsep, dsep: dm ? body[body.length - dm[1].length - 1] : ',', dec: dm ? dm[1].length : 0, to: parseFloat(body.replace(',', '.')) };
+  };
+  const fmt = (c, v) => {
+    if (c.clock) {
+      let x = Math.round(v); const parts = [];
+      for (let k = 1; k < c.clock; k++) { parts.unshift(String(x % 60).padStart(2, '0')); x = Math.floor(x / 60); }
+      return [x, ...parts].join(':');
+    }
+    let txt = v.toFixed(c.dec).replace('.', c.dsep);
+    if (c.tsep) { const [a, b] = txt.split(c.dsep); txt = a.replace(/\B(?=(\d{3})+(?!\d))/g, c.tsep) + (b !== undefined ? c.dsep + b : ''); }
+    return txt;
+  };
+  const items = [...document.querySelectorAll('[data-a]')].map((el) => {
+    const ds = el.dataset;
+    const o = { el, a: ds.a, d: +ds.d || 0, t: +ds.t || .7, style: el.getAttribute('style'), op: +getComputedStyle(el).opacity };
+    o.end = o.d + o.t;
+    if (o.a === 'zone') o.end = Math.max(o.end, +ds.d2 + .7);
+    if (o.a === 'draw') o.len = el.getTotalLength();
+    if (o.a === 'head') {
+      o.path = el.parentNode.querySelector('[data-a=draw]');
+      o.len = o.path.getTotalLength(); o.cx = +el.getAttribute('cx'); o.cy = +el.getAttribute('cy');
+    }
+    if (o.a === 'arc') [o.arc, o.gap] = el.getAttribute('stroke-dasharray').trim().split(/[\s,]+/).map(Number);
+    if (o.a === 'count') {
+      o.node = [...el.childNodes].find((n) => n.nodeType === 3 && /\d/.test(n.nodeValue));
+      if (!o.node) { o.a = ds.fb || 'fade'; return o; }
+      o.raw = o.node.nodeValue;
+      const nums = o.raw.match(NUM), pieces = o.raw.split(NUM), cs = nums.map(parse);
+      o.text = (e) => pieces.map((x, i) => x + (i < cs.length ? fmt(cs[i], cs[i].to * e) : '')).join('');
+      const last = o.text(1);
+      o.land = 1;  // momento (0..1) en que ya se ve la cifra final: ahí vuelve el texto original
+      for (let k = 0; k <= 480; k++) if (o.text(out5(k / 480)) === last) { o.land = k / 480; break; }
+      o.w = el.getBoundingClientRect().width;
+      o.al = ds.al || getComputedStyle(el).textAlign.replace('start', 'left').replace('end', 'right');
+      o.hero = ds.in !== '0';
+      o.end = o.d + o.land * o.t + .4;
+    }
+    return o;
+  });
+  const end = Math.max(0, ...items.filter((o) => o.a !== 'none').map((o) => o.end));
+  const render = (t) => {
+    for (const o of items) {
+      const p = clamp((t - o.d) / o.t), e = out3(p), st = o.el.style;
+      if (o.style === null) o.el.removeAttribute('style'); else o.el.setAttribute('style', o.style);
+      if (o.a === 'count') o.node.nodeValue = o.raw;
+      if (t >= o.end || o.a === 'none') continue;  // estado final = estilo y texto originales, igual que el PNG
+      switch (o.a) {
+        case 'fade': st.opacity = o.op * e; break;
+        case 'rise': st.opacity = o.op * e; st.transform = `translateY(${(1 - e) * 18}px)`; break;
+        case 'zone': {
+          const q = out3(clamp((t - +o.el.dataset.d2) / .7));
+          st.opacity = e * (1 + (o.op - 1) * q); st.transform = `translateY(${(1 - e) * 18}px)`; break;
+        }
+        case 'grow-x': st.transformOrigin = 'left center'; st.transform = `scaleX(${e})`; break;
+        case 'grow-y': st.transformBox = 'fill-box'; st.transformOrigin = 'center'; st.transform = `scaleY(${e})`; st.opacity = Math.min(1, p * 2.5); break;
+        case 'pop': {
+          const s0 = +(o.el.dataset.s || 0), k = s0 + (1 - s0) * back(p);
+          st.transformBox = 'fill-box'; st.transformOrigin = o.el.dataset.o || 'center';
+          st.transform = `${s0 ? `translateY(${(1 - e) * 16}px) ` : ''}scale(${Math.max(0, k)})`; st.opacity = o.op * Math.min(1, p * 2.5); break;
+        }
+        case 'draw': st.strokeDasharray = `${o.len} ${o.len}`; st.strokeDashoffset = o.len * (1 - e); if (p <= 0) st.opacity = 0; break;
+        case 'head': {
+          const pt = o.path.getPointAtLength(o.len * e);
+          st.transformBox = 'fill-box'; st.transformOrigin = 'center';
+          st.transform = `translate(${pt.x - o.cx}px, ${pt.y - o.cy}px) scale(${Math.min(1, p * 8)})`; break;
+        }
+        case 'arc': st.strokeDasharray = `${o.arc * e} ${o.gap}`; if (p <= 0) st.opacity = 0; break;
+        case 'count': {
+          // caja fija con cifras tabulares mientras cuenta (nada baila ni empuja a sus vecinos)
+          const landed = p >= o.land;
+          if (!landed) {
+            o.node.nodeValue = o.text(out5(p));
+            st.fontVariantNumeric = 'tabular-nums'; st.flex = 'none'; st.width = `${o.w}px`; st.whiteSpace = 'nowrap'; st.textAlign = o.al;
+          }
+          const tr = [];
+          if (o.hero) {  // entrada: sube, crece de 0,92 a 1 y aparece; en `big`, además un barrido de abajo arriba
+            const q = out3(clamp((t - o.d) / .6));
+            st.opacity = o.op * q; tr.push(`translateY(${(1 - q) * 30}px)`, `scale(${.92 + .08 * q})`);
+            if (o.el.dataset.mask) { const m = out3(clamp((t - o.d) / .55)); st.clipPath = `inset(${(1 - m) * 100}% -30% -30% -30%)`; }
+          }
+          if (landed) {  // asiento suave al llegar
+            const s = clamp((t - (o.d + o.land * o.t)) / .4);
+            tr.push(`scale(${1 + .03 * Math.sin(Math.PI * s) * (1 - s)})`);
+          }
+          st.transformOrigin = `${o.al === 'right' ? 'right' : o.al === 'center' ? 'center' : 'left'} bottom`;
+          st.transform = tr.join(' ');
+          break;
+        }
+      }
+    }
+  };
+  window.__render = render;
+  return end;
+})()"""
+
+
+def ffmpeg_bin() -> str | None:
+    return shutil.which("ffmpeg") or (glob.glob(os.path.expanduser("~/.cache/ms-playwright/ffmpeg-*/ffmpeg-linux")) or [None])[0]
+
+
+def record(pg, out: Path, stem: str, duration: float) -> str | None:
+    """Graba la diapositiva abierta en `pg` como <stem>.mp4 (1080 x 1350, H.264, 30 fps, sin audio) y una hoja de
+    contacto <stem>-frames.png con 6 fotogramas. Devuelve el nombre del MP4, o None si no hay nada que animar."""
+    ff = ffmpeg_bin()
+    if not ff:
+        print(f"AVISO: {stem}: no encuentro ffmpeg (sudo apt install ffmpeg), solo queda el PNG")
+        return None
+    end = pg.evaluate(ANIM_JS)
+    if not end:
+        print(f"AVISO: {stem}: \"animate\" en una diapositiva sin gráfico que animar, solo queda el PNG")
+        return None
+    total = max(duration, LEAD + end + HOLD)
+    tmp = out / "_frames"
+    shutil.rmtree(tmp, ignore_errors=True)
+    tmp.mkdir()
+    n = round(total * FPS)
+    for f in range(n):
+        pg.evaluate(f"window.__render({f / FPS - LEAD})")
+        pg.screenshot(path=str(tmp / f"{f:04d}.png"))
+    mp4 = out / f"{stem}.mp4"
+    # sRGB → BT.709 de rango limitado, etiquetado, para que los colores salgan iguales que en el PNG
+    subprocess.run([ff, "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", str(tmp / "%04d.png"),
+                    "-vf", "scale=out_color_matrix=bt709:out_range=tv,format=yuv420p",
+                    "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-profile:v", "high", "-r", str(FPS),
+                    "-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv",
+                    "-an", "-movflags", "+faststart", str(mp4)], check=True)
+    shutil.rmtree(tmp)
+    # hoja de contacto: inicio, cuatro momentos de la animación y el final
+    picks = [round(.2 * FPS)] + [round((LEAD + end * q) * FPS) for q in (.15, .4, .7, 1)] + [n - 1]
+    sel = "+".join(f"eq(n\\,{min(x, n - 1)})" for x in picks)
+    subprocess.run([ff, "-y", "-loglevel", "error", "-i", str(mp4), "-vf", f"select='{sel}',scale=360:450,tile=3x2:padding=6",
+                    "-vsync", "0", "-frames:v", "1", str(out / f"{stem}-frames.png")], check=True)
+    print(f"Vídeo: {mp4.name} ({total:.1f} s, animación {end:.1f} s, {mp4.stat().st_size / 1e6:.1f} MB)")
+    return mp4.name
+
+
 # ---------------------------------------------------------------- salida
 def main(path: str) -> None:
     from playwright.sync_api import sync_playwright
@@ -303,7 +471,7 @@ def main(path: str) -> None:
     STYLE["handle"] = lote.get("handle")
     out = HERE / "out" / f"lote-{lote['lote']}"
     out.mkdir(parents=True, exist_ok=True)
-    for f in out.glob("*.png"):
+    for f in [*out.glob("*.png"), *out.glob("*.mp4")]:
         f.unlink()
     exe = (glob.glob(os.path.expanduser("~/.cache/ms-playwright/chromium_headless_shell-*/*/chrome-headless-shell")) or [None])[0]
     covers, md = [], [f"# Instagram · lote {lote['lote']}\n", lote.get("notes", ""), ""]
@@ -327,7 +495,8 @@ def main(path: str) -> None:
                     print(f"AVISO: {post['id']} diapositiva {i}: algo se acerca demasiado al borde ({edge}px)")
                 name = f"{k:02d}-{post['id']}-{i}.png"
                 pg.screenshot(path=str(out / name))
-                files.append(name)
+                vid = record(pg, out, name[:-4], float(s.get("duration", 6))) if s.get("animate") else None
+                files.append(f"{vid} (vídeo; portada y reserva: {name})" if vid else name)
                 if i == 1:
                     covers.append(out / name)
             (out / "_slide.html").unlink(missing_ok=True)
@@ -353,7 +522,9 @@ def write_overview(lote: dict, out: Path) -> None:
     rows = []
     for k, post in enumerate(lote["posts"], 1):
         n = len(post["slides"])
-        imgs = "".join(f'<a href="{k:02d}-{post["id"]}-{i}.png" target="_blank"><img src="{k:02d}-{post["id"]}-{i}.png"></a>' for i in range(1, n + 1))
+        imgs = "".join(f'<a href="{f}.mp4" target="_blank"><video src="{f}.mp4" poster="{f}.png" autoplay loop muted playsinline></video></a>'
+                       if (out / f"{f}.mp4").exists() else f'<a href="{f}.png" target="_blank"><img src="{f}.png"></a>'
+                       for f in (f'{k:02d}-{post["id"]}-{i}' for i in range(1, n + 1)))
         rows.append(f'''<section><div class="head"><span class="num">{k:02d}</span><h2>{esc(post["title"])}</h2><span class="meta">{n} {"imágenes · carrusel" if n > 1 else "imagen"}</span></div>
           <div class="imgs">{imgs}</div><details open><summary>Texto del post</summary><p>{esc(post["caption"]).replace(chr(10), "<br>")}</p>
           <p class="tags">{esc(" ".join(post.get("hashtags", [])))}</p><p class="alt">Texto alternativo: {esc(post.get("alt", ""))}</p></details></section>''')
@@ -365,7 +536,7 @@ def write_overview(lote: dict, out: Path) -> None:
       section {{ background: #FAF6F0; margin: 18px 28px; padding: 22px 24px; border-radius: 18px; }}
       .head {{ display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }} h2 {{ margin: 0; font-family: FR, serif; font-weight: 450; font-size: 26px; }}
       .num {{ font-family: FR, serif; font-style: italic; color: #D4542F; font-size: 24px; }} .meta {{ margin-left: auto; color: #76695F; font-size: 14px; }}
-      .imgs {{ display: flex; gap: 12px; overflow-x: auto; }} .imgs img {{ height: min(52vh, 460px); aspect-ratio: 4/5; border-radius: 6px; display: block; }}
+      .imgs {{ display: flex; gap: 12px; overflow-x: auto; }} .imgs img, .imgs video {{ height: min(52vh, 460px); aspect-ratio: 4/5; border-radius: 6px; display: block; }}
       summary {{ cursor: pointer; color: #D4542F; font-weight: 600; margin-top: 12px; }} details p {{ max-width: 760px; line-height: 1.5; }}
       .tags {{ color: #D4542F; }} .alt {{ color: #76695F; font-size: 14px; }}
     </style></head><body><header><h1>Runch · lote {lote["lote"]}</h1><p>{esc(lote.get("notes", ""))}</p></header>{"".join(rows)}</body></html>''', encoding="utf-8")

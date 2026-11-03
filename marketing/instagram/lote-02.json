@@ -1,0 +1,1216 @@
+{
+  "lote": "02",
+  "handle": "@runch.run",
+  "notes": "Lote 02: lo que dicen de verdad las etiquetas del Garmin en español, empezar desde cero (2 posts) y la novedad del plan con el tiempo y tus minutos. Publicar en orden, uno al día; en el perfil el 9 queda arriba a la izquierda y la cuadrícula alterna crema y color. Cada carrusel acaba con una pregunta de respuesta corta para comentar (también al final del texto del post). Números de ejemplo. El post 4 es un reto con sorteo: la respuesta correcta está en el campo answer del JSON y no se publica en el post; poner la fecha en [FECHA LÍMITE] del texto al programarlo.",
+  "posts": [
+    {
+      "id": "z2-garmin",
+      "title": "Tu Z2 del Garmin no es Z2",
+      "bg": "cream",
+      "topic": "Zonas",
+      "caption": "Por qué tu Z2 del Garmin no es tu Z2 (y cómo ajustar tus zonas de pulso)\n\nTus zonas salen de un solo número: tu pulso máximo. Si nunca lo has revisado, tu reloj usa una estimación, y las estimaciones por edad pueden fallar en 10 o 12 pulsaciones.\n\nEjemplo: tu reloj cree que tu máximo es 190 y tu Z2 llega a 133 lpm. Si tu máximo real es 178, esos 133 ya son el 75 %: zona 3. Tu rodaje «suave» no lo es.\n\nCómo arreglarlo: mira el pulso más alto que hayas visto en una carrera o en unas series (mejor con banda en el pecho), escríbelo en los ajustes de zonas de tu reloj y, mientras tanto, usa el test del habla: si puedes mantener una conversación, vas bien.\n\nGuárdalo y mándaselo a quien corre «suave» a 5:15.\n\nTu turno: ¿qué pulso máximo tiene configurado tu reloj? Un número y ya.",
+      "hashtags": [
+        "#zona2",
+        "#pulsomaximo",
+        "#garmin",
+        "#running",
+        "#runnersespaña"
+      ],
+      "alt": "Zonas de pulso del reloj Garmin con la Z2 resaltada entre 114 y 133 pulsaciones por minuto para un pulso máximo de 190, comparadas con la Z2 real de alguien con pulso máximo de 178, que llega a 125.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Tu reloj te está mintiendo",
+          "title": "Tu Z2 del Garmin **no es** tu Z2.",
+          "size": 124,
+          "body": "Sale de un solo número que casi nadie ha revisado: tu pulso máximo.",
+          "facts": [
+            "Máx. configurado 190",
+            "Z2 hasta 133",
+            "Máx. real 178"
+          ]
+        },
+        {
+          "layout": "cover",
+          "animate": true,
+          "kicker": "Zonas de pulso",
+          "title": "Tus zonas salen de **un solo número**: tu pulso máximo.",
+          "size": 78,
+          "body": "Aquí, 190 lpm. Si nunca lo has tocado, tu reloj usa una estimación.",
+          "visual": {
+            "type": "zones",
+            "unit": "lpm",
+            "highlight": 2,
+            "rows": [
+              {
+                "zone": 1,
+                "name": "Muy suave",
+                "range": "95–114"
+              },
+              {
+                "zone": 2,
+                "name": "Suave (Z2)",
+                "range": "114–133"
+              },
+              {
+                "zone": 3,
+                "name": "Moderado",
+                "range": "133–152"
+              },
+              {
+                "zone": 4,
+                "name": "Umbral",
+                "range": "152–171"
+              },
+              {
+                "zone": 5,
+                "name": "Máximo",
+                "range": "171–190"
+              }
+            ]
+          }
+        },
+        {
+          "layout": "versus",
+          "kicker": "Mismo corredor, dos Z2",
+          "title": "Misma persona. **Dos** zonas 2.",
+          "left": {
+            "label": "Según tu reloj",
+            "value": "133",
+            "unit": "lpm · techo de la Z2",
+            "lines": [
+              "Pulso máx. configurado: 190",
+              "133 es el 70 % de 190"
+            ]
+          },
+          "right": {
+            "label": "Con tu máximo real",
+            "value": "125",
+            "unit": "lpm · techo de la Z2",
+            "lines": [
+              "Pulso máx. real: 178",
+              "A 133 ya vas al 75 %: zona 3"
+            ]
+          },
+          "body": "Tu rodaje «suave» a 133 ya es **moderado**. Y tú, tan contento en Strava.",
+          "animate": true
+        },
+        {
+          "layout": "points",
+          "kicker": "Cómo arreglarlo",
+          "title": "Cómo **encontrar** tu pulso máximo",
+          "points": [
+            {
+              "title": "Mira tu pico real",
+              "body": "El pulso más alto que has visto en una carrera o en unas series. Con banda en el pecho es más fiable que la muñeca."
+            },
+            {
+              "title": "Escríbelo en tu reloj",
+              "body": "En los ajustes de zonas de pulso. Tus zonas se recalculan."
+            },
+            {
+              "title": "Sin dato, test del habla",
+              "body": "Si puedes mantener una conversación, vas en Z2. Aunque el número diga otra cosa."
+            }
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "Ojo",
+          "title": "Y aun así, el pulso **a veces miente**",
+          "points": [
+            {
+              "title": "Los primeros minutos",
+              "body": "El sensor de muñeca tarda en ajustarse. Calienta antes de fiarte."
+            },
+            {
+              "title": "El calor",
+              "body": "A igual ritmo, tu pulso sube. Los días de calor, corre por sensaciones."
+            },
+            {
+              "title": "Las cuestas",
+              "body": "El pulso sube antes de que tu ritmo baje. Es normal: afloja sin drama."
+            }
+          ]
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "Tu turno: ¿qué **pulso máximo** tiene tu reloj?",
+          "body": "Un número y ya. Y mándaselo a quien corre «suave» a 5:15.",
+          "actions": [
+            "Comenta",
+            "Guarda",
+            "Envía"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vfc-desequilibrado",
+      "title": "Estado de VFC: desequilibrado",
+      "bg": "butter",
+      "topic": "VFC",
+      "caption": "Qué significa «Estado de VFC: desequilibrado» en un reloj Garmin\n\nVFC es la variabilidad de la frecuencia cardiaca (HRV en inglés): cuánto cambia el tiempo entre un latido y el siguiente. Tu reloj la mide mientras duermes y la compara con tu propio rango, que tarda unas 3 semanas en aprender.\n\n«Desequilibrado» quiere decir que tu media de las últimas 7 noches se ha salido de ese rango. No es un diagnóstico ni un suspenso: es un «ojo» para que mires qué ha cambiado. Alcohol, cena tarde, poco sueño, estrés, un viaje o un resfriado que asoma.\n\nQué hacer: no te fíes de una sola noche, cambia las series de hoy por un rodaje suave si no te encuentras bien y vuelve a mirar en un par de días. Si sigue fuera de rango durante semanas, habla con tu médico.\n\nGuárdalo y mándaselo a quien se salta el aviso.\n\nTu turno: ¿cuál es tu VFC de esta mañana? Un número en ms.",
+      "hashtags": [
+        "#vfc",
+        "#hrv",
+        "#garmin",
+        "#recuperacion",
+        "#running"
+      ],
+      "alt": "Gráfico de la media de 7 noches de la variabilidad cardiaca (VFC) de un reloj Garmin, con 51 milisegundos por debajo del rango habitual y la etiqueta Estado de VFC desequilibrado, y lista de qué significa cada estado.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Tu reloj dice",
+          "title": "«Estado de VFC: **desequilibrado**». ¿Y ahora qué?",
+          "size": 100,
+          "body": "No es un diagnóstico ni un suspenso. Es tu reloj diciéndote: ojo.",
+          "facts": [
+            "VFC = HRV",
+            "Media de 7 noches",
+            "Tu rango"
+          ]
+        },
+        {
+          "layout": "cover",
+          "animate": true,
+          "kicker": "Estado de VFC",
+          "title": "Desequilibrado: tu media de 7 noches **se sale** de tu rango.",
+          "size": 76,
+          "visual": {
+            "type": "metric",
+            "label": "VFC · media de 7 noches",
+            "value": "51",
+            "unit": "ms",
+            "caption": "Desequilibrado",
+            "band": [
+              57,
+              66
+            ],
+            "note": "La franja es tu rango habitual. Tu media de 7 noches queda por debajo.",
+            "points": [
+              62,
+              62,
+              61,
+              61,
+              62,
+              61,
+              60,
+              59,
+              57,
+              55,
+              53,
+              52,
+              51,
+              51
+            ]
+          }
+        },
+        {
+          "layout": "points",
+          "kicker": "Estado de VFC",
+          "title": "Qué te dice **cada estado**",
+          "points": [
+            {
+              "title": "Equilibrado",
+              "body": "Tu media de 7 noches está dentro de tu rango. Entrena como tenías previsto."
+            },
+            {
+              "title": "Desequilibrado",
+              "body": "Está fuera del rango, por arriba o por abajo. Mira qué ha cambiado esta semana."
+            },
+            {
+              "title": "Todavía más baja",
+              "body": "Señal de que algo te está costando. Día suave y a dormir."
+            }
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "Qué hacer",
+          "title": "Qué hacer **hoy**",
+          "points": [
+            {
+              "title": "No te fíes de una noche",
+              "body": "El estado usa la media de 7 noches justo para evitar sustos."
+            },
+            {
+              "title": "Busca la causa",
+              "body": "Alcohol, cena tarde, poco sueño, estrés, un viaje o un resfriado que asoma."
+            },
+            {
+              "title": "Ajusta, no canceles",
+              "body": "Cambia las series por un rodaje suave y vuelve a mirar en un par de días."
+            },
+            {
+              "title": "Si dura semanas",
+              "body": "O no te encuentras bien: habla con tu médico."
+            }
+          ]
+        },
+        {
+          "layout": "big",
+          "bg": "butter",
+          "kicker": "Si pone «sin estado»",
+          "big": "3",
+          "bigSize": 420,
+          "title": "semanas hacen falta para que tu reloj conozca **tu rango**.",
+          "body": "Hasta entonces, no es un fallo. Duerme con el reloj puesto cada noche."
+        },
+        {
+          "layout": "cta",
+          "bg": "butter",
+          "title": "Tu turno: ¿cuál es **tu VFC** de esta mañana?",
+          "body": "Un número en ms. Y mándaselo a quien se salta el aviso.",
+          "actions": [
+            "Comenta",
+            "Guarda",
+            "Envía"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "caminar",
+      "title": "Caminar ya es entrenar",
+      "bg": "cream",
+      "topic": "Empezar",
+      "caption": "¿Caminar cuenta como entrenar? Sí, y tu reloj Garmin lo suma.\n\nLa OMS recomienda entre 150 y 300 minutos a la semana de actividad física moderada. Caminar a buen paso entra: 30 minutos, 5 días, y ya tienes 150. Sin correr ni un metro.\n\nCómo saber si vas bien: test del habla. Si puedes hablar pero no cantar, es intensidad moderada. En tu Garmin lo verás en «Minutos de intensidad» (los intensos cuentan doble).\n\nEmpieza por lo que puedas y sube cinco minutos cada semana: la constancia pesa más que el ritmo, y tu ritmo es el que es. Si tienes alguna condición de salud, consúltalo antes con tu médico.\n\nGuárdalo y mándaselo a quien quiere empezar y no sabe por dónde.\n\nTu turno: ¿cuántos minutos has caminado hoy? Un número y ya.",
+      "hashtags": [
+        "#caminar",
+        "#empezaracorrer",
+        "#minutosdeintensidad",
+        "#garmin",
+        "#running"
+      ],
+      "alt": "Texto grande: 150 minutos a la semana de actividad moderada, la recomendación de la OMS, y una semana de ejemplo caminando a buen paso 30, 30, 30 y 60 minutos hasta sumar 150, sin correr.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Spoiler",
+          "title": "Caminar **también es** entrenar.",
+          "size": 132,
+          "body": "Y tu reloj lo cuenta. Sin ritmo mínimo y sin pedir perdón.",
+          "facts": [
+            "150–300 min/semana",
+            "Minutos de intensidad",
+            "Tu ritmo"
+          ]
+        },
+        {
+          "layout": "big",
+          "kicker": "El punto de partida",
+          "big": "150",
+          "bigSize": 400,
+          "title": "minutos a la semana de actividad moderada. Caminar **a buen paso** cuenta.",
+          "size": 64,
+          "body": "La OMS recomienda entre 150 y 300. Son 30 minutos, 5 días. Sin correr ni un metro.",
+          "animate": true
+        },
+        {
+          "layout": "cover",
+          "kicker": "Una semana de ejemplo",
+          "title": "Sin una sola zancada **de carrera**.",
+          "visual": {
+            "type": "rows",
+            "title": "Minutos caminando a buen paso",
+            "unit": "min",
+            "rows": [
+              {
+                "label": "Lunes",
+                "detail": "Paseo a buen paso",
+                "value": "30"
+              },
+              {
+                "label": "Miércoles",
+                "detail": "Hasta el trabajo, andando",
+                "value": "30"
+              },
+              {
+                "label": "Viernes",
+                "detail": "Paseo con alguien",
+                "value": "30"
+              },
+              {
+                "label": "Domingo",
+                "detail": "Paseo largo, por sitio llano",
+                "value": "60"
+              },
+              {
+                "label": "Total",
+                "detail": "Meta de la OMS: 150–300",
+                "value": "150"
+              }
+            ]
+          }
+        },
+        {
+          "layout": "points",
+          "kicker": "Cómo llevarlo",
+          "title": "Cómo **llevarlo**",
+          "size": 76,
+          "points": [
+            {
+              "title": "Test del habla",
+              "body": "Si puedes hablar pero no cantar, vas a intensidad moderada."
+            },
+            {
+              "title": "Tu reloj lo suma",
+              "body": "Caminar a buen paso puede contar en «Minutos de intensidad». Los intensos cuentan doble."
+            },
+            {
+              "title": "Sube poco a poco",
+              "body": "Cinco minutos más cada semana. La constancia pesa más que el ritmo."
+            },
+            {
+              "title": "Antes de empezar",
+              "body": "Si tienes problemas de corazón, diabetes o tensión alta, hay embarazo o notas dolor en el pecho o mareo, consúltalo con tu médico."
+            }
+          ]
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "Tu turno: ¿**cuántos minutos** has caminado hoy?",
+          "body": "Un número y ya, sin comparar. Y mándaselo a quien quiere empezar y no sabe por dónde.",
+          "actions": [
+            "Comenta",
+            "Guarda",
+            "Envía"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reto-improductivo",
+      "title": "Reto: Estado de entrenamiento improductivo",
+      "bg": "espresso",
+      "topic": "Reto",
+      "answer": "Tu carga de entrenamiento es adecuada, pero tu forma física (VO2máx) no sube, o incluso baja: entrenas, pero tu cuerpo no lo convierte en mejora. Suele ir con poco sueño, estrés, alcohol, calor, un resfriado o rodajes que no son suaves de verdad. Qué hacer: mirar la tendencia de 2-3 semanas, dormir más, una semana con menos volumen y respetar el 80 % suave. Publicar tras el cierre del plazo, en otro post o en stories.",
+      "caption": "¿Qué significa «Estado de entrenamiento: improductivo» en un Garmin? Reto Runch con sorteo.\n\nTu reloj lo dice y casi nadie lo entiende. En las diapositivas tienes pistas, pero no la respuesta: esa la publicaremos después.\n\nCómo participar: comenta con tus palabras qué significa «improductivo» antes del 25 de noviembre a las 23:59. Entre los aciertos sorteamos 3 accesos beta de 3 meses a Runch, la app con coach de running que se adapta a tus datos de Garmin (requiere reloj Garmin).\n\nPueden participar mayores de 18 años residentes en España. Los ganadores se anunciarán en stories y por mensaje directo. Bases legales completas en el comentario fijado.\n\nInstagram no patrocina, avala ni administra este sorteo ni está asociado a él.\n\nTu turno: ¿qué crees que significa «improductivo»? Una frase y ya.",
+      "hashtags": [
+        "#estadodeentrenamiento",
+        "#sorteo",
+        "#garmin",
+        "#running",
+        "#runnersespaña"
+      ],
+      "alt": "Reto Runch sobre fondo marrón oscuro: ¿Sabes qué significa Estado de entrenamiento: improductivo? Tres pistas, los otros estados del Garmin traducidos y el sorteo de 3 accesos beta de 3 meses a Runch para quien acierte.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Reto Runch",
+          "title": "¿Sabes qué significa «Estado de entrenamiento: **improductivo**»?",
+          "size": 92,
+          "body": "Tu reloj te lo dice y casi nadie lo entiende. Tres pistas, tu respuesta y un sorteo.",
+          "facts": [
+            "Reto Runch",
+            "3 accesos beta",
+            "Pistas dentro"
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "Reto Runch",
+          "title": "Tres **pistas** para acertar",
+          "points": [
+            {
+              "title": "Pista 1 · No es lo que piensas",
+              "body": "No quiere decir que entrenes poco. Ni que lo hagas mal."
+            },
+            {
+              "title": "Pista 2 · Tu reloj mira dos cosas",
+              "body": "Cuánto entrenas y una cifra que se mide en ml/kg/min."
+            },
+            {
+              "title": "Pista 3 · Piensa en semanas",
+              "body": "Es una tendencia. Un solo día no lo provoca."
+            }
+          ]
+        },
+        {
+          "layout": "cover",
+          "kicker": "Los otros estados",
+          "title": "Los otros estados, **traducidos**. Falta uno.",
+          "visual": {
+            "type": "rows",
+            "title": "Qué te quiere decir tu reloj",
+            "unit": "",
+            "rows": [
+              {
+                "label": "Productivo",
+                "detail": "Tu carga hace que tu forma suba",
+                "value": "Sube"
+              },
+              {
+                "label": "Mantenimiento",
+                "detail": "Carga justa para mantenerte",
+                "value": "Igual"
+              },
+              {
+                "label": "Recuperación",
+                "detail": "Carga baja y tu cuerpo se pone al día",
+                "value": "Descansa"
+              },
+              {
+                "label": "Improductivo",
+                "detail": "Tu turno: coméntalo",
+                "value": "?"
+              }
+            ]
+          },
+          "example": false
+        },
+        {
+          "layout": "points",
+          "kicker": "Pista extra",
+          "title": "Quien lo ve, suele **tener algo** en común",
+          "points": [
+            {
+              "title": "Duerme poco o mal",
+              "body": "Las noches cortas se notan en la forma."
+            },
+            {
+              "title": "Va con estrés o con un resfriado",
+              "body": "El cuerpo tiene otras cosas que gestionar."
+            },
+            {
+              "title": "Todos sus rodajes, a ritmo medio",
+              "body": "Ni suaves de verdad ni series de verdad."
+            }
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "Cómo participar",
+          "title": "Cómo **participar**",
+          "points": [
+            {
+              "title": "Comenta qué significa",
+              "body": "Con tus palabras, en los comentarios de este post."
+            },
+            {
+              "title": "Entre los aciertos, sorteo",
+              "body": "3 accesos beta de 3 meses a Runch. Se necesita reloj Garmin."
+            },
+            {
+              "title": "Requisitos",
+              "body": "Mayores de 18 años residentes en España. Bases legales: pídelas por DM."
+            }
+          ]
+        },
+        {
+          "layout": "cta",
+          "bg": "espresso",
+          "title": "Reto Runch: comenta **qué significa** «improductivo».",
+          "size": 56,
+          "body": "Entre los aciertos sorteamos 3 accesos beta de 3 meses a Runch, la app con coach de running que se adapta a tus datos de Garmin.",
+          "actions": [
+            "Comenta",
+            "3 accesos de 3 meses",
+            "Reloj Garmin"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plan-tiempo",
+      "title": "Series a las 14:00 con 36 grados",
+      "bg": "cream",
+      "topic": "Plan",
+      "caption": "¿Hay una app de entrenamiento que adapte el plan al calor y a los minutos que tienes?\n\nEn Runch estrenamos dos cosas. La primera: el plan mira la previsión del tiempo y, si te toca una sesión dura con calor, tormenta o viento fuerte, te propone otra hora u otro día. La segunda: cuentas los minutos que tienes cada día y las sesiones se ajustan a ellos.\n\nPorque el mejor plan es el que puedes cumplir. Y unas series a las 14:00 con 36 grados no son valentía: son mala planificación.\n\nSe conecta con tu reloj Garmin y el coach reajusta tu plan cada semana. Los números de las imágenes son de ejemplo.\n\nPásaselo a tu grupo de running, que seguro que alguien sale a las 14:00.\n\nTu turno: ¿a qué hora sales a correr cuando hace calor? Una hora y ya.",
+      "hashtags": [
+        "#planderunning",
+        "#correrconcalor",
+        "#running",
+        "#garmin",
+        "#runnersespaña"
+      ],
+      "alt": "Mensaje del coach de Runch que mueve unas series del sábado a las 7:30 por 36 grados a mediodía y tormenta, y semana de ejemplo con sesiones ajustadas a los minutos disponibles cada día.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Expectativa vs realidad",
+          "title": "Tu plan: series a las 14:00. El tiempo: **36 grados**.",
+          "size": 108,
+          "body": "Un plan que no mira por la ventana es solo un deseo.",
+          "facts": [
+            "Calor",
+            "Tormenta",
+            "Viento"
+          ]
+        },
+        {
+          "layout": "cover",
+          "kicker": "Novedad en Runch",
+          "title": "El plan ahora **mira el tiempo**.",
+          "visual": {
+            "type": "chat",
+            "messages": [
+              {
+                "from": "coach",
+                "text": "El sábado se esperan 36 °C a las 14:00 y tormenta por la tarde. He movido tus series a las **7:30**, con 22 °C."
+              },
+              {
+                "from": "user",
+                "text": "Perfecto. Ahí estaré."
+              },
+              {
+                "from": "coach",
+                "text": "Misma sesión, otra hora. Si cambia la previsión, te aviso."
+              }
+            ]
+          }
+        },
+        {
+          "layout": "cover",
+          "kicker": "Y tus minutos",
+          "title": "Y a **los minutos** que tienes cada día.",
+          "visual": {
+            "type": "rows",
+            "title": "Tu semana, según el tiempo que tengas",
+            "unit": "min",
+            "rows": [
+              {
+                "label": "Martes",
+                "detail": "Tienes 40 min · series cortas, 5 × 3 min",
+                "value": "40"
+              },
+              {
+                "label": "Jueves",
+                "detail": "Tienes 60 min · rodaje suave",
+                "value": "60"
+              },
+              {
+                "label": "Sábado",
+                "detail": "Tienes 120 min · tirada larga",
+                "value": "120"
+              },
+              {
+                "label": "Domingo",
+                "detail": "No tienes tiempo · descanso",
+                "value": "0"
+              }
+            ]
+          }
+        },
+        {
+          "layout": "points",
+          "kicker": "Qué cambia",
+          "title": "Qué **cambia** el plan",
+          "points": [
+            {
+              "title": "Calor",
+              "body": "Te propone una hora más fresca. La sesión es la misma, a otra hora."
+            },
+            {
+              "title": "Tormenta",
+              "body": "Pasa la sesión a otro día. Nadie necesita correr con rayos."
+            },
+            {
+              "title": "Viento fuerte",
+              "body": "Busca otra hora o cambia de día, para que no luches contra él."
+            },
+            {
+              "title": "Tus minutos",
+              "body": "Si la sesión no cabe en el tiempo que tienes, se ajusta o se mueve."
+            }
+          ]
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "Tu turno: ¿**a qué hora** sales a correr cuando hace calor?",
+          "size": 58,
+          "body": "Una hora y ya. Y mándaselo a tu grupo, que seguro que alguien sale a las 14:00.",
+          "actions": [
+            "Comenta",
+            "Guarda",
+            "Envía"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "body-battery-noche",
+      "title": "Body Battery no sube por la noche",
+      "bg": "sage",
+      "topic": "Energía",
+      "caption": "Por qué mi Body Battery no sube por la noche (aunque duerma ocho horas)\n\nLa Body Battery se recarga con descanso real, no solo con horas en la cama. Tu reloj combina tu estrés (que calcula con la variabilidad del pulso), tu actividad y tu sueño. Si tu cuerpo sigue «en alerta» mientras duermes, la recarga se queda corta.\n\nLo que suele frenarla: alcohol, una cena copiosa justo antes de acostarte, un día de mucho estrés o una sesión intensa muy tarde, y un cuarto caliente. También un reloj flojo, que mide mal.\n\nPrueba una sola cosa esta noche, no cinco, y compara tu recarga con la de tus noches buenas. Esa es tu referencia, no el 100. Si lo ves bajo durante semanas y te encuentras mal, habla con tu médico.\n\nGuárdalo para tu próxima noche mala.\n\nTu turno: ¿cuánto sube tu Body Battery en una noche buena? Un número y ya.",
+      "hashtags": [
+        "#bodybattery",
+        "#garmin",
+        "#dormirbien",
+        "#recuperacion",
+        "#running"
+      ],
+      "alt": "Curva de Body Battery de un día con una buena recarga nocturna, de 20 a 82 mientras duermes, y comparación entre una noche mala con +12 de recarga y una noche buena con +58.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "POV",
+          "title": "Duermes ocho horas y tu Body Battery **no sube**.",
+          "size": 108,
+          "body": "Tu reloj no mide solo las horas: mide cuánto descansas.",
+          "facts": [
+            "8 h en la cama",
+            "+12 de recarga",
+            "Estrés alto"
+          ]
+        },
+        {
+          "layout": "cover",
+          "animate": true,
+          "kicker": "Body Battery de noche",
+          "title": "Así debería **subir** mientras duermes.",
+          "body": "De 20 a 82 durmiendo: son +62. Esa es una buena recarga.",
+          "visual": {
+            "type": "curve",
+            "title": "Body Battery · un día con buena recarga",
+            "points": [
+              [
+                0,
+                20
+              ],
+              [
+                2,
+                38
+              ],
+              [
+                4,
+                58
+              ],
+              [
+                6,
+                76
+              ],
+              [
+                7,
+                82
+              ],
+              [
+                10,
+                72
+              ],
+              [
+                14,
+                56
+              ],
+              [
+                18,
+                42
+              ],
+              [
+                22,
+                30
+              ],
+              [
+                24,
+                26
+              ]
+            ]
+          }
+        },
+        {
+          "layout": "versus",
+          "kicker": "Mismas 8 horas",
+          "title": "Mismas horas en la cama. **Dos** noches distintas.",
+          "size": 72,
+          "left": {
+            "label": "Noche mala",
+            "value": "+12",
+            "unit": "de recarga",
+            "lines": [
+              "Alcohol por la noche",
+              "Cena copiosa y tarde",
+              "Pulso alto durmiendo"
+            ]
+          },
+          "right": {
+            "label": "Noche buena",
+            "value": "+58",
+            "unit": "de recarga",
+            "lines": [
+              "Cena temprano",
+              "Cuarto fresco",
+              "Mismo horario"
+            ]
+          },
+          "body": "Lo que cuenta no es solo cuánto duermes. Es **cuánto descansas**."
+        },
+        {
+          "layout": "points",
+          "kicker": "Qué la frena",
+          "title": "Qué suele **frenar** la recarga",
+          "size": 76,
+          "points": [
+            {
+              "title": "Alcohol",
+              "body": "Te duermes rápido, pero tu pulso se queda alto y tu VFC baja."
+            },
+            {
+              "title": "Cena copiosa y tarde",
+              "body": "Tu cuerpo sigue trabajando mientras intentas descansar."
+            },
+            {
+              "title": "Cabeza y cuerpo en alerta",
+              "body": "Un día de mucho estrés o series a las 21:00 pueden mantenerte activado."
+            },
+            {
+              "title": "Cuarto caliente",
+              "body": "El calor fragmenta el sueño. Fresco, oscuro y en silencio."
+            }
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "Esta noche",
+          "title": "Prueba **esto** esta noche",
+          "points": [
+            {
+              "title": "Cambia una sola cosa",
+              "body": "Cena antes o sin alcohol, y compara tu recarga con la de ayer."
+            },
+            {
+              "title": "Reloj bien puesto",
+              "body": "Ajustado, no apretado. Un sensor flojo mide mal."
+            },
+            {
+              "title": "Mira la semana",
+              "body": "Una noche mala pasa. Tres seguidas ya son patrón."
+            }
+          ]
+        },
+        {
+          "layout": "cta",
+          "bg": "sage",
+          "title": "Tu turno: ¿**cuánto sube** tu Body Battery en una noche buena?",
+          "size": 56,
+          "body": "Un número y ya. Y guárdalo para tu próxima noche mala.",
+          "actions": [
+            "Comenta",
+            "Guarda",
+            "Envía"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "primera-semana",
+      "title": "Tu primera semana: caminar y trotar",
+      "bg": "cream",
+      "topic": "Empezar",
+      "caption": "Cómo empezar a correr desde cero: tu primera semana de caminar y trotar\n\nNo empieces corriendo 5 km. Empieza trotando un minuto.\n\nTres días (por ejemplo lunes, miércoles y viernes), con descanso entre medias. Cada sesión: 5 minutos caminando a buen paso, 6 veces 1 minuto de trote suave + 2 minutos andando, y 5 minutos caminando para terminar. Son unos 28 minutos.\n\nReglas: test del habla (si puedes hablar, vas bien), el ritmo es el tuyo (9 o 10 min/km está perfecto), superficie blanda si puedes y calzado cómodo. Cada semana alarga un poco el trote y, si una semana se te hace dura, repítela. Si tienes alguna condición de salud, consúltalo antes con tu médico.\n\nGuárdalo para tu primera semana y mándaselo a quien lleva meses diciendo «a ver si empiezo».\n\nTu turno: ¿cuántos minutos seguidos puedes trotar hoy? Un número, sin presión.",
+      "hashtags": [
+        "#empezaracorrer",
+        "#correrdesdecero",
+        "#correr",
+        "#running",
+        "#runnersespaña"
+      ],
+      "alt": "Plan de la primera semana para empezar a correr desde cero: sesión de 28 minutos con calentamiento caminando, 6 veces 1 minuto de trote y 2 minutos andando, tres días a la semana, y progresión de cuatro semanas.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Tu primera semana",
+          "title": "No empieces corriendo 5 km. Empieza **trotando 1 minuto**.",
+          "size": 104,
+          "body": "Tres días, 28 minutos y descanso entre medias.",
+          "facts": [
+            "3 días",
+            "1 min trotando",
+            "2 min andando"
+          ]
+        },
+        {
+          "layout": "cover",
+          "animate": true,
+          "kicker": "Sesión de la semana 1",
+          "title": "Así es **una sesión**: 28 minutos.",
+          "body": "Tu ritmo es el tuyo. Aquí no hay ritmo mínimo.",
+          "visual": {
+            "type": "steps",
+            "kicker": "Trota y camina",
+            "title": "Sesión de la semana 1",
+            "steps": [
+              {
+                "name": "Calentar",
+                "detail": "Andando a buen paso",
+                "pace": "5 min"
+              },
+              {
+                "name": "6 veces",
+                "detail": "1 min trotando suave · 2 min andando",
+                "pace": "18 min",
+                "hot": true
+              },
+              {
+                "name": "Vuelta a la calma",
+                "detail": "Andando, sin prisa",
+                "pace": "5 min"
+              }
+            ]
+          }
+        },
+        {
+          "layout": "cover",
+          "kicker": "Tu semana 1",
+          "title": "Tres días. **Entre medias**, descansas.",
+          "visual": {
+            "type": "rows",
+            "title": "Trotar y caminar",
+            "unit": "min",
+            "rows": [
+              {
+                "label": "Lunes",
+                "detail": "Sesión de trote y paseo",
+                "value": "28"
+              },
+              {
+                "label": "Miércoles",
+                "detail": "Sesión de trote y paseo",
+                "value": "28"
+              },
+              {
+                "label": "Viernes",
+                "detail": "Sesión de trote y paseo",
+                "value": "28"
+              },
+              {
+                "label": "Resto de días",
+                "detail": "Descanso o paseo suave",
+                "value": "libre",
+                "unit": ""
+              }
+            ]
+          }
+        },
+        {
+          "layout": "points",
+          "kicker": "Cómo saber que vas bien",
+          "title": "Cómo saber que **vas bien**",
+          "size": 76,
+          "points": [
+            {
+              "title": "Test del habla",
+              "body": "Si puedes hablar mientras trotas, vas bien. Si jadeas, anda más rato."
+            },
+            {
+              "title": "Tu ritmo es tuyo",
+              "body": "9 o 10 min/km está perfecto. Aquí no se compara nadie."
+            },
+            {
+              "title": "Si algo duele",
+              "body": "Una molestia que no se va en dos días: para y habla con tu fisio."
+            },
+            {
+              "title": "Antes de empezar",
+              "body": "Si tienes problemas de corazón, diabetes o tensión alta, hay embarazo o notas dolor en el pecho, consúltalo con tu médico."
+            }
+          ]
+        },
+        {
+          "layout": "cover",
+          "kicker": "Para subir",
+          "title": "Las siguientes semanas, **sin prisa**.",
+          "body": "Si una semana se te hace dura, repítela. No es retroceder.",
+          "visual": {
+            "type": "rows",
+            "title": "Minutos de trote + minutos andando",
+            "unit": "",
+            "rows": [
+              {
+                "label": "Semana 1",
+                "detail": "6 veces",
+                "value": "1 + 2"
+              },
+              {
+                "label": "Semana 2",
+                "detail": "5 veces",
+                "value": "2 + 2"
+              },
+              {
+                "label": "Semana 3",
+                "detail": "4 veces",
+                "value": "3 + 2"
+              },
+              {
+                "label": "Semana 4",
+                "detail": "3 veces",
+                "value": "5 + 2"
+              }
+            ]
+          }
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "Tu turno: ¿**cuántos minutos** seguidos puedes trotar hoy?",
+          "size": 58,
+          "body": "Un número, sin presión. Y mándaselo a quien lleva meses diciendo «a ver si empiezo».",
+          "actions": [
+            "Comenta",
+            "Guarda",
+            "Envía"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vo2max",
+      "title": "Tu VO2máx del Garmin",
+      "bg": "terracotta",
+      "topic": "VO2máx",
+      "caption": "Qué significa el VO2máx de tu Garmin y por qué cambia de un día para otro\n\nEl VO2máx es el máximo de oxígeno que tu cuerpo puede usar por minuto y por kilo mientras corres a tope. Tu reloj no lo mide: lo estima con tu ritmo y tu pulso en salidas al aire libre.\n\nPor eso se mueve unos puntos con el calor, con un pulso mal medido (reloj flojo, frío) o con pocas salidas. Un día no es una tendencia: mira lo que pasa en 6 u 8 semanas.\n\nPara empujar la tendencia: rodajes suaves de verdad, una sesión de series a la semana si tu plan lo pide y constancia durante semanas.\n\nGuárdalo y mándaselo a quien usa su VO2máx para presumir en el grupo.\n\nTu turno: ¿qué VO2máx te marca el reloj? Un número y ya.",
+      "hashtags": [
+        "#vo2max",
+        "#garmin",
+        "#running",
+        "#entrenamiento",
+        "#runnersespaña"
+      ],
+      "alt": "Texto sobre fondo terracota: Tu VO2máx del Garmin no es tu VO2máx. Después, qué mide, qué lo mueve sin que estés peor y comparación entre un solo día con 52 y una tendencia de dos meses con +3.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Dato incómodo",
+          "title": "Tu VO2máx del Garmin **no es** tu VO2máx.",
+          "size": 118,
+          "body": "Es una estimación. Sirve para ver tendencia, no para presumir en el grupo.",
+          "facts": [
+            "Estimación",
+            "ml/kg/min",
+            "Tendencia"
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "VO2máx",
+          "title": "VO2máx **en tres líneas**",
+          "points": [
+            {
+              "title": "Qué mide",
+              "body": "El máximo de oxígeno que tu cuerpo puede usar por minuto y por kilo al correr a tope."
+            },
+            {
+              "title": "Qué hace tu reloj",
+              "body": "Lo estima con tu ritmo y tu pulso en salidas al aire libre."
+            },
+            {
+              "title": "Qué no es",
+              "body": "Una prueba de laboratorio. Puede moverse unos puntos de un día a otro."
+            }
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "Ojo",
+          "title": "Lo que lo **mueve** sin que estés peor",
+          "points": [
+            {
+              "title": "Calor y humedad",
+              "body": "A igual ritmo tu pulso sube, y el reloj cree que vas peor."
+            },
+            {
+              "title": "Sensor de muñeca",
+              "body": "Reloj flojo, frío o un tatuaje sobre el sensor: el pulso se mide mal y la estimación también."
+            },
+            {
+              "title": "Pocos datos",
+              "body": "Con pocas salidas al aire libre, el valor tarda en actualizarse."
+            }
+          ]
+        },
+        {
+          "layout": "versus",
+          "kicker": "Un día vs una tendencia",
+          "title": "Un día **no es** una tendencia.",
+          "left": {
+            "label": "Un solo día",
+            "value": "52",
+            "unit": "ml/kg/min",
+            "lines": [
+              "Hoy sube 2, mañana baja 1",
+              "Cambia con el calor"
+            ]
+          },
+          "right": {
+            "label": "Dos meses",
+            "value": "+3",
+            "unit": "ml/kg/min",
+            "lines": [
+              "Sube con constancia",
+              "Eso sí cuenta"
+            ]
+          },
+          "body": "Mira la **tendencia** de 6 a 8 semanas, no el número de hoy.",
+          "animate": true
+        },
+        {
+          "layout": "points",
+          "kicker": "Cómo mejorarlo",
+          "title": "Cómo **empujar** la tendencia",
+          "points": [
+            {
+              "title": "Rodajes suaves de verdad",
+              "body": "Son la base. Casi todo tu volumen, en Z2."
+            },
+            {
+              "title": "Una sesión de series",
+              "body": "Intervalos de 3 a 5 minutos, una vez por semana si tu plan lo pide."
+            },
+            {
+              "title": "Constancia",
+              "body": "Semanas seguidas pesan más que una semana heroica."
+            }
+          ]
+        },
+        {
+          "layout": "cta",
+          "bg": "terracotta",
+          "title": "Tu turno: ¿**qué VO2máx** te marca el reloj?",
+          "body": "Un número y ya, sin comparar. Y mándaselo a quien lo usa para presumir en el grupo.",
+          "actions": [
+            "Comenta",
+            "Guarda",
+            "Envía"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "diccionario-garmin",
+      "title": "El diccionario Garmin",
+      "bg": "cream",
+      "topic": "Diccionario",
+      "caption": "Qué significan las etiquetas de tu Garmin en español: preparación para entrenar, carga aguda, tiempo de recuperación…\n\nGuárdate este diccionario. Tu reloj te dice «Preparación para entrenar: baja», «Carga aguda: alta» o «Estado de VFC: desequilibrado», y casi nadie te explica qué hacer con eso.\n\nPara decidir hoy: Preparación para entrenar (si es baja, mejor suave o descanso), Tiempo de recuperación (horas hasta tu próxima sesión exigente), Carga aguda (lo que has entrenado en 7 días) y Estado de VFC (tu media de 7 noches frente a tu rango).\n\nPara ver tu evolución: Estado de entrenamiento (improductivo = entrenas, pero tu forma baja), VO2máx (una estimación: mira la tendencia), Body Battery (tu energía de 0 a 100) y Minutos de intensidad (los intensos cuentan doble).\n\nMándaselo a quien aún dice «yo no sé qué significa mi reloj».\n\nTu turno: ¿qué etiqueta de tu reloj nunca has entendido? Una palabra y la explicamos.",
+      "hashtags": [
+        "#garmin",
+        "#relojgarmin",
+        "#running",
+        "#entrenamiento",
+        "#runnersespaña"
+      ],
+      "alt": "Diccionario de etiquetas del reloj Garmin en español: Preparación para entrenar, Tiempo de recuperación, Carga aguda, Estado de VFC, Estado de entrenamiento, VO2máx, Body Battery y Minutos de intensidad, con su significado en castellano llano.",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Guárdalo",
+          "title": "Tu reloj habla raro. Aquí va **el diccionario**.",
+          "size": 112,
+          "body": "Las etiquetas del Garmin, en castellano llano.",
+          "facts": [
+            "Preparación para entrenar",
+            "Carga aguda",
+            "VFC"
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "Diccionario Garmin · 1 de 2",
+          "title": "Para decidir **hoy**",
+          "size": 76,
+          "points": [
+            {
+              "title": "«Preparación para entrenar: baja»",
+              "body": "Tu cuerpo no llega bien a una sesión dura. Mejor suave o descanso."
+            },
+            {
+              "title": "«Tiempo de recuperación: 36 h»",
+              "body": "Horas estimadas hasta tu próxima sesión exigente. Un rodaje suave sí vale."
+            },
+            {
+              "title": "«Carga aguda: alta»",
+              "body": "Lo que has entrenado en los últimos 7 días, frente a tu nivel."
+            },
+            {
+              "title": "«Estado de VFC: desequilibrado»",
+              "body": "Tu media de 7 noches se sale de tu rango."
+            }
+          ]
+        },
+        {
+          "layout": "points",
+          "kicker": "Diccionario Garmin · 2 de 2",
+          "title": "Para ver tu **evolución**",
+          "size": 76,
+          "points": [
+            {
+              "title": "«Estado de entrenamiento: improductivo»",
+              "body": "Entrenas, pero tu forma baja. Revisa sueño y descanso."
+            },
+            {
+              "title": "«VO2máx: 52»",
+              "body": "Una estimación de tu forma aeróbica. Mira la tendencia."
+            },
+            {
+              "title": "«Body Battery: 64»",
+              "body": "Tu energía de 0 a 100. Se recarga al descansar."
+            },
+            {
+              "title": "«Minutos de intensidad»",
+              "body": "Actividad moderada o intensa. Los intensos cuentan doble."
+            }
+          ]
+        },
+        {
+          "layout": "cover",
+          "kicker": "Bonus",
+          "title": "«Preparación para entrenar» sale de **seis señales**.",
+          "size": 66,
+          "visual": {
+            "type": "rows",
+            "unit": "",
+            "rows": [
+              {
+                "label": "Sueño",
+                "detail": "La nota de la última noche",
+                "value": "anoche"
+              },
+              {
+                "label": "Tiempo de recuperación",
+                "detail": "Lo que aún te queda por recuperar",
+                "value": "horas"
+              },
+              {
+                "label": "Estado de VFC",
+                "detail": "Tu media frente a tu rango",
+                "value": "7 noches"
+              },
+              {
+                "label": "Carga aguda",
+                "detail": "Lo que has entrenado esta semana",
+                "value": "7 días"
+              },
+              {
+                "label": "Historial de sueño",
+                "detail": "Cómo has dormido los últimos días",
+                "value": "días"
+              },
+              {
+                "label": "Historial de estrés",
+                "detail": "Cuánto estrés has acumulado",
+                "value": "días"
+              }
+            ]
+          },
+          "example": false
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "Tu turno: ¿**qué etiqueta** de tu reloj nunca has entendido?",
+          "size": 56,
+          "body": "Una palabra y la explicamos. Y mándaselo a quien dice «yo no sé qué significa mi reloj».",
+          "actions": [
+            "Comenta",
+            "Guarda",
+            "Envía"
+          ]
+        }
+      ]
+    }
+  ]
+}
