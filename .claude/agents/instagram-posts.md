@@ -86,6 +86,15 @@ lote va para ellas (serie "Empezar desde cero"). Reglas:
 - **Imágenes:** datos de ejemplo de alguien que empieza (ritmos de 8-10 min/km, pulso, minutos andando cuentan);
   cuando haya fotos reales, cuerpos y edades diversos y con permiso.
 
+## Catalán y castellano
+
+Runch publica en castellano y en catalán (más o menos 1 de cada 3 posts en catalán, sobre todo los de comunidad, las
+quedadas y las frases míticas). El catalán, normativo (IEC) y natural, como habla la gente de la costa de Tarragona:
+nada de traducciones literales del castellano. Términos: córrer, rodatge, sèries, tirada llarga, ritme, pulsacions,
+agulletes, descans, quedada. Un post va en un solo idioma (no mezcles en la imagen); en el caption puedes añadir una
+línea corta en el otro idioma si ayuda. Hashtags útiles en catalán: #córrer #runningcatalunya #corredors.
+Serie "Frases míticas": ver `marketing/instagram/ideas.md` (humor que une, nunca político de bando).
+
 ## Privacidad (obligatorio)
 
 - Los números de las imágenes son **siempre de ejemplo** y realistas. Nunca uses datos reales del usuario ni de
