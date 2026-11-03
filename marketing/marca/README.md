@@ -40,14 +40,39 @@ interiores de packaging y huecos de plantilla.
 
 ## Plantillas de Instagram
 
-`plantillas/`: post (1080 x 1350) e historia (1080 x 1920) para quedada, reto, «Tu turno» y cita. Cada una tiene un
-hueco para una ilustración:
+`plantillas/`: post (1080 x 1350) e historia (1080 x 1920) para quedada, reto, «Tu turno» y cita. Cada una tiene
+**una sola pieza protagonista**, muy grande y en Gluten, y lo demás se queda pequeño a su alrededor:
 
-- `<post|story>-<nombre>.png`: lista para usar, el hueco lleva el patrón.
-- `<post|story>-<nombre>-hueco.png`: el hueco marcado con sus medidas (920 x 580 en post, 920 x 760 en historia).
+| Plantilla | Color | Protagonista | Acompaña |
+|---|---|---|---|
+| Quedada | Crema sobre terracota | La hora («9:00») con contorno de eco | «DOMINGO» en mayúsculas, sello «RITMO Z2 · NADIE SE QUEDA ATRÁS» |
+| Reto | Terracota sobre crema | «3» gigante + «accesos beta» | Pegatina «de 3 meses», sello «SORTEO» |
+| Tu turno | Crema sobre espresso | La pregunta, con «después» en pegatina | Respuestas en etiquetas rellenas, sello «TE LEEMOS» |
+| Cita | Espresso sobre mantequilla | La frase, con «despacio» subrayado en ola | Comilla « gigante, sello «EL CLUB · CADA DOMINGO» |
 
-Los textos y las ilustraciones se cambian en `TEMPLATES` dentro de `templates.py` (`"ilustracion": "ruta.png"`).
-Las historias dejan libres los 250 px de arriba y los 300 de abajo (ahí Instagram pone sus botones).
+Piezas comunes: sello redondo con texto alrededor y una margarita en el centro, etiquetas rellenas (tinta de fondo,
+texto del color del fondo), piezas un poco giradas para que no quede rígido, y el hueco de la ilustración girado
+como una foto pegada.
+
+**Regla: carrusel bilingüe.** Todas las plantillas ilustradas se publican siempre como carrusel de dos diapositivas
+con el mismo diseño: la 1 en catalán y la 2 en castellano. Por eso cada pieza sale dos veces:
+
+- `<post|story>-<nombre>-1-ca.png` y `<post|story>-<nombre>-2-es.png`: listas para usar, el hueco lleva el patrón.
+- `<post|story>-<nombre>-hueco.png`: el hueco marcado con sus medidas (cambian según la plantilla, van escritas
+  dentro). Sale una sola vez, el diseño es el mismo en los dos idiomas.
+- `<post|story>-<nombre>-1-ca.mp4` y `-2-es.mp4`: la misma pieza animada, 6 s, 30 fps, sin sonido, H.264 (yuv420p), ~1-1,5 MB.
+  El patrón se desliza en diagonal (medio paso de baldosa en 6 s, sin corte al repetirse), la protagonista entra con
+  un pequeño rebote, el sello entra girando y luego gira despacio, las etiquetas suben una a una, el subrayado se
+  dibuja y el logotipo hace una ola dos veces. Todo se queda quieto unos 3 s y al final se funde, así el primer y el
+  último fotograma coinciden y el vídeo se repite sin salto.
+- `<post|story>-<nombre>-<n>-<idioma>-frames.png`: hoja con 6 fotogramas del vídeo para revisarlo sin abrirlo.
+
+Los textos están en `TEXTS` dentro de `templates.py`, un diccionario por idioma (`"ca"`, `"es"`) con los mismos
+campos en los dos; `LANGS` fija el orden del carrusel. Catalán normativo y natural, no una traducción palabra por
+palabra (p. ej. «Diumenge», «Ningú es queda enrere», «Repte», «El teu torn», «Córrer a poc a poc també és córrer»).
+Las ilustraciones se ponen en `TEMPLATES` (`"ilustracion": "ruta.png"`);
+la colocación de cada pieza está en su función (`quedada`, `reto`, `tu_turno`, `cita`). Las historias dejan libres
+los 250 px de arriba y los 300 de abajo (ahí Instagram pone sus botones); el script avisa si algo se sale.
 
 ## Ilustración (pendiente)
 
@@ -66,6 +91,7 @@ un post. Son escenas planas dibujadas con código, sin fotos.
 ```bash
 cd marketing/marca
 uv run --no-project --with playwright --with fonttools python templates.py   # primero: el móvil y la hoja las usan
+#   templates.py --sin-video   solo PNG · templates.py quedada   solo una plantilla (necesita ffmpeg para los MP4)
 uv run --no-project --with playwright --with fonttools python build.py       # logo, patrones, mockups, hoja
 ```
 

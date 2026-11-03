@@ -315,8 +315,9 @@ def mock_movil(story_png: Path, post_png: Path) -> str:
                 + f'<rect x="{x + w / 2 - 60}" y="{y + 26}" width="120" height="30" rx="15" fill="{C["espresso"]}"/>')
 
     pw, ph = 470, 960
-    x1, y1 = 330, 110
-    s1 = phone(x1, y1, pw, ph, img(story_png, x1 + 16, y1 + 16, pw - 32, ph - 32, 50, "c1"))
+    ph1 = round((pw - 32) * 16 / 9) + 32  # pantalla 9:16, para que la historia se vea entera
+    x1, y1 = 330, 110 + (ph - ph1) // 2
+    s1 = phone(x1, y1, pw, ph1, img(story_png, x1 + 16, y1 + 16, pw - 32, ph1 - 32, 50, "c1"))
     s1 += "".join(f'<rect x="{x1 + 40 + i * 132}" y="{y1 + 76}" width="122" height="6" rx="3" fill="#FFFFFF" '
                   f'opacity="{.95 if i == 0 else .5}"/>' for i in range(3))
     x2, y2 = 870, 160
@@ -345,7 +346,7 @@ def build_mockups(r: Renderer) -> None:
         "gorra": (mock_gorra(), 1080, 1080),
         "botella": (mock_botella(), 1080, 1350),
         "pegatinas": (mock_pegatinas(), 1350, 1350),
-        "movil": (mock_movil(tpl / "story-quedada.png", tpl / "post-reto.png"), 1600, 1200),
+        "movil": (mock_movil(tpl / "story-quedada-1-ca.png", tpl / "post-reto-2-es.png"), 1600, 1200),
     }
     for name, (s, w, h) in items.items():
         r.png(s, out / f"{name}.png", w, h)
@@ -370,7 +371,7 @@ def build_hoja(r: Renderer) -> None:
     mocks = "".join(f'<img class="mk" src="{png(m / f)}">' for f in ["cajas.png", "botella.png", "pegatinas.png"])
     mocks_wide = "".join(f'<img class="mkw" src="{png(m / f)}">' for f in ["bolsas.png", "camisetas.png", "movil.png", "gorra.png"])
     tpls = "".join(f'<img class="tp" src="{png(HERE / "plantillas" / f)}">' for f in
-                   ["post-quedada.png", "post-reto.png", "post-tu-turno.png", "post-cita.png"])
+                   ["post-quedada-1-ca.png", "post-reto-2-es.png", "post-tu-turno-1-ca.png", "post-cita-2-es.png"])
 
     g, (vx, vy, vw, vh) = wordmark()
 
