@@ -11,12 +11,10 @@
       "caption": "Admítelo: la mayoría usamos un reloj de cientos de euros para ver la hora, contar pasos y presumir en Strava.\n\nY ese reloj sabe cómo duermes, cómo te recuperas y si hoy deberías apretar o quedarte en el sofá.\n\nEn esta cuenta te lo traducimos: HRV, Z2, Body Battery, ritmos, sueño. Claro, corto y sin humo.\n\nSíguenos y empieza a entrenar con cabeza.",
       "hashtags": [
         "#running",
-        "#runners",
         "#garmin",
-        "#entrenamiento",
         "#corredores",
-        "#datosdesalud",
-        "#runnersespaña"
+        "#runnersespaña",
+        "#entrenamiento"
       ],
       "alt": "Texto grande sobre fondo negro: Tienes un reloj de 500 euros y lo usas para mirar la hora.",
       "slides": [
@@ -68,13 +66,11 @@
       "topic": "Zonas",
       "caption": "La Z2 es la zona en la que puedes correr y mantener una conversación. Ni más ni menos.\n\nEl problema: casi todo el mundo corre sus rodajes «suaves» en Z3 o Z4. Ni recupera ni construye base. Resultado: cansancio, estancamiento y alguna lesión de regalo.\n\nLa regla: el 80 % del tiempo, suave de verdad. El 20 %, fuerte de verdad.\n\nMira la media de pulso de tu último rodaje. ¿Era Z2?",
       "hashtags": [
-        "#z2",
         "#zona2",
-        "#running",
+        "#z2",
         "#garmin",
-        "#entrenamientopolarizado",
-        "#corredores",
-        "#runnersespaña"
+        "#running",
+        "#corredores"
       ],
       "alt": "Zonas de pulso con la Z2 resaltada entre 114 y 133 latidos por minuto, y comparación entre un rodaje a 5:15 y otro a 6:10.",
       "slides": [
@@ -161,12 +157,11 @@
       "topic": "Preparación",
       "caption": "Ese día que sales a hacer series «porque tocaban» y vas arrastrándote… tu reloj ya lo sabía.\n\nLa preparación junta tu HRV, tu sueño, tu pulso en reposo y tu carga reciente, y los compara con tu propia normalidad. Te da una nota de 0 a 100 y un consejo claro para hoy.\n\nEntrenar fuerte un mal día no te hace más duro. Te hace más lento.\n\n¿Cuántas veces has ignorado a tu cuerpo este mes?",
       "hashtags": [
-        "#running",
-        "#recuperacion",
         "#hrv",
-        "#entrenamiento",
-        "#corredores",
-        "#garmin"
+        "#garmin",
+        "#recuperacion",
+        "#running",
+        "#corredores"
       ],
       "alt": "Tarjeta de preparación con nota 38, Baja, y las cuatro señales: HRV, sueño, pulso en reposo y carga reciente.",
       "slides": [
@@ -236,12 +231,10 @@
       "topic": "Ritmos",
       "caption": "Si haces la media en 1:45, tu rodaje suave va entre 5:49 y 6:34 el km. No a 5:15 «porque hoy me encontraba bien».\n\nCon una marca reciente, el modelo VDOT de Jack Daniels te da tus ritmos de entreno: suave, umbral, series y repeticiones. Lo difícil no es calcularlos. Lo difícil es respetarlos.\n\nGuárdalo y míralo antes de tu próximo rodaje.",
       "hashtags": [
-        "#running",
         "#ritmos",
-        "#vdot",
         "#mediamaraton",
+        "#running",
         "#corredores",
-        "#entrenamiento",
         "#runnersespaña"
       ],
       "alt": "Texto sobre fondo naranja: Tu ritmo suave no es suave, es ego. Después, tabla de ritmos para una media maratón en 1:45:00.",
@@ -333,10 +326,9 @@
       "caption": "La HRV (variabilidad de la frecuencia cardiaca) es de los mejores chivatos de tu recuperación. Y la ignoramos muchísimo.\n\nNo compares tu número con el de nadie: cada persona tiene su rango. Lo que importa es si hoy estás dentro del tuyo.\n\nRegla de bolsillo: dos noches seguidas por debajo de tu rango, día suave. Tu yo de dentro de una semana te lo agradecerá.",
       "hashtags": [
         "#hrv",
+        "#garmin",
         "#recuperacion",
         "#running",
-        "#garmin",
-        "#salud",
         "#corredores"
       ],
       "alt": "HRV nocturna de 41 milisegundos, por debajo de la franja del rango normal tras dos noches bajando.",
@@ -403,7 +395,6 @@
       "hashtags": [
         "#bodybattery",
         "#garmin",
-        "#energia",
         "#descanso",
         "#running",
         "#corredores"
@@ -496,11 +487,10 @@
       "topic": "Fuerza",
       "caption": "Correr y solo correr funciona… hasta que deja de funcionar.\n\nDos días de fuerza a la semana mejoran tu economía de carrera y te blindan rodillas, gemelos y espalda.\n\nTruco: no hace falta jugársela con una repetición máxima. Con la fórmula de Epley (peso × (1 + repeticiones / 30)) estimas tu 1RM con una serie normal de hasta 12 repeticiones. 8 × 60 kg en press de banca son unos 76 kg de 1RM.\n\n¿Cuántos días de fuerza haces tú? Confiesa en los comentarios.",
       "hashtags": [
-        "#runnersquelevantan",
         "#fuerza",
+        "#prevenciondelesiones",
         "#gimnasio",
         "#running",
-        "#prevenciondelesiones",
         "#corredores"
       ],
       "alt": "Tarjeta con el 1RM estimado de sentadilla, peso muerto y press de banca, y el número 2 grande: días de fuerza por semana.",
@@ -550,11 +540,10 @@
       "caption": "Zapatillas de placa, geles de no sé cuántos euros, sensores… y luego dormimos 5 horas.\n\nTrasnochar el viernes y el sábado es como volar a otro país dos veces por semana: se llama jet lag social. Un horario estable, también el finde, mejora tu sueño aunque duermas las mismas horas.\n\nTu mejor marca no está en una tienda. Está en tu almohada.",
       "hashtags": [
         "#sueño",
-        "#dormirbien",
         "#recuperacion",
+        "#dormirbien",
         "#running",
-        "#corredores",
-        "#habitos"
+        "#corredores"
       ],
       "alt": "Texto sobre fondo índigo: Duermes 5 horas y le echas la culpa a las zapatillas. Después, gráfico de horas de acostarse.",
       "slides": [
@@ -627,10 +616,9 @@
       "topic": "Coach",
       "caption": "Los planes de PDF tienen un problema: no saben que esta semana has dormido mal, que el jueves no pudiste salir o que te molesta el gemelo.\n\nNuestro coach con IA revisa cada lunes lo que has hecho, tu HRV, tu sueño y cómo te has sentido, y reajusta las semanas que quedan. Y aprende de ti: lo que te funciona, lo que no.\n\nEntrenar con un plan está bien. Entrenar con uno que te escucha, mejor.",
       "hashtags": [
-        "#running",
         "#planentrenamiento",
-        "#ia",
         "#coach",
+        "#running",
         "#corredores",
         "#runnersespaña"
       ],

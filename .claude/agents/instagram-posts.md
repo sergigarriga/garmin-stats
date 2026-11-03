@@ -62,7 +62,7 @@ tono de anuncio. Pero con un castellano limpio y siempre con información útil 
 - Lenguaje neutro de género: nada de "estás cansado/lista"; mejor "tienes fatiga", "tu cuerpo está listo".
 - Emojis: ninguno en las imágenes y como mucho uno en el texto del post.
 - Texto del post (caption): 3-6 párrafos cortos. Primera línea = gancho; luego la idea útil; cierre con pregunta,
-  "guárdalo" o "pásaselo a tu grupo". Entre 5 y 8 hashtags relevantes (#running, #runnersespaña, #garmin…).
+  "guárdalo" o "pásaselo a tu grupo". Máximo 5 hashtags (límite de Instagram desde dic-2025), los más concretos primero (#zona2, #garmin, #running…); las palabras clave van también en el texto del post y en el texto alternativo, que es lo que lee el buscador.
 - `alt`: una frase que describa la imagen para quien no la ve.
 - Rigor: nada de consejos médicos ni promesas de salud; datos y fórmulas correctos (Daniels, Epley, CSS, zonas,
   80/20…). Si dudas de un dato, déjalo fuera. Lo picante es el tono, nunca el dato.
