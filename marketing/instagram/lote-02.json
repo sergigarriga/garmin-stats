@@ -149,7 +149,7 @@
     {
       "id": "vfc-desequilibrado",
       "title": "Estado de VFC: desequilibrado",
-      "bg": "butter",
+      "bg": "cream",
       "topic": "VFC",
       "caption": "Qué significa «Estado de VFC: desequilibrado» en un reloj Garmin\n\nVFC es la variabilidad de la frecuencia cardiaca (HRV en inglés): cuánto cambia el tiempo entre un latido y el siguiente. Tu reloj la mide mientras duermes y la compara con tu propio rango, que tarda unas 3 semanas en aprender.\n\n«Desequilibrado» quiere decir que tu media de las últimas 7 noches se ha salido de ese rango. No es un diagnóstico ni un suspenso: es un «ojo» para que mires qué ha cambiado. Alcohol, cena tarde, poco sueño, estrés, un viaje o un resfriado que asoma.\n\nQué hacer: no te fíes de una sola noche, cambia las series de hoy por un rodaje suave si no te encuentras bien y vuelve a mirar en un par de días. Si sigue fuera de rango durante semanas, habla con tu médico.\n\nGuárdalo y mándaselo a quien se salta el aviso.\n\nTu turno: ¿cuál es tu VFC de esta mañana? Un número en ms.",
       "hashtags": [
@@ -252,7 +252,7 @@
         },
         {
           "layout": "big",
-          "bg": "butter",
+          "bg": "cream",
           "kicker": "Si pone «sin estado»",
           "big": "3",
           "bigSize": 420,
@@ -261,7 +261,7 @@
         },
         {
           "layout": "cta",
-          "bg": "butter",
+          "bg": "cream",
           "title": "Tu turno: ¿cuál es **tu VFC** de esta mañana?",
           "body": "Un número en ms. Y mándaselo a quien se salta el aviso.",
           "actions": [
@@ -386,7 +386,7 @@
     {
       "id": "reto-improductivo",
       "title": "Reto: Estado de entrenamiento improductivo",
-      "bg": "espresso",
+      "bg": "cream",
       "topic": "Reto",
       "answer": "Tu carga de entrenamiento es adecuada, pero tu forma física (VO2máx) no sube, o incluso baja: entrenas, pero tu cuerpo no lo convierte en mejora. Suele ir con poco sueño, estrés, alcohol, calor, un resfriado o rodajes que no son suaves de verdad. Qué hacer: mirar la tendencia de 2-3 semanas, dormir más, una semana con menos volumen y respetar el 80 % suave. Publicar tras el cierre del plazo, en otro post o en stories.",
       "caption": "¿Qué significa «Estado de entrenamiento: improductivo» en un Garmin? Reto Runch con sorteo.\n\nTu reloj lo dice y casi nadie lo entiende. En las diapositivas tienes pistas, pero no la respuesta: esa la publicaremos después.\n\nCómo participar: comenta con tus palabras qué significa «improductivo» antes del 25 de noviembre a las 23:59. Entre los aciertos sorteamos 3 accesos beta de 3 meses a Runch, la app con coach de running que se adapta a tus datos de Garmin (requiere reloj Garmin).\n\nPueden participar mayores de 18 años residentes en España. Los ganadores se anunciarán en stories y por mensaje directo. Bases legales completas en el comentario fijado.\n\nInstagram no patrocina, avala ni administra este sorteo ni está asociado a él.\n\nTu turno: ¿qué crees que significa «improductivo»? Una frase y ya.",
@@ -397,7 +397,7 @@
         "#running",
         "#runnersespaña"
       ],
-      "alt": "Reto Runch sobre fondo marrón oscuro: ¿Sabes qué significa Estado de entrenamiento: improductivo? Tres pistas, los otros estados del Garmin traducidos y el sorteo de 3 accesos beta de 3 meses a Runch para quien acierte.",
+      "alt": "Reto Runch sobre fondo crema: ¿Sabes qué significa Estado de entrenamiento: improductivo? Tres pistas, los otros estados del Garmin traducidos y el sorteo de 3 accesos beta de 3 meses a Runch para quien acierte.",
       "slides": [
         {
           "layout": "hook",
@@ -503,7 +503,7 @@
         },
         {
           "layout": "cta",
-          "bg": "espresso",
+          "bg": "cream",
           "title": "Reto Runch: comenta **qué significa** «improductivo».",
           "size": 56,
           "body": "Entre los aciertos sorteamos 3 accesos beta de 3 meses a Runch, la app con coach de running que se adapta a tus datos de Garmin.",
@@ -636,7 +636,7 @@
     {
       "id": "body-battery-noche",
       "title": "Body Battery no sube por la noche",
-      "bg": "sage",
+      "bg": "cream",
       "topic": "Energía",
       "caption": "Por qué mi Body Battery no sube por la noche (aunque duerma ocho horas)\n\nLa Body Battery se recarga con descanso real, no solo con horas en la cama. Tu reloj combina tu estrés (que calcula con la variabilidad del pulso), tu actividad y tu sueño. Si tu cuerpo sigue «en alerta» mientras duermes, la recarga se queda corta.\n\nLo que suele frenarla: alcohol, una cena copiosa justo antes de acostarte, un día de mucho estrés o una sesión intensa muy tarde, y un cuarto caliente. También un reloj flojo, que mide mal.\n\nPrueba una sola cosa esta noche, no cinco, y compara tu recarga con la de tus noches buenas. Esa es tu referencia, no el 100. Si lo ves bajo durante semanas y te encuentras mal, habla con tu médico.\n\nGuárdalo para tu próxima noche mala.\n\nTu turno: ¿cuánto sube tu Body Battery en una noche buena? Un número y ya.",
       "hashtags": [
@@ -785,7 +785,7 @@
         },
         {
           "layout": "cta",
-          "bg": "sage",
+          "bg": "cream",
           "title": "Tu turno: ¿**cuánto sube** tu Body Battery en una noche buena?",
           "size": 56,
           "body": "Un número y ya. Y guárdalo para tu próxima noche mala.",
@@ -961,7 +961,7 @@
     {
       "id": "vo2max",
       "title": "Tu VO2máx del Garmin",
-      "bg": "terracotta",
+      "bg": "cream",
       "topic": "VO2máx",
       "caption": "Qué significa el VO2máx de tu Garmin y por qué cambia de un día para otro\n\nEl VO2máx es el máximo de oxígeno que tu cuerpo puede usar por minuto y por kilo mientras corres a tope. Tu reloj no lo mide: lo estima con tu ritmo y tu pulso en salidas al aire libre.\n\nPor eso se mueve unos puntos con el calor, con un pulso mal medido (reloj flojo, frío) o con pocas salidas. Un día no es una tendencia: mira lo que pasa en 6 u 8 semanas.\n\nPara empujar la tendencia: rodajes suaves de verdad, una sesión de series a la semana si tu plan lo pide y constancia durante semanas.\n\nGuárdalo y mándaselo a quien usa su VO2máx para presumir en el grupo.\n\nTu turno: ¿qué VO2máx te marca el reloj? Un número y ya.",
       "hashtags": [
@@ -971,7 +971,7 @@
         "#entrenamiento",
         "#runnersespaña"
       ],
-      "alt": "Texto sobre fondo terracota: Tu VO2máx del Garmin no es tu VO2máx. Después, qué mide, qué lo mueve sin que estés peor y comparación entre un solo día con 52 y una tendencia de dos meses con +3.",
+      "alt": "Texto sobre fondo crema: Tu VO2máx del Garmin no es tu VO2máx. Después, qué mide, qué lo mueve sin que estés peor y comparación entre un solo día con 52 y una tendencia de dos meses con +3.",
       "slides": [
         {
           "layout": "hook",
@@ -1069,7 +1069,7 @@
         },
         {
           "layout": "cta",
-          "bg": "terracotta",
+          "bg": "cream",
           "title": "Tu turno: ¿**qué VO2máx** te marca el reloj?",
           "body": "Un número y ya, sin comparar. Y mándaselo a quien lo usa para presumir en el grupo.",
           "actions": [

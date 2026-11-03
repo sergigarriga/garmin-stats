@@ -6,7 +6,7 @@
     {
       "id": "un-got-es-un-got",
       "title": "Un rodatge suau és un rodatge suau",
-      "bg": "cream",
+      "bg": "sage",
       "inner": "butter",
       "topic": "Frases",
       "slides": [
@@ -39,7 +39,7 @@
         },
         {
           "layout": "cta",
-          "bg": "cream",
+          "bg": "sage",
           "title": "El teu torn: **quin percentatge** del teu temps és suau?",
           "body": "Tu turno: ¿**qué porcentaje** de tu tiempo es suave?",
           "size": 58,
@@ -122,8 +122,8 @@
     {
       "id": "sempre-negatiu",
       "title": "Sempre negatiu, mai positiu",
-      "bg": "cream",
-      "inner": "sea",
+      "bg": "sea",
+      "inner": "cream",
       "topic": "Frases",
       "slides": [
         {
@@ -141,7 +141,7 @@
         },
         {
           "layout": "hook",
-          "bg": "sea",
+          "bg": "cream",
           "kicker": "Parciales",
           "title": "Siempre **negativo,** nunca positivo. Hablamos de parciales.",
           "body": "Un parcial negativo es correr la segunda mitad más rápido que la primera. Sal contenido: la adrenalina del principio engaña.",
@@ -155,7 +155,7 @@
         },
         {
           "layout": "cta",
-          "bg": "cream",
+          "bg": "sea",
           "title": "El teu torn: **positiu o negatiu,** com acabes les tirades?",
           "body": "Tu turno: ¿**positivo o negativo,** cómo acabas tus tiradas?",
           "size": 58,
@@ -238,7 +238,7 @@
     {
       "id": "garmin-i-runner",
       "title": "El Garmin i el runner",
-      "bg": "cream",
+      "bg": "butter",
       "inner": "terracotta",
       "topic": "Frases",
       "slides": [
@@ -271,7 +271,7 @@
         },
         {
           "layout": "cta",
-          "bg": "cream",
+          "bg": "butter",
           "title": "El teu torn: **fas cas** del rellotge o de les sensacions?",
           "body": "Tu turno: ¿**haces caso** al reloj o a tus sensaciones?",
           "size": 58,
@@ -354,7 +354,7 @@
     {
       "id": "una-mica-de-per-favor",
       "title": "Una mica de per favor",
-      "bg": "cream",
+      "bg": "terracotta",
       "inner": "sage",
       "topic": "Frases",
       "slides": [
@@ -387,7 +387,7 @@
         },
         {
           "layout": "cta",
-          "bg": "cream",
+          "bg": "terracotta",
           "title": "El teu torn: **qui marca** el ritme al teu grup?",
           "body": "Tu turno: ¿**quién marca** el ritmo en tu grupo?",
           "size": 58,
@@ -412,7 +412,7 @@
     {
       "id": "que-fort-hrv",
       "title": "Que fort! El teu HRV no baixa",
-      "bg": "terracotta",
+      "bg": "espresso",
       "inner": "cream",
       "topic": "Frases",
       "slides": [
@@ -445,7 +445,7 @@
         },
         {
           "layout": "cta",
-          "bg": "terracotta",
+          "bg": "espresso",
           "title": "El teu torn: **mires l'HRV** cada matí?",
           "body": "Tu turno: ¿**miras el HRV** cada mañana?",
           "size": 58,
@@ -470,7 +470,7 @@
     {
       "id": "menys-mil-d-aura",
       "title": "−1000 d'aura",
-      "bg": "cream",
+      "bg": "sage",
       "inner": "butter",
       "topic": "Frases",
       "slides": [
@@ -503,7 +503,7 @@
         },
         {
           "layout": "cta",
-          "bg": "cream",
+          "bg": "sage",
           "title": "El teu torn: **quants quilòmetres** t'has deixat sense gravar?",
           "body": "Tu turno: ¿**cuántos kilómetros** se te han quedado sin grabar?",
           "size": 58,
