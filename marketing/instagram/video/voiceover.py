@@ -12,7 +12,7 @@ Genera en marketing/instagram/out/video/:
   <nombre>.timing.json   sincronía voz-animación (la usa render_video.py)
   <nombre>.srt           subtítulos en archivo aparte
 
-Guion: {"anim_duration", "lead", "tail", "bpm", "voice", "tempo", "lines": [{"scene", "text", "say"?}], "sfx": [{"t", "type", "pitch"?}]}
+Guion: {"anim_duration", "lead", "tail", "bpm", "music" ("house" = base actual de Reels; si no, el groove suave), "voice", "tempo", "lines": [{"scene", "text", "say"?}], "sfx": [{"t", "type", "pitch"?}]}
   Todo el guion se graba en UNA toma (entonación natural, como habla una persona). Cada parte lleva "scene": el segundo
   de la animación en el que empieza su escena; la animación espera a la voz (timewarp.py). El vídeo dura lo que la voz.
   text = lo que sale en el subtítulo; say = cómo debe pronunciarlo la voz (p. ej. "Ranch" para que suene bien "Runch").
@@ -23,6 +23,7 @@ Guion: {"anim_duration", "lead", "tail", "bpm", "voice", "tempo", "lines": [{"sc
 
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 import subprocess
@@ -56,12 +57,16 @@ def polly(text: str, voice: str) -> tuple[np.ndarray, list[tuple[float, str]] | 
     """Voz de Amazon Polly con la cuenta de AWS configurada (perfil por defecto). voice = "polly:Lucia:generative:eu-central-1".
     Devuelve el audio a 44,1 kHz y, si el motor lo permite (neural, long-form), el inicio de cada palabra."""
     _, vid, engine, region = voice.split(":")
-    mp3 = OUT / "_line.mp3"
+    # caché por voz + texto: repetir un vídeo no vuelve a pagar a Polly (solo las frases que cambian)
+    key = hashlib.sha1(f"{voice}|{text}".encode()).hexdigest()[:16]
+    mp3 = CACHE / "polly" / f"{key}.mp3"
     base = ["aws", "polly", "synthesize-speech", "--region", region, "--engine", engine, "--voice-id", vid, "--text", text]
-    subprocess.run(base + ["--output-format", "mp3", "--sample-rate", "24000", str(mp3)], check=True, capture_output=True)
+    if not mp3.exists():
+        mp3.parent.mkdir(parents=True, exist_ok=True)
+        subprocess.run(base + ["--output-format", "mp3", "--sample-rate", "24000", str(mp3)], check=True, capture_output=True)
+        print(f"  Polly: {len(text)} caracteres")
     raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", str(mp3), "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"],
                          check=True, capture_output=True).stdout
-    mp3.unlink()
     audio = np.frombuffer(raw, dtype=np.int16).astype(np.float32) / 32768
     marks = None
     if engine != "generative":  # el motor generativo no da marcas de palabra
@@ -180,6 +185,108 @@ def music(duration: float, bpm: float) -> np.ndarray:
     st = np.stack([L, R], axis=1)
     fade = np.minimum(1, (duration - t) / 0.8)[:, None]
     return st * fade
+
+
+def _filt(x: np.ndarray, lo: float = 0.0, hi: float = 0.0) -> np.ndarray:
+    """Filtro suave por FFT (paso alto en lo, paso bajo en hi; 0 = sin ese lado). Rápido para pistas enteras."""
+    X = np.fft.rfft(x)
+    f = np.fft.rfftfreq(len(x), 1 / SR) + 1e-6
+    H = np.ones_like(f)
+    if lo:
+        H /= 1 + (lo / f) ** 4
+    if hi:
+        H /= 1 + (f / hi) ** 4
+    return np.fft.irfft(X * H, len(x))
+
+
+def _pluck(freq: float, length: float, decay: float = 0.28, bright: int = 8) -> np.ndarray:
+    """Pulsado: armónicos que se apagan antes cuanto más agudos (suena a pluck de synth / kalimba)."""
+    s = np.arange(int(length * SR)) / SR
+    out = sum(np.sin(2 * np.pi * freq * k * s) / k * np.exp(-s / (decay / k ** 0.8)) for k in range(1, bright + 1))
+    return out * np.minimum(1, s / 0.002)
+
+
+def music_house(duration: float, bpm: float = 122) -> np.ndarray:
+    """Base actual, estilo afro/lo-fi house de Reels (≈120-124 bpm): bombo a negras con pegada, palmada en 2 y 4,
+    shaker a semicorcheas, charles abierto a contratiempo, bajo a contratiempo, acordes cortos sincopados y un gancho
+    pulsado con eco. Progresión Am-F-C-G (la del pop de ahora). Primer compás solo gancho y shaker; luego entra todo.
+    Todo compuesto por código: sin derechos de autor."""
+    n = int(duration * SR)
+    t = np.arange(n) / SR
+    beat = 60 / bpm
+    six, bar = beat / 4, 4 * beat
+    rng = np.random.default_rng(11)
+    drums, bass, keys, lead = (np.zeros((n, 2)) for _ in range(4))
+
+    def add(track, x, a, gl=1.0, gr=1.0):
+        i = int(a * SR)
+        if i >= n or i < 0:
+            return
+        m = min(len(x), n - i)
+        track[i:i + m, 0] += x[:m] * gl
+        track[i:i + m, 1] += x[:m] * gr
+
+    prog = [("A1", ["A3", "C4", "E4", "G4"]), ("F1", ["F3", "A3", "C4", "E4"]), ("C2", ["G3", "C4", "E4", "G4"]), ("G1", ["G3", "B3", "D4", "A4"])]
+    # sonidos
+    ks = np.arange(int(0.34 * SR)) / SR
+    kick = np.sin(2 * np.pi * np.cumsum(48 + 120 * np.exp(-ks / 0.03)) / SR) * np.exp(-ks / 0.17)
+    kick[: int(0.004 * SR)] += rng.standard_normal(int(0.004 * SR)) * 0.25
+    kick = np.tanh(kick * 1.8) / np.tanh(1.8) * 0.8
+    cs = np.arange(int(0.25 * SR)) / SR
+    clap = np.zeros(len(cs))
+    for k, d in enumerate((0, 0.009, 0.018)):  # tres golpes muy juntos = palmada
+        i = int(d * SR)
+        clap[i:] += rng.standard_normal(len(cs) - i) * np.exp(-(cs[: len(cs) - i]) / (0.012 if k < 2 else 0.08))
+    clap = _filt(clap, 900, 6000) * 0.42
+    sh = _filt(rng.standard_normal(int(0.05 * SR)), 6500) * np.exp(-np.arange(int(0.05 * SR)) / SR / 0.018) * 0.16
+    oh = _filt(rng.standard_normal(int(0.16 * SR)), 7500) * np.exp(-np.arange(int(0.16 * SR)) / SR / 0.06) * 0.13
+    nbars = int(duration / bar) + 1
+    drop = bar  # a partir del segundo compás entra la base
+    for b in range(nbars):
+        t0 = b * bar
+        root, ch = prog[b % 4]
+        full = t0 >= drop - 1e-6
+        for q in range(16):  # semicorcheas
+            ts = t0 + q * six + (0.012 if q % 2 else 0)  # un poco de swing
+            add(drums, sh * (0.9 if q % 4 == 2 else 0.5 if q % 2 else 0.35), ts, 0.7, 1.0)
+            if not full:
+                continue
+            if q % 4 == 0:
+                add(drums, kick, ts)
+            if q in (4, 12):
+                add(drums, clap, ts, 0.9, 1.0)
+            if q % 4 == 2:
+                add(drums, oh, ts, 1.0, 0.75)
+                bs = np.arange(int(0.21 * SR)) / SR
+                f0 = note(root)
+                bl = sum(np.sin(2 * np.pi * f0 * k * bs) * 0.72 ** k / k for k in range(1, 6)) * np.minimum(1, bs / 0.004) * np.exp(-bs / 0.16)
+                add(bass, bl * 0.55, ts)
+        if full:  # acordes cortos sincopados
+            for q in (3, 6, 10, 14):
+                for j, x in enumerate(ch):
+                    pl = _pluck(note(x), 0.3, 0.11, 6) * 0.07
+                    add(keys, pl, t0 + q * six, 1.0 - 0.15 * j, 0.55 + 0.15 * j)
+        # gancho pulsado (dos compases que se repiten)
+        hook = [(0, "E5"), (3, "G5"), (6, "A5"), (8, "G5"), (10, "E5"), (13, "D5")] if b % 2 == 0 else \
+               [(0, "C5"), (3, "D5"), (6, "E5"), (10, "G5"), (12, "A5" if b % 4 == 1 else "B5")]
+        for q, x in hook:
+            pl = _pluck(note(x), 0.5, 0.22, 9) * 0.13
+            add(lead, pl, t0 + q * six)
+            for e, (gl, gr) in enumerate(((0.0, 0.5), (0.32, 0.0)), 1):  # eco a 3/16, de lado a lado
+                add(lead, pl * 0.5 ** e, t0 + q * six + e * 3 * six, gl, gr)
+    lead[:, 0] = _filt(lead[:, 0], 250, 7000)
+    lead[:, 1] = _filt(lead[:, 1], 250, 7000)
+    intro = np.clip((t - (drop - 0.6)) / 0.6, 0, 1)  # el gancho del primer compás, apagadito
+    lead *= (0.55 + 0.45 * intro)[:, None]
+    # bombeo (sidechain del bombo) en bajo, acordes y gancho
+    pump = np.where(t >= drop, 1 - 0.55 * np.exp(-((t - drop) % beat) / 0.11), 1.0)[:, None]
+    mix_ = drums + (bass + keys * 1.0 + lead) * pump
+    mix_ = np.tanh(mix_ * 0.9) / 0.9  # un pelín de saturación, sin ensuciar
+    fade = np.minimum(1, (duration - t) / 0.8)[:, None]
+    mix_ *= fade
+    rms = np.sqrt(np.mean(mix_[int(drop * SR):] ** 2)) + 1e-9
+    mix_ *= 10 ** (-17 / 20) / rms  # mismo nivel que el groove: la voz manda
+    return mix_ / max(1.0, np.abs(mix_).max() / 0.9)
 
 
 def sfx(kind: str, pitch: float = 1.0) -> np.ndarray:
@@ -356,7 +463,7 @@ def main(path: str) -> None:
             captions.append({"text": " ".join(words[j] for j in ch), "t0": round(float(edges[ch[0]]), 3), "t1": round(float(edges[ch[-1] + 1]), 3),
                              "words": [{"w": words[j], "t0": round(float(edges[j]), 3), "t1": round(float(edges[j + 1]), 3)} for j in ch]})
         print(f"  {t0:5.2f}–{t1:5.2f} s  (escena {ln['scene']})  {ln['text']}")
-    m = music(dur, spec.get("bpm", 104))
+    m = music_house(dur, spec.get("bpm", 122)) if spec.get("music") == "house" else music(dur, spec.get("bpm", 104))
     for e in spec.get("sfx", []):  # los efectos van en tiempo de animación: se pasan a tiempo real
         place(m, sfx(e["type"], e.get("pitch", 1.0)), unwarp(e["t"], anchors))
     write_wav(OUT / f"{name}-voz.wav", voice * 0.95)

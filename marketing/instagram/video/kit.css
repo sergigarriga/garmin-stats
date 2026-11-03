@@ -1,0 +1,67 @@
+/* Kit de los Reels editoriales de Runch (1080 x 1920): el mismo sistema que los posts (render.py).
+   Crema, espresso y terracota (más salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva de
+   color, textos en Google Sans Flex, etiquetas en mayúsculas espaciadas y líneas finas. Lo usan los reel-*.html con
+   kit.js. Zona segura: el contenido va entre y = 300 y 1410 (arriba, la cabecera de Instagram; de 1440 a 1600, los
+   subtítulos; abajo, el texto del post) y lo de la mitad de abajo deja libre la columna de botones (derecha). */
+@font-face { font-family: GSF; font-weight: 1 1000; src: url("../fonts/google-sans-flex-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212; }
+@font-face { font-family: GSF; font-weight: 1 1000; src: url("../fonts/google-sans-flex-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: FR; font-weight: 1 1000; src: url("../fonts/fraunces-latin-full-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212; }
+@font-face { font-family: FR; font-weight: 1 1000; src: url("../fonts/fraunces-latin-ext-full-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: FR; font-style: italic; font-weight: 1 1000; src: url("../fonts/fraunces-latin-full-italic.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212; }
+@font-face { font-family: FR; font-style: italic; font-weight: 1 1000; src: url("../fonts/fraunces-latin-ext-full-italic.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+1E00-1EFF, U+2C60-2C7F, U+A720-A7FF; }
+
+* { box-sizing: border-box; margin: 0; }
+body { width: 1080px; height: 1920px; overflow: hidden; font-family: GSF, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+#stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #F7F3EC; }
+svg { display: block; overflow: visible; }
+
+/* fondos: los mismos de los posts */
+.t-cream      { --bg: #F7F3EC; --ink: #221A15; --ink2: #76695F; --accent: #D4542F; --line: rgba(34,26,21,.16); --soft: #EEE7DB; }
+.t-paper      { --bg: #FCFAF6; --ink: #221A15; --ink2: #76695F; --accent: #D4542F; --line: rgba(34,26,21,.14); --soft: #F3EEE6; }
+.t-terracotta { --bg: #D4542F; --ink: #FBF3E8; --ink2: rgba(251,243,232,.8); --accent: #FFE1A3; --line: rgba(251,243,232,.32); --soft: #C64A27; }
+.t-espresso   { --bg: #221A15; --ink: #F3ECE2; --ink2: #B4A79A; --accent: #EE7550; --line: rgba(243,236,226,.2); --soft: #2E241E; }
+.t-sage       { --bg: #CBD3B8; --ink: #221A15; --ink2: #53584A; --accent: #B1432A; --line: rgba(34,26,21,.18); --soft: #BFC8AA; }
+.t-sea        { --bg: #24496D; --ink: #F3ECE2; --ink2: #BCCADA; --accent: #F4C56E; --line: rgba(243,236,226,.22); --soft: #2B5379; }
+.t-butter     { --bg: #F1DEA6; --ink: #221A15; --ink2: #6D5F43; --accent: #C24A28; --line: rgba(34,26,21,.18); --soft: #E8D294; }
+
+/* marco fijo (como los posts): Runch a la izquierda, "Nº · TEMA" a la derecha */
+#frame { position: absolute; top: 236px; left: 100px; right: 100px; display: flex; justify-content: space-between; align-items: baseline; z-index: 5; }
+#frame .wm { font-family: FR, Georgia, serif; font-size: 48px; font-weight: 500; letter-spacing: -.01em; }
+
+.scene { position: absolute; left: 0; right: 0; top: 320px; height: 1090px; padding: 0 100px; display: flex; flex-direction: column;
+  justify-content: center; color: var(--ink); visibility: hidden; }
+.scene.center { align-items: center; text-align: center; }
+.row { display: flex; } .col { display: flex; flex-direction: column; }
+.title { font-family: FR, Georgia, serif; font-weight: 440; letter-spacing: -.02em; line-height: 1.0; text-wrap: balance;
+  font-variation-settings: "SOFT" 50, "WONK" 0; }
+.title em, .serif em, .lead em { font-style: italic; color: var(--accent); font-variation-settings: "SOFT" 100, "WONK" 1; }
+.serif { font-family: FR, Georgia, serif; font-weight: 420; font-variation-settings: "SOFT" 50, "WONK" 0; letter-spacing: -.02em; }
+.lead { font-size: 40px; line-height: 1.38; color: var(--ink2); text-wrap: pretty; }
+.lead em { font-family: FR, Georgia, serif; }
+.lab { font-weight: 650; letter-spacing: .16em; text-transform: uppercase; font-size: 26px; color: var(--ink2); }
+.lab.acc { color: var(--accent); }
+.chip { display: inline-flex; align-items: center; gap: 12px; padding: 16px 32px 15px; border-radius: 999px; border: 1.5px solid var(--line);
+  text-transform: uppercase; letter-spacing: .12em; font-size: 30px; font-weight: 650; white-space: nowrap; color: var(--ink); }
+.chip.solid { background: var(--accent); border-color: transparent; color: var(--bg); }
+.chip.cream { background: #FBF3E8; border-color: transparent; color: #221A15; }
+.facts { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 0; }
+.facts span { font-size: 27px; font-weight: 650; letter-spacing: .14em; text-transform: uppercase; }
+.facts span + span::before { content: "·"; margin: 0 18px; color: var(--accent); }
+.rule { border-top: 1.5px solid var(--line); }
+.rl { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: 24px 0; border-top: 1.5px solid var(--line); }
+.rl:last-child { border-bottom: 1.5px solid var(--line); }
+.num { font-family: FR, Georgia, serif; font-weight: 420; letter-spacing: -.03em; font-variation-settings: "SOFT" 50, "WONK" 0; white-space: nowrap; }
+.w { display: inline-block; }
+.example { font-size: 22px; font-weight: 650; letter-spacing: .16em; text-transform: uppercase; color: var(--ink2); }
+
+/* portada (window.cover): titular centrado entre y = 300 y 1620, así cabe en el recorte 3:4 del perfil */
+#cover { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  padding: 0 96px; background: var(--bg); color: var(--ink); z-index: 60; }
+#cover .wm { position: absolute; top: 330px; left: 0; right: 0; font-family: FR, Georgia, serif; font-size: 58px; font-weight: 500; }
+#cover .hd { position: absolute; bottom: 330px; left: 0; right: 0; }

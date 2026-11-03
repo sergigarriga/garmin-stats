@@ -1,0 +1,136 @@
+{
+ "bpm": 118,
+ "voice": "polly:Lucia:generative:eu-central-1",
+ "tempo": 1.12,
+ "lines": [
+  {
+   "scene": 0.3,
+   "text": "Si empiezas desde cero, ojo: caminar también es entrenar."
+  },
+  {
+   "scene": 3.9,
+   "text": "La OMS recomienda de 150 a 300 minutos a la semana de actividad moderada. Y caminar a buen paso cuenta.",
+   "say": "La OMS recomienda de ciento cincuenta a trescientos minutos a la semana de actividad moderada. Y caminar a buen paso cuenta."
+  },
+  {
+   "scene": 8.3,
+   "text": "Empieza con treinta minutos caminando, tres días por semana, con descanso entre medias."
+  },
+  {
+   "scene": 12.1,
+   "text": "Cuando te veas bien, alterna un minuto trotando y dos caminando, y sube poco a poco."
+  },
+  {
+   "scene": 16.3,
+   "text": "Si puedes hablar, vas bien. Y si tienes algo de corazón, diabetes o tensión alta, consulta antes con tu médico."
+  },
+  {
+   "scene": 20.3,
+   "text": "Tu ritmo es tu ritmo."
+  }
+ ],
+ "sfx": [
+  {
+   "t": 0.0,
+   "type": "swell"
+  },
+  {
+   "t": 0.3,
+   "type": "pop",
+   "pitch": 1.1
+  },
+  {
+   "t": 1.9,
+   "type": "sparkle"
+  },
+  {
+   "t": 3.8,
+   "type": "whoosh"
+  },
+  {
+   "t": 4.2,
+   "type": "tick"
+  },
+  {
+   "t": 4.4,
+   "type": "tick"
+  },
+  {
+   "t": 4.6,
+   "type": "tick"
+  },
+  {
+   "t": 5.6,
+   "type": "ding"
+  },
+  {
+   "t": 8.2,
+   "type": "whoosh"
+  },
+  {
+   "t": 9.6,
+   "type": "pop",
+   "pitch": 1.0
+  },
+  {
+   "t": 9.84,
+   "type": "pop",
+   "pitch": 1.2
+  },
+  {
+   "t": 10.08,
+   "type": "pop",
+   "pitch": 1.4
+  },
+  {
+   "t": 12.0,
+   "type": "whoosh"
+  },
+  {
+   "t": 12.8,
+   "type": "tick"
+  },
+  {
+   "t": 13.0,
+   "type": "tick"
+  },
+  {
+   "t": 13.2,
+   "type": "tick"
+  },
+  {
+   "t": 13.4,
+   "type": "tick"
+  },
+  {
+   "t": 13.6,
+   "type": "tick"
+  },
+  {
+   "t": 16.2,
+   "type": "whoosh"
+  },
+  {
+   "t": 17.4,
+   "type": "pop",
+   "pitch": 0.9
+  },
+  {
+   "t": 20.2,
+   "type": "swell"
+  },
+  {
+   "t": 21.0,
+   "type": "pop",
+   "pitch": 0.9
+  },
+  {
+   "t": 21.4,
+   "type": "ding"
+  }
+ ],
+ "anim_duration": 24,
+ "lead": 0.25,
+ "tail": 1.6,
+ "music": "house"
+}

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Reel «Caminar también es entrenar» (serie Empezar desde cero, 1080 x 1920). render(t) pinta cada fotograma; voz y
+     tiempos en reel-caminar.voz.json. Grabar con render_video.py. -->
+<link rel="stylesheet" href="kit.css">
+<style>
+  .scene { padding: 0 140px 0 110px; }
+  .day { display: flex; flex-direction: column; align-items: center; gap: 18px; flex: 1; }
+  .day .d { font-size: 30px; font-weight: 650; letter-spacing: .1em; color: var(--ink2); }
+  .day .dot { width: 76px; height: 76px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font-size: 22px; font-weight: 700; }
+  .day.on .dot { background: var(--accent); border-color: transparent; color: var(--bg); }
+  .seg { height: 64px; border-radius: 12px; }
+  .note { border: 1.5px solid var(--line); border-radius: 36px; padding: 34px 40px; text-align: left; font-size: 36px; line-height: 1.38; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame"><div class="wm">Runch</div><div class="lab" style="color:inherit">Empezar desde cero</div></div>
+
+  <!-- 1 · gancho -->
+  <div class="scene center t-cream" id="s1">
+    <div class="chip solid" id="st1" style="margin-bottom:56px">Empezar desde cero</div>
+    <div class="title" style="font-size:156px">Caminar también <em>es entrenar.</em></div>
+    <img id="im1" src="../../marca/ilustraciones/gemini/corredora-mayor-terracota.png" style="height:400px;margin-top:56px" alt="">
+  </div>
+
+  <!-- 2 · OMS -->
+  <div class="scene center t-sage" id="s2">
+    <div class="lab acc" id="k2">Lo que recomienda la OMS</div>
+    <div class="num" id="n2" style="font-size:250px;line-height:.9;letter-spacing:-.05em;margin-top:30px;color:var(--accent)">150–300</div>
+    <div class="serif" id="u2" style="font-size:70px;margin-top:14px">minutos a la semana</div>
+    <div class="lead" id="l2" style="margin-top:44px;max-width:760px">de actividad moderada. Caminar a buen paso <em>cuenta.</em></div>
+  </div>
+
+  <!-- 3 · la semana -->
+  <div class="scene t-paper" id="s3">
+    <div class="lab acc">Para empezar</div>
+    <div class="title" style="font-size:118px;margin-top:22px">3 días, <em>30 minutos.</em></div>
+    <div class="row" id="week" style="margin-top:70px;padding:40px 0;border-top:1.5px solid var(--line);border-bottom:1.5px solid var(--line)">
+      <div class="day on"><div class="d">L</div><div class="dot">30</div></div>
+      <div class="day"><div class="d">M</div><div class="dot"></div></div>
+      <div class="day on"><div class="d">X</div><div class="dot">30</div></div>
+      <div class="day"><div class="d">J</div><div class="dot"></div></div>
+      <div class="day on"><div class="d">V</div><div class="dot">30</div></div>
+      <div class="day"><div class="d">S</div><div class="dot"></div></div>
+      <div class="day"><div class="d">D</div><div class="dot"></div></div>
+    </div>
+    <div class="lead" id="l3" style="margin-top:36px">Caminando, con un día de descanso entre medias.</div>
+  </div>
+
+  <!-- 4 · alternar -->
+  <div class="scene t-butter" id="s4">
+    <div class="lab acc">Cuando te veas bien</div>
+    <div class="title" style="font-size:118px;margin-top:22px">Luego, <em>alterna.</em></div>
+    <div class="row" id="bar" style="gap:8px;margin-top:70px"></div>
+    <div class="row" style="gap:40px;margin-top:30px;font-size:32px;font-weight:600" id="leg">
+      <div class="row" style="gap:14px;align-items:center"><div style="width:30px;height:30px;border-radius:8px;background:var(--accent)"></div>1 min trotando</div>
+      <div class="row" style="gap:14px;align-items:center"><div style="width:30px;height:30px;border-radius:8px;background:rgba(34,26,21,.2)"></div>2 min caminando</div>
+    </div>
+    <div class="lead" id="l4" style="margin-top:40px">Y sube poco a poco, semana a semana.</div>
+  </div>
+
+  <!-- 5 · test del habla + médico -->
+  <div class="scene t-paper" id="s5">
+    <div class="lab acc">Test del habla</div>
+    <div class="title" style="font-size:118px;margin-top:22px">Si puedes hablar, <em>vas bien.</em></div>
+    <div class="note" id="note" style="margin-top:64px">¿Algo de corazón, diabetes o tensión alta? <b>Consulta antes con tu médico.</b></div>
+  </div>
+
+  <!-- 6 · cierre -->
+  <div class="scene center t-terracotta" id="s6">
+    <img id="im6" src="../../marca/ilustraciones/gemini/silla-deportiva-crema.png" style="height:380px;margin-bottom:50px" alt="">
+    <div class="title" id="t6" style="font-size:130px">Tu ritmo es <em>tu ritmo.</em></div>
+    <div class="serif" id="wm6" style="font-size:150px;line-height:.9;letter-spacing:-.04em;margin-top:70px">Runch</div>
+    <div class="chip cream" id="c6" style="margin-top:50px">Segueix-nos: @runch.run</div>
+  </div>
+
+  <!-- portada -->
+  <div id="cover" class="t-cream">
+    <div class="wm">Runch</div>
+    <div class="chip solid" style="margin-bottom:56px">Empezar desde cero</div>
+    <div class="title" style="font-size:160px">Caminar también <em>es entrenar.</em></div>
+    <div class="facts" style="margin-top:64px"><span>150–300 min</span><span>3 días</span><span>Tu ritmo</span></div>
+    <div class="hd lab" style="color:var(--ink)">@runch.run</div>
+  </div>
+</div>
+
+<script src="kit.js"></script>
+<script>
+  window.DURATION = 24;
+  const SC = [[0, 4.0, 'cream'], [3.8, 8.4, 'sage'], [8.2, 12.2, 'paper'], [12.0, 16.4, 'butter'], [16.2, 20.4, 'paper'], [20.2, 24.2, 'terracotta']];
+  // 1 min trotando + 2 min caminando, 6 veces (18 min)
+  $('bar').innerHTML = Array.from({ length: 6 }, () => '<div class="seg" style="flex:1;background:var(--accent)"></div><div class="seg" style="flex:2;background:rgba(34,26,21,.2)"></div>').join('');
+  window.render = function (t, rt = t) {
+    background(t, SC);
+    const s = (k) => $('s' + k);
+    // 1 · gancho
+    scene(s(1), t, SC[0][0], SC[0][1]);
+    pop($('st1'), t, 0.3, -3);
+    words(s(1).querySelector('.title'), t, 0.7, 0.1);
+    figure($('im1'), t, 1.6, rt);
+
+    // 2 · OMS
+    scene(s(2), t, SC[1][0], SC[1][1]);
+    rise($('k2'), t, 4.0);
+    const n = p(t, 4.2, 4.7); set($('n2'), clamp(n * 2), 0, (1 - eo(n)) * 40, 0.92 + 0.08 * eo(n));
+    count($('n2'), t, 4.2, 1.6);
+    rise($('u2'), t, 4.9); rise($('l2'), t, 5.6);
+
+    // 3 · semana
+    scene(s(3), t, SC[2][0], SC[2][1]);
+    words(s(3).querySelector('.title'), t, 8.4);
+    $('week').querySelectorAll('.day').forEach((d, k) => {
+      rise(d, t, 9.0 + k * 0.12, 0.5);
+      if (d.classList.contains('on')) pop(d.querySelector('.dot'), t, 9.6 + k * 0.12, 0, 0.45);
+    });
+    rise($('l3'), t, 10.6);
+
+    // 4 · barra caminar-trotar
+    scene(s(4), t, SC[3][0], SC[3][1]);
+    words(s(4).querySelector('.title'), t, 12.2);
+    $('bar').querySelectorAll('.seg').forEach((g, k) => grow(g, t, 12.8 + k * 0.1, 0.35));
+    rise($('leg'), t, 13.9); rise($('l4'), t, 14.4);
+
+    // 5 · habla + médico
+    scene(s(5), t, SC[4][0], SC[4][1]);
+    words(s(5).querySelector('.title'), t, 16.4);
+    rise($('note'), t, 17.4, 0.7);
+
+    // 6 · cierre
+    scene(s(6), t, SC[5][0], SC[5][1]);
+    figure($('im6'), t, 20.3, rt, 0.8, 90); words($('t6'), t, 20.5, 0.1);
+    pop($('wm6'), t, 21.0, 0, 0.6);
+    pop($('c6'), t, 21.4, -3);
+  };
+  render(0);
+</script>
+</body>
+</html>

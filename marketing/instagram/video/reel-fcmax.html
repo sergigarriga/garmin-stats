@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Reel «Tu Z2 del Garmin no es tu Z2» (1080 x 1920). render(t) pinta cada fotograma; voz y tiempos en
+     reel-fcmax.voz.json. Grabar con render_video.py. Datos de ejemplo. -->
+<link rel="stylesheet" href="kit.css">
+<style>
+  .scene { padding: 0 140px 0 110px; }
+  #s2 .big { font-size: 196px; white-space: nowrap; line-height: .9; letter-spacing: -.04em; }
+  .hr .rl .num { font-size: 84px; }
+  .tick { font-size: 22px; fill: var(--ink2); font-family: GSF; font-weight: 600; letter-spacing: .06em; }
+  .step { display: flex; gap: 30px; align-items: baseline; padding: 26px 0; border-top: 1.5px solid var(--line); }
+  .step:last-child { border-bottom: 1.5px solid var(--line); }
+  .step .n { font-family: FR, Georgia, serif; font-style: italic; font-size: 50px; color: var(--accent); width: 70px; flex: none; }
+  .step .x { font-size: 40px; line-height: 1.3; font-weight: 560; }
+  .step .x small { display: block; font-size: 31px; font-weight: 450; color: var(--ink2); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame"><div class="wm">Runch</div><div class="lab" style="color:inherit">Nº 10 · Zonas</div></div>
+
+  <!-- 1 · gancho -->
+  <div class="scene center t-cream" id="s1">
+    <div class="chip solid" id="st1" style="margin-bottom:54px">Spoiler</div>
+    <div class="title" style="font-size:146px">Tu Z2 del Garmin no es <em>tu Z2.</em></div>
+    <div class="facts" id="f1" style="margin-top:60px"><span>220 − edad</span><span>FC máx. real</span><span>Zonas</span></div>
+  </div>
+
+  <!-- 2 · la fórmula -->
+  <div class="scene center t-terracotta" id="s2">
+    <div class="lab acc" id="k2">Si no le has dicho tu máximo</div>
+    <div class="serif big" id="f2" style="margin-top:40px">220 <em>−</em> edad</div>
+    <div class="lead" id="l2" style="margin-top:44px;max-width:780px">Es la fórmula que usa para calcular tu pulso máximo y, con él, todas tus zonas.</div>
+    <div class="chip cream" id="c2" style="margin-top:56px">Puede fallar ±10 lpm</div>
+  </div>
+
+  <!-- 3 · mismas piernas, otras zonas -->
+  <div class="scene t-paper" id="s3">
+    <div class="title" style="font-size:104px">Mismo cuerpo, <em>otras zonas.</em></div>
+    <div class="col hr" id="rows3" style="margin-top:56px">
+      <div class="rl"><div class="col" style="gap:4px"><div style="font-size:38px;font-weight:620">Fórmula</div><div style="font-size:28px;color:var(--ink2)">45 años · 220 − 45</div></div><div class="num" id="n31"><span class="c">175</span><span style="font:500 26px GSF;color:var(--ink2);letter-spacing:0"> lpm</span></div></div>
+      <div class="rl"><div class="col" style="gap:4px"><div style="font-size:38px;font-weight:620">Tu máximo real</div><div style="font-size:28px;color:var(--ink2)">el más alto en carrera</div></div><div class="num" id="n32" style="color:var(--accent)"><span class="c">190</span><span style="font:500 26px GSF;color:var(--ink2);letter-spacing:0"> lpm</span></div></div>
+    </div>
+    <svg id="scale" width="830" height="230" viewBox="0 0 830 230" style="margin-top:58px">
+      <line x1="0" y1="88" x2="830" y2="88" stroke="var(--line)" stroke-width="3"/>
+      <g id="ticks"></g>
+      <rect id="bF" y="62" height="52" rx="26" fill="rgba(34,26,21,.16)"/>
+      <rect id="bR" y="62" height="52" rx="26" fill="#D4542F"/>
+      <text id="tF" y="38" class="tick" text-anchor="middle" style="fill:var(--ink2)">Z2 FÓRMULA 105–123</text>
+      <text id="tR" y="214" class="tick" text-anchor="middle" style="fill:#D4542F;font-size:26px">TU Z2 REAL 114–133</text>
+    </svg>
+    <div class="example" id="ex3" style="margin-top:34px">Zona 2 = 60–70 % de la FC máx. · Datos de ejemplo</div>
+  </div>
+
+  <!-- 4 · diez pulsaciones -->
+  <div class="scene center t-butter" id="s4">
+    <div class="row" id="r4" style="align-items:baseline;gap:18px">
+      <div class="serif" id="n4" style="font-size:330px;line-height:.85;letter-spacing:-.05em;color:var(--accent)">+10</div>
+      <div class="serif" style="font-size:70px;color:var(--ink2)">lpm</div>
+    </div>
+    <div class="title" id="t4" style="font-size:92px;margin-top:50px">Tu Z2 real empieza <em>más arriba.</em></div>
+    <div class="lead" id="l4" style="margin-top:34px;max-width:760px">Con la fórmula, tu rodaje suave puede quedarse corto. O pasarse, si tu máximo es más bajo.</div>
+  </div>
+
+  <!-- 5 · qué hacer -->
+  <div class="scene t-paper" id="s5">
+    <div class="lab acc">Qué hacer</div>
+    <div class="title" style="font-size:112px;margin-top:22px">Revisa tu <em>máximo.</em></div>
+    <div class="col" id="steps5" style="margin-top:56px">
+      <div class="step"><div class="n">01</div><div class="x">Ajustes → Zonas de frecuencia cardiaca</div></div>
+      <div class="step"><div class="n">02</div><div class="x">Mira qué pulso máximo tiene puesto<small>¿220 − tu edad? Entonces es la fórmula.</small></div></div>
+      <div class="step"><div class="n">03</div><div class="x">Pon el más alto que hayas visto<small>en una carrera reciente, o deja que lo detecte solo.</small></div></div>
+    </div>
+  </div>
+
+  <!-- 6 · cierre -->
+  <div class="scene center t-espresso" id="s6">
+    <img id="im6" src="../../marca/ilustraciones/gemini/mirando-reloj-crema.png" style="height:400px;margin-bottom:40px" alt="">
+    <div class="serif" id="wm6" style="font-size:170px;line-height:.9;letter-spacing:-.04em">Runch</div>
+    <div class="title" id="t6" style="font-size:84px;margin-top:44px">Guárdalo para tu próximo <em>rodaje.</em></div>
+    <div class="chip solid" id="c6" style="margin-top:64px">Segueix-nos: @runch.run</div>
+  </div>
+
+  <!-- portada -->
+  <div id="cover" class="t-terracotta">
+    <div class="wm">Runch</div>
+    <div class="chip cream" style="margin-bottom:54px">Spoiler</div>
+    <div class="title" style="font-size:150px">Tu Z2 del Garmin no es <em>tu Z2.</em></div>
+    <div class="facts" style="margin-top:64px"><span>220 − edad</span><span>FC máx. real</span></div>
+    <div class="hd lab" style="color:var(--ink)">@runch.run</div>
+  </div>
+</div>
+
+<script src="kit.js"></script>
+<script>
+  window.DURATION = 24;
+  const SC = [[0, 4.0, 'cream'], [3.8, 8.0, 'terracotta'], [7.8, 12.6, 'paper'], [12.4, 16.0, 'butter'], [15.8, 20.0, 'paper'], [19.8, 24.2, 'espresso']];
+  // escala de pulso 90–200 lpm en 830 px
+  const X = (hr) => (hr - 90) / 110 * 830;
+  $('ticks').innerHTML = [100, 120, 140, 160, 180].map((h) =>
+    `<line x1="${X(h)}" y1="80" x2="${X(h)}" y2="96" stroke="var(--line)" stroke-width="3"/><text x="${X(h)}" y="150" class="tick" text-anchor="middle">${h}</text>`).join('');
+  const band = (el, a, b) => { el.setAttribute('x', X(a)); el.setAttribute('width', X(b) - X(a)); };
+
+  window.render = function (t, rt = t) {
+    background(t, SC);
+    const s = (k) => $('s' + k);
+    // 1 · gancho
+    scene(s(1), t, ...SC[0].slice(0, 2));
+    words(s(1), t, 0.25);
+    pop($('st1'), t, 1.3, -4);
+    rise($('f1'), t, 1.9);
+
+    // 2 · fórmula
+    scene(s(2), t, ...SC[1].slice(0, 2));
+    rise($('k2'), t, 4.0);
+    const f = p(t, 4.2, 4.8); set($('f2'), clamp(f * 2), 0, (1 - eo(f)) * 50, 0.9 + 0.1 * eb(f));
+    rise($('l2'), t, 4.9);
+    pop($('c2'), t, 5.9, -3);
+
+    // 3 · otras zonas
+    scene(s(3), t, ...SC[2].slice(0, 2));
+    words(s(3).querySelector('.title'), t, 8.0);
+    cascade($('rows3'), t, 8.5, 0.3);
+    count($("n31").firstChild, t, 8.6, 1.3); count($("n32").firstChild, t, 8.9, 1.3);
+    fade($('scale'), t, 9.4, 0.4);
+    const sh = eio(p(t, 10.2, 11.2));
+    band($('bF'), 105, 123); $('bF').style.opacity = eo(p(t, 9.5, 9.9));
+    band($('bR'), 105 + 9 * sh, 123 + 10 * sh); $('bR').style.opacity = eo(p(t, 9.9, 10.2));
+    $('tF').setAttribute('x', X(114)); $('tF').style.opacity = eo(p(t, 9.6, 10.0));
+    $('tR').setAttribute('x', X(123.5 * 1)); $('tR').style.opacity = eo(p(t, 11.0, 11.4));
+    fade($('ex3'), t, 11.2);
+
+    // 4 · +10
+    scene(s(4), t, ...SC[3].slice(0, 2));
+    const n = p(t, 12.6, 13.2); set($('r4'), clamp(n * 2), 0, (1 - eo(n)) * 40, 0.92 + 0.08 * eo(n));
+    count($('n4'), t, 12.6, 1.2);
+    words($('t4'), t, 13.3);
+    rise($('l4'), t, 14.2);
+
+    // 5 · pasos
+    scene(s(5), t, ...SC[4].slice(0, 2));
+    words(s(5).querySelector('.title'), t, 16.0);
+    cascade($('steps5'), t, 16.6, 0.45, 0.7);
+
+    // 6 · cierre
+    scene(s(6), t, ...SC[5].slice(0, 2));
+    figure($('im6'), t, 19.9, rt); pop($('wm6'), t, 20.1, 0, 0.6);
+    words($('t6'), t, 20.3);
+    pop($('c6'), t, 20.9, -3);
+    // ambiente: la franja real "late" suave cuando ya está en su sitio
+    if (t > 11.2) $('bR').style.opacity = 0.88 + 0.12 * Math.sin(rt * 3);
+  };
+  render(0);
+</script>
+</body>
+</html>

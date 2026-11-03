@@ -5,7 +5,8 @@ Uso:
 
 Si existen en marketing/instagram/out/video/ los archivos de voiceover.py (<nombre>.captions.json, <nombre>-voz.wav y
 <nombre>-musica.wav), el vídeo sale completo: subtítulos + voz + música, listo para publicar. Si no, sin audio ni
-subtítulos. También deja la portada <nombre>-portada.png (sin subtítulos).
+subtítulos, y además <nombre>-sin-musica.mp4 (voz + subtítulos, para poner un sonido en tendencia desde la app). También deja la
+portada <nombre>-portada.png (sin subtítulos).
 
 Cada fotograma se pinta llamando a render(t) (sin animaciones CSS, así no hay saltos) y se monta con ffmpeg (H.264,
 1080 x 1920). El audio se mezcla con la música bajando sola cuando habla la voz y se normaliza a -14 LUFS.
@@ -67,7 +68,18 @@ CAPTION_JS = r"""
 """
 
 
-def frames(page_path: Path, dest: Path, fps: int, captions: list | None, timing: dict | None = None) -> float:
+def cover(pg, page_path: Path) -> None:
+    """Portada sin subtítulos: la composición window.cover() si la página la tiene (titular centrado, cabe en un recorte
+    3:4) o, si no, un fotograma del gancho."""
+    if pg.evaluate("typeof window.cover === 'function'"):
+        pg.evaluate("window.__caption && window.__caption(-9); window.cover()")
+    else:
+        pg.evaluate("render(2.6, 2.6); window.__caption && window.__caption(-9)")
+    pg.wait_for_timeout(200)
+    pg.screenshot(path=str(OUT / f"{page_path.stem}-portada.png"))
+
+
+def frames(page_path: Path, dest: Path, fps: int, captions: list | None, timing: dict | None = None, only_cover: bool = False) -> float:
     from playwright.sync_api import sync_playwright
     shutil.rmtree(dest, ignore_errors=True)
     dest.mkdir(parents=True)
@@ -82,7 +94,7 @@ def frames(page_path: Path, dest: Path, fps: int, captions: list | None, timing:
             pg.evaluate(CAPTION_JS)
         pg.wait_for_timeout(300)
         duration = float(timing["duration"]) if timing else float(pg.evaluate("window.DURATION"))
-        n = round(duration * fps)
+        n = 0 if only_cover else round(duration * fps)
         for i in range(n):
             t = i / fps
             a = warp(t, timing["anchors"]) if timing else t  # la animación sigue a la voz
@@ -90,9 +102,7 @@ def frames(page_path: Path, dest: Path, fps: int, captions: list | None, timing:
             pg.screenshot(path=str(dest / f"{i:05d}.jpg"), type="jpeg", quality=94)
             if i % 90 == 0:
                 print(f"  fotograma {i}/{n}")
-        # portada: un fotograma del gancho, sin subtítulos
-        pg.evaluate(f"render(2.6, 2.6); window.__caption && window.__caption(-9)")
-        pg.screenshot(path=str(OUT / f"{page_path.stem}-portada.png"))
+        cover(pg, page_path)
         b.close()
     return duration
 
@@ -129,6 +139,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("page")
     ap.add_argument("fps", nargs="?", type=int, default=30)
+    ap.add_argument("--cover", action="store_true", help="solo la portada (rápido)")
     a = ap.parse_args()
     page = Path(a.page).resolve()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -138,6 +149,11 @@ def main() -> None:
     with_audio = caps.exists() and voice.exists()
     tfile = OUT / f"{name}.timing.json"
     timing = json.loads(tfile.read_text()) if with_audio and tfile.exists() else None
+    if a.cover:
+        frames(page, tmp, a.fps, None, None, only_cover=True)
+        shutil.rmtree(tmp)
+        print(f"Portada: {OUT / (name + '-portada.png')}")
+        return
     duration = frames(page, tmp, a.fps, json.loads(caps.read_text()) if with_audio else None, timing)
     final = OUT / f"{name}.mp4"
     if not with_audio:
@@ -149,8 +165,10 @@ def main() -> None:
     encode(tmp, a.fps, silent)
     shutil.rmtree(tmp)
     mux(silent, voice, music if music.exists() else None, final)
+    # versión sin música (voz + subtítulos), para añadir un sonido en tendencia desde la app de Instagram
+    mux(silent, voice, None, OUT / f"{name}-sin-musica.mp4")
     silent.unlink()
-    print(f"Vídeo: {final} ({duration:.0f} s, voz + música + subtítulos)")
+    print(f"Vídeo: {final} ({duration:.0f} s, voz + música + subtítulos) y {name}-sin-musica.mp4")
 
 if __name__ == "__main__":
     main()

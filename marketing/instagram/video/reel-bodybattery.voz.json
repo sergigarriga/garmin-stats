@@ -1,0 +1,140 @@
+{
+ "bpm": 118,
+ "voice": "polly:Lucia:generative:eu-central-1",
+ "tempo": 1.12,
+ "lines": [
+  {
+   "scene": 0.3,
+   "text": "Duermes ocho horas… y tu Body Battery se queda en cuarenta. ¿Qué está pasando?",
+   "say": "Duermes ocho horas… y tu Bodi Báteri se queda en cuarenta. ¿Qué está pasando?"
+  },
+  {
+   "scene": 4.3,
+   "text": "El reloj no cuenta horas: carga cuando descansas de verdad, y eso lo ve en tu pulso y en tu VFC.",
+   "say": "El reloj no cuenta horas: carga cuando descansas de verdad, y eso lo ve en tu pulso y en tu uve efe ce."
+  },
+  {
+   "scene": 8.5,
+   "text": "Si por dentro sigues acelerado, apenas sube."
+  },
+  {
+   "scene": 12.1,
+   "text": "Sospechosos habituales: alcohol, cenar tarde y fuerte, estrés, entrenar duro de noche… o que estás pillando algo."
+  },
+  {
+   "scene": 16.1,
+   "text": "Prueba una semana: cena dos o tres horas antes de dormir, sin alcohol, y mira cómo carga."
+  },
+  {
+   "scene": 19.9,
+   "text": "Pásaselo a quien siempre se levanta a cuarenta."
+  }
+ ],
+ "sfx": [
+  {
+   "t": 0.0,
+   "type": "swell"
+  },
+  {
+   "t": 1.4,
+   "type": "sparkle"
+  },
+  {
+   "t": 3.2,
+   "type": "stamp"
+  },
+  {
+   "t": 4.2,
+   "type": "whoosh"
+  },
+  {
+   "t": 5.6,
+   "type": "swell"
+  },
+  {
+   "t": 7.3,
+   "type": "pop",
+   "pitch": 0.8
+  },
+  {
+   "t": 8.4,
+   "type": "whoosh"
+  },
+  {
+   "t": 9.6,
+   "type": "tick"
+  },
+  {
+   "t": 9.8,
+   "type": "tick"
+  },
+  {
+   "t": 10.0,
+   "type": "tick"
+  },
+  {
+   "t": 10.2,
+   "type": "tick"
+  },
+  {
+   "t": 12.0,
+   "type": "whoosh"
+  },
+  {
+   "t": 12.8,
+   "type": "tick"
+  },
+  {
+   "t": 13.14,
+   "type": "tick"
+  },
+  {
+   "t": 13.48,
+   "type": "tick"
+  },
+  {
+   "t": 13.82,
+   "type": "tick"
+  },
+  {
+   "t": 14.16,
+   "type": "tick"
+  },
+  {
+   "t": 16.0,
+   "type": "whoosh"
+  },
+  {
+   "t": 16.8,
+   "type": "pop",
+   "pitch": 1.0
+  },
+  {
+   "t": 17.3,
+   "type": "pop",
+   "pitch": 1.2
+  },
+  {
+   "t": 17.8,
+   "type": "pop",
+   "pitch": 1.4
+  },
+  {
+   "t": 19.8,
+   "type": "swell"
+  },
+  {
+   "t": 20.6,
+   "type": "pop",
+   "pitch": 0.9
+  },
+  {
+   "t": 21.0,
+   "type": "ding"
+  }
+ ],
+ "anim_duration": 24,
+ "lead": 0.25,
+ "tail": 1.5,
+ "music": "house"
+}

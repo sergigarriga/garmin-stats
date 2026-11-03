@@ -88,6 +88,16 @@ uv run --no-project --with playwright python marketing/instagram/video/render_vi
 - `video/showreel.html`: presentación de Runch en 15 s (logo, cintas de texto, móvil en 3D con la app, zonas, coach y
   comunidad).
 - `video/reel-z2.html`: "¿Tienes un Garmin y no sabes qué es la Z2?" en 15 s.
+- Reels editoriales (noviembre 2026, 25-30 s con voz): `reel-fcmax` («Tu Z2 del Garmin no es tu Z2»), `reel-vfc` («Estado
+  de VFC: desequilibrado»), `reel-bodybattery` («Duermes 8 horas y tu Body Battery no sube»), `reel-six-seven` (meme
+  «Six seven»), `reel-aura` (meme «−1000 / +1000 de aura») y `reel-caminar` («Caminar también es entrenar», Empezar
+  desde cero). Usan `video/kit.css` + `video/kit.js`: el sistema de los posts (crema/terracota, Fraunces, Google Sans
+  Flex) y sus animaciones (palabras que suben, cifras que cuentan, líneas que se dibujan, filas en cascada, barras),
+  ilustraciones de `marketing/marca/ilustraciones/gemini/` con `figure()`, y una portada `window.cover()` con el
+  titular centrado (cabe en el recorte 3:4). Zona segura: contenido entre y = 300 y 1410, subtítulos a partir de 1440,
+  columna derecha libre en la mitad de abajo. Cierre con «Segueix-nos: @runch.run».
+  `render_video.py reel-x.html --cover` saca solo la portada. Captions, hashtags, texto alternativo, fecha y
+  `"grid": false` (no salen en la cuadrícula del perfil, para no romper el damero) en `reels.json`.
 - Salida en `out/video/<nombre>.mp4` y una portada `<nombre>-portada.png`. Necesita `ffmpeg`.
 - **Voz, música y subtítulos:** escribe el guion en `video/<nombre>.voz.json` como habla una persona (frases naturales,
   con ritmo de creador de contenido, nada de frases sueltas de robot). Cada parte lleva `"scene"` (segundo de la
@@ -97,6 +107,8 @@ uv run --no-project --with playwright python marketing/instagram/video/render_vi
   `sparkle`, en segundos de animación. Luego:
   `uv run --no-project --with piper-tts --with numpy python marketing/instagram/video/voiceover.py marketing/instagram/video/showreel.voz.json`
   y vuelve a lanzar `render_video.py`. Sale `<nombre>.mp4` completo (voz + música + subtítulos) y `<nombre>.srt`.
+- Las tomas de Polly se guardan en `~/.cache/runch-tts/polly/` (por voz + texto): repetir un vídeo o cambiar `tempo`,
+  efectos o animación no vuelve a pagar; solo las frases que cambian.
 - Voz: Amazon Polly con la cuenta de AWS (`"voice": "polly:Lucia:generative:eu-central-1"`; también Sergio generativa, o
   Alba y Raúl `long-form` en us-east-1, que además dan el tiempo exacto de cada palabra). Unas centésimas de dólar por
   vídeo. `"tempo"` acelera la voz sin cambiar el tono. Muestras en `out/video/voces/`. Sin conexión queda Piper

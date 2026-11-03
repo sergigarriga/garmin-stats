@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Reel meme «Six seven»: ritmo suave 6:07 (1080 x 1920). Cortes rápidos. render(t) pinta cada fotograma; voz y
+     tiempos en reel-six-seven.voz.json. Grabar con render_video.py. Datos de ejemplo. -->
+<link rel="stylesheet" href="kit.css">
+<style>
+  .scene { padding: 0 140px 0 110px; }
+  .bubble { padding: 30px 40px; font-size: 42px; line-height: 1.3; max-width: 720px; border: 1.5px solid var(--line); text-align: left; }
+  .pace { display: flex; align-items: baseline; justify-content: space-between; padding: 22px 0; border-top: 1.5px solid var(--line); }
+  .pace:last-child { border-bottom: 1.5px solid var(--line); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame"><div class="wm">Runch</div><div class="lab" style="color:inherit">Nº 13 · Ritmo suave</div></div>
+
+  <!-- 1 · el ritmo -->
+  <div class="scene center t-butter" id="s1">
+    <div class="lab acc" id="k1">Rodaje suave de hoy</div>
+    <div class="row" id="r1" style="align-items:baseline;gap:16px;margin-top:20px">
+      <div class="num" id="n1" style="font-size:330px;line-height:.9;letter-spacing:-.05em">6:07</div>
+      <div class="serif" style="font-size:66px;color:var(--ink2)">/km</div>
+    </div>
+    <div class="example" id="ex1" style="margin-top:40px">Datos de ejemplo</div>
+  </div>
+
+  <!-- 2 · six seven -->
+  <div class="scene center t-espresso" id="s2">
+    <div class="row" style="gap:80px;align-items:center">
+      <div class="num" id="d6" style="font-size:420px;line-height:1;color:var(--accent)">6</div>
+      <div class="num" id="d7" style="font-size:420px;line-height:1">7</div>
+    </div>
+    <div class="title" id="t2" style="font-size:150px;margin-top:20px">Six <em>seven.</em></div>
+  </div>
+
+  <!-- 3 · ¿lento? -->
+  <div class="scene t-cream" id="s3">
+    <div class="title" style="font-size:150px;text-align:center">¿Lento? <em>No.</em></div>
+    <div class="col" style="gap:26px;margin-top:80px">
+      <div class="row" style="justify-content:flex-start"><div class="bubble" id="m1" style="border-radius:44px 44px 44px 12px"><div class="lab" style="font-size:20px;margin-bottom:8px">Alguien del grupo</div>¿6:07? Eso es lento, ¿no?</div></div>
+      <div class="row" style="justify-content:flex-end"><div class="bubble" id="m2" style="border-radius:44px 44px 12px 44px;background:#221A15;color:#F3ECE2;border-color:transparent">Es un rodaje suave <span class="serif" style="font-style:italic;color:#EE7550">bien hecho.</span></div></div>
+    </div>
+  </div>
+
+  <!-- 4 · test del habla -->
+  <div class="scene center t-sage" id="s4">
+    <div class="lab acc" id="k4">Test del habla</div>
+    <div class="title" style="font-size:128px;margin-top:26px">Si puedes hablar, <em>vas perfecto.</em></div>
+    <div class="facts" id="f4" style="margin-top:60px"><span>Z2</span><span>Ritmo de charla</span><span>Base</span></div>
+  </div>
+
+  <!-- 5 · mañana, series -->
+  <div class="scene center t-terracotta" id="s5">
+    <div class="title" style="font-size:140px">Y mañana, series <em>con ganas.</em></div>
+    <div class="facts" id="f5" style="margin-top:60px"><span>Hoy suave</span><span>Mañana fuerte</span></div>
+  </div>
+
+  <!-- 6 · tu suave es tu suave -->
+  <div class="scene t-paper" id="s6">
+    <div class="title" style="font-size:118px">Tu suave es <em>tu suave.</em></div>
+    <div class="col" id="rows6" style="margin-top:56px">
+      <div class="pace"><div class="lab">Tú, hoy</div><div class="num" style="font-size:110px;color:var(--accent)"><span id="p1">6:07</span><span style="font:500 28px GSF;color:var(--ink2);letter-spacing:0"> /km</span></div></div>
+      <div class="pace"><div class="lab">Tu compi</div><div class="num" style="font-size:110px"><span id="p2">7:10</span><span style="font:500 28px GSF;color:var(--ink2);letter-spacing:0"> /km</span></div></div>
+      <div class="pace"><div class="lab">Quien empieza</div><div class="num" style="font-size:110px"><span id="p3">8:30</span><span style="font:500 28px GSF;color:var(--ink2);letter-spacing:0"> /km</span></div></div>
+    </div>
+    <div class="example" id="ex6" style="margin-top:28px">Todos suaves · Datos de ejemplo</div>
+  </div>
+
+  <!-- 7 · cierre -->
+  <div class="scene center t-espresso" id="s7">
+    <div class="lab acc" id="k7">Comenta</div>
+    <div class="title" id="t7" style="font-size:150px;margin-top:20px">Six <em>seven.</em></div>
+    <div class="lead" id="l7" style="margin-top:30px">si hoy también has ido suave</div>
+    <div class="serif" id="wm7" style="font-size:150px;line-height:.9;letter-spacing:-.04em;margin-top:80px">Runch</div>
+    <div class="chip solid" id="c7" style="margin-top:44px">Segueix-nos: @runch.run</div>
+  </div>
+
+  <!-- portada -->
+  <div id="cover" class="t-butter">
+    <div class="wm">Runch</div>
+    <div class="lab acc" style="font-size:30px">Rodaje suave</div>
+    <div class="num" style="font-size:330px;line-height:.9;letter-spacing:-.05em;margin-top:24px">6:07</div>
+    <div class="title" style="font-size:150px;margin-top:30px">Six <em>seven.</em></div>
+    <div class="facts" style="margin-top:60px"><span>Y no es lento</span></div>
+    <div class="hd lab" style="color:var(--ink)">@runch.run</div>
+  </div>
+</div>
+
+<script src="kit.js"></script>
+<script>
+  window.DURATION = 21;
+  const SC = [[0, 2.6, 'butter'], [2.45, 4.7, 'espresso'], [4.55, 8.1, 'cream'], [7.95, 11.2, 'sage'], [11.05, 13.3, 'terracotta'], [13.15, 17.2, 'paper'], [17.05, 21.2, 'espresso']];
+  // cortes rápidos: entrada con "zoom" corto
+  function cut(el, t, a, b) {
+    const i = eo(p(t, a, a + 0.22)), o = eio(p(t, b - 0.2, b));
+    el.style.visibility = t < a || t > b ? 'hidden' : 'visible';
+    set(el, i * (1 - o), 0, -o * 60, 1.08 - 0.08 * i);
+  }
+  window.render = function (t, rt = t) {
+    background(t, SC);
+    const s = (k) => $('s' + k);
+    // 1 · 6:07 cuenta como un reloj
+    cut(s(1), t, SC[0][0], SC[0][1]);
+    rise($('k1'), t, 0.2);
+    const r = p(t, 0.3, 0.8); set($('r1'), clamp(r * 2), 0, (1 - eo(r)) * 40, 0.9 + 0.1 * eb(r));
+    count($('n1'), t, 0.35, 1.5);
+    fade($('ex1'), t, 1.4);
+
+    // 2 · six seven: el 6 y el 7 suben y bajan a la vez, como las manos del meme
+    cut(s(2), t, SC[1][0], SC[1][1]);
+    const j = t > 2.6 ? Math.sin((rt) * 9) : 0;
+    pop($('d6'), t, 2.5, -6, 0.35); pop($('d7'), t, 2.65, 6, 0.35);
+    if (t > 3.0) { $('d6').style.transform = `translateY(${-50 * j}px) rotate(-4deg)`; $('d7').style.transform = `translateY(${50 * j}px) rotate(4deg)`; }
+    words($('t2'), t, 3.0, 0.15);
+
+    // 3 · ¿lento? no
+    cut(s(3), t, SC[2][0], SC[2][1]);
+    words(s(3).querySelector('.title'), t, 4.65, 0.12);
+    pop($('m1'), t, 5.4, 0, 0.4); pop($('m2'), t, 6.4, 0, 0.4);
+
+    // 4 · test del habla
+    cut(s(4), t, SC[3][0], SC[3][1]);
+    rise($('k4'), t, 8.05);
+    words(s(4).querySelector('.title'), t, 8.25);
+    rise($('f4'), t, 9.3);
+
+    // 5 · series con ganas
+    cut(s(5), t, SC[4][0], SC[4][1]);
+    words(s(5).querySelector('.title'), t, 11.15, 0.1);
+    rise($('f5'), t, 12.0);
+
+    // 6 · cada suave
+    cut(s(6), t, SC[5][0], SC[5][1]);
+    words(s(6).querySelector('.title'), t, 13.25);
+    cascade($('rows6'), t, 13.9, 0.35);
+    count($('p1'), t, 14.0, 1.2); count($('p2'), t, 14.35, 1.2); count($('p3'), t, 14.7, 1.2);
+    fade($('ex6'), t, 15.6);
+
+    // 7 · cierre
+    cut(s(7), t, SC[6][0], SC[6][1]);
+    rise($('k7'), t, 17.1);
+    words($('t7'), t, 17.25, 0.15);
+    rise($('l7'), t, 17.7);
+    pop($('wm7'), t, 18.1, 0, 0.5);
+    pop($('c7'), t, 18.5, -3);
+  };
+  render(0);
+</script>
+</body>
+</html>

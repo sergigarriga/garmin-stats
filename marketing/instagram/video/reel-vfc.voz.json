@@ -1,0 +1,139 @@
+{
+ "bpm": 120,
+ "voice": "polly:Lucia:generative:eu-central-1",
+ "tempo": 1.13,
+ "lines": [
+  {
+   "scene": 0.3,
+   "text": "Abres el Garmin y te suelta: estado de VFC, desequilibrado. Tranqui, que no es una alarma.",
+   "say": "Abres el Garmin y te suelta: estado de uve efe ce, desequilibrado. Tranqui, que no es una alarma."
+  },
+  {
+   "scene": 4.1,
+   "text": "El reloj compara tu VFC media de la última semana con tu rango normal.",
+   "say": "El reloj compara tu uve efe ce media de la última semana con tu rango normal."
+  },
+  {
+   "scene": 8.5,
+   "text": "Desequilibrado solo significa que te has salido de ese rango, por arriba o por abajo."
+  },
+  {
+   "scene": 12.1,
+   "text": "Lo típico: mucha carga, estrés, dormir poco, unas copas o que estás pillando algo."
+  },
+  {
+   "scene": 15.9,
+   "text": "¿Y qué haces? Duerme bien, rodajes suaves unos días y las series, cuando vuelvas a tu rango."
+  },
+  {
+   "scene": 19.7,
+   "text": "Y si además te notas mal, descansa."
+  }
+ ],
+ "sfx": [
+  {
+   "t": 0.0,
+   "type": "swell"
+  },
+  {
+   "t": 0.35,
+   "type": "pop",
+   "pitch": 0.9
+  },
+  {
+   "t": 0.6,
+   "type": "ding"
+  },
+  {
+   "t": 1.9,
+   "type": "pop",
+   "pitch": 1.3
+  },
+  {
+   "t": 4.0,
+   "type": "whoosh"
+  },
+  {
+   "t": 4.7,
+   "type": "swell"
+  },
+  {
+   "t": 6.5,
+   "type": "stamp"
+  },
+  {
+   "t": 8.4,
+   "type": "whoosh"
+  },
+  {
+   "t": 9.8,
+   "type": "pop",
+   "pitch": 1.2
+  },
+  {
+   "t": 10.1,
+   "type": "pop",
+   "pitch": 0.9
+  },
+  {
+   "t": 12.0,
+   "type": "whoosh"
+  },
+  {
+   "t": 12.8,
+   "type": "tick"
+  },
+  {
+   "t": 13.12,
+   "type": "tick"
+  },
+  {
+   "t": 13.44,
+   "type": "tick"
+  },
+  {
+   "t": 13.76,
+   "type": "tick"
+  },
+  {
+   "t": 14.08,
+   "type": "tick"
+  },
+  {
+   "t": 15.8,
+   "type": "whoosh"
+  },
+  {
+   "t": 16.6,
+   "type": "pop",
+   "pitch": 1.0
+  },
+  {
+   "t": 17.1,
+   "type": "pop",
+   "pitch": 1.2
+  },
+  {
+   "t": 17.6,
+   "type": "pop",
+   "pitch": 1.4
+  },
+  {
+   "t": 19.6,
+   "type": "swell"
+  },
+  {
+   "t": 20.6,
+   "type": "pop",
+   "pitch": 0.9
+  },
+  {
+   "t": 21.0,
+   "type": "ding"
+  }
+ ],
+ "anim_duration": 24,
+ "lead": 0.25,
+ "tail": 1.5,
+ "music": "house"
+}

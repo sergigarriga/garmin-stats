@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- Reel «Estado de VFC: desequilibrado. ¿Y ahora qué?» (1080 x 1920). render(t) pinta cada fotograma; voz y tiempos
+     en reel-vfc.voz.json. Grabar con render_video.py. Datos de ejemplo. -->
+<link rel="stylesheet" href="kit.css">
+<style>
+  .scene { padding: 0 140px 0 110px; }
+  .watch { border: 1.5px solid var(--line); border-radius: 44px; padding: 44px 50px; width: 100%; text-align: left; background: var(--bg); }
+  .tick { font-size: 22px; fill: var(--ink2); font-family: GSF; font-weight: 600; letter-spacing: .08em; }
+  .rl .x { font-size: 40px; font-weight: 600; } .rl .d { font-size: 29px; color: var(--ink2); }
+  .step { display: flex; gap: 30px; align-items: baseline; padding: 26px 0; border-top: 1.5px solid var(--line); }
+  .step:last-child { border-bottom: 1.5px solid var(--line); }
+  .step .n { font-family: FR, Georgia, serif; font-style: italic; font-size: 50px; color: var(--accent); width: 70px; flex: none; }
+  .step .x { font-size: 42px; line-height: 1.3; font-weight: 560; }
+  .step .x small { display: block; font-size: 31px; font-weight: 450; color: var(--ink2); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame"><div class="wm">Runch</div><div class="lab" style="color:inherit">Nº 11 · VFC</div></div>
+
+  <!-- 1 · gancho: la notificación -->
+  <div class="scene center t-cream" id="s1">
+    <div class="watch" id="w1">
+      <div class="lab">Estado de VFC</div>
+      <div class="serif" style="font-size:118px;font-style:italic;color:var(--accent);margin-top:14px;font-variation-settings:'SOFT' 100,'WONK' 1">Desequilibrado</div>
+      <div class="row" style="justify-content:space-between;margin-top:22px;font-size:30px;color:var(--ink2)"><span>Media de 7 noches</span><span class="num" style="font-size:44px;color:var(--ink)" id="n1">44 ms</span></div>
+    </div>
+    <div class="title" id="t1" style="font-size:150px;margin-top:80px">¿Y ahora <em>qué?</em></div>
+  </div>
+
+  <!-- 2 · qué compara -->
+  <div class="scene t-paper" id="s2">
+    <div class="lab acc">VFC: variación entre latidos, de noche</div>
+    <div class="title" style="font-size:100px;margin-top:22px">Tu semana vs <em>tu normal.</em></div>
+    <svg id="chart" width="830" height="440" viewBox="0 0 830 440" style="margin-top:60px">
+      <rect id="band" x="0" width="830" rx="10" fill="rgba(34,26,21,.07)"/>
+      <line id="bl1" x1="0" x2="830" stroke="rgba(34,26,21,.22)" stroke-width="2" stroke-dasharray="6 8"/>
+      <line id="bl2" x1="0" x2="830" stroke="rgba(34,26,21,.22)" stroke-width="2" stroke-dasharray="6 8"/>
+      <text id="bt" x="10" class="tick">TU RANGO NORMAL · 48–62 MS</text>
+      <path id="line2" fill="none" stroke="#D4542F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle id="head2" r="13" fill="#D4542F"/>
+      <text x="0" y="436" class="tick">HACE 3 SEMANAS</text><text x="830" y="436" class="tick" text-anchor="end">HOY</text>
+    </svg>
+    <div class="row" id="lab2" style="justify-content:space-between;align-items:baseline;margin-top:30px">
+      <div class="example">Media de 7 noches · Datos de ejemplo</div>
+      <div class="num" style="font-size:64px;color:var(--accent)"><span id="n2">44</span><span style="font:500 26px GSF;color:var(--ink2);letter-spacing:0"> ms</span></div>
+    </div>
+  </div>
+
+  <!-- 3 · qué significa -->
+  <div class="scene center t-sea" id="s3">
+    <div class="lab acc" id="k3">Desequilibrado =</div>
+    <div class="title" style="font-size:132px;margin-top:30px">Fuera de <em>tu rango.</em></div>
+    <div class="row" style="gap:22px;margin-top:70px">
+      <div class="chip" id="c31">↑ Por arriba</div><div class="chip solid" id="c32">↓ Por abajo</div>
+    </div>
+    <div class="lead" id="l3" style="margin-top:50px;max-width:760px">No es un diagnóstico. Es tu cuerpo diciendo que algo ha cambiado.</div>
+  </div>
+
+  <!-- 4 · sospechosos -->
+  <div class="scene t-paper" id="s4">
+    <div class="lab acc">Lo típico</div>
+    <div class="title" style="font-size:108px;margin-top:22px">Sospechosos <em>habituales.</em></div>
+    <div class="col" id="rows4" style="margin-top:50px">
+      <div class="rl"><div class="x">Mucha carga</div><div class="d">semana de series</div></div>
+      <div class="rl"><div class="x">Estrés</div><div class="d">curro, exámenes…</div></div>
+      <div class="rl"><div class="x">Dormir poco</div><div class="d">o mal</div></div>
+      <div class="rl"><div class="x">Unas copas</div><div class="d">se nota de noche</div></div>
+      <div class="rl"><div class="x">Estás pillando algo</div><div class="d">antes de notarlo</div></div>
+    </div>
+  </div>
+
+  <!-- 5 · qué hacer -->
+  <div class="scene t-butter" id="s5">
+    <div class="lab acc">Qué hacer</div>
+    <div class="title" style="font-size:118px;margin-top:22px">¿Y qué <em>haces?</em></div>
+    <div class="col" id="steps5" style="margin-top:56px">
+      <div class="step"><div class="n">01</div><div class="x">Duerme bien<small>es lo que más mueve la VFC.</small></div></div>
+      <div class="step"><div class="n">02</div><div class="x">Rodajes suaves unos días<small>a ritmo de charla.</small></div></div>
+      <div class="step"><div class="n">03</div><div class="x">Las series, cuando vuelvas<small>a tu rango.</small></div></div>
+    </div>
+  </div>
+
+  <!-- 6 · cierre -->
+  <div class="scene center t-espresso" id="s6">
+    <div class="title" id="t6" style="font-size:112px">Y si te notas mal, <em>descansa.</em></div>
+    <div class="lead" id="l6" style="margin-top:36px">Un día raro no es nada: mira la tendencia.</div>
+    <img id="im6" src="../../marca/ilustraciones/gemini/estirando-taza-crema.png" style="height:330px;margin-top:60px" alt="">
+    <div class="serif" id="wm6" style="font-size:140px;line-height:.9;letter-spacing:-.04em;margin-top:50px">Runch</div>
+    <div class="chip solid" id="c6" style="margin-top:50px">Segueix-nos: @runch.run</div>
+  </div>
+
+  <!-- portada -->
+  <div id="cover" class="t-sea">
+    <div class="wm">Runch</div>
+    <div class="lab acc" style="font-size:30px">Estado de VFC</div>
+    <div class="serif" style="font-size:150px;font-style:italic;color:var(--accent);margin-top:22px;font-variation-settings:'SOFT' 100,'WONK' 1">Desequilibrado.</div>
+    <div class="title" style="font-size:150px;margin-top:40px">¿Y ahora qué?</div>
+    <div class="facts" style="margin-top:64px"><span>Qué significa</span><span>Qué hacer</span></div>
+    <div class="hd lab" style="color:var(--ink)">@runch.run</div>
+  </div>
+</div>
+
+<script src="kit.js"></script>
+<script>
+  window.DURATION = 24;
+  const SC = [[0, 4.2, 'cream'], [4.0, 8.6, 'paper'], [8.4, 12.2, 'sea'], [12.0, 16.0, 'paper'], [15.8, 19.8, 'butter'], [19.6, 24.2, 'espresso']];
+  // VFC media de 7 noches (ms) durante 3 semanas: dentro del rango y al final se sale por abajo (datos de ejemplo)
+  const V = [55, 56, 54, 57, 56, 55, 57, 58, 56, 55, 54, 55, 56, 54, 52, 50, 49, 47, 46, 45, 44];
+  const Y = (ms) => 390 - (ms - 40) / (64 - 40) * 360, XX = (i) => i / (V.length - 1) * 830;
+  $('line2').setAttribute('d', V.map((v, i) => `${i ? 'L' : 'M'}${XX(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' '));
+  $('band').setAttribute('y', Y(62)); $('band').setAttribute('height', Y(48) - Y(62));
+  ['bl1', 'bl2'].forEach((id, k) => { const y = Y(k ? 48 : 62); $(id).setAttribute('y1', y); $(id).setAttribute('y2', y); });
+  $('bt').setAttribute('y', Y(62) - 16);
+
+  window.render = function (t, rt = t) {
+    background(t, SC);
+    const s = (k) => $('s' + k);
+    // 1 · notificación
+    scene(s(1), t, SC[0][0], SC[0][1]);
+    const w = p(t, 0.3, 0.9); set($('w1'), clamp(w * 2.5), 0, (1 - eb(w)) * 120, 0.9 + 0.1 * eb(w), -2 * (1 - eo(w)));
+    count($('n1'), t, 0.6, 1.2);
+    words($('t1'), t, 1.4, 0.12);
+    if (t > 2.4) $('w1').style.borderColor = `rgba(212,84,47,${0.35 + 0.3 * Math.sin(rt * 4) ** 2})`;
+
+    // 2 · gráfico
+    scene(s(2), t, SC[1][0], SC[1][1]);
+    words(s(2).querySelector('.title'), t, 4.15);
+    fade($('band'), t, 4.5); fade($('bl1'), t, 4.5); fade($('bl2'), t, 4.5); fade($('bt'), t, 4.6);
+    draw($('line2'), t, 4.7, 1.8, $('head2'));
+    $('head2').setAttribute('r', 13 + (t > 6.5 ? 3 * Math.sin(rt * 5) ** 2 : 0));
+    rise($('lab2'), t, 6.1); count($('n2'), t, 6.1, 1.0, 58);
+
+    // 3 · significa
+    scene(s(3), t, SC[2][0], SC[2][1]);
+    rise($('k3'), t, 8.6);
+    words(s(3).querySelector('.title'), t, 8.8);
+    pop($('c31'), t, 9.8, -3); pop($('c32'), t, 10.1, 3);
+    rise($('l3'), t, 10.6);
+
+    // 4 · sospechosos
+    scene(s(4), t, SC[3][0], SC[3][1]);
+    words(s(4).querySelector('.title'), t, 12.2);
+    cascade($('rows4'), t, 12.8, 0.32);
+
+    // 5 · qué hacer
+    scene(s(5), t, SC[4][0], SC[4][1]);
+    words(s(5).querySelector('.title'), t, 16.0);
+    cascade($('steps5'), t, 16.6, 0.5, 0.7);
+
+    // 6 · cierre
+    scene(s(6), t, SC[5][0], SC[5][1]);
+    words($('t6'), t, 19.75);
+    rise($('l6'), t, 20.3);
+    figure($('im6'), t, 20.1, rt, 0.8, 90); pop($('wm6'), t, 20.6, 0, 0.6);
+    pop($('c6'), t, 21.0, -3);
+  };
+  render(0);
+</script>
+</body>
+</html>

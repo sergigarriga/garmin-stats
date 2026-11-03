@@ -1,0 +1,149 @@
+{
+ "bpm": 122,
+ "voice": "polly:Lucia:generative:eu-central-1",
+ "tempo": 1.12,
+ "lines": [
+  {
+   "scene": 0.3,
+   "text": "Menos mil de aura: parar el reloj en un semáforo… y olvidarte de darle al play."
+  },
+  {
+   "scene": 3.7,
+   "text": "Tres kilómetros fantasma que no cuentan para nadie."
+  },
+  {
+   "scene": 7.3,
+   "text": "Más mil de aura: una señora de setenta años que hace su rodaje suave y llega a casa charlando tan tranquila."
+  },
+  {
+   "scene": 11.5,
+   "text": "Constancia, cabeza y cero ego. Eso es aura de verdad."
+  },
+  {
+   "scene": 14.9,
+   "text": "El truco para no perder aura: activa la pausa automática, y el reloj se para y arranca solo."
+  },
+  {
+   "scene": 18.7,
+   "text": "¿Tú eres más mil o menos mil? Te leo en comentarios."
+  }
+ ],
+ "sfx": [
+  {
+   "t": 0.0,
+   "type": "swell"
+  },
+  {
+   "t": 0.25,
+   "type": "tick"
+  },
+  {
+   "t": 0.4,
+   "type": "tick"
+  },
+  {
+   "t": 0.55,
+   "type": "tick"
+  },
+  {
+   "t": 0.7,
+   "type": "tick"
+  },
+  {
+   "t": 1.5,
+   "type": "stamp"
+  },
+  {
+   "t": 3.6,
+   "type": "whoosh"
+  },
+  {
+   "t": 4.4,
+   "type": "pop",
+   "pitch": 1.0
+  },
+  {
+   "t": 4.7,
+   "type": "pop",
+   "pitch": 1.2
+  },
+  {
+   "t": 5.6,
+   "type": "stamp"
+  },
+  {
+   "t": 7.2,
+   "type": "whoosh"
+  },
+  {
+   "t": 7.45,
+   "type": "tick"
+  },
+  {
+   "t": 7.6,
+   "type": "tick"
+  },
+  {
+   "t": 7.75,
+   "type": "tick"
+  },
+  {
+   "t": 8.6,
+   "type": "sparkle"
+  },
+  {
+   "t": 8.0,
+   "type": "ding"
+  },
+  {
+   "t": 11.4,
+   "type": "whoosh"
+  },
+  {
+   "t": 12.2,
+   "type": "tick"
+  },
+  {
+   "t": 12.48,
+   "type": "tick"
+  },
+  {
+   "t": 12.76,
+   "type": "tick"
+  },
+  {
+   "t": 13.04,
+   "type": "tick"
+  },
+  {
+   "t": 14.8,
+   "type": "whoosh"
+  },
+  {
+   "t": 15.9,
+   "type": "pop",
+   "pitch": 1.4
+  },
+  {
+   "t": 16.0,
+   "type": "ding"
+  },
+  {
+   "t": 18.6,
+   "type": "swell"
+  },
+  {
+   "t": 19.5,
+   "type": "pop",
+   "pitch": 0.9
+  },
+  {
+   "t": 19.9,
+   "type": "ding"
+  }
+ ],
+ "anim_duration": 23,
+ "lead": 0.25,
+ "tail": 1.6,
+ "music": "house"
+}
