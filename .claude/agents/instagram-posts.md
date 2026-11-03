@@ -98,6 +98,12 @@ Serie "Frases míticas": ver `marketing/instagram/ideas.md` (humor que une, nunc
 "Equilibrio de cada lote de frases" (mezcla de memes de moda, catalanades, refranes, meme político, fútbol para todas
 las aficiones e inclusivo).
 
+## Stories
+
+Las stories van como vídeo corto (6-10 s, 1080×1920) con animación suave y música original (base groove
+compuesta por código, −14 LUFS), nunca como imagen fija; contenido dentro de la zona segura (arriba ~220 px, abajo
+~260 px); primero la de catalán y después la de castellano.
+
 ## Privacidad (obligatorio)
 
 - Los números de las imágenes son **siempre de ejemplo** y realistas. Nunca uses datos reales del usuario ni de
