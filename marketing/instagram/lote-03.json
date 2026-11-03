@@ -1,529 +1,529 @@
 {
- "lote": "03",
- "handle": "@runch.run",
- "notes": "Serie Frases míticas, cultura pop: 2 Rajoy (vaso/plato, vecino/alcalde), 2 fútbol (Van Gaal, Iniesta), 2 Simpson/tele (Excelente, Chiquito), 2 catalanades (Déu n'hi do, Que fort), 1 meme (aura). Ángulo inclusivo: «Un poquito de por favor» (ritmo del grupo). Cada carrusel: 1 catalán, 2 castellano, 3 «El teu torn / Tu turno». Caption primero en catalán, luego castellano. Máx. 5 hashtags. Orden de publicación = orden del archivo.",
- "posts": [
-  {
-   "id": "un-got-es-un-got",
-   "title": "Un rodatge suau és un rodatge suau",
-   "bg": "cream",
-   "inner": "butter",
-   "topic": "Frases",
-   "slides": [
+  "lote": "03",
+  "handle": "@runch.run",
+  "notes": "Serie Frases míticas, cultura pop: 2 Rajoy (vaso/plato, vecino/alcalde), 2 fútbol (Van Gaal, Iniesta), 2 Simpson/tele (Excelente, Chiquito), 2 catalanades (Déu n'hi do, Que fort), 1 meme (aura). Ángulo inclusivo: «Un poquito de por favor» (ritmo del grupo). Cada carrusel: 1 catalán, 2 castellano, 3 «El teu torn / Tu turno». Caption primero en catalán, luego castellano. Máx. 5 hashtags. Orden de publicación = orden del archivo.",
+  "posts": [
     {
-     "layout": "hook",
-     "kicker": "Rodatge suau",
-     "title": "Un got és un got. **Un rodatge suau és un rodatge suau.**",
-     "body": "No el barregis amb una sèrie: entremig hi ha la zona grisa, on ni recuperes ni treballes del tot.",
-     "facts": [
-      "Pots parlar",
-      "Un 80 % suau",
-      "Sèries, un altre dia"
-     ],
-     "size": 104,
-     "example": true
+      "id": "un-got-es-un-got",
+      "title": "Un rodatge suau és un rodatge suau",
+      "bg": "cream",
+      "inner": "butter",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Rodatge suau",
+          "title": "Un got és un got. **Un rodatge suau és un rodatge suau.**",
+          "body": "No el barregis amb una sèrie: entremig hi ha la zona grisa, on ni recuperes ni treballes del tot.",
+          "facts": [
+            "Pots parlar",
+            "Un 80 % suau",
+            "Sèries, un altre dia"
+          ],
+          "size": 104,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "butter",
+          "kicker": "Rodaje suave",
+          "title": "Un vaso es un vaso. **Un rodaje suave es un rodaje suave.**",
+          "body": "No lo mezcles con una serie: en medio está la zona gris, donde ni recuperas ni trabajas del todo.",
+          "facts": [
+            "Puedes hablar",
+            "Un 80 % suave",
+            "Series, otro día"
+          ],
+          "size": 104,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "El teu torn: **quin percentatge** del teu temps és suau?",
+          "body": "Tu turno: ¿**qué porcentaje** de tu tiempo es suave?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "Un got és un got i un plat és un plat. I un rodatge suau és un rodatge suau.\n\nLa regla del 80/20 diu que al voltant del 80 % del temps d'entrenament ha de ser suau, a un ritme en què pots parlar. Les sèries, curtes i ben fetes. El problema és el terme mitjà: massa fort per recuperar, massa suau per ser una sèrie.\n\n—\n\n«Un vaso es un vaso y un plato es un plato.» Y un rodaje suave es un rodaje suave.\n\nLa regla del 80/20 dice que alrededor del 80 % del tiempo de entreno debe ser suave, a un ritmo en el que puedes hablar. Las series, cortas y bien hechas. El problema es el término medio: demasiado fuerte para recuperar, demasiado suave para ser una serie.\n\nPásaselo a tu grupo de running.\n\nQuin percentatge del teu temps és suau? / ¿Qué porcentaje de tu tiempo es suave?",
+      "hashtags": [
+        "#rodajesuave",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con la frase «Un got és un got. Un rodatge suau és un rodatge suau» en catalán y «Un vaso es un vaso. Un rodaje suave es un rodaje suave» en castellano, sobre la regla del 80/20 y la zona gris."
     },
     {
-     "layout": "hook",
-     "bg": "butter",
-     "kicker": "Rodaje suave",
-     "title": "Un vaso es un vaso. **Un rodaje suave es un rodaje suave.**",
-     "body": "No lo mezcles con una serie: en medio está la zona gris, donde ni recuperas ni trabajas del todo.",
-     "facts": [
-      "Puedes hablar",
-      "Un 80 % suave",
-      "Series, otro día"
-     ],
-     "size": 104,
-     "example": true
+      "id": "deu-n-hi-do",
+      "title": "Déu n'hi do les agulletes",
+      "bg": "terracotta",
+      "inner": "cream",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Agulletes",
+          "title": "**Déu n'hi do** les agulletes d'ahir.",
+          "body": "Les agulletes toquen el seu punt més alt entre 24 i 72 hores després d'un esforç nou. Caminar o rodar molt suau sol anar bé.",
+          "facts": [
+            "Pic: 24-72 h",
+            "Moviment suau",
+            "Dormir bé"
+          ],
+          "size": 112,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "cream",
+          "kicker": "Agujetas",
+          "title": "Las agujetas de ayer: **«Déu n'hi do».**",
+          "body": "Las agujetas tocan su punto más alto entre 24 y 72 horas después de un esfuerzo nuevo. Caminar o rodar muy suave suele ir bien.",
+          "facts": [
+            "Pico: 24-72 h",
+            "Movimiento suave",
+            "Dormir bien"
+          ],
+          "size": 112,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "terracotta",
+          "title": "El teu torn: **quin dia** et fan més mal les agulletes?",
+          "body": "Tu turno: ¿**qué día** te duelen más las agujetas?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "Déu n'hi do les agulletes d'ahir.\n\nLes agulletes arriben al seu punt més alt entre 24 i 72 hores després d'un esforç nou o més dur del normal. No cal quedar-se al sofà: caminar o fer un rodatge molt suau sol anar bé, i dormir bé ajuda. Si el dolor és molt fort o dura molts dies, consulta-ho amb un professional.\n\n—\n\n«Déu n'hi do» (vaya tela) las agujetas de ayer.\n\nLas agujetas llegan a su punto más alto entre 24 y 72 horas después de un esfuerzo nuevo o más duro de lo normal. No hace falta quedarse en el sofá: caminar o hacer un rodaje muy suave suele ir bien, y dormir bien ayuda. Si el dolor es muy fuerte o dura muchos días, consúltalo con un profesional.\n\nGuárdalo para el día después de la tirada larga.\n\nQuin dia et fan més mal les agulletes? / ¿Qué día te duelen más las agujetas?",
+      "hashtags": [
+        "#agujetas",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con la frase «Déu n'hi do les agulletes d'ahir» en catalán y «Las agujetas de ayer: Déu n'hi do» en castellano, sobre el pico de las agujetas entre 24 y 72 horas y el movimiento suave."
     },
     {
-     "layout": "cta",
-     "bg": "cream",
-     "title": "El teu torn: **quin percentatge** del teu temps és suau?",
-     "body": "Tu turno: ¿**qué porcentaje** de tu tiempo es suave?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
+      "id": "sempre-negatiu",
+      "title": "Sempre negatiu, mai positiu",
+      "bg": "cream",
+      "inner": "sea",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Parcials",
+          "title": "Sempre **negatiu,** mai positiu. Parlem de parcials.",
+          "body": "Un parcial negatiu és córrer la segona meitat més ràpid que la primera. Surt contingut: l'adrenalina del començament enganya.",
+          "facts": [
+            "1a meitat suau",
+            "2a més ràpida",
+            "Ex.: 5:20 i 5:10"
+          ],
+          "size": 100,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "sea",
+          "kicker": "Parciales",
+          "title": "Siempre **negativo,** nunca positivo. Hablamos de parciales.",
+          "body": "Un parcial negativo es correr la segunda mitad más rápido que la primera. Sal contenido: la adrenalina del principio engaña.",
+          "facts": [
+            "1.ª mitad contenida",
+            "2.ª mitad más rápida",
+            "Ej.: 5:20 y 5:10"
+          ],
+          "size": 100,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "El teu torn: **positiu o negatiu,** com acabes les tirades?",
+          "body": "Tu turno: ¿**positivo o negativo,** cómo acabas tus tiradas?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "Sempre negatiu, mai positiu. Parlem de parcials.\n\nUn parcial negatiu és córrer la segona meitat més ràpid que la primera. Sortir contingut és més difícil del que sembla: l'adrenalina del començament enganya. Prova-ho en una sortida de 10 km: 5:20 el quilòmetre els primers 5 i 5:10 els últims 5.\n\n—\n\n«Siempre negativo, nunca positivo.» Hablamos de parciales.\n\nUn parcial negativo es correr la segunda mitad más rápido que la primera. Salir contenido es más difícil de lo que parece: la adrenalina del principio engaña. Pruébalo en una salida de 10 km: 5:20 el kilómetro los primeros 5 y 5:10 los últimos 5.\n\nPásaselo a quien sale siempre a tope.\n\nPositiu o negatiu? / ¿Positivo o negativo?",
+      "hashtags": [
+        "#negativesplit",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con la frase «Sempre negatiu, mai positiu» en catalán y «Siempre negativo, nunca positivo» en castellano, sobre correr la segunda mitad más rápido que la primera."
+    },
+    {
+      "id": "excelent",
+      "title": "Excel·lent: Productiu",
+      "bg": "butter",
+      "inner": "cream",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Estat d'entrenament",
+          "title": "«Excel·lent.» Estat d'entrenament: **Productiu.**",
+          "body": "En molts Garmin, Productiu vol dir que la càrrega puja i la teva forma l'acompanya. Cada 3-4 setmanes, una més lleugera.",
+          "facts": [
+            "Càrrega a l'alça",
+            "Forma en millora",
+            "Descàrrega a temps"
+          ],
+          "size": 100,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "cream",
+          "kicker": "Estado de entrenamiento",
+          "title": "«Excelente.» Estado de entrenamiento: **Productivo.**",
+          "body": "En muchos Garmin, Productivo significa que la carga sube y tu forma la acompaña. Cada 3-4 semanas, una más ligera.",
+          "facts": [
+            "Carga al alza",
+            "Forma en mejora",
+            "Descarga a tiempo"
+          ],
+          "size": 100,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "butter",
+          "title": "El teu torn: **quin estat** d'entrenament marca el rellotge?",
+          "body": "Tu turno: ¿**qué estado** de entrenamiento marca tu reloj?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "«Excel·lent.» Estat d'entrenament: Productiu.\n\nEn molts rellotges Garmin, Productiu vol dir que la càrrega d'entrenament puja i la teva forma l'acompanya. Bon senyal, però no dura per sempre: després de 3-4 setmanes carregant, programa una setmana més lleugera perquè el cos ho assimili.\n\n—\n\n«Excelente.» Estado de entrenamiento: Productivo.\n\nEn muchos relojes Garmin, Productivo significa que la carga de entrenamiento sube y tu forma la acompaña. Buena señal, pero no dura para siempre: tras 3-4 semanas cargando, programa una semana más ligera para que el cuerpo lo asimile.\n\nGuárdalo para cuando el reloj te diga algo bonito.\n\nQuin estat d'entrenament marca el teu rellotge? / ¿Qué estado de entrenamiento marca tu reloj?",
+      "hashtags": [
+        "#garmin",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con la frase «Excel·lent. Estat d'entrenament: Productiu» en catalán y «Excelente. Estado de entrenamiento: Productivo» en castellano, sobre qué significa Productivo y la semana de descarga."
+    },
+    {
+      "id": "garmin-i-runner",
+      "title": "El Garmin i el runner",
+      "bg": "cream",
+      "inner": "terracotta",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Rellotge i sensacions",
+          "title": "És el Garmin el que vol que **el runner sigui el Garmin.**",
+          "body": "El rellotge dóna informació, no ordres. Creua la nota de preparació amb com et trobes: si no quadren, ajusta el pla.",
+          "facts": [
+            "El rellotge informa",
+            "Tu decideixes",
+            "Dades i sensacions"
+          ],
+          "size": 100,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "terracotta",
+          "kicker": "Reloj y sensaciones",
+          "title": "Es el Garmin el que quiere que **el runner sea el Garmin.**",
+          "body": "El reloj da información, no órdenes. Cruza la nota de preparación con cómo te encuentras: si no cuadran, ajusta el plan.",
+          "facts": [
+            "El reloj informa",
+            "Tú decides",
+            "Datos y sensaciones"
+          ],
+          "size": 100,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "El teu torn: **fas cas** del rellotge o de les sensacions?",
+          "body": "Tu turno: ¿**haces caso** al reloj o a tus sensaciones?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "És el Garmin el que vol que el runner sigui el Garmin.\n\nEl rellotge dóna informació, no ordres. La nota de preparació resumeix el son, la recuperació i la càrrega, però tu saps com et trobes. Creua les dues coses: si no quadren, ajusta el pla.\n\n—\n\n«Es el vecino el que elige al alcalde y es el alcalde el que quiere que sean los vecinos el alcalde.» Pues eso: es el Garmin el que quiere que el runner sea el Garmin.\n\nEl reloj da información, no órdenes. La nota de preparación resume el sueño, la recuperación y la carga, pero tú sabes cómo te encuentras. Cruza las dos cosas: si no cuadran, ajusta el plan.\n\nGuárdalo para el próximo día que el reloj y tú no os pongáis de acuerdo.\n\nFas cas del rellotge o de les sensacions? / ¿Haces caso al reloj o a tus sensaciones?",
+      "hashtags": [
+        "#garmin",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con la frase «És el Garmin el que vol que el runner sigui el Garmin» en catalán y «Es el Garmin el que quiere que el runner sea el Garmin» en castellano, sobre cruzar los datos del reloj con las sensaciones."
+    },
+    {
+      "id": "font-de-la-meva-vida",
+      "title": "Font de la meva vida",
+      "bg": "sea",
+      "inner": "cream",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Tirada llarga",
+          "title": "Quilòmetre 18 i, de cop: **font de la meva vida!**",
+          "body": "Si passes de l'hora, beu a glops petits abans de tenir set i pren hidrats (la referència són 30-60 g per hora).",
+          "facts": [
+            "Beu a glops",
+            "30-60 g/h",
+            "Prova-ho a l'entreno"
+          ],
+          "size": 100,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "cream",
+          "kicker": "Tirada larga",
+          "title": "Kilómetro 18 y, de repente: **¡fuente de mi vida!**",
+          "body": "Si pasas de la hora, bebe a sorbos antes de tener sed y toma hidratos (la referencia son 30-60 g por hora).",
+          "facts": [
+            "Bebe a sorbos",
+            "30-60 g/h",
+            "Pruébalo en entreno"
+          ],
+          "size": 100,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "sea",
+          "title": "El teu torn: **aigua o gel** al quilòmetre 18?",
+          "body": "Tu turno: ¿**agua o gel** en el kilómetro 18?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "Quilòmetre 18 i, de cop: font de la meva vida!\n\nSi la sortida passa de l'hora, beu a glops petits abans de tenir set i pren hidrats de carboni (la referència habitual són 30-60 g per hora). I prova-ho tot en entrenaments: el dia de la cursa, res de novetats.\n\n—\n\nKilómetro 18 y, de repente: «¡Iniesta de mi vida!», pero con avituallamiento.\n\nSi la salida pasa de la hora, bebe a sorbos pequeños antes de tener sed y toma hidratos de carbono (la referencia habitual son 30-60 g por hora). Y pruébalo todo en entrenos: el día de la carrera, nada de novedades.\n\nPásaselo a tu grupo de running.\n\nAigua o gel al quilòmetre 18? / ¿Agua o gel en el kilómetro 18?",
+      "hashtags": [
+        "#tiradalarga",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con la frase «Quilòmetre 18 i, de cop: font de la meva vida» en catalán y «Kilómetro 18 y, de repente: ¡fuente de mi vida!» en castellano, sobre hidratación y carbohidratos en tiradas largas."
+    },
+    {
+      "id": "una-mica-de-per-favor",
+      "title": "Una mica de per favor",
+      "bg": "cream",
+      "inner": "sage",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Rodatge en grup",
+          "title": "«Una mica de **per favor**» al rodatge en grup.",
+          "body": "En una sortida de grup, el ritme el marca qui va més tranquil i ningú es queda enrere. Per apretar, ja hi ha les sèries.",
+          "facts": [
+            "Ningú enrere",
+            "Ritme del grup",
+            "Sèries, un altre dia"
+          ],
+          "size": 104,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "sage",
+          "kicker": "Rodaje en grupo",
+          "title": "«Un poquito de **por favor**» en el rodaje en grupo.",
+          "body": "En una salida de grupo, el ritmo lo marca quien va más tranquilo y nadie se queda atrás. Para apretar, ya están las series.",
+          "facts": [
+            "Nadie atrás",
+            "Ritmo del grupo",
+            "Series, otro día"
+          ],
+          "size": 104,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "El teu torn: **qui marca** el ritme al teu grup?",
+          "body": "Tu turno: ¿**quién marca** el ritmo en tu grupo?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "«Una mica de per favor» al rodatge en grup.\n\nEn una sortida de grup, el ritme el marca qui va més tranquil i ningú es queda enrere. Aquest és el pacte. Per apretar ja hi ha les sèries, un altre dia. Ritme suau també vol dir que tothom pugui parlar.\n\n—\n\n«Un poquito de por favor» en el rodaje en grupo.\n\nEn una salida de grupo, el ritmo lo marca quien va más tranquilo y nadie se queda atrás. Ese es el pacto. Para apretar ya están las series, otro día. Ritmo suave también significa que todo el mundo pueda hablar.\n\nPásaselo a quien acelera siempre en el km 3.\n\nQui marca el ritme al teu grup? / ¿Quién marca el ritmo en tu grupo?",
+      "hashtags": [
+        "#grupoderunning",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con la frase «Una mica de per favor al rodatge en grup» en catalán y «Un poquito de por favor en el rodaje en grupo» en castellano, sobre respetar el ritmo del grupo."
+    },
+    {
+      "id": "que-fort-hrv",
+      "title": "Que fort! El teu HRV no baixa",
+      "bg": "terracotta",
+      "inner": "cream",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Recuperació",
+          "title": "**Que fort, que fort, que fort!** El teu HRV no baixa.",
+          "body": "L'HRV és la variació de temps entre batecs. Compara'l amb la teva mitjana: estable després d'una setmana dura, bon senyal.",
+          "facts": [
+            "Compara amb tu",
+            "Mira la tendència",
+            "Mai un sol dia"
+          ],
+          "size": 92,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "cream",
+          "kicker": "Recuperación",
+          "title": "**¡Qué fuerte, qué fuerte, qué fuerte!** Tu HRV no baja.",
+          "body": "El HRV es la variación de tiempo entre latidos. Compáralo con tu media: estable tras una semana dura, buena señal.",
+          "facts": [
+            "Compara contigo",
+            "Mira la tendencia",
+            "Nunca un solo día"
+          ],
+          "size": 92,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "terracotta",
+          "title": "El teu torn: **mires l'HRV** cada matí?",
+          "body": "Tu turno: ¿**miras el HRV** cada mañana?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "Que fort, que fort, que fort! El teu HRV no baixa.\n\nL'HRV és la variació de temps entre batecs consecutius. Compara'l sempre amb la teva pròpia mitjana, no amb la d'altres persones, i mira la tendència de diversos dies, no un sol matí. Si es manté estable després d'una setmana dura, bon senyal. Si cau uns quants dies seguits, baixa el ritme.\n\n—\n\n¡Qué fuerte, qué fuerte, qué fuerte! Tu HRV no baja.\n\nEl HRV es la variación de tiempo entre latidos consecutivos. Compáralo siempre con tu propia media, no con la de otras personas, y mira la tendencia de varios días, no una sola mañana. Si se mantiene estable tras una semana dura, buena señal. Si cae varios días seguidos, baja el ritmo.\n\nGuárdalo para entender tu reloj.\n\nMires l'HRV cada matí? / ¿Miras el HRV cada mañana?",
+      "hashtags": [
+        "#hrv",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con la frase «Que fort, que fort, que fort! El teu HRV no baixa» en catalán y «¡Qué fuerte, qué fuerte, qué fuerte! Tu HRV no baja» en castellano, sobre cómo leer la variabilidad cardiaca comparándola con tu media."
+    },
+    {
+      "id": "menys-mil-d-aura",
+      "title": "−1000 d'aura",
+      "bg": "cream",
+      "inner": "butter",
+      "topic": "Frases",
+      "slides": [
+        {
+          "layout": "hook",
+          "kicker": "Rellotge",
+          "title": "**−1000 d'aura:** pausar al semàfor i no tornar a donar al play.",
+          "body": "Activa la pausa automàtica: el rellotge s'atura quan t'atures i es reprèn sol quan tornes a córrer.",
+          "facts": [
+            "Pausa automàtica",
+            "Es reprèn sola",
+            "Mira'l al km 1"
+          ],
+          "size": 96,
+          "example": true
+        },
+        {
+          "layout": "hook",
+          "bg": "butter",
+          "kicker": "Reloj",
+          "title": "**−1000 de aura:** pausar en un semáforo y no volver a darle al play.",
+          "body": "Activa la pausa automática: el reloj se detiene cuando te paras y se reanuda solo cuando vuelves a correr.",
+          "facts": [
+            "Pausa automática",
+            "Se reanuda sola",
+            "Míralo en el km 1"
+          ],
+          "size": 96,
+          "example": true
+        },
+        {
+          "layout": "cta",
+          "bg": "cream",
+          "title": "El teu torn: **quants quilòmetres** t'has deixat sense gravar?",
+          "body": "Tu turno: ¿**cuántos kilómetros** se te han quedado sin grabar?",
+          "size": 58,
+          "actions": [
+            "Comenta",
+            "Desa / Guarda",
+            "Envia / Envía"
+          ],
+          "example": false
+        }
+      ],
+      "caption": "−1000 d'aura: pausar al semàfor i no tornar a donar al play.\n\nEns ha passat a tots: tres quilòmetres corrent amb el rellotge parat. Activa la pausa automàtica: el rellotge s'atura quan tu t'atures i es reprèn sol quan tornes a córrer. I mira'l al primer quilòmetre, per si de cas.\n\n—\n\n−1000 de aura: pausar en un semáforo y no volver a darle al play.\n\nNos ha pasado a todos: tres kilómetros corriendo con el reloj parado. Activa la pausa automática: el reloj se detiene cuando tú te paras y se reanuda solo cuando vuelves a correr. Y míralo en el primer kilómetro, por si acaso.\n\nPásaselo a quien ya ha perdido un entreno por esto.\n\nQuants quilòmetres t'has deixat sense gravar? / ¿Cuántos kilómetros se te han quedado sin grabar?",
+      "hashtags": [
+        "#aura",
+        "#córrer",
+        "#runningcatalunya",
+        "#running",
+        "#runch"
+      ],
+      "alt": "Carrusel con el meme «−1000 d'aura: pausar al semàfor i no tornar a donar al play» en catalán y su versión en castellano, sobre activar la pausa automática del reloj."
     }
-   ],
-   "caption": "Un got és un got i un plat és un plat. I un rodatge suau és un rodatge suau.\n\nLa regla del 80/20 diu que al voltant del 80 % del temps d'entrenament ha de ser suau, a un ritme en què pots parlar. Les sèries, curtes i ben fetes. El problema és el terme mitjà: massa fort per recuperar, massa suau per ser una sèrie.\n\n—\n\n«Un vaso es un vaso y un plato es un plato.» Y un rodaje suave es un rodaje suave.\n\nLa regla del 80/20 dice que alrededor del 80 % del tiempo de entreno debe ser suave, a un ritmo en el que puedes hablar. Las series, cortas y bien hechas. El problema es el término medio: demasiado fuerte para recuperar, demasiado suave para ser una serie.\n\nPásaselo a tu grupo de running.\n\nQuin percentatge del teu temps és suau? / ¿Qué porcentaje de tu tiempo es suave?",
-   "hashtags": [
-    "#rodajesuave",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con la frase «Un got és un got. Un rodatge suau és un rodatge suau» en catalán y «Un vaso es un vaso. Un rodaje suave es un rodaje suave» en castellano, sobre la regla del 80/20 y la zona gris."
-  },
-  {
-   "id": "deu-n-hi-do",
-   "title": "Déu n'hi do les agulletes",
-   "bg": "terracotta",
-   "inner": "cream",
-   "topic": "Frases",
-   "slides": [
-    {
-     "layout": "hook",
-     "kicker": "Agulletes",
-     "title": "**Déu n'hi do** les agulletes d'ahir.",
-     "body": "Les agulletes toquen el seu punt més alt entre 24 i 72 hores després d'un esforç nou. Caminar o rodar molt suau sol anar bé.",
-     "facts": [
-      "Pic: 24-72 h",
-      "Moviment suau",
-      "Dormir bé"
-     ],
-     "size": 112,
-     "example": true
-    },
-    {
-     "layout": "hook",
-     "bg": "cream",
-     "kicker": "Agujetas",
-     "title": "Las agujetas de ayer: **«Déu n'hi do».**",
-     "body": "Las agujetas tocan su punto más alto entre 24 y 72 horas después de un esfuerzo nuevo. Caminar o rodar muy suave suele ir bien.",
-     "facts": [
-      "Pico: 24-72 h",
-      "Movimiento suave",
-      "Dormir bien"
-     ],
-     "size": 112,
-     "example": true
-    },
-    {
-     "layout": "cta",
-     "bg": "terracotta",
-     "title": "El teu torn: **quin dia** et fan més mal les agulletes?",
-     "body": "Tu turno: ¿**qué día** te duelen más las agujetas?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
-    }
-   ],
-   "caption": "Déu n'hi do les agulletes d'ahir.\n\nLes agulletes arriben al seu punt més alt entre 24 i 72 hores després d'un esforç nou o més dur del normal. No cal quedar-se al sofà: caminar o fer un rodatge molt suau sol anar bé, i dormir bé ajuda. Si el dolor és molt fort o dura molts dies, consulta-ho amb un professional.\n\n—\n\n«Déu n'hi do» (vaya tela) las agujetas de ayer.\n\nLas agujetas llegan a su punto más alto entre 24 y 72 horas después de un esfuerzo nuevo o más duro de lo normal. No hace falta quedarse en el sofá: caminar o hacer un rodaje muy suave suele ir bien, y dormir bien ayuda. Si el dolor es muy fuerte o dura muchos días, consúltalo con un profesional.\n\nGuárdalo para el día después de la tirada larga.\n\nQuin dia et fan més mal les agulletes? / ¿Qué día te duelen más las agujetas?",
-   "hashtags": [
-    "#agujetas",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con la frase «Déu n'hi do les agulletes d'ahir» en catalán y «Las agujetas de ayer: Déu n'hi do» en castellano, sobre el pico de las agujetas entre 24 y 72 horas y el movimiento suave."
-  },
-  {
-   "id": "sempre-negatiu",
-   "title": "Sempre negatiu, mai positiu",
-   "bg": "cream",
-   "inner": "sea",
-   "topic": "Frases",
-   "slides": [
-    {
-     "layout": "hook",
-     "kicker": "Parcials",
-     "title": "Sempre **negatiu,** mai positiu. Parlem de parcials.",
-     "body": "Un parcial negatiu és córrer la segona meitat més ràpid que la primera. Surt contingut: l'adrenalina del començament enganya.",
-     "facts": [
-      "1a meitat suau",
-      "2a més ràpida",
-      "Ex.: 5:20 i 5:10"
-     ],
-     "size": 100,
-     "example": true
-    },
-    {
-     "layout": "hook",
-     "bg": "sea",
-     "kicker": "Parciales",
-     "title": "Siempre **negativo,** nunca positivo. Hablamos de parciales.",
-     "body": "Un parcial negativo es correr la segunda mitad más rápido que la primera. Sal contenido: la adrenalina del principio engaña.",
-     "facts": [
-      "1.ª mitad contenida",
-      "2.ª mitad más rápida",
-      "Ej.: 5:20 y 5:10"
-     ],
-     "size": 100,
-     "example": true
-    },
-    {
-     "layout": "cta",
-     "bg": "cream",
-     "title": "El teu torn: **positiu o negatiu,** com acabes les tirades?",
-     "body": "Tu turno: ¿**positivo o negativo,** cómo acabas tus tiradas?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
-    }
-   ],
-   "caption": "Sempre negatiu, mai positiu. Parlem de parcials.\n\nUn parcial negatiu és córrer la segona meitat més ràpid que la primera. Sortir contingut és més difícil del que sembla: l'adrenalina del començament enganya. Prova-ho en una sortida de 10 km: 5:20 el quilòmetre els primers 5 i 5:10 els últims 5.\n\n—\n\n«Siempre negativo, nunca positivo.» Hablamos de parciales.\n\nUn parcial negativo es correr la segunda mitad más rápido que la primera. Salir contenido es más difícil de lo que parece: la adrenalina del principio engaña. Pruébalo en una salida de 10 km: 5:20 el kilómetro los primeros 5 y 5:10 los últimos 5.\n\nPásaselo a quien sale siempre a tope.\n\nPositiu o negatiu? / ¿Positivo o negativo?",
-   "hashtags": [
-    "#negativesplit",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con la frase «Sempre negatiu, mai positiu» en catalán y «Siempre negativo, nunca positivo» en castellano, sobre correr la segunda mitad más rápido que la primera."
-  },
-  {
-   "id": "excelent",
-   "title": "Excel·lent: Productiu",
-   "bg": "sage",
-   "inner": "cream",
-   "topic": "Frases",
-   "slides": [
-    {
-     "layout": "hook",
-     "kicker": "Estat d'entrenament",
-     "title": "«Excel·lent.» Estat d'entrenament: **Productiu.**",
-     "body": "En molts Garmin, Productiu vol dir que la càrrega puja i la teva forma l'acompanya. Cada 3-4 setmanes, una més lleugera.",
-     "facts": [
-      "Càrrega a l'alça",
-      "Forma en millora",
-      "Descàrrega a temps"
-     ],
-     "size": 100,
-     "example": true
-    },
-    {
-     "layout": "hook",
-     "bg": "cream",
-     "kicker": "Estado de entrenamiento",
-     "title": "«Excelente.» Estado de entrenamiento: **Productivo.**",
-     "body": "En muchos Garmin, Productivo significa que la carga sube y tu forma la acompaña. Cada 3-4 semanas, una más ligera.",
-     "facts": [
-      "Carga al alza",
-      "Forma en mejora",
-      "Descarga a tiempo"
-     ],
-     "size": 100,
-     "example": true
-    },
-    {
-     "layout": "cta",
-     "bg": "sage",
-     "title": "El teu torn: **quin estat** d'entrenament marca el rellotge?",
-     "body": "Tu turno: ¿**qué estado** de entrenamiento marca tu reloj?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
-    }
-   ],
-   "caption": "«Excel·lent.» Estat d'entrenament: Productiu.\n\nEn molts rellotges Garmin, Productiu vol dir que la càrrega d'entrenament puja i la teva forma l'acompanya. Bon senyal, però no dura per sempre: després de 3-4 setmanes carregant, programa una setmana més lleugera perquè el cos ho assimili.\n\n—\n\n«Excelente.» Estado de entrenamiento: Productivo.\n\nEn muchos relojes Garmin, Productivo significa que la carga de entrenamiento sube y tu forma la acompaña. Buena señal, pero no dura para siempre: tras 3-4 semanas cargando, programa una semana más ligera para que el cuerpo lo asimile.\n\nGuárdalo para cuando el reloj te diga algo bonito.\n\nQuin estat d'entrenament marca el teu rellotge? / ¿Qué estado de entrenamiento marca tu reloj?",
-   "hashtags": [
-    "#garmin",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con la frase «Excel·lent. Estat d'entrenament: Productiu» en catalán y «Excelente. Estado de entrenamiento: Productivo» en castellano, sobre qué significa Productivo y la semana de descarga."
-  },
-  {
-   "id": "garmin-i-runner",
-   "title": "El Garmin i el runner",
-   "bg": "cream",
-   "inner": "terracotta",
-   "topic": "Frases",
-   "slides": [
-    {
-     "layout": "hook",
-     "kicker": "Rellotge i sensacions",
-     "title": "És el Garmin el que vol que **el runner sigui el Garmin.**",
-     "body": "El rellotge dóna informació, no ordres. Creua la nota de preparació amb com et trobes: si no quadren, ajusta el pla.",
-     "facts": [
-      "El rellotge informa",
-      "Tu decideixes",
-      "Dades i sensacions"
-     ],
-     "size": 100,
-     "example": true
-    },
-    {
-     "layout": "hook",
-     "bg": "terracotta",
-     "kicker": "Reloj y sensaciones",
-     "title": "Es el Garmin el que quiere que **el runner sea el Garmin.**",
-     "body": "El reloj da información, no órdenes. Cruza la nota de preparación con cómo te encuentras: si no cuadran, ajusta el plan.",
-     "facts": [
-      "El reloj informa",
-      "Tú decides",
-      "Datos y sensaciones"
-     ],
-     "size": 100,
-     "example": true
-    },
-    {
-     "layout": "cta",
-     "bg": "cream",
-     "title": "El teu torn: **fas cas** del rellotge o de les sensacions?",
-     "body": "Tu turno: ¿**haces caso** al reloj o a tus sensaciones?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
-    }
-   ],
-   "caption": "És el Garmin el que vol que el runner sigui el Garmin.\n\nEl rellotge dóna informació, no ordres. La nota de preparació resumeix el son, la recuperació i la càrrega, però tu saps com et trobes. Creua les dues coses: si no quadren, ajusta el pla.\n\n—\n\n«Es el vecino el que elige al alcalde y es el alcalde el que quiere que sean los vecinos el alcalde.» Pues eso: es el Garmin el que quiere que el runner sea el Garmin.\n\nEl reloj da información, no órdenes. La nota de preparación resume el sueño, la recuperación y la carga, pero tú sabes cómo te encuentras. Cruza las dos cosas: si no cuadran, ajusta el plan.\n\nGuárdalo para el próximo día que el reloj y tú no os pongáis de acuerdo.\n\nFas cas del rellotge o de les sensacions? / ¿Haces caso al reloj o a tus sensaciones?",
-   "hashtags": [
-    "#garmin",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con la frase «És el Garmin el que vol que el runner sigui el Garmin» en catalán y «Es el Garmin el que quiere que el runner sea el Garmin» en castellano, sobre cruzar los datos del reloj con las sensaciones."
-  },
-  {
-   "id": "font-de-la-meva-vida",
-   "title": "Font de la meva vida",
-   "bg": "sea",
-   "inner": "cream",
-   "topic": "Frases",
-   "slides": [
-    {
-     "layout": "hook",
-     "kicker": "Tirada llarga",
-     "title": "Quilòmetre 18 i, de cop: **font de la meva vida!**",
-     "body": "Si passes de l'hora, beu a glops petits abans de tenir set i pren hidrats (la referència són 30-60 g per hora).",
-     "facts": [
-      "Beu a glops",
-      "30-60 g/h",
-      "Prova-ho a l'entreno"
-     ],
-     "size": 100,
-     "example": true
-    },
-    {
-     "layout": "hook",
-     "bg": "cream",
-     "kicker": "Tirada larga",
-     "title": "Kilómetro 18 y, de repente: **¡fuente de mi vida!**",
-     "body": "Si pasas de la hora, bebe a sorbos antes de tener sed y toma hidratos (la referencia son 30-60 g por hora).",
-     "facts": [
-      "Bebe a sorbos",
-      "30-60 g/h",
-      "Pruébalo en entreno"
-     ],
-     "size": 100,
-     "example": true
-    },
-    {
-     "layout": "cta",
-     "bg": "sea",
-     "title": "El teu torn: **aigua o gel** al quilòmetre 18?",
-     "body": "Tu turno: ¿**agua o gel** en el kilómetro 18?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
-    }
-   ],
-   "caption": "Quilòmetre 18 i, de cop: font de la meva vida!\n\nSi la sortida passa de l'hora, beu a glops petits abans de tenir set i pren hidrats de carboni (la referència habitual són 30-60 g per hora). I prova-ho tot en entrenaments: el dia de la cursa, res de novetats.\n\n—\n\nKilómetro 18 y, de repente: «¡Iniesta de mi vida!», pero con avituallamiento.\n\nSi la salida pasa de la hora, bebe a sorbos pequeños antes de tener sed y toma hidratos de carbono (la referencia habitual son 30-60 g por hora). Y pruébalo todo en entrenos: el día de la carrera, nada de novedades.\n\nPásaselo a tu grupo de running.\n\nAigua o gel al quilòmetre 18? / ¿Agua o gel en el kilómetro 18?",
-   "hashtags": [
-    "#tiradalarga",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con la frase «Quilòmetre 18 i, de cop: font de la meva vida» en catalán y «Kilómetro 18 y, de repente: ¡fuente de mi vida!» en castellano, sobre hidratación y carbohidratos en tiradas largas."
-  },
-  {
-   "id": "una-mica-de-per-favor",
-   "title": "Una mica de per favor",
-   "bg": "cream",
-   "inner": "sage",
-   "topic": "Frases",
-   "slides": [
-    {
-     "layout": "hook",
-     "kicker": "Rodatge en grup",
-     "title": "«Una mica de **per favor**» al rodatge en grup.",
-     "body": "En una sortida de grup, el ritme el marca qui va més tranquil i ningú es queda enrere. Per apretar, ja hi ha les sèries.",
-     "facts": [
-      "Ningú enrere",
-      "Ritme del grup",
-      "Sèries, un altre dia"
-     ],
-     "size": 104,
-     "example": true
-    },
-    {
-     "layout": "hook",
-     "bg": "sage",
-     "kicker": "Rodaje en grupo",
-     "title": "«Un poquito de **por favor**» en el rodaje en grupo.",
-     "body": "En una salida de grupo, el ritmo lo marca quien va más tranquilo y nadie se queda atrás. Para apretar, ya están las series.",
-     "facts": [
-      "Nadie atrás",
-      "Ritmo del grupo",
-      "Series, otro día"
-     ],
-     "size": 104,
-     "example": true
-    },
-    {
-     "layout": "cta",
-     "bg": "cream",
-     "title": "El teu torn: **qui marca** el ritme al teu grup?",
-     "body": "Tu turno: ¿**quién marca** el ritmo en tu grupo?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
-    }
-   ],
-   "caption": "«Una mica de per favor» al rodatge en grup.\n\nEn una sortida de grup, el ritme el marca qui va més tranquil i ningú es queda enrere. Aquest és el pacte. Per apretar ja hi ha les sèries, un altre dia. Ritme suau també vol dir que tothom pugui parlar.\n\n—\n\n«Un poquito de por favor» en el rodaje en grupo.\n\nEn una salida de grupo, el ritmo lo marca quien va más tranquilo y nadie se queda atrás. Ese es el pacto. Para apretar ya están las series, otro día. Ritmo suave también significa que todo el mundo pueda hablar.\n\nPásaselo a quien acelera siempre en el km 3.\n\nQui marca el ritme al teu grup? / ¿Quién marca el ritmo en tu grupo?",
-   "hashtags": [
-    "#grupoderunning",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con la frase «Una mica de per favor al rodatge en grup» en catalán y «Un poquito de por favor en el rodaje en grupo» en castellano, sobre respetar el ritmo del grupo."
-  },
-  {
-   "id": "que-fort-hrv",
-   "title": "Que fort! El teu HRV no baixa",
-   "bg": "espresso",
-   "inner": "cream",
-   "topic": "Frases",
-   "slides": [
-    {
-     "layout": "hook",
-     "kicker": "Recuperació",
-     "title": "**Que fort, que fort, que fort!** El teu HRV no baixa.",
-     "body": "L'HRV és la variació de temps entre batecs. Compara'l amb la teva mitjana: estable després d'una setmana dura, bon senyal.",
-     "facts": [
-      "Compara amb tu",
-      "Mira la tendència",
-      "Mai un sol dia"
-     ],
-     "size": 92,
-     "example": true
-    },
-    {
-     "layout": "hook",
-     "bg": "cream",
-     "kicker": "Recuperación",
-     "title": "**¡Qué fuerte, qué fuerte, qué fuerte!** Tu HRV no baja.",
-     "body": "El HRV es la variación de tiempo entre latidos. Compáralo con tu media: estable tras una semana dura, buena señal.",
-     "facts": [
-      "Compara contigo",
-      "Mira la tendencia",
-      "Nunca un solo día"
-     ],
-     "size": 92,
-     "example": true
-    },
-    {
-     "layout": "cta",
-     "bg": "espresso",
-     "title": "El teu torn: **mires l'HRV** cada matí?",
-     "body": "Tu turno: ¿**miras el HRV** cada mañana?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
-    }
-   ],
-   "caption": "Que fort, que fort, que fort! El teu HRV no baixa.\n\nL'HRV és la variació de temps entre batecs consecutius. Compara'l sempre amb la teva pròpia mitjana, no amb la d'altres persones, i mira la tendència de diversos dies, no un sol matí. Si es manté estable després d'una setmana dura, bon senyal. Si cau uns quants dies seguits, baixa el ritme.\n\n—\n\n¡Qué fuerte, qué fuerte, qué fuerte! Tu HRV no baja.\n\nEl HRV es la variación de tiempo entre latidos consecutivos. Compáralo siempre con tu propia media, no con la de otras personas, y mira la tendencia de varios días, no una sola mañana. Si se mantiene estable tras una semana dura, buena señal. Si cae varios días seguidos, baja el ritmo.\n\nGuárdalo para entender tu reloj.\n\nMires l'HRV cada matí? / ¿Miras el HRV cada mañana?",
-   "hashtags": [
-    "#hrv",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con la frase «Que fort, que fort, que fort! El teu HRV no baixa» en catalán y «¡Qué fuerte, qué fuerte, qué fuerte! Tu HRV no baja» en castellano, sobre cómo leer la variabilidad cardiaca comparándola con tu media."
-  },
-  {
-   "id": "menys-mil-d-aura",
-   "title": "−1000 d'aura",
-   "bg": "cream",
-   "inner": "butter",
-   "topic": "Frases",
-   "slides": [
-    {
-     "layout": "hook",
-     "kicker": "Rellotge",
-     "title": "**−1000 d'aura:** pausar al semàfor i no tornar a donar al play.",
-     "body": "Activa la pausa automàtica: el rellotge s'atura quan t'atures i es reprèn sol quan tornes a córrer.",
-     "facts": [
-      "Pausa automàtica",
-      "Es reprèn sola",
-      "Mira'l al km 1"
-     ],
-     "size": 96,
-     "example": true
-    },
-    {
-     "layout": "hook",
-     "bg": "butter",
-     "kicker": "Reloj",
-     "title": "**−1000 de aura:** pausar en un semáforo y no volver a darle al play.",
-     "body": "Activa la pausa automática: el reloj se detiene cuando te paras y se reanuda solo cuando vuelves a correr.",
-     "facts": [
-      "Pausa automática",
-      "Se reanuda sola",
-      "Míralo en el km 1"
-     ],
-     "size": 96,
-     "example": true
-    },
-    {
-     "layout": "cta",
-     "bg": "cream",
-     "title": "El teu torn: **quants quilòmetres** t'has deixat sense gravar?",
-     "body": "Tu turno: ¿**cuántos kilómetros** se te han quedado sin grabar?",
-     "size": 58,
-     "actions": [
-      "Comenta",
-      "Desa / Guarda",
-      "Envia / Envía"
-     ],
-     "example": false
-    }
-   ],
-   "caption": "−1000 d'aura: pausar al semàfor i no tornar a donar al play.\n\nEns ha passat a tots: tres quilòmetres corrent amb el rellotge parat. Activa la pausa automàtica: el rellotge s'atura quan tu t'atures i es reprèn sol quan tornes a córrer. I mira'l al primer quilòmetre, per si de cas.\n\n—\n\n−1000 de aura: pausar en un semáforo y no volver a darle al play.\n\nNos ha pasado a todos: tres kilómetros corriendo con el reloj parado. Activa la pausa automática: el reloj se detiene cuando tú te paras y se reanuda solo cuando vuelves a correr. Y míralo en el primer kilómetro, por si acaso.\n\nPásaselo a quien ya ha perdido un entreno por esto.\n\nQuants quilòmetres t'has deixat sense gravar? / ¿Cuántos kilómetros se te han quedado sin grabar?",
-   "hashtags": [
-    "#aura",
-    "#córrer",
-    "#runningcatalunya",
-    "#running",
-    "#runch"
-   ],
-   "alt": "Carrusel con el meme «−1000 d'aura: pausar al semàfor i no tornar a donar al play» en catalán y su versión en castellano, sobre activar la pausa automática del reloj."
-  }
- ]
+  ]
 }

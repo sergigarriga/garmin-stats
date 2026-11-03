@@ -1,0 +1,128 @@
+[
+ {
+  "date": "2026-11-15",
+  "lote": "03",
+  "k": 1,
+  "id": "un-got-es-un-got",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-11-16",
+  "lote": "02",
+  "k": 1,
+  "id": "z2-garmin",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-11-17",
+  "lote": "03",
+  "k": 2,
+  "id": "deu-n-hi-do",
+  "bg": "terracotta"
+ },
+ {
+  "date": "2026-11-18",
+  "lote": "02",
+  "k": 4,
+  "id": "reto-improductivo",
+  "bg": "espresso"
+ },
+ {
+  "date": "2026-11-19",
+  "lote": "03",
+  "k": 3,
+  "id": "sempre-negatiu",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-11-20",
+  "lote": "02",
+  "k": 2,
+  "id": "vfc-desequilibrado",
+  "bg": "butter"
+ },
+ {
+  "date": "2026-11-21",
+  "lote": "03",
+  "k": 8,
+  "id": "que-fort-hrv",
+  "bg": "espresso"
+ },
+ {
+  "date": "2026-11-22",
+  "lote": "02",
+  "k": 3,
+  "id": "caminar",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-11-23",
+  "lote": "03",
+  "k": 5,
+  "id": "garmin-i-runner",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-11-24",
+  "lote": "02",
+  "k": 5,
+  "id": "plan-tiempo",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-11-25",
+  "lote": "03",
+  "k": 6,
+  "id": "font-de-la-meva-vida",
+  "bg": "sea"
+ },
+ {
+  "date": "2026-11-26",
+  "lote": "02",
+  "k": 6,
+  "id": "body-battery-noche",
+  "bg": "sage"
+ },
+ {
+  "date": "2026-11-27",
+  "lote": "03",
+  "k": 7,
+  "id": "una-mica-de-per-favor",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-11-28",
+  "lote": "02",
+  "k": 7,
+  "id": "primera-semana",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-11-29",
+  "lote": "03",
+  "k": 4,
+  "id": "excelent",
+  "bg": "sage"
+ },
+ {
+  "date": "2026-11-30",
+  "lote": "02",
+  "k": 8,
+  "id": "vo2max",
+  "bg": "terracotta"
+ },
+ {
+  "date": "2026-12-01",
+  "lote": "03",
+  "k": 9,
+  "id": "menys-mil-d-aura",
+  "bg": "cream"
+ },
+ {
+  "date": "2026-12-02",
+  "lote": "02",
+  "k": 9,
+  "id": "diccionario-garmin",
+  "bg": "cream"
+ }
+]
