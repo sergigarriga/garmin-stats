@@ -29,8 +29,8 @@ Lee `marketing/instagram/README.md` (formato completo) y usa `lote-01.json` como
 
 ## Estilo visual: sistema editorial (no lo cambies)
 
-Moderno, limpio y "aesthetic", como una revista de running y café: vale para los datos de la app y, más adelante,
-para fotos del club o de un local.
+Moderno, limpio y "aesthetic", como una revista de running: vale para los datos de la app y, más adelante,
+para fotos de quedadas y estilo de vida.
 - **Colores** (`bg` de la portada; las diapositivas interiores van en `paper` salvo que digas otra cosa):
   `cream` (por defecto), `terracotta`, `espresso`, `sage`, `sea`, `butter`. Tinta espresso, acento terracota. En un
   lote de 9 alterna crema y color en tablero de ajedrez (5 crema, 4 de color, sin dos colores iguales al lado).

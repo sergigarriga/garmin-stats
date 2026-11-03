@@ -22,7 +22,7 @@ Publica los posts en orden (01 primero). Los carruseles se suben como una sola p
 Crema, espresso y terracota (más salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva
 terracota, textos en Google Sans Flex, etiquetas en mayúsculas espaciadas y gráficos de línea fina. Maqueta fija:
 "Runch" y "Nº 01 · TEMA" arriba; @runch.run, "Datos de ejemplo" y "Desliza →" abajo. Sirve igual para los datos de
-la app que, más adelante, para fotos del club o del local (formato `photo`). La versión anterior (pastel) queda en
+la app que, más adelante, para fotos de quedadas y estilo de vida (formato `photo`). La versión anterior (pastel) queda en
 `render_v1.py` y `lote-01-v1.json`.
 
 ## Formato de un lote

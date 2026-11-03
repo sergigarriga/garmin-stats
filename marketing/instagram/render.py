@@ -238,7 +238,7 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int) -> str:
         body = f'''<div style="flex:1"></div>{kick}
           <div class="serif" style="font-size:{s.get("bigSize", 380)}px;line-height:.82;letter-spacing:-.05em;color:{T["accent"]};margin-top:10px">{esc(s["big"])}</div>
           {title(s.get("size", 70), "margin-top:36px")}{lead("margin-top:24px")}<div style="flex:.6"></div>'''
-    elif layout == "photo":  # para cuando haya fotos (club, quedadas, local): imagen a sangre + texto abajo
+    elif layout == "photo":  # para cuando haya fotos (quedadas, estilo de vida): imagen a sangre + texto abajo
         body = f'''<div style="flex:1"></div>{kick}{title(s.get("size", 100), "margin-top:16px")}{lead("margin-top:22px")}<div style="flex:.2"></div>'''
     elif layout == "cta":
         acts = "  ·  ".join(esc(a) for a in s.get("actions", ["Guárdalo", "Compártelo", "Síguenos"]))
