@@ -103,3 +103,24 @@ y el resto en catalán.
 60. **«Fin de la cita.»** → *Z2 y punto. Fin de la cita.*
 61. **«Lo que nosotros hemos hecho, cosa que no hizo usted…»** → *Lo que nosotros hemos hecho, cosa que no hizo usted, es estirar.*
 62. **«Viva el vino.»** → *Viva el vino… pero tu HRV de mañana no opina igual.*
+
+### Catalanades (03-11-2026)
+
+Tópicos catalanes contados con cariño y humor (nunca políticos). En catalán; versión castellana en la diapositiva 2.
+
+63. **«La pela és la pela.»** → *Unes bones sabatilles et duren 800 km. El fisio no surt gratis.*
+64. **«Seny i rauxa.»** → *Seny: rodatge suau. Rauxa: l'últim quilòmetre.*
+65. **«Força, equilibri, valor i seny»** (castellers). → *El pla perfecte: força 2 dies, equilibri, valor per descansar i seny als rodatges.*
+66. **«Fer pinya.»** → *A la quedada fem pinya: ningú es queda enrere.*
+67. **«Fer un vermut.»** → *Diumenge: tirada llarga i vermut. En aquest ordre.*
+68. **«Quin fred!» (a 15 °C).** → *15 °C i surts amb guants, mallots llargs i braga al coll.*
+69. **«Home, depèn.»** → *Sèries avui? Home, depèn: què diu la teva HRV?*
+70. **«Ostres, tu!»** → *Ostres, tu: 8 hores de son i el Body Battery a 100.*
+71. **«Bon profit!»** → *El brunch d'després de la tirada llarga: bon profit, t'ho has guanyat… i el teu cos ho necessita.*
+72. **«Pa amb tomàquet.»** → *Esmorzar de campió: pa amb tomàquet, ou i un cafè. HRV contenta.*
+73. **Calçotada.** → *Temporada de calçots: tirada llarga al matí, calçotada a la tarda. Equilibri.*
+74. **Anar a buscar bolets.** → *Si a la tirada llarga trobes més bolets que quilòmetres, era trail.*
+75. **«Fer el pont.»** → *Fer el pont: sí. Saltar-te els tres rodatges de la setmana: no.*
+76. **«Ja t'ho diré.»** → *—Vens diumenge a la quedada? —Ja t'ho diré. (Ho sabem tots: vine, que hi ha esmorzar.)*
+77. **Caga tió (desembre).** → *Caga tió… un pla d'entrenament per al gener!*
+78. **«Adéu» en entrar a l'ascensor.** → *Dir «adéu» en entrar al grup de WhatsApp de la quedada. Molt nostre.*
