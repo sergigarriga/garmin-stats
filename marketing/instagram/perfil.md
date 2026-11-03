@@ -3,16 +3,16 @@
 Se edita a mano desde la app de Instagram (Editar perfil). No usar sesiones copiadas ni robots: Instagram bloquea las
 cuentas nuevas con accesos raros.
 
-- **Foto:** `out/perfil/foto-perfil.png`: «r» en cursiva Fraunces, crema sobre terracota (sistema editorial).
+- **Foto:** `out/perfil/logo-perfil-a.png`: logotipo «runch» (Gluten) en crema sobre terracota.
 - **Nombre** (sale en negrita y cuenta para las búsquedas; máximo 30 caracteres):
   `Runch · Running con datos`
 - **Usuario:** `runch.run`
-- **Biografía** (121 de 150 caracteres; abre con el gancho del feed):
+- **Biografía** (134 de 150 caracteres; gancho, dos idiomas y llamada a pedir la beta por DM):
 
   ```
   ¿Tienes un Garmin y no sabes qué es la Z2?
-  Aquí lo entiendes: HRV, ritmos y descanso, sin jerga.
-  Coach de running con IA ↓
+  Te lo explicamos sin jerga. En català i castellano.
+  Coach con IA en beta → escríbenos «BETA»
   ```
 
 - **Enlace:** de momento ninguno (la app es privada, solo con invitación). Cuando haya una página pública o lista de
