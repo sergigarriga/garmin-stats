@@ -67,6 +67,25 @@ tono de anuncio. Pero con un castellano limpio y siempre con información útil 
 - Rigor: nada de consejos médicos ni promesas de salud; datos y fórmulas correctos (Daniels, Epley, CSS, zonas,
   80/20…). Si dudas de un dato, déjalo fuera. Lo picante es el tono, nunca el dato.
 
+## Inclusión: correr es para todos los cuerpos (pilar fijo)
+
+Runch también habla a quien empieza desde cero: personas con obesidad, con dolor articular, con asma, diabetes,
+hipertensión, después de una lesión o de un parto, mayores de 50 o sedentarias muchos años. Al menos 1 post de cada
+lote va para ellas (serie "Empezar desde cero"). Reglas:
+- **El picante va contra el ego y los mitos, nunca contra un cuerpo.** Cero bromas sobre peso, tallas o ritmo
+  lento; nada de "quemar", "compensar", "culpa", antes/después ni fotos de báscula. El objetivo es la salud, la
+  constancia y disfrutar, no adelgazar.
+- **Lenguaje:** "persona con obesidad" (no "obeso"), "tu ritmo" (no "lento"), "caminar también cuenta".
+- **Progresión prudente y concreta:** empezar caminando, luego alternar caminar y trotar (p. ej. 1 min trote + 2 min
+  caminando), 3 días por semana con un día de descanso entre medias, subir poco a poco, test del habla (si puedes
+  hablar, vas bien), superficies blandas, buen calzado, fuerza suave para rodillas y tobillos. Referencia general:
+  la OMS recomienda 150-300 min semanales de actividad moderada.
+- **Seguridad sin alarmismo:** si hay enfermedad del corazón, diabetes, hipertensión, mucho sobrepeso, embarazo o
+  dolor en el pecho, mareo o falta de aire anormal, primero consulta con tu médico. Dilo una vez y bien, sin miedo.
+- **Sin diagnósticos ni consejos médicos personales;** en el texto, "habla con tu médico o fisio" cuando toque.
+- **Imágenes:** datos de ejemplo de alguien que empieza (ritmos de 8-10 min/km, pulso, minutos andando cuentan);
+  cuando haya fotos reales, cuerpos y edades diversos y con permiso.
+
 ## Privacidad (obligatorio)
 
 - Los números de las imágenes son **siempre de ejemplo** y realistas. Nunca uses datos reales del usuario ni de

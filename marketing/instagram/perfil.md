@@ -7,11 +7,11 @@ cuentas nuevas con accesos raros.
 - **Nombre** (sale en negrita y cuenta para las búsquedas; máximo 30 caracteres):
   `Runch · Running con datos`
 - **Usuario:** `runch.run`
-- **Biografía** (110 de 150 caracteres):
+- **Biografía** (121 de 150 caracteres; abre con el gancho del feed):
 
   ```
-  Tu reloj sabe mucho de ti. Aquí lo entiendes.
-  Z2, HRV, ritmos y descanso, sin jerga.
+  ¿Tienes un Garmin y no sabes qué es la Z2?
+  Aquí lo entiendes: HRV, ritmos y descanso, sin jerga.
   Coach de running con IA ↓
   ```
 
