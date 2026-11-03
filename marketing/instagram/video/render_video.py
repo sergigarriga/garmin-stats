@@ -35,9 +35,9 @@ CAPTION_JS = r"""
   box.id = '__cap';
   // centrada; su ancho máximo (780 px) queda fuera de la columna de botones de Instagram (derecha)
   box.style.cssText = 'position:absolute;left:0;right:0;top:1440px;display:flex;justify-content:center;z-index:99;pointer-events:none';
-  box.innerHTML = '<div style="max-width:780px;padding:16px 30px 18px;border-radius:30px;background:rgba(255,255,255,.95);' +
-    'box-shadow:0 12px 34px rgba(60,50,90,.16);font-family:GSF,system-ui,sans-serif;font-size:52px;font-weight:750;' +
-    'letter-spacing:-.025em;word-spacing:.02em;line-height:1.2;color:#1D1B2C;text-align:center;text-wrap:balance"></div>';
+  box.innerHTML = '<div style="max-width:780px;padding:16px 30px 18px;border-radius:30px;background:rgba(250,246,240,.97);border:1.5px solid rgba(34,26,21,.14);' +
+    'font-family:GSF,system-ui,sans-serif;font-size:50px;font-weight:720;' +
+    'letter-spacing:-.02em;word-spacing:.02em;line-height:1.2;color:#221A15;text-align:center;text-wrap:balance"></div>';
   (document.getElementById('stage') || document.body).appendChild(box);
   const inner = box.firstChild;
   let shown = null;
@@ -59,8 +59,8 @@ CAPTION_JS = r"""
     [...inner.children].forEach((s, i) => {
       const w = c.words[i];
       const on = t >= w.t0 && t < w.t1 + (i === c.words.length - 1 ? 0.25 : 0);
-      s.style.background = on ? '#FFE58A' : 'transparent';
-      s.style.color = t < w.t0 ? 'rgba(29,27,44,.4)' : '#1D1B2C';
+      s.style.background = 'transparent';
+      s.style.color = on ? '#D4542F' : t < w.t0 ? 'rgba(34,26,21,.35)' : '#221A15';
     });
   };
 })();
