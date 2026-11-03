@@ -51,7 +51,7 @@ s3 = boto3.client("s3")
 _lambda = boto3.client("lambda")
 _ssm = boto3.client("ssm")
 
-STATE = ["coach.json", "settings.json", "wellness.json", "ai_usage.log", "ai_usage_lambda.log", "ai_cache.json"]
+STATE = ["coach.json", "settings.json", "wellness.json", "weather.json", "ai_usage.log", "ai_usage_lambda.log", "ai_cache.json"]
 CAL_RE = re.compile(r"^/api/cal/([A-Za-z0-9_-]{24,64})\.ics$")
 CUR: dict = {}  # persona de esta petición
 
@@ -229,7 +229,7 @@ def _run_job(event):
         state = coach.load()
         state["job"] = {"status": "error", "action": action, "error": str(e)[:300], "at": int(time.time())}
         coach.save(state)
-    _push("coach.json", "ai_usage_lambda.log")
+    _push("coach.json", "ai_usage_lambda.log", "weather.json")
     _refresh_site(coach)
     return {"ok": True}
 
@@ -298,6 +298,11 @@ def handler(event, _ctx):
         return _json(200, {"ok": True})
     if path == "/api/calendar":
         return _calendar_link(user, payload if method == "POST" else None)
+    if path == "/api/geo":  # buscador de ciudades para la previsión del tiempo (Open-Meteo, sin clave)
+        from urllib.parse import parse_qs
+        from garmin_stats import weather
+        q = (parse_qs(event.get("rawQueryString") or "").get("q") or [""])[0]
+        return _json(200, {"results": weather.geocode(q)})
     if path.startswith("/api/admin/"):
         if user.get("role") != "owner":
             return _json(403, {"error": "Solo el administrador."})
@@ -382,18 +387,22 @@ def handler(event, _ctx):
         _push("coach.json", "ai_usage_lambda.log")
         _refresh_site(coach)
         return _json(200, _with_job(coach.view(_read_data()), coach))
-    if path in ("/api/settings/race", "/api/settings/swim", "/api/wellness", "/api/injury"):
-        from garmin_stats import settings as S, wellness as W
+    if path in ("/api/settings/race", "/api/settings/swim", "/api/settings/availability", "/api/settings/location",
+                "/api/wellness", "/api/injury"):
+        from garmin_stats import settings as S, weather, wellness as W
         fn = {"/api/settings/race": S.set_race_test, "/api/settings/swim": S.set_swim_test,
+              "/api/settings/availability": S.set_availability, "/api/settings/location": S.set_location,
               "/api/wellness": W.set_day, "/api/injury": W.injury}[path]
         try:
             fn(payload)
         except ValueError as e:
             return _json(400, {"error": str(e)})
         _push("settings.json" if "settings" in path else "wellness.json")
+        if path == "/api/settings/location" and weather.refresh():  # previsión de la ciudad nueva al momento
+            _push("weather.json")
         _refresh_site(coach)
         data = _read_data()
-        return _json(200, {k: data.get(k) for k in ("paces", "swim", "wellness", "coach")})
+        return _json(200, {k: data.get(k) for k in ("paces", "swim", "wellness", "coach", "availability", "weather")})
     if path == "/api/plan/feedback":
         coach.feedback(payload["date"], payload.get("rating", 3), payload.get("note", ""))
     elif path == "/api/plan/delete":

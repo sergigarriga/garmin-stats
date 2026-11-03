@@ -59,7 +59,9 @@ const TOPIC: Record<string, { icon: ReactNode; color: { light: string; dark: str
   peso: { icon: <MonitorWeightOutlined />, color: { light: '#188038', dark: '#81C995' } },
   preferencias: { icon: <TuneRounded2 />, color: { light: '#80868B', dark: '#BDC1C6' } },
 };
-import { isoLocal, mmss, stepPace, toDate, type CoachView, type GarminData, type PaceRef, type PlanSession, type SessionType } from '../data';
+import { isoLocal, mmss, stepPace, toDate, type CoachView, type GarminData, type PaceRef, type PlanSession, type SessionType, type WeatherDay } from '../data';
+import { TimeEditor, TimeTag, WeatherBadge, WeatherCard } from './PlanTime';
+import WbSunnyRounded from '@mui/icons-material/WbSunnyRounded';
 import { call } from '../account';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
 import EventRepeatRounded from '@mui/icons-material/EventRepeatRounded';
@@ -117,6 +119,17 @@ function StatusIcon({ s }: { s: PlanSession['status'] }) {
 
 function plannedText(s: PlanSession) {
   return [s.distance_km ? `${dec1(s.distance_km)} km` : null, s.duration_min ? `${s.duration_min} min` : null].filter(Boolean).join(' · ');
+}
+
+/** Nota del coach por el tiempo previsto ("31 °C por la tarde: sal antes de las 9 · 07:00-09:00"). */
+function WeatherNote({ s, sx }: { s: PlanSession; sx?: object }) {
+  if (!s.weather_note && !s.best_time) return null;
+  return (
+    <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', gap: 0.5, alignItems: 'flex-start', lineHeight: 1.35, ...sx }}>
+      <WbSunnyRounded sx={{ fontSize: 14, mt: '1px', color: 'warning.main', flexShrink: 0 }} />
+      <span>{[s.weather_note, s.best_time && `mejor ${s.best_time}`].filter(Boolean).join(' · ')}</span>
+    </Typography>
+  );
 }
 
 /** Cuánto se parece lo hecho a lo previsto: "95 % · 8 s/km más rápido" o "7 de 10 series". */
@@ -335,7 +348,7 @@ function FeedbackStars({ s, onSaved }: { s: PlanSession; onSaved: (v: CoachView)
   );
 }
 
-function DayCard({ s, go, onSaved, sets }: { s: PlanSession; go: (k: string) => void; onSaved: (v: CoachView) => void; sets?: (id: number) => { ex: string }[] | null | undefined }) {
+function DayCard({ s, go, onSaved, sets, wx }: { s: PlanSession; go: (k: string) => void; onSaved: (v: CoachView) => void; sets?: (id: number) => { ex: string }[] | null | undefined; wx?: WeatherDay }) {
   const mode = useResolvedMode();
   const c = TYPE[s.type][mode];
   const today = s.status === 'today';
@@ -346,11 +359,18 @@ function DayCard({ s, go, onSaved, sets }: { s: PlanSession; go: (k: string) => 
         <Typography variant="caption" sx={{ fontWeight: 600, color: today ? c : 'text.secondary', textTransform: 'capitalize' }}>
           {toDate(s.date).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }).replace('.', '')}
         </Typography>
-        <StatusIcon s={s.status} />
+        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center' }}>
+          {s.status !== 'done' && s.status !== 'partial' && s.status !== 'missed' && <WeatherBadge d={wx} compact />}
+          <StatusIcon s={s.status} />
+        </Stack>
       </Stack>
       <SessionChip s={s} compact />
       <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.3 }}>{s.title}</Typography>
       {s.type !== 'rest' && <Typography variant="caption" color="text.secondary">{plannedText(s)}</Typography>}
+      {(s.timeWarn || (s.availMin !== undefined && (s.status === 'today' || s.status === 'upcoming'))) && (
+        <Box><TimeTag avail={s.availMin} warn={s.timeWarn} /></Box>
+      )}
+      {(s.status === 'today' || s.status === 'upcoming') && <WeatherNote s={s} />}
       {s.actual && (
         <Typography variant="caption" onClick={() => go(`act-${s.actual!.id}`)}
           sx={{ color: 'success.main', fontWeight: 500, cursor: 'pointer', mt: 'auto' }}>
@@ -365,7 +385,7 @@ function DayCard({ s, go, onSaved, sets }: { s: PlanSession; go: (k: string) => 
 }
 
 /** Día de la semana en una línea (móvil). */
-function DayRow({ s, go, first }: { s: PlanSession; go: (k: string) => void; first: boolean }) {
+function DayRow({ s, go, first, wx }: { s: PlanSession; go: (k: string) => void; first: boolean; wx?: WeatherDay }) {
   const mode = useResolvedMode();
   const c = TYPE[s.type][mode];
   const today = s.status === 'today';
@@ -385,7 +405,10 @@ function DayRow({ s, go, first }: { s: PlanSession; go: (k: string) => void; fir
         <Typography variant="caption" color="text.secondary" noWrap sx={{ display: 'block' }}>
           {s.actual ? [`Hecho: ${s.actual.km ? `${dec1(s.actual.km)} km` : `${s.actual.min} min`}`, complianceText(s)].filter(Boolean).join(' · ') : s.type === 'rest' ? 'Descanso' : [TYPE[s.type].label, plannedText(s)].filter(Boolean).join(' · ')}
         </Typography>
+        {s.timeWarn && <Box sx={{ mt: 0.25 }}><TimeTag warn={s.timeWarn} /></Box>}
+        {(s.status === 'today' || s.status === 'upcoming') && <WeatherNote s={s} sx={{ mt: 0.25 }} />}
       </Box>
+      {s.status !== 'done' && s.status !== 'partial' && s.status !== 'missed' && <WeatherBadge d={wx} compact />}
       <StatusIcon s={s.status} />
     </Box>
   );
@@ -454,6 +477,9 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const [cancelling, setCancelling] = useState(false);
   const cancel = async () => { setCancelling(true); try { await api('./api/plan/cancel', {}); } catch { /* el polling lo resuelve */ } };
   const small = useMediaQuery('(max-width:599px)');
+  const [avail, setAvail] = useState(data.availability);
+  const [wx, setWx] = useState(data.weather);
+  useEffect(() => { setAvail(data.availability); setWx(data.weather); }, [data.generatedAt]);  // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!online) return;
     api('./api/plan').then((v) => { setView(v); if (v.job?.status === 'running') { setBusy(true); settle(v).then(setView).catch((e) => setErr(e.message)).finally(() => setBusy(false)); } })
@@ -495,6 +521,8 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const pred = data.predictions.find((p) => p.distance === plan.goal);
   const last = plan.history[plan.history.length - 1];
   const t = view?.today;
+  const wxBy: Record<string, WeatherDay> = Object.fromEntries((wx?.days ?? []).map((d) => [d.date, d]));
+  const timeWarnings = plan.weeks.flatMap((w) => w.sessions).filter((s) => s.timeWarn).length;
 
   const run = async (path: string, confirmText?: string, body: Record<string, unknown> = {}) => {
     if (confirmText && !window.confirm(confirmText)) return;
@@ -589,13 +617,29 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
               <Typography variant="h5">{t.session.title}</Typography>
               <Typography color="text.secondary">{[plannedText(t.session), t.session.target].filter(Boolean).join(' · ')}</Typography>
               <Typography sx={{ mt: 1, color: 'text.secondary', '& b': { color: 'text.primary' } }}><Rich>{t.session.description}</Rich></Typography>
+              <WeatherNote s={t.session} sx={{ mt: 1, fontSize: 13 }} />
+              {t.session.timeWarn && <Box sx={{ mt: 1 }}><TimeTag warn={t.session.timeWarn} /></Box>}
               <WorkoutSteps s={t.session} refs={refs} />
             </Box>
-            {t.tip && (
-              <Box sx={{ p: 2, borderRadius: '16px', bgcolor: 'background.paper', maxWidth: { md: 360 } }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Según tu preparación</Typography>
-                <Typography><Rich>{t.tip}</Rich></Typography>
-              </Box>
+            {(t.tip || t.weatherTip || t.bestWindow) && (
+              <Stack spacing={1.5} sx={{ maxWidth: { md: 360 } }}>
+                {t.tip && (
+                  <Box sx={{ p: 2, borderRadius: '16px', bgcolor: 'background.paper' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Según tu preparación</Typography>
+                    <Typography><Rich>{t.tip}</Rich></Typography>
+                  </Box>
+                )}
+                {(t.weatherTip || t.bestWindow) && (
+                  <Box data-new="weather-tip" sx={{ p: 2, borderRadius: '16px', bgcolor: 'background.paper' }}>
+                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Según el tiempo</Typography>
+                      <WeatherBadge d={wxBy[t.session.date]} compact />
+                    </Stack>
+                    {t.weatherTip ? <Typography><Rich>{t.weatherTip}</Rich></Typography>
+                      : t.bestWindow && <Typography>Mejor franja para correr: <b>{t.bestWindow.from}-{t.bestWindow.to}</b>{t.bestWindow.temp != null ? ` (${t.bestWindow.temp} °C)` : ''}.</Typography>}
+                  </Box>
+                )}
+              </Stack>
             )}
           </Stack>
         </Card>
@@ -610,11 +654,22 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
       <WatchDialog open={watchOpen} onClose={() => setWatchOpen(false)} weekStart={week.start} sessions={week.sessions} onView={setView} refs={refs} />
       {small ? (
         <Card data-new="compliance" sx={{ ...CARD_SX, p: 0.5 }}>
-          {week.sessions.map((s, i) => <DayRow key={`${s.date}-${s.type}`} s={s} go={go} first={i === 0} />)}
+          {week.sessions.map((s, i) => <DayRow key={`${s.date}-${s.type}`} s={s} go={go} first={i === 0} wx={wxBy[s.date]} />)}
         </Card>
       ) : (
         <Box data-new="compliance" sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { sm: 'repeat(4, 1fr)', lg: 'repeat(7, 1fr)' } }}>
-          {week.sessions.map((s) => <DayCard key={`${s.date}-${s.type}`} s={s} go={go} onSaved={setView} sets={(id) => data.activities.find((x) => x.id === id)?.sets} />)}
+          {week.sessions.map((s) => <DayCard key={`${s.date}-${s.type}`} s={s} go={go} onSaved={setView} wx={wxBy[s.date]} sets={(id) => data.activities.find((x) => x.id === id)?.sets} />)}
+        </Box>
+      )}
+
+      {/* tu tiempo y el tiempo que hará */}
+      {online && (
+        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mt: 2, alignItems: 'start' }}>
+          <TimeEditor value={avail} busy={busy} warnings={timeWarnings}
+            onSaved={(a, c) => { setAvail(a); if (c) setView((v) => ({ ...c, job: v?.job })); }}
+            onReplan={() => ask('¿Reajustar el plan con tu tiempo?', 'El coach rehace las semanas que quedan para que cada sesión quepa en el tiempo que tienes (y mira la previsión del tiempo). Tarda 1-3 minutos y gasta unos 0,25-0,50 $ de tu tope de IA.', () => run('./api/plan/adapt'))} />
+          <WeatherCard value={wx} lastRun={data.lastRunArea}
+            onSaved={(w, c) => { setWx(w); if (c) setView((v) => ({ ...c, job: v?.job })); }} />
         </Box>
       )}
 
@@ -714,6 +769,8 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
                     </Stack>
                     {s.type !== 'rest' && <Typography variant="caption" color="text.secondary">{[plannedText(s), s.target].filter(Boolean).join(' · ')}</Typography>}
                     <Typography variant="body2" color="text.secondary">{s.description}</Typography>
+                    {s.timeWarn && <Box sx={{ mt: 0.5 }}><TimeTag warn={s.timeWarn} /></Box>}
+                    <WeatherNote s={s} sx={{ mt: 0.5 }} />
                     {complianceText(s) && <Typography variant="caption" color={s.status === 'partial' ? 'warning.main' : 'success.main'} sx={{ display: 'block' }}>Hecho: {complianceText(s)}</Typography>}
                     <WorkoutSteps s={s} refs={refs} />
                   </Box>

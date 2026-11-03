@@ -305,6 +305,31 @@ Ideas tomadas de otra app de entrenamiento y escritas de nuevo aquí (solo fórm
   **lee** `settings.json` y `wellness.json` (nunca los sube, para no pisar lo que guardes mientras corre).
 - Pruebas: `uv run --with pytest pytest -q` (fórmulas, natación, gimnasio, registro, calendario, cumplimiento, energía).
 
+## Tu tiempo y el tiempo que hará (03-11-2026)
+
+- **Tu tiempo, día a día** (Plan → "Tu tiempo"): minutos que tienes cada día de la semana (L-D, con atajos Libre / 30 min /
+  … / 3 h / Nada) y excepciones para fechas concretas (hoy 2 h, mañana 45 min). Se guarda en `settings.json`
+  (`availability = {"weekly": {"0".."6": minutos | null}, "days": {"AAAA-MM-DD": minutos}}`; null = sin límite, 0 = nada;
+  0-480 min; días de hoy a 8 semanas, los pasados se borran al guardar). Guardar no llama a la IA: el plan se ajusta
+  el lunes o con "Reajustar el plan con mi tiempo". El coach recibe `tiempo_disponible_por_dia` para cada fecha
+  planificada y reglas para encajar cada día; después, una comprobación sin IA (`coach.time_conflicts`) marca los días
+  que no caben (`timeWarnings` en el plan, aviso "No cabe" en cada día).
+- **El plan mira el tiempo que hará** (Plan → "El tiempo que hará"): eliges tu ciudad (buscador con
+  `GET /api/geo?q=`; o la zona de tu última carrera, redondeada a ~10 km) y se guarda en `settings.json` (`location`,
+  solo nombre y coordenadas de ciudad). `src/garmin_stats/weather.py` pide a **Open-Meteo** (sin clave) la previsión de
+  16 días como mucho cada ~3 h (sincronización, cambio de ciudad y antes de reajustar) y la resume por día en
+  `state/weather.json`: mínima/máxima, sensación, lluvia, viento, cielo, amanecer/anochecer y las mejores franjas para
+  correr entre las 06:00 y las 22:00. El coach recibe `tiempo_previsto` y reglas (calor → franja fresca y más lento;
+  tormenta, lluvia fuerte o viento → cambiar de día o cinta/gimnasio/natación; frío u oscuridad → capas y visibilidad);
+  cada sesión puede llevar `weather_note` y `best_time`. A mitad de semana no se llama a la IA: el consejo del día
+  (`weather.advice`) avisa si la sesión de hoy choca con la previsión y propone franja o cambio de día. Si Open-Meteo no
+  responde, todo funciona como antes, sin previsión.
+- **Licencia de Open-Meteo:** el plan gratuito es solo para uso no comercial. Si Runch pasa a ser comercial hay que
+  contratar su plan de pago o cambiar de proveedor.
+- API nueva: `POST /api/settings/availability`, `POST /api/settings/location` (`{"clear": true}` para quitar),
+  `GET /api/geo?q=`. data.js lleva `availability`, `weather` y `lastRunArea`.
+- Pruebas: `tests/test_time_weather.py` (validación, franjas, caché, consejo del día, prompts, comprobación y rutas de la API).
+
 ## Novedades de cada versión (pantalla "Novedades")
 
 La primera vez que cada persona entra después de publicar una versión con novedades, la web le enseña una pantalla

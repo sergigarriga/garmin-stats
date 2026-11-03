@@ -24,6 +24,7 @@ from pydantic import BaseModel, Field, ValidationError
 from . import DATA_DIR
 from . import ai
 from . import settings
+from . import weather
 from . import wellness
 
 log = logging.getLogger(__name__)
@@ -42,6 +43,7 @@ RUN_TYPES = ("easy", "long", "tempo", "intervals", "race")
 SessionType = Literal["easy", "long", "tempo", "intervals", "race", "strength", "swim", "cross", "rest"]
 PaceRef = Literal["easy", "marathon", "half", "10k", "5k", "threshold", "interval", "repetition"]
 DONE_RATIO = 0.85  # al menos el 85 % de lo previsto cuenta como hecha
+MAX_TOKENS = 128000  # máximo de Opus/Sonnet 5.5 (con streaming); el pensamiento también cuenta
 
 
 class Step(BaseModel):
@@ -76,6 +78,10 @@ class Session(BaseModel):
     workout: list[Block] | None = Field(default=None, description="Solo en sesiones de carrera: el entreno estructurado para el "
                                         "reloj (calentamiento, bloques/series, vuelta a la calma) con ritmos o pulso objetivo. "
                                         "null en fuerza, descanso o cruzado.")
+    weather_note: str | None = Field(default=None, description="Solo si el tiempo previsto afecta a la sesión: nota corta "
+                                     "(máx. 70 caracteres), p. ej. '31 °C por la tarde: sal antes de las 9'. Si no, null.")
+    best_time: str | None = Field(default=None, description="Mejor franja para hacerla según la previsión, 'HH:MM-HH:MM' "
+                                  "(p. ej. '07:00-09:00'). null si no hay previsión para ese día o da igual.")
 
 
 class Week(BaseModel):
@@ -155,6 +161,22 @@ Principios:
 - Gimnasio: mira "gimnasio_series_por_musculo" (series por semana de cada músculo, últimas 4 semanas) y sus récords
   (1RM estimado). Reparte el volumen entre grupos (unas 6-12 series por músculo y semana si el objetivo es fuerza
   e hipertrofia compatible con correr) y usa el 1RM para proponer cargas (p. ej. 3 x 8 al 70-75 % del 1RM).
+- Tiempo disponible ("tiempo_disponible_por_dia": minutos que tiene cada fecha; null = sin límite, decides tú;
+  0 = ese día no puede entrenar). Si no viene, deduce la disponibilidad de su historial como siempre.
+  · La duración total de cada día (duration_min con calentamiento y vuelta a la calma, más el gimnasio si es el mismo
+    día) NUNCA puede pasar de los minutos disponibles de esa fecha. 0 minutos → descanso.
+  · La tirada larga va a un día con tiempo suficiente: el día preferido si cabe; si no, el día con más tiempo cercano.
+  · Si tiene menos tiempo del que pide la progresión, baja la carga con criterio. Prioridad: 1) la sesión de calidad
+    clave de la semana, 2) la tirada larga, acortada para que quepa, 3) los rodajes suaves, que son lo primero que se
+    acorta o se quita. NUNCA metas el mismo volumen en menos tiempo subiendo la intensidad.
+  · Más tiempo disponible no es más volumen: sigue la progresión normal (subidas semanales y descargas de siempre).
+- Tiempo previsto ("tiempo_previsto": previsión meteorológica de los días que la tienen; el resto, planifica normal):
+  · Calor (sensación ≥ 26 °C o mucha humedad): pon la calidad y la tirada en la franja más fresca ("mejor_franja"),
+    por pulso o unos 10-20 s/km más lento según el calor, y recuerda beber.
+  · Tormenta, lluvia fuerte, nieve o viento/rachas fuertes: cambia la calidad o la tirada por un día cercano con mejor
+    tiempo (manteniendo la alternancia duro/suave y el tiempo disponible) o propón cinta, gimnasio o natación.
+  · Frío u oscuridad (antes de amanecer o después de anochecer): menciona ir por capas y la visibilidad (reflectante, luz).
+  · En las sesiones afectadas rellena weather_note (corta, concreta) y best_time; en las demás déjalos en null.
 - La memoria son aprendizajes sobre ESTE atleta (cómo responde, qué tolera, sus ritmos reales, sus preferencias).
   Cada aprendizaje en una frase con su dato. No repitas reglas generales de entrenamiento."""
 
@@ -328,12 +350,21 @@ def with_compliance(state: dict, data: dict) -> dict | None:
     for a in data["activities"]:
         by_day.setdefault(a["start"][:10], []).append(a)
     fb = state.get("feedback", {})
+    st = settings.load()
+    timed = settings.has_availability(st)
+    clash = {c["date"]: c for c in time_conflicts(plan["weeks"], st, since=date.today().isoformat())} if timed else {}
     weeks = []
     for w in plan["weeks"]:
         sessions = []
         for s in w["sessions"]:
             m = _match(s, by_day)
-            sessions.append({**s, **m, "feedback": fb.get(s["date"])})
+            extra = {}
+            if timed:
+                extra["availMin"] = settings.available_minutes(s["date"], st)
+                c = clash.get(s["date"])
+                if c and s["type"] != "rest" and m["status"] in ("today", "upcoming"):
+                    extra["timeWarn"] = {"avail": c["avail"], "planned": c["planned"]}
+            sessions.append({**s, **m, **extra, "feedback": fb.get(s["date"])})
         due = [s for s in sessions if s["status"] in ("done", "partial", "missed")]
         weeks.append({**w, "sessions": sessions,
                       "plannedKm": round(sum(s.get("distance_km") or 0 for s in sessions), 1),
@@ -392,7 +423,75 @@ def today_advice(plan: dict | None, readiness: dict | None) -> dict | None:
         tip = f"Tu preparación es {score}: día ideal para esta sesión."
     else:
         tip = f"Tu preparación es {score}: adelante con la sesión tal como está."
-    return {"session": s, "tip": tip}
+    out = {"session": s, "tip": tip}
+    try:
+        wx = weather.advice(s, [x for w in plan["weeks"] for x in w["sessions"]])
+    except Exception as e:  # noqa: BLE001 - el consejo del tiempo nunca rompe el del día
+        log.warning("Consejo del tiempo: %s", e)
+        wx = None
+    if wx:
+        out.update(weatherTip=wx["tip"], weather={k: wx["day"].get(k) for k in ("date", "code", "text", "tmin", "tmax", "feelsMax", "rainProb", "windMax")},
+                   bestWindow=wx["best"])
+    return out
+
+
+# ======================================================================== tu tiempo y el tiempo que hará
+def _dates(first: date, last: date) -> list[str]:
+    return [(first + timedelta(days=i)).isoformat() for i in range((last - first).days + 1)]
+
+
+def _availability_for_ai(dates: list[str]) -> dict | None:
+    """{fecha: minutos | null} para cada fecha planificada (el día concreto manda sobre la semana tipo)."""
+    st = settings.load()
+    if not settings.has_availability(st):
+        return None
+    return {d: settings.available_minutes(d, st) for d in dates}
+
+
+def _weather_for_ai(dates: list[str]) -> list[dict] | None:
+    try:
+        weather.refresh()  # como mucho cada ~3 h; sin red, se usa la última previsión guardada
+    except Exception as e:  # noqa: BLE001
+        log.warning("Previsión: %s", e)
+    return weather.for_coach(dates)
+
+
+def _context_blocks(dates: list[str]) -> str:
+    out = ""
+    avail = _availability_for_ai(dates)
+    if avail:
+        out += ("\n\nTIEMPO DISPONIBLE POR DÍA (minutos; null = sin límite; 0 = no puede entrenar). Cada día tiene que caber:\n"
+                + json.dumps({"tiempo_disponible_por_dia": avail}, ensure_ascii=False))
+    fc = _weather_for_ai(dates)
+    if fc:
+        out += ("\n\nTIEMPO PREVISTO (los días con previsión; adapta sesiones y horas, rellena weather_note y best_time):\n"
+                + json.dumps({"tiempo_previsto": fc}, ensure_ascii=False))
+    return out
+
+
+def _session_minutes(s: dict) -> int:
+    if s.get("duration_min"):
+        return int(s["duration_min"])
+    return round((s.get("distance_km") or 0) * 6)  # sin duración: ~6 min/km
+
+
+def time_conflicts(weeks: list[dict], st: dict | None = None, since: str | None = None) -> list[dict]:
+    """Comprobación sin IA: días cuyo total previsto pasa de tu tiempo disponible (no nos fiamos a ciegas del modelo)."""
+    st = settings.load() if st is None else st
+    if not settings.has_availability(st):
+        return []
+    by_day: dict[str, list] = {}
+    for w in weeks:
+        for s in w["sessions"]:
+            if s.get("type") != "rest" and (since is None or s["date"] >= since):
+                by_day.setdefault(s["date"], []).append(s)
+    out = []
+    for d, ss in sorted(by_day.items()):
+        avail = settings.available_minutes(d, st)
+        planned = sum(_session_minutes(s) for s in ss)
+        if avail is not None and planned > avail:
+            out.append({"date": d, "avail": avail, "planned": planned, "titles": [s["title"] for s in ss]})
+    return out
 
 
 # ======================================================================== IA
@@ -413,7 +512,8 @@ def _call(schema, prompt: str, kind: str, model: str | None = None):
     stop, cancelled = _threading.Event(), _threading.Event()
     try:
         with client.beta.messages.stream(
-            model=model, max_tokens=64000, output_config={"effort": "high"}, system=SYSTEM,
+            # 128K: el pensamiento cuenta dentro de max_tokens y el plan completo (con entrenos) es largo
+            model=model, max_tokens=MAX_TOKENS, output_config={"effort": "high"}, system=SYSTEM,
             messages=[{"role": "user", "content": prompt}], output_format=schema, **extra,
         ) as stream:
             # Vigilante: cada 3 s mira si el usuario ha cancelado y, si es así, cierra la conexión aunque la IA
@@ -435,13 +535,20 @@ def _call(schema, prompt: str, kind: str, model: str | None = None):
                 if cancelled.is_set():
                     raise Cancelled()
                 resp = stream.get_final_message()
+            except (ValidationError, ValueError) as e:
+                # El SDK valida el JSON al acabar el bloque de texto, ANTES de saber el stop_reason: un JSON
+                # incompleto es casi siempre una respuesta cortada por max_tokens, no un corte de la conexión.
+                if cancelled.is_set():
+                    raise Cancelled() from None
+                raise RuntimeError("La respuesta de la IA salió incompleta (demasiado larga). "
+                                   "Inténtalo de nuevo; si se repite, avísanos.") from e
             except Exception:
                 if cancelled.is_set():
                     raise Cancelled() from None
                 raise
             finally:
                 stop.set()
-    except (anthropic.APIStatusError, anthropic.APIConnectionError, Cancelled):
+    except (anthropic.APIStatusError, anthropic.APIConnectionError, Cancelled, RuntimeError):
         raise
     except Exception as e:  # corte a mitad de la respuesta (red, suspensión del equipo...)
         raise RuntimeError("Se cortó la conexión con la IA mientras escribía el plan. Inténtalo de nuevo.") from e
@@ -480,21 +587,25 @@ def create(req: dict) -> dict:
     prompt = ("Crea un plan de entrenamiento completo, semana a semana, desde el primer lunes hasta la carrera.\n\n"
               f"OBJETIVO:\n{json.dumps(goal, ensure_ascii=False)}\n\n"
               f"PERFIL REAL DEL ATLETA (calculado de sus datos de Garmin):\n{json.dumps(profile(data), ensure_ascii=False)}\n\n"
-              f"MEMORIA PREVIA DEL COACH:\n{json.dumps(state.get('memory', []), ensure_ascii=False)}")
+              f"MEMORIA PREVIA DEL COACH:\n{json.dumps(state.get('memory', []), ensure_ascii=False)}"
+              + _context_blocks(_dates(monday, race_date)))
     out, cost = _call(PlanOut, prompt, "plan-create")
     now = datetime.now().astimezone().isoformat(timespec="seconds")
+    weeks = [w.model_dump() for w in out.weeks]
+    warns = time_conflicts(weeks, since=today.isoformat())
     state.update({
         "plan": {"goal": goal["objetivo"], "raceDate": req["date"], "goalTime": goal["tiempo_objetivo"],
                  "daysPerWeek": goal["dias_por_semana"], "longRunDay": goal["dia_tirada_larga"], "notes": goal["notas_del_atleta"],
                  "gymDays": goal["dias_gimnasio"], "bodyGoal": goal["objetivo_fisico"], "ambition": goal["ambicion"],
                  "createdAt": now, "updatedAt": now, "summary": out.summary,
-                 "weeks": [w.model_dump() for w in out.weeks]},
+                 "weeks": weeks, "timeWarnings": warns},
         "memory": [m.model_dump() for m in out.memory[:12]],
         "lastAdaptWeek": monday.isoformat(),
-        "history": state.get("history", []) + [{"at": now, "kind": "create", "message": out.summary, "cost": round(cost, 4)}],
+        "history": state.get("history", []) + [{"at": now, "kind": "create", "message": out.summary, "cost": round(cost, 4),
+                                                 **({"timeWarnings": len(warns)} if warns else {})}],
     })
     save(state)
-    log.info("Plan creado (%d semanas, %.3f $)", len(out.weeks), cost)
+    log.info("Plan creado (%d semanas, %.3f $, %d días que no caben en tu tiempo)", len(out.weeks), cost, len(warns))
     return state
 
 
@@ -521,17 +632,21 @@ def adapt(force: bool = False, data: dict | None = None) -> dict | None:
               f"SEMANAS QUE QUEDAN (plan actual):\n{json.dumps(future, ensure_ascii=False)}\n\n"
               f"PERFIL REAL ACTUALIZADO:\n{json.dumps(profile(data), ensure_ascii=False)}\n\n"
               f"MEMORIA DEL COACH (actualízala):\n{json.dumps(state.get('memory', []), ensure_ascii=False)}\n\n"
-              f"Esta semana empieza el {monday}.")
+              f"Esta semana empieza el {monday}."
+              + _context_blocks(_dates(date.fromisoformat(monday), date.fromisoformat(plan["raceDate"]))))
     # Los reajustes semanales pueden ir con un modelo más barato (GARMIN_STATS_ADAPT_MODEL, p. ej. Sonnet para invitadas)
     out, cost = _call(AdaptOut, prompt, "plan-adapt", os.environ.get("GARMIN_STATS_ADAPT_MODEL") or MODEL)
     now = datetime.now().astimezone().isoformat(timespec="seconds")
     kept = [w for w in plan["weeks"] if w["start"] < monday]
-    plan.update({"weeks": kept + [w.model_dump() for w in out.weeks], "updatedAt": now})
+    new = [w.model_dump() for w in out.weeks]
+    warns = time_conflicts(new, since=today.isoformat())
+    plan.update({"weeks": kept + new, "updatedAt": now, "timeWarnings": warns})
     state.update({"plan": plan, "memory": [m.model_dump() for m in out.memory[:12]], "lastAdaptWeek": monday,
                   "history": state.get("history", []) + [{"at": now, "kind": "adapt", "message": out.message,
-                                                          "changes": out.changes[:5], "cost": round(cost, 4)}]})
+                                                          "changes": out.changes[:5], "cost": round(cost, 4),
+                                                          **({"timeWarnings": len(warns)} if warns else {})}]})
     save(state)
-    log.info("Plan reajustado (%.3f $)", cost)
+    log.info("Plan reajustado (%.3f $, %d días que no caben en tu tiempo)", cost, len(warns))
     return state
 
 

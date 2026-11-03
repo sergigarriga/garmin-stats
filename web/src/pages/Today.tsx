@@ -26,6 +26,7 @@ import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import { Alerts, Goals, ReadinessCard, WeekCard } from './TodayExtras';
 import { CheckIn } from './Wellness';
 import { LineChart } from '@mui/x-charts/LineChart';
+import { WeatherIcon } from './PlanTime';
 
 const minutes = (hm: string) => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(Math.round(min % 60)).padStart(2, '0')}`;
@@ -116,6 +117,19 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>HOY EN TU PLAN</Typography>
             <Typography variant="subtitle1">{data.coach.today.session.title}{data.coach.today.session.distance_km ? ` · ${dec1(data.coach.today.session.distance_km)} km` : ''}</Typography>
             {data.coach.today.tip && <Typography variant="body2" color="text.secondary"><Rich>{data.coach.today.tip}</Rich></Typography>}
+            {(() => {
+              const t = data.coach!.today!;
+              const w = t.bestWindow;
+              if (!t.weatherTip && !w) return null;
+              return (
+                <Typography data-new="today-weather" variant="body2" color="text.secondary" component="div"
+                  sx={{ display: 'flex', gap: 0.75, alignItems: 'flex-start', mt: 0.5, '& b': { color: 'text.primary' } }}>
+                  <Box sx={{ mt: '1px', flexShrink: 0, display: 'flex' }}><WeatherIcon code={t.weather?.code} size={17} /></Box>
+                  <span>{t.weatherTip ? <Rich>{t.weatherTip}</Rich>
+                    : <>Mejor franja para correr: <b>{w!.from}-{w!.to}</b>{w!.temp != null ? ` (${w!.temp} °C)` : ''}{t.weather?.text ? ` · ${t.weather.text.toLowerCase()}` : ''}.</>}</span>
+                </Typography>
+              );
+            })()}
           </Box>
         </Card>
       )}

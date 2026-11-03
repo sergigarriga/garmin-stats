@@ -58,6 +58,12 @@ def cmd_report(args) -> None:
         data = X.payload(A, am, store.state("last_sync"), sets)
         from . import extras, training
         data["live"] = extras.live(store)
+        from . import weather
+        try:
+            weather.refresh()  # previsión de tu ciudad (como mucho cada ~3 h; si falla, sin previsión)
+            data["lastRunArea"] = weather.last_run_area(store)
+        except Exception as e:  # noqa: BLE001 - el informe no se cae por el tiempo
+            log.warning("Previsión del tiempo: %s", e)
         training.enrich(data)
         n_det = extras.write_activity_details(am, SITE_DIR, prof.get("zones"))
         if n_det:

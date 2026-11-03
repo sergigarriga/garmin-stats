@@ -26,6 +26,8 @@ import TaskAltRounded from '@mui/icons-material/TaskAltRounded';
 import CalendarMonthRounded from '@mui/icons-material/CalendarMonthRounded';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import NewReleasesRounded from '@mui/icons-material/NewReleasesRounded';
+import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
+import WbSunnyRounded from '@mui/icons-material/WbSunnyRounded';
 import { call, type Me } from './account';
 import { useResolvedMode } from './theme';
 import { spotlight } from './spotlight';
@@ -43,6 +45,15 @@ const C = {
 
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
+  {
+    id: '2026-11-03-2', date: '2026-11-03', title: 'Tu plan, a tu medida', subtitle: 'Con tu tiempo y con el tiempo que hará',
+    features: [
+      { icon: <ScheduleRounded />, color: C.blue, title: 'Tu tiempo, día a día', target: 'availability', where: 'Entreno · Plan', go: 'plan',
+        body: 'Dile al coach cuánto tienes cada día (hoy 2 h, mañana 45 min) y ajusta la carga para que cada sesión quepa.' },
+      { icon: <WbSunnyRounded />, color: C.orange, title: 'El plan mira el tiempo que hará', target: 'weather', where: 'Entreno · Plan', go: 'plan',
+        body: 'Elige tu ciudad: con calor, lluvia o viento el coach cambia el día o la hora y te dice la mejor franja para salir.' },
+    ],
+  },
   {
     id: '2026-11-02-2', date: '2026-11-02', title: 'Ahora somos Runch', subtitle: 'Mismo coach, nombre nuevo',
     features: [

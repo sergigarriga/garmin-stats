@@ -360,7 +360,8 @@ def gym_block(data: dict, weeks: int = 12) -> dict | None:
 
 # ======================================================================== todo junto
 def enrich(data: dict, settings: dict | None = None, wellness_block: dict | None = None) -> dict:
-    """Añade a data.js los bloques paces, swim, gym y wellness (los puede recalcular la API sin pandas)."""
+    """Añade a data.js los bloques paces, swim, gym, wellness, tu tiempo disponible y la previsión del tiempo
+    (los puede recalcular la API sin pandas)."""
     if settings is None:
         from . import settings as S
         settings = S.load()
@@ -371,4 +372,7 @@ def enrich(data: dict, settings: dict | None = None, wellness_block: dict | None
     data["swim"] = swim_block(data, settings)
     data["gym"] = gym_block(data)
     data["wellness"] = wellness_block
+    from . import settings as S2, weather
+    data["availability"] = S2.availability(settings) if S2.has_availability(settings) else None
+    data["weather"] = weather.block()
     return data

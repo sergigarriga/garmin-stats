@@ -76,6 +76,10 @@ export interface PlanSession {
   feedback?: { rating: number; note: string } | null;
   compliance?: Compliance | null;
   workout?: WorkoutBlock[] | null; strength?: StrengthItem[] | null;
+  /** Nota del coach por la previsión ("31 °C por la tarde: sal antes de las 9") y la mejor franja ("07:00-09:00"). */
+  weather_note?: string | null; best_time?: string | null;
+  /** Minutos que tienes ese día (null = sin límite) y aviso si lo previsto no cabe. Solo si has puesto tu tiempo. */
+  availMin?: number | null; timeWarn?: { avail: number; planned: number } | null;
 }
 export interface PlanWeek { start: string; focus: string; sessions: PlanSession[]; plannedKm: number; actualKm: number; compliance?: number | null }
 export interface Plan {
@@ -86,7 +90,8 @@ export interface Plan {
   history: { at: string; kind: 'create' | 'adapt'; message: string; changes?: string[]; cost: number }[];
 }
 export interface CoachView {
-  plan: Plan | null; today: { session: PlanSession; tip?: string | null } | null;
+  plan: Plan | null;
+  today: { session: PlanSession; tip?: string | null; weatherTip?: string | null; weather?: Partial<WeatherDay> | null; bestWindow?: WeatherWindow | null } | null;
   job?: { status: 'running' | 'done' | 'error' | 'cancelled'; action: string; error?: string; at: number; cancel?: boolean } | null;
 }
 
@@ -138,6 +143,16 @@ export interface Gym {
   records: GymRecord[]; muscleAvg4w: { muscle: string; label: string; sets: number }[];
   muscles: { key: string; label: string }[]; totals: { sessions: number; withSets: number; sets: number };
 }
+/** Tu tiempo disponible: semana tipo ("0" = lunes … "6" = domingo) y días concretos. null = sin límite, 0 = nada. */
+export interface Availability { weekly: Record<string, number | null>; days: Record<string, number> }
+export interface WeatherWindow { from: string; to: string; temp?: number | null; feels?: number | null; rain?: number | null; wind?: number | null; dark?: boolean }
+export interface WeatherDay {
+  date: string; code?: number | null; text: string; tmin?: number | null; tmax?: number | null; feelsMax?: number | null;
+  rainProb?: number | null; rainMm?: number | null; windMax?: number | null; gustMax?: number | null; humidity?: number | null;
+  sunrise?: string | null; sunset?: string | null; windows: WeatherWindow[]; flags: string[];
+}
+export interface Place { name: string; lat: number; lon: number }
+export interface WeatherBlock { location: Place | null; fetchedAt?: string | null; days: WeatherDay[] }
 export interface WellnessDay { d: string; mood?: number; soreness?: number; note?: string }
 export interface Injury { id: string; area: string; severity: number; start: string; end?: string | null; notes?: string }
 export interface Wellness { today?: WellnessDay | null; recent: WellnessDay[]; injuries: Injury[] }
@@ -170,6 +185,10 @@ export interface GarminData {
   swim?: Swim | null;
   gym?: Gym | null;
   wellness?: Wellness | null;
+  availability?: Availability | null;
+  weather?: WeatherBlock | null;
+  /** Zona (redondeada) de tu última carrera al aire libre, para sugerirla como ciudad. */
+  lastRunArea?: { lat: number; lon: number; date: string } | null;
 }
 
 /** Pide a la app que vuelva a leer data.js (la API ya lo ha actualizado tras un cambio). */

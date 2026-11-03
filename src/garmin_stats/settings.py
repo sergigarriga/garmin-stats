@@ -97,3 +97,123 @@ def recorded_start(days: int, today: date | None = None) -> date:
         if not in_gap(cur):
             left -= 1
     return cur
+
+
+# ======================================================================== tiempo disponible por día
+# settings["availability"] = {"weekly": {"0".."6" (lunes..domingo): minutos | None}, "days": {"AAAA-MM-DD": minutos}}
+# 0 = ese día no puedes entrenar; None (o sin valor) = sin límite, el coach decide.
+MAX_MIN = 480
+AHEAD_DAYS = 56  # los días concretos se pueden fijar hasta ~8 semanas vista
+
+
+def _minutes(v, what: str) -> int | None:
+    if v is None or v == "":
+        return None
+    try:
+        n = round(float(v))
+    except (TypeError, ValueError):
+        raise ValueError(f"{what}: indica los minutos (0-{MAX_MIN}).") from None
+    if not 0 <= n <= MAX_MIN:
+        raise ValueError(f"{what}: tiene que estar entre 0 y {MAX_MIN} minutos (8 h).")
+    return n
+
+
+def _clean_days(days: dict, today: date) -> dict:
+    """Quita los días pasados (y los que ya no tienen valor)."""
+    return {d: m for d, m in sorted(days.items()) if m is not None and d >= today.isoformat()}
+
+
+def availability(st: dict | None = None, today: date | None = None) -> dict:
+    """Tu tiempo disponible, limpio: semana tipo (7 valores) y días concretos de hoy en adelante."""
+    st = load() if st is None else st
+    today = today or date.today()
+    a = st.get("availability") or {}
+    weekly = {str(i): (a.get("weekly") or {}).get(str(i)) for i in range(7)}
+    return {"weekly": weekly, "days": _clean_days(a.get("days") or {}, today)}
+
+
+def has_availability(st: dict | None = None) -> bool:
+    a = availability(st)
+    return any(v is not None for v in a["weekly"].values()) or bool(a["days"])
+
+
+def set_availability(payload: dict) -> dict:
+    """Guarda la semana tipo y/o los días concretos. {"clear": true} lo borra todo.
+    weekly: {"0".."6": minutos | null}; days: {"AAAA-MM-DD": minutos | null (null quita ese día)}."""
+    st = load()
+    today = date.today()
+    if payload.get("clear"):
+        st.pop("availability", None)
+        save(st)
+        return st
+    cur = availability(st, today)
+    weekly, days = dict(cur["weekly"]), dict(cur["days"])
+    if "weekly" in payload:
+        w = payload.get("weekly") or {}
+        if not isinstance(w, dict):
+            raise ValueError("Semana no válida.")
+        names = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+        for k, v in w.items():
+            if str(k) not in weekly:
+                raise ValueError("Día de la semana no válido.")
+            weekly[str(k)] = _minutes(v, names[int(k)].capitalize())
+    if "days" in payload:
+        dd = payload.get("days") or {}
+        if not isinstance(dd, dict):
+            raise ValueError("Días no válidos.")
+        if payload.get("replaceDays"):
+            days = {}
+        for k, v in dd.items():
+            try:
+                d = date.fromisoformat(str(k))
+            except ValueError:
+                raise ValueError("Fecha no válida.") from None
+            if d < today or d > today + timedelta(days=AHEAD_DAYS):
+                raise ValueError("Los días concretos tienen que ser de hoy a 8 semanas vista.")
+            m = _minutes(v, d.strftime("%d-%m"))
+            if m is None:
+                days.pop(d.isoformat(), None)
+            else:
+                days[d.isoformat()] = m
+    st["availability"] = {"weekly": weekly, "days": _clean_days(days, today)}
+    if not has_availability(st):
+        st.pop("availability", None)
+    save(st)
+    return st
+
+
+def available_minutes(d: date | str, st: dict | None = None) -> int | None:
+    """Minutos que tienes ese día: el día concreto manda sobre la semana tipo. None = sin límite."""
+    a = availability(st)
+    key = d if isinstance(d, str) else d.isoformat()
+    if key in a["days"]:
+        return a["days"][key]
+    return a["weekly"].get(str(date.fromisoformat(key).weekday()))
+
+
+# ======================================================================== dónde entrenas (para la previsión del tiempo)
+def location(st: dict | None = None) -> dict | None:
+    loc = (load() if st is None else st).get("location")
+    return loc if loc and loc.get("lat") is not None and loc.get("lon") is not None else None
+
+
+def set_location(payload: dict) -> dict:
+    """{"name", "lat", "lon"} (ciudad elegida en el buscador) o {"clear": true}. Se guarda a nivel de ciudad
+    (coordenadas con 2 decimales, ~1 km): no hace falta más precisión para la previsión."""
+    st = load()
+    if payload.get("clear"):
+        st.pop("location", None)
+        save(st)
+        return st
+    name = str(payload.get("name") or "").strip()[:80]
+    try:
+        lat, lon = float(payload["lat"]), float(payload["lon"])
+    except (KeyError, TypeError, ValueError):
+        raise ValueError("Elige una ciudad de la lista.") from None
+    if not name:
+        raise ValueError("Falta el nombre del lugar.")
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+        raise ValueError("Coordenadas no válidas.")
+    st["location"] = {"name": name, "lat": round(lat, 2), "lon": round(lon, 2)}
+    save(st)
+    return st

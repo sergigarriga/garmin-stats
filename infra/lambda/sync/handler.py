@@ -13,6 +13,7 @@ Estado en S3 (por persona):
 Antes de cada persona se vacían /tmp/gs y la caché de Garmin: nada pasa de una persona a otra.
 """
 
+import hashlib
 import json
 import logging
 import os
@@ -40,13 +41,15 @@ API_FUNCTION = os.environ.get("API_FUNCTION", "garmin-stats-api")
 s3 = boto3.client("s3")
 ssm = boto3.client("ssm")
 lam = boto3.client("lambda")
-STATE = ["garmin.sqlite", "coach.json", "settings.json", "wellness.json", "ai_cache.json", "ai_usage.log", "ai_usage_lambda.log"]
+STATE = ["garmin.sqlite", "coach.json", "settings.json", "wellness.json", "weather.json", "ai_cache.json", "ai_usage.log",
+         "ai_usage_lambda.log"]
 # Los escribe la web (API) mientras esta sincronización corre: aquí solo se leen, nunca se suben (se pisarían los cambios).
 READ_ONLY = {"settings.json", "wellness.json", "ai_usage_lambda.log"}
 STALE = 960      # una sincronización "en marcha" de hace más de 16 min se da por muerta
 SYNC_SECONDS = 420  # trabajo con Garmin por ejecución; el resto queda para recalcular, IA y subir
 MAX_PARTS = 15   # tandas como mucho en la primera descarga
 log = logging.getLogger("garmin_stats")
+PULLED: dict[str, str] = {}  # huella de cada archivo de estado al bajarlo: solo se sube lo que esta ejecución cambia
 
 
 class KeyRejected(Exception):
@@ -83,13 +86,19 @@ def _reset() -> None:
     (ROOT / "site" / "acts").mkdir(parents=True, exist_ok=True)
 
 
+def _digest(p: Path) -> str | None:
+    return hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else None
+
+
 def _pull(uid: str) -> None:
     sp = users.state_prefix(uid)
+    PULLED.clear()
     for name in STATE:
         try:
             s3.download_file(BUCKET, sp + name, str(ROOT / "data" / name))
         except s3.exceptions.ClientError:
             pass
+        PULLED[name] = _digest(ROOT / "data" / name)
     try:
         s3.download_file(BUCKET, "site/index.html", str(ROOT / "site" / "index.html"))  # para el id de versión
     except s3.exceptions.ClientError:
@@ -121,7 +130,9 @@ def _push(uid: str) -> None:
     sp, site = users.state_prefix(uid), users.site_prefix(uid)
     for name in STATE:
         p = ROOT / "data" / name
-        if p.exists() and name not in READ_ONLY:
+        # Sin cambios aquí, no se sube: así no se pisa lo que la API haya guardado mientras tanto (p. ej. un
+        # reajuste del plan o su estado "en marcha" en coach.json).
+        if p.exists() and name not in READ_ONLY and _digest(p) != PULLED.get(name):
             s3.upload_file(str(p), BUCKET, sp + name)
     js = {"ContentType": "text/javascript; charset=utf-8", "CacheControl": "no-store"}
     if (ROOT / "site" / "data.js").exists():
