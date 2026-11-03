@@ -51,17 +51,20 @@ interiores de packaging y huecos de plantilla.
 | Cita | Espresso sobre mantequilla | La frase, con «despacio» subrayado en ola | Comilla « gigante, sello «EL CLUB · CADA DOMINGO» |
 
 Piezas comunes: sello redondo con texto alrededor y una margarita en el centro, etiquetas rellenas (tinta de fondo,
-texto del color del fondo), piezas un poco giradas para que no quede rígido, y el hueco de la ilustración girado
-como una foto pegada.
+texto del color del fondo), piezas un poco giradas para que no quede rígido, y una ilustración grande y suelta,
+sin caja, en la tinta de la plantilla (crema sobre terracota y espresso; terracota sobre crema; espresso sobre
+mantequilla): en quedada y reto, el corredor con gorra (`corredor-1`) llega corriendo encima del «9:00» o del «3»;
+en «Tu turno» y cita, la corredora con la taza (`corredor-2`), junto a las respuestas o al pie de la frase.
 
 **Regla: carrusel bilingüe.** Todas las plantillas ilustradas se publican siempre como carrusel de dos diapositivas
 con el mismo diseño: la 1 en catalán y la 2 en castellano. Por eso cada pieza sale dos veces:
 
-- `<post|story>-<nombre>-1-ca.png` y `<post|story>-<nombre>-2-es.png`: listas para usar, el hueco lleva el patrón.
-- `<post|story>-<nombre>-hueco.png`: el hueco marcado con sus medidas (cambian según la plantilla, van escritas
-  dentro). Sale una sola vez, el diseño es el mismo en los dos idiomas.
+- `<post|story>-<nombre>-1-ca.png` y `<post|story>-<nombre>-2-es.png`: listas para usar.
+- Una plantilla sin ilustración (`"ilustracion": None`) lleva un hueco con el patrón y saca además
+  `<post|story>-<nombre>-hueco.png`, el hueco marcado con sus medidas.
 - `<post|story>-<nombre>-1-ca.mp4` y `-2-es.mp4`: la misma pieza animada, 6 s, 30 fps, sin sonido, H.264 (yuv420p), ~1-1,5 MB.
-  El patrón se desliza en diagonal (medio paso de baldosa en 6 s, sin corte al repetirse), la protagonista entra con
+  El corredor entra corriendo desde la izquierda, se queda botando 3 px a ritmo de zancada (~170 pasos/min) y al
+  final sale por la derecha; la corredora de la taza sube desde abajo y se mece despacio. La protagonista entra con
   un pequeño rebote, el sello entra girando y luego gira despacio, las etiquetas suben una a una, el subrayado se
   dibuja y el logotipo hace una ola dos veces. Todo se queda quieto unos 3 s y al final se funde, así el primer y el
   último fotograma coinciden y el vídeo se repite sin salto.
@@ -70,13 +73,16 @@ con el mismo diseño: la 1 en catalán y la 2 en castellano. Por eso cada pieza 
 Los textos están en `TEXTS` dentro de `templates.py`, un diccionario por idioma (`"ca"`, `"es"`) con los mismos
 campos en los dos; `LANGS` fija el orden del carrusel. Catalán normativo y natural, no una traducción palabra por
 palabra (p. ej. «Diumenge», «Ningú es queda enrere», «Repte», «El teu torn», «Córrer a poc a poc també és córrer»).
-Las ilustraciones se ponen en `TEMPLATES` (`"ilustracion": "ruta.png"`);
+La ilustración de cada plantilla se elige en `TEMPLATES` (`"ilustracion": "corredor-1"`; la tinta sale del tema,
+`INK_FILE`) y sus medidas están en `ILLUS`;
 la colocación de cada pieza está en su función (`quedada`, `reto`, `tu_turno`, `cita`). Las historias dejan libres
 los 250 px de arriba y los 300 de abajo (ahí Instagram pone sus botones); el script avisa si algo se sale.
 
-## Ilustración (pendiente)
+## Ilustración
 
-Los personajes se harán aparte. Pautas para que encajen: línea continua de grosor uniforme y puntas redondas, una
+`ilustraciones/gemini/`: corredor con gorra en zancada (`corredor-1`) y corredora con la taza (`corredor-2`), en
+terracota, crema y espresso, PNG con fondo transparente (la piel y los huecos son transparentes: dejan ver el
+fondo, efecto duotono). Pautas para los siguientes personajes: línea continua de grosor uniforme y puntas redondas, una
 sola tinta del color de la plantilla, fondo transparente, poco detalle, ojos cerrados o sonrientes, cuerpos y ritmos
 de todo tipo, escenas de correr y de después de correr (estirar, taza en la mano, grupo). Nada de marcas ni
 locales reconocibles.

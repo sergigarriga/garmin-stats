@@ -372,6 +372,7 @@ def build_hoja(r: Renderer) -> None:
     mocks_wide = "".join(f'<img class="mkw" src="{png(m / f)}">' for f in ["bolsas.png", "camisetas.png", "movil.png", "gorra.png"])
     tpls = "".join(f'<img class="tp" src="{png(HERE / "plantillas" / f)}">' for f in
                    ["post-quedada-1-ca.png", "post-reto-2-es.png", "post-tu-turno-1-ca.png", "post-cita-2-es.png"])
+    ils = "".join(f'<img src="{png(HERE / "ilustraciones" / "gemini" / f"corredor-{i}-terracota.png")}">' for i in (1, 2))
 
     g, (vx, vy, vw, vh) = wordmark()
 
@@ -426,7 +427,9 @@ h2 {{ font: 700 40px Gluten; color:{C["terracotta"]}; margin:0 0 26px; }}
 .use {{ background:{C["paper"]}; border-radius:28px; padding:36px 40px; font-size:25px; line-height:1.5; }}
 .use b {{ display:block; font: 400 40px FR; margin-bottom:12px; }}
 .use.il b {{ font: 800 42px Gluten; color:{C["terracotta"]}; }}
-.use.ph {{ background:none; border: 4px dashed rgba(212,84,47,.5); }}
+.use.ph {{ background:none; border: 4px solid rgba(212,84,47,.35); }}
+.ils {{ display:flex; gap:28px; align-items:flex-end; margin:6px 0 18px; }}
+.ils img {{ height:230px; width:auto; display:block; }}
 .use.ph b {{ font: 800 42px Gluten; color:{C["terracotta"]}; }}
 """
     body = f"""<div class="page">
@@ -452,7 +455,7 @@ h2 {{ font: 700 40px Gluten; color:{C["terracotta"]}; margin:0 0 26px; }}
   <section><h2>Cuándo usar cada sistema</h2><div class="two">
     <div class="use"><b>Editorial</b>Datos, explicaciones y carruseles de la app: Fraunces, gráficos de línea fina y la maqueta fija con «Nº 01 · TEMA».</div>
     <div class="use il"><b>Ilustrado</b>Quedadas, retos, merchandising, avisos y momentos de comunidad: logotipo, Gluten, patrón y una sola tinta.</div>
-    <div class="use ph"><b>Ilustración</b>Pendiente. Personajes de línea continua, una tinta, ojos cerrados y todos los cuerpos. Las plantillas dejan su hueco marcado.</div>
+    <div class="use ph"><b>Ilustración</b><div class="ils">{ils}</div>Línea gruesa, una tinta, ojos cerrados; la piel deja ver el fondo. Grandes y sueltas, sin caja.</div>
   </div></section>
 </div>"""
     r.png(body, HERE / "runch-brand-sheet.png", 2400, 6000, css=css, full=True)

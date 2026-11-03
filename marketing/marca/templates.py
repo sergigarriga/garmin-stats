@@ -4,19 +4,19 @@
     uv run --no-project --with playwright --with fonttools python marketing/marca/templates.py --sin-video
 
 Cada plantilla tiene una sola pieza protagonista (la hora, el premio, la pregunta, la frase), un sello redondo con
-texto alrededor y un hueco para una ilustración. Mientras no haya ilustración, el hueco lleva el patrón del
-logotipo y además sale una versión con el hueco marcado y sus medidas (`<post|story>-<plantilla>-hueco.png`) para
-quien dibuje.
+texto alrededor y una ilustración suelta, sin caja (ilustraciones/gemini/: corredor-1 corre, corredor-2 lleva una
+taza), en la tinta de la plantilla. Si una plantilla no tiene ilustración ("ilustracion": None), sale un hueco con
+el patrón del logotipo y una versión con el hueco marcado y sus medidas (`<post|story>-<plantilla>-hueco.png`).
 
 Regla: cada plantilla se publica como carrusel bilingüe con el mismo diseño, diapositiva 1 en catalán y diapositiva 2
 en castellano: `<post|story>-<plantilla>-1-ca.png` y `-2-es.png` (y sus `.mp4`). Los textos están en TEXTS, un
-diccionario por idioma. Cuando exista la ilustración, pon su ruta en "ilustracion" (PNG con fondo transparente, una sola tinta
-del color de la plantilla) y vuelve a lanzar el script.
+diccionario por idioma.
 
-Vídeo (`.mp4`, 6 s, 30 fps, sin sonido, H.264): el patrón se desliza en diagonal, la pieza protagonista
-entra con un pequeño rebote, el sello gira despacio, las etiquetas suben una a una y el logotipo hace una ola.
+Vídeo (`.mp4`, 6 s, 30 fps, sin sonido, H.264): el corredor entra corriendo desde la izquierda y bota 3 px a ritmo
+de zancada (la corredora de la taza sube y se mece despacio), la pieza protagonista entra con un pequeño rebote, el
+sello gira despacio, las etiquetas suben una a una y el logotipo hace una ola.
 Cada fotograma se pinta llamando a render(t) en la página (sin animaciones CSS, así no hay saltos). El primer y el
-último fotograma son iguales (fondo, logotipo y hueco), así que el vídeo se puede repetir sin corte. Junto a cada
+último fotograma son iguales (fondo y logotipo), así que el vídeo se puede repetir sin corte. Junto a cada
 vídeo sale `<nombre>-frames.png` con 6 fotogramas para revisarlo sin abrirlo.
 """
 from __future__ import annotations
@@ -42,13 +42,23 @@ THEMES = {
     "espresso": (C["espresso"], C["cream"]),
     "butter": (C["butter"], C["espresso"]),
 }
+# Versión de la ilustración (sufijo del archivo) que va con cada tema: la tinta del tema.
+INK_FILE = {"terracotta": "crema", "cream": "terracota", "espresso": "crema", "butter": "espresso"}
+
+# Ilustraciones: ilustraciones/gemini/<nombre>-<tinta>.png. Tamaño del PNG y caja del dibujo (sin el margen
+# transparente), para colocarlas por el dibujo y no por el lienzo. "move": cómo se mueve en el vídeo.
+ILL_DIR = HERE / "ilustraciones" / "gemini"
+ILLUS = {
+    "corredor-1": {"size": (1358, 1534), "box": (40, 40, 1319, 1495), "move": "run"},   # corre: entra y bota
+    "corredor-2": {"size": (1048, 1769), "box": (40, 40, 1009, 1730), "move": "sway"},  # taza: sube y se mece
+}
 
 # Plantillas: diseño (tema e ilustración). Los textos van aparte, en TEXTS, uno por idioma.
 TEMPLATES = [
-    {"id": "quedada", "theme": "terracotta", "ilustracion": None},
-    {"id": "reto", "theme": "cream", "ilustracion": None},
-    {"id": "tu-turno", "theme": "espresso", "ilustracion": None},
-    {"id": "cita", "theme": "butter", "ilustracion": None},
+    {"id": "quedada", "theme": "terracotta", "ilustracion": "corredor-1"},
+    {"id": "reto", "theme": "cream", "ilustracion": "corredor-1"},
+    {"id": "tu-turno", "theme": "espresso", "ilustracion": "corredor-2"},
+    {"id": "cita", "theme": "butter", "ilustracion": "corredor-2"},
 ]
 
 # Regla: cada plantilla se publica como carrusel bilingüe con el mismo diseño, diapositiva 1 en catalán y
@@ -127,10 +137,8 @@ def stamp(text: str, size: int, fill: str, ink: str) -> str:
             f'stroke-linecap="round"/>{daisy(150, 150, 54, ink, fill)}</svg>')
 
 
-def slot(w: int, h: int, bg: str, ink: str, image: str | None, hueco: bool, pid: str) -> str:
-    """Hueco de la ilustración: la imagen, el patrón (se desliza en el vídeo) o un marcador con medidas."""
-    if image:
-        return f'<div class="slot" style="width:{w}px;height:{h}px"><img src="{Path(image).resolve().as_uri()}"></div>'
+def slot(w: int, h: int, bg: str, ink: str, hueco: bool, pid: str) -> str:
+    """Hueco de una plantilla sin ilustración: el patrón (se desliza en el vídeo) o un marcador con medidas."""
     if hueco:
         return (f'<div class="slot hueco" style="width:{w}px;height:{h}px"><div><b>Ilustración</b>'
                 f'<span>{w} × {h} px · una tinta · fondo transparente</span></div></div>')
@@ -139,6 +147,27 @@ def slot(w: int, h: int, bg: str, ink: str, image: str | None, hueco: bool, pid:
             f'<defs><pattern id="{pid}" width="{tw:.2f}" height="{th:.2f}" patternUnits="userSpaceOnUse" '
             f'patternTransform="rotate(-8) scale(.62)" data-dx="{tw / 2:.2f}" data-dy="{th / 2:.2f}">{tile}</pattern></defs>'
             f'<rect width="{w}" height="{h}" fill="{ink}"/><rect width="{w}" height="{h}" fill="url(#{pid})"/></svg></div>')
+
+
+def figure(name: str, ink_file: str, x: float, y: float, h: float, d: float) -> str:
+    """Ilustración suelta (sin caja), con el dibujo de alto h y su esquina en (x, y). En el vídeo, "run" entra
+    corriendo desde la izquierda (220 px, antes de que salga el texto, para no pasar por encima) y bota a ritmo de
+    zancada; "sway" sube y se mece despacio."""
+    il = ILLUS[name]
+    (W, H), (l, t, r, b) = il["size"], il["box"]
+    k = h / (b - t)
+    w = (r - l) * k
+    src = (ILL_DIR / f"{name}-{ink_file}.png").resolve().as_uri()
+    img = (f'<img src="{src}" style="position:absolute;left:{-l * k:.1f}px;top:{-t * k:.1f}px;'
+           f'width:{W * k:.1f}px;height:{H * k:.1f}px">')
+    return (f'<div class="abs fig" style="left:{x:.0f}px;top:{y:.0f}px;width:{w:.0f}px;height:{h:.0f}px">'
+            f'<div class="an" {A(il["move"], d, 1.0, x=220)}>{img}</div></div>')
+
+
+def fig_size(name: str | None, h: float) -> float:
+    """Ancho del dibujo para un alto h (para colocar la ilustración contra el borde derecho)."""
+    l, t, r, b = ILLUS[name or "corredor-1"]["box"]
+    return h * (r - l) / (b - t)
 
 
 def chips(items: list[str], d0: float, gap: float = .12) -> str:
@@ -173,69 +202,72 @@ def kicker(text: str, x: int, y: int, d: float = .1, rot: float = 0) -> str:
     return at(x, y, f'<div class="k">{html.escape(text)}</div>', rot, A("rise", d, .55, y=24))
 
 
-def quedada(t: dict, story: bool, sl) -> str:
+def quedada(t: dict, story: bool, fig) -> str:
+    """La hora gigante y el corredor arriba a la derecha, como si llegara corriendo encima del «9:00»."""
     v = (lambda p, s: s if story else p)
     y0 = v(0, 200)
-    sw, sh = v((500, 380), (540, 440))
     big = v(480, 505)
+    fh = v(560, 620)
     return "".join([
-        at(1008 - sw, y0 + v(168, 190), sl(sw, sh), 3),
+        fig(1004 - fig_size(t["ilustracion"], fh), y0 + v(150, 130), fh, .2),
         kicker(t["kicker"], 72, y0 + v(196, 222), .1),
         at(72, y0 + v(262, 300), f'<p class="body">{t["body"]}</p>', 0, A("fade", .35, .7)),
-        at(72, y0 + v(596, 700), f'<div class="day">{html.escape(t["day"].upper())}</div>', 0, A("rise", .3, .6, y=40)),
-        at(v(56, 60), y0 + v(752, 880),
+        at(v(84, 84), y0 + v(388, 440), stamp(t["stamp"], v(190, 220), C["cream"], C["terracotta"]), -6, A("stamp", 1.05, .9)),
+        at(72, y0 + v(604, 762), f'<div class="day">{html.escape(t["day"].upper())}</div>', 0, A("rise", .3, .6, y=40)),
+        at(v(56, 60), y0 + v(752, 910),
            f'<div class="hero-wrap"><div class="hero echo" {A("echo", .75, .7, x=v(14, 16), y=v(14, 16))} '
            f'style="font-size:{big}px">{t["time"]}</div>'
            f'<div class="hero" {A("pop", .5, .95, r=-9)} style="font-size:{big}px">{t["time"]}</div></div>', -5),
-        at(v(790, 770), y0 + v(430, 520), stamp(t["stamp"], v(250, 280), C["cream"], C["terracotta"]), 0, A("stamp", 1.05, .9)),
-        f'<div class="abs chips" style="left:72px;top:{y0 + v(1172, 1330)}px">{chips(t["chips"], 1.35)}</div>',
+        f'<div class="abs chips" style="left:72px;top:{y0 + v(1172, 1340)}px">{chips(t["chips"], 1.35)}</div>',
     ])
 
 
-def reto(t: dict, story: bool, sl) -> str:
+def reto(t: dict, story: bool, fig) -> str:
+    """El «3» gigante y el corredor arriba a la izquierda, corriendo hacia el texto del reto."""
     v = (lambda p, s: s if story else p)
     y0 = v(0, 200)
-    sw, sh = v((500, 380), (540, 440))
     big = v(560, 640)
     return "".join([
-        at(72, y0 + v(168, 190), sl(sw, sh), -3),
+        fig(64, y0 + v(146, 166), v(470, 540), .2),
         kicker(t["kicker"], v(620, 660), y0 + v(196, 222), .1),
         at(v(620, 660), y0 + v(262, 300), f'<p class="body" style="width:{v(388, 348)}px">{html.escape(t["body"])}</p>', 0, A("fade", .35, .7)),
-        at(v(58, 56), y0 + v(640, 770),
+        at(v(58, 56), y0 + v(664, 770),
            f'<div class="hero-wrap"><div class="hero echo" {A("echo", .75, .7, x=v(16, 18), y=v(16, 18))} '
            f'style="font-size:{big}px">{t["big"]}</div>'
            f'<div class="hero" {A("pop", .5, .95, r=-12)} style="font-size:{big}px">{t["big"]}</div></div>', -6),
-        at(v(420, 450), y0 + v(720, 850), f'<div class="stack">{lines_html(t["lines"], .7, .12)}</div>', -3),
-        at(v(440, 380), y0 + v(450, 520), stamp(t["stamp"], v(230, 260), C["terracotta"], C["cream"]), 0, A("stamp", 1.05, .9)),
-        at(v(436, 486), y0 + v(990, 1140), f'<div class="sticker">{html.escape(t["sticker"])}</div>', 4, A("pop", 1.0, .8, r=12)),
-        f'<div class="abs chips" style="left:72px;top:{y0 + v(1172, 1330)}px">{chips(t["chips"], 1.4)}</div>',
+        at(v(420, 450), y0 + v(744, 850), f'<div class="stack">{lines_html(t["lines"], .7, .12)}</div>', -3),
+        at(v(770, 760), y0 + v(420, 500), stamp(t["stamp"], v(210, 240), C["terracotta"], C["cream"]), 0, A("stamp", 1.05, .9)),
+        at(v(436, 486), y0 + v(1010, 1140), f'<div class="sticker">{html.escape(t["sticker"])}</div>', 4, A("pop", 1.0, .8, r=12)),
+        f'<div class="abs chips" style="left:72px;top:{y0 + v(1190, 1330)}px">{chips(t["chips"], 1.4)}</div>',
     ])
 
 
-def tu_turno(t: dict, story: bool, sl) -> str:
+def tu_turno(t: dict, story: bool, fig) -> str:
+    """La pregunta arriba; abajo, las respuestas y la corredora con la taza, que se las mira."""
     v = (lambda p, s: s if story else p)
     y0 = v(0, 200)
-    sw, sh = v((420, 330), (460, 380))
+    fh = v(600, 570)
     return "".join([
         kicker(t["kicker"], 72, y0 + v(170, 200), .1),
         at(v(64, 64), y0 + v(236, 276), f'<div class="q">{lines_html(t["lines"], .25, .12, [0, 120, 40, 0])}</div>', -3),
         f'<div class="abs chips col" style="left:72px;top:{y0 + v(900, 1030)}px">{chips(t["chips"], 1.3, .1)}</div>',
-        at(1008 - sw, y0 + v(880, 1000), sl(sw, sh), 3),
-        at(v(490, 470), y0 + v(800, 910), stamp(t["stamp"], v(210, 240), C["cream"], C["espresso"]), 0, A("stamp", 1.0, .9)),
+        fig(1000 - fig_size(t["ilustracion"], fh), y0 + v(680, 850), fh, .5),
+        at(v(420, 420), y0 + v(790, 930), stamp(t["stamp"], v(190, 210), C["cream"], C["espresso"]), -8, A("stamp", 1.0, .9)),
     ])
 
 
-def cita(t: dict, story: bool, sl) -> str:
+def cita(t: dict, story: bool, fig) -> str:
+    """La frase manda; la corredora con la taza cierra abajo a la derecha, junto al sello."""
     v = (lambda p, s: s if story else p)
     y0 = v(0, 200)
-    sw, sh = v((460, 330), (500, 380))
+    fh = v(450, 455)
     return "".join([
         kicker(t["kicker"], 72, y0 + v(170, 200), .1),
         at(v(700, 690), y0 + v(70, 90), '<div class="qm" ' + A("pop", .2, .9, r=-14) + '>«</div>', 8),
-        at(72, y0 + v(335, 375), f'<div class="q quote">{lines_html(t["lines"], .45, .12, [0, 60, 0, 0])}</div>', -2),
-        at(72, y0 + v(950, 1010), sl(sw, sh), -3),
-        at(v(620, 640), y0 + v(966, 1020), stamp(t["stamp"], v(250, 280), C["espresso"], C["butter"]), 0, A("stamp", 1.2, .9)),
-        at(v(610, 630), y0 + v(1246, 1330), f'<p class="body sig">{html.escape(t["body"])}</p>', 0, A("fade", 1.5, .7)),
+        at(72, y0 + v(318, 340), f'<div class="q quote">{lines_html(t["lines"], .45, .12, [0, 60, 0, 0])}</div>', -2),
+        fig(v(992, 985) - fig_size(t["ilustracion"], fh), y0 + v(1290, 1425) - fh, fh, .6),
+        at(v(250, 240), y0 + v(965, 1035), stamp(t["stamp"], v(240, 260), C["espresso"], C["butter"]), -6, A("stamp", 1.2, .9)),
+        at(v(232, 222), y0 + v(1238, 1336), f'<p class="body sig">{html.escape(t["body"])}</p>', 0, A("fade", 1.5, .7)),
     ])
 
 
@@ -281,10 +313,14 @@ def page(t: dict, story: bool, hueco: bool) -> tuple[str, str]:
 .chip:nth-child(2n) {{ transform:rotate(-1.5deg); }}
 """
 
-    def sl(w: int, h: int) -> str:
-        return slot(w, h, bg, ink, t.get("ilustracion"), hueco, "s" + t["id"] + ("s" if story else "p"))
+    def fig(x: float, y: float, h: float, d: float) -> str:
+        """La ilustración; sin ilustración (o con hueco=True), un hueco del mismo tamaño con el patrón o las medidas."""
+        if t.get("ilustracion") and not hueco:
+            return figure(t["ilustracion"], INK_FILE[t["theme"]], x, y, h, d)
+        w = fig_size(t.get("ilustracion"), h)
+        return at(x, y, slot(round(w), round(h), bg, ink, hueco, "s" + t["id"] + ("s" if story else "p")))
 
-    body = f'<div class="p">{bar(ink, 240 if story else 60)}{LAYOUTS[t["id"]](t, story, sl)}</div>'
+    body = f'<div class="p">{bar(ink, 240 if story else 60)}{LAYOUTS[t["id"]](t, story, fig)}</div>'
     return body, css
 
 
@@ -320,6 +356,20 @@ window.render = (t, still) => {
     else if (k === 'echo') { const e = eio(p); tr = `translate(${(e - 1) * el.dataset.x}px, ${(e - 1) * el.dataset.y}px)`; op = cl(p * 4); }
     else if (k === 'stamp') { tr = `scale(${Math.max(0, back(p))}) rotate(${(1 - eo(p)) * -100}deg)`; op = cl(p * 5); }
     else if (k === 'chip') { tr = `translateY(${(1 - eo(p)) * 70}px) scale(${.85 + .15 * back(p)})`; op = cl(p * 3); }
+    if (k === 'run') {           // entra corriendo desde la izquierda, bota a ~170 pasos/min y al final sale por la derecha
+      const bob = still ? 0 : -Math.abs(Math.sin(Math.PI * 2.85 * t)) * 3 * cl(p * 1.5);
+      const lean = (1 - eo(p)) * -5;
+      el.style.transform = `translate(${(1 - eo(p)) * -el.dataset.x + ex * 140}px, ${bob}px) rotate(${lean}deg)`;
+      el.style.opacity = cl(p * 3) * (1 - ex);
+      continue;
+    }
+    if (k === 'sway') {          // sube desde abajo y luego se mece despacio, apoyada en los pies
+      const sw = still ? 0 : Math.sin(2 * Math.PI * (t - d) / 2.6) * 1.3 * cl((t - d - du * .5) / 1.2);
+      el.style.transformOrigin = '50% 100%';
+      el.style.transform = `translateY(${(1 - eo(p)) * 60}px) rotate(${sw}deg)` + (ex ? ` scale(${1 - .05 * ex})` : '');
+      el.style.opacity = cl(p * 2.5) * (1 - ex);
+      continue;
+    }
     if (k === 'draw') { el.style.strokeDashoffset = 1 - eio(p); el.style.opacity = (p > .02 ? 1 : 0) * (1 - ex); continue; }
     const base = el.classList.contains('chip') && [...el.parentNode.children].indexOf(el) % 2 ? ' rotate(-1.5deg)' : '';
     el.style.transform = tr + base + (ex ? ` scale(${1 - .05 * ex})` : '');
@@ -392,8 +442,8 @@ def main() -> None:
         for tpl in TEMPLATES:
             if only and tpl["id"] not in only:
                 continue
-            # una diapositiva por idioma; el hueco marcado sale una sola vez (el diseño es el mismo)
-            jobs = [(lang, n, False) for lang, n in LANGS] + [("es", 0, True)]
+            # una diapositiva por idioma; sin ilustración, el hueco marcado sale una vez (el diseño es el mismo)
+            jobs = [(lang, n, False) for lang, n in LANGS] + ([] if tpl["ilustracion"] else [("es", 0, True)])
             for story, (lang, n, hueco) in ((s, j) for s in (False, True) for j in jobs):
                     t = {**tpl, **TEXTS[lang][tpl["id"]]}
                     body, css = page(t, story, hueco)
