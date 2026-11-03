@@ -171,3 +171,36 @@ Frases propias, universales y emocionales (nivel campaña), para cualquier perso
 18. **Primer la base. Després, la glòria.** / **Primero la base. Después, la gloria.**
 19. **Les teves dades. La teva història.** / **Tus datos. Tu historia.**
 20. **Run & brunch: corre, recupera, repeteix.** / **Run & brunch: corre, recupera, repite.**
+
+## Cultura pop que todo el mundo conoce (03-11-2026)
+
+Solo texto (sin imágenes, voces ni personajes con derechos), en tono de guiño. CA / ES.
+
+**Los Simpson (doblaje de España)**
+89. **«¡Multiplícate por cero!»** → *Series después de dormir 5 horas: multiplícate por cero.*
+90. **«Mmm… rosquillas.»** → *Mmm… brunch después de la tirada larga.*
+91. **«¡Ay, caramba!»** → *¡Ay, caramba! Tu Body Battery a las 21:00.*
+92. **«Excelente.»** (con los dedos juntos) → *Excelente: HRV equilibrada, 8 h de sueño y rodaje suave.*
+93. **«¡Ja, ja!»** (señalando) → *El que sale a tope en el km 1. En el km 5, ya no se ríe.*
+94. **«¿Ya hemos llegado?»** → *La tirada larga, km 14 de 18.*
+95. **«Mosquis.»** → *Mosquis: «Estado de entrenamiento: improductivo».*
+
+**Guardiola**
+96. **«El puto amo»** (en versión suave: «el p*** amo») → *En el rodaje suave, tú eres el p*** amo.*
+97. **«Ganar, ganar…» / «Salid y disfrutad»** → *Sortiu i gaudiu: el millor pla per al dia de la cursa.*
+
+**Rajoy**
+98. **«Un vaso es un vaso y un plato es un plato.»** → *Un rodaje es un rodaje y una serie es una serie.*
+99. **«Somos sentimientos y tenemos seres humanos.»** → *Somos corredores y tenemos zonas.*
+100. **«Es el vecino el que elige al alcalde.»** → *Es el pulso el que elige la zona.*
+101. **«Fin de la cita.»** → *Z2 y punto. Fin de la cita.*
+
+**Plats Bruts** (títulos de capítulo «Tinc…»)
+102. **«Tinc una edat.»** → *Tinc una edat… i encara faig sèries. A poc a poc.*
+103. **«Tinc 48 hores.»** → *Tinc 48 hores… de temps de recuperació, segons el Garmin.*
+104. **«Tinc destí.»** → *Tinc destí: la meta. I després, l'esmorzar.*
+
+**Fútbol y tele de todos**
+105. **«¡Iniesta de mi vida!»** → *¡Z2 de mi vida!*
+106. **«¡Cuidado, cuidado, cuidado!»** → *…que llega el km 30 de la maratón.*
+107. **«Hasta luego, Lucas»** / **«¡No puedorrr!»** (Chiquito) → *Agujetas del día después.*
