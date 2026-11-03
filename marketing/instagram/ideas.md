@@ -146,3 +146,28 @@ en la imagen; no usar «Més que un club» como lema de marca (es suyo), solo co
 Sergi: «mantén un equilibrio». En un lote de 9: 2-3 memes de moda, 2 catalanades, 1-2 refranes clásicos (catalán o
 castellano), 1 meme político (tono Rajoy, sin nombre), 1 de fútbol (con guiño para todas las aficiones) y al menos
 1 inclusivo. Todos bilingües (catalán primero) y con humor que une.
+
+## Manifiesto Runch: frases épicas de marca (03-11-2026)
+
+Frases propias, universales y emocionales (nivel campaña), para cualquier persona que corre o quiere empezar. CA / ES.
+
+1. **Corre a poc a poc. Arriba lluny.** / **Corre lento. Llega lejos.**
+2. **Ningú es queda enrere.** / **Nadie se queda atrás.**
+3. **El ritme el poses tu.** / **El ritmo lo pones tú.**
+4. **No corres contra ningú. Corres amb tothom.** / **No corres contra nadie. Corres con todos.**
+5. **No cal ser ràpid per ser corredor.** / **No hace falta ser rápido para ser corredor.**
+6. **Comença on ets.** / **Empieza donde estás.**
+7. **Avui suau. Demà, imparable.** / **Hoy suave. Mañana, imparable.**
+8. **Descansar també és entrenar.** / **Descansar también es entrenar.**
+9. **La meta és tornar demà.** / **La meta es volver mañana.**
+10. **El teu rellotge parla. Nosaltres el traduïm.** / **Tu reloj habla. Nosotros lo traducimos.**
+11. **Cada quilòmetre compta. Sobretot el primer.** / **Cada kilómetro cuenta. Sobre todo el primero.**
+12. **Lent és el nou ràpid.** / **Lento es el nuevo rápido.**
+13. **Els diumenges es corren junts.** / **Los domingos se corren juntos.**
+14. **Corre per tu. Brindem junts.** / **Corre por ti. Brindemos juntos.**
+15. **El millor ritme és el que pots mantenir.** / **El mejor ritmo es el que puedes mantener.**
+16. **Del sofà a la meta.** / **Del sofá a la meta.**
+17. **Fet a ritme de conversa.** / **Hecho a ritmo de conversación.**
+18. **Primer la base. Després, la glòria.** / **Primero la base. Después, la gloria.**
+19. **Les teves dades. La teva història.** / **Tus datos. Tu historia.**
+20. **Run & brunch: corre, recupera, repeteix.** / **Run & brunch: corre, recupera, repite.**
