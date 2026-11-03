@@ -1,0 +1,10 @@
+{
+  "reels": [
+    {"id": "showreel", "file": "out/video/showreel.mp4", "cover": "out/video/showreel-portada.png",
+     "caption": "Tu reloj sabe mucho de ti. Ya era hora de entenderlo.\n\nRunch traduce los datos de tu Garmin: cómo has dormido, cómo llegas hoy, a qué ritmo entrenar y un coach con IA que te ajusta el plan cada semana.\n\nSíguenos y empieza a entrenar con cabeza.",
+     "hashtags": ["#running", "#runners", "#garmin", "#entrenamiento", "#runnersespaña", "#ia"]},
+    {"id": "reel-z2", "file": "out/video/reel-z2.mp4", "cover": "out/video/reel-z2-portada.png",
+     "caption": "Confiesa: ¿sabes en qué zona corres tus rodajes?\n\nLa Z2 es esa en la que puedes hablar mientras corres. Ni jadeando ni a ritmo de ego. Ahí se construye la base que luego te hace más rápido.\n\nRegla de oro: 80 % suave, 20 % fuerte.\n\nGuárdalo para tu próximo rodaje.",
+     "hashtags": ["#z2", "#zona2", "#running", "#garmin", "#runnersespaña", "#entrenamiento"]}
+  ]
+}

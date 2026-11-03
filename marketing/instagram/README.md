@@ -1,6 +1,6 @@
 # Instagram de "Runch" (@runch.run)
 
-Posts con el mismo estilo que la app (letra Google Sans Flex, colores y tarjetas de `web/src/theme.ts`).
+Posts con el sistema editorial de la marca (ver "Sistema visual").
 El agente `.claude/agents/instagram-posts.md` los crea: pídele "usa el agente de Instagram para hacer el lote 2".
 
 ## Generar
@@ -17,6 +17,14 @@ Salida en `out/lote-01/` (no se sube a git):
 
 Publica los posts en orden (01 primero). Los carruseles se suben como una sola publicación con varias imágenes.
 
+## Sistema visual (editorial)
+
+Crema, espresso y terracota (más salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva
+terracota, textos en Google Sans Flex, etiquetas en mayúsculas espaciadas y gráficos de línea fina. Maqueta fija:
+"Runch" y "Nº 01 · TEMA" arriba; @runch.run, "Datos de ejemplo" y "Desliza →" abajo. Sirve igual para los datos de
+la app que, más adelante, para fotos del club o del local (formato `photo`). La versión anterior (pastel) queda en
+`render_v1.py` y `lote-01-v1.json`.
+
 ## Formato de un lote
 
 ```json
@@ -25,36 +33,23 @@ Publica los posts en orden (01 primero). Los carruseles se suben como una sola p
   "handle": "@runch.run",
   "notes": "Para quien publica",
   "posts": [{
-    "id": "hrv", "title": "HRV", "color": "recovery",
-    "slides": [ { "layout": "cover", "kicker": "HRV", "icon": "MonitorHeart", "title": "Texto con **resalte**",
+    "id": "hrv", "title": "HRV", "bg": "cream", "topic": "HRV",
+    "slides": [ { "layout": "cover", "kicker": "Variabilidad cardiaca", "title": "Texto con **cursiva**",
                   "body": "Subtítulo", "visual": { "type": "metric", "...": "..." } } ],
     "caption": "Texto del post", "hashtags": ["#hrv"], "alt": "Descripción de la imagen"
   }]
 }
 ```
 
-- `color`: activity (verde), heart (rojo), sleep (índigo), stress (ámbar), recovery (turquesa), energy (azul),
-  training (naranja), gym (morado). También vale un color `#RRGGBB`.
-- Estilo: fondos pastel con manchas difuminadas, titulares centrados con subrayador en `**palabra**`, pegatinas y
-  tarjetas un poco giradas. No hay modo oscuro.
-- Diapositivas (`layout`):
-  - `hook`: gancho centrado. `title`, `body`, `sticker` (pegatina ladeada: "Confiesa", "Red flag", "POV"…), `floats`
-    (2-4 pegatinas con datos cortos), `size` (112 por defecto), `swipe` (botón "Desliza").
-  - `versus`: `title`, `left` y `right` ({`label`, `value`, `unit`, `lines`, `tone`: "good" en el bueno}), `body`.
-  - `cover`: `kicker`, `icon`, `title`, `body`, `visual` (tarjeta girada), `tag` (etiqueta en su esquina), `tilt`
-    (giro en grados), `size` (tamaño del titular, 86 por defecto).
-  - `points`: mosaico. `title` y `points` [{`icon`, `color`, `title`, `body`}] (3-4 bloques; con 3, el primero ocupa
-    todo el ancho).
-  - `big`: `big` (número o texto enorme), `title`, `body`.
-  - `cta`: `title`, `body`, `icon`, `actions` [{`icon`, `text`}].
-  - `example: false` quita la nota "Datos de ejemplo".
-- Visuales (`visual.type`, mira `lote-01.json` para ver los campos de cada uno): `rings` (3 anillos), `ring` (un
-  anillo con datos al lado), `metric` (número grande y línea con franja), `readiness` (nota y barras), `rows` (lista
-  con valores), `zones` (zonas Z1-Z5), `chat` (conversación con el coach), `bars` (barras), `curve` (curva del día),
-  `mood` (¿cómo te encuentras?), `schedule` (hora de acostarse), `steps` (pasos de un entreno).
-- Iconos: los nombres de `icons.json` (iconos "Rounded" de Material).
+- `bg` (portada) y `inner` (resto, `paper` por defecto): `cream`, `paper`, `terracotta`, `espresso`, `sage`, `sea`,
+  `butter`. Cada diapositiva puede llevar su propio `bg`.
+- Formatos (`layout`): `hook` (`kicker`, `title`, `body`, `facts`, `size`), `cover` (`kicker`, `title`, `body`,
+  `visual`), `points` (`title`, `points` [{`title`, `body`}]), `versus` (`title`, `left`, `right`, `body`), `big`
+  (`big`, `bigSize`, `title`, `body`), `cta` (`title`, `body`, `actions`) y `photo` (`image`, `title`, `body`).
+- Gráficos (`visual.type`, ver `lote-01.json`): `zones`, `readiness`, `rows`, `metric`, `ring`, `curve`, `chat`,
+  `schedule`, `steps`. `example: false` quita "Datos de ejemplo".
 
-El script avisa si un texto no cabe o algo se sale de una tarjeta. Todos los números deben ser de ejemplo.
+El script avisa si un texto no cabe o algo se acerca demasiado al borde. Todos los números deben ser de ejemplo.
 
 ## Vídeos (Reels)
 

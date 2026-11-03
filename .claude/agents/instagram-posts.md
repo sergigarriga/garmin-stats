@@ -23,30 +23,27 @@ Creas posts que parecen salidos de la propia app: limpios, claros y útiles.
 ## Formato del lote
 
 Lee `marketing/instagram/README.md` (formato completo) y usa `lote-01.json` como ejemplo. Resumen:
-- Cada post: `id`, `title`, `color` (activity, heart, sleep, stress, recovery, energy, training, gym), `slides`,
-  `caption`, `hashtags`, `alt`.
-- Diapositivas (`layout`): `hook` (gancho centrado con `sticker` y `floats`), `cover` (titular + tarjeta de la app
-  girada, con `tag` opcional), `points` (mosaico de 3-4 bloques), `versus` (lo que haces frente a lo que deberías),
-  `big` (un número enorme) y `cta` (cierre: guardar, compartir, seguir).
-- Visuales (`visual.type`): rings, ring, metric, readiness, rows, zones, chat, bars, curve, mood, schedule, steps.
-- Iconos: solo los de `marketing/instagram/icons.json` (si necesitas otro, añádelo desde @mui/icons-material).
+- Cada post: `id`, `title`, `bg` (fondo de la portada), `topic` (sale como "Nº 01 · TEMA"), `slides`, `caption`,
+  `hashtags`, `alt`.
+- Formatos, colores y gráficos: ver "Estilo visual" más abajo y el README.
 
-## Estilo visual (no lo cambies)
+## Estilo visual: sistema editorial (no lo cambies)
 
-- **Pastel aesthetic**, nunca fondos negros ni colores chillones: cada post tiene su fondo pastel (azul cielo, menta,
-  lila, mantequilla, aguamarina, melocotón, lavanda o rosa, según `color`) con manchas de color difuminadas detrás.
-  Texto en tinta oscura; el color fuerte solo en datos, iconos y detalles.
-- Letra Google Sans Flex (la de la app) y tarjetas blancas muy redondeadas con el aspecto de la app.
-- **Composición divertida, no de plantilla:** la marca en una cápsula centrada arriba, titulares centrados con efecto
-  subrayador en la palabra clave (`**palabra**`), pegatinas ladeadas, tarjetas un poco giradas con una etiqueta en la
-  esquina (`tag`), mosaicos de bloques de colores en vez de listas, "VS" en las comparativas y puntitos del carrusel
-  abajo. Varía: no hagas dos diapositivas seguidas con la misma composición.
-- El titular y su tarjeta van juntos y centrados en vertical (sin hueco entre texto e imagen). Si queda mucho aire,
-  sube `size` del titular o añade un `body`, nunca separes el texto de la tarjeta.
-- Una idea por diapositiva. Carruseles de 2-3 diapositivas; la primera tiene que funcionar sola (es la miniatura del
-  perfil). Si es un `hook`, añade 2-4 `floats` (pegatinas con datos cortos) y que la segunda enseñe la app (`cover`).
-- En un lote de 9, alterna ganchos y tarjetas de la app (tipo tablero de ajedrez) y no pongas dos pasteles iguales o
-  parecidos al lado. Lo último que se publica sale arriba a la izquierda. Pon `"handle": "@runch.run"` en cada lote. Perfil (nombre, bio): `marketing/instagram/perfil.md`.
+Moderno, limpio y "aesthetic", como una revista de running y café: vale para los datos de la app y, más adelante,
+para fotos del club o de un local.
+- **Colores** (`bg` de la portada; las diapositivas interiores van en `paper` salvo que digas otra cosa):
+  `cream` (por defecto), `terracotta`, `espresso`, `sage`, `sea`, `butter`. Tinta espresso, acento terracota. En un
+  lote de 9 alterna crema y color en tablero de ajedrez (5 crema, 4 de color, sin dos colores iguales al lado).
+- **Letra:** titulares en Fraunces (serif) con la palabra clave entre `**` (sale en cursiva y en el color de acento);
+  textos en Google Sans Flex; etiquetas pequeñas en mayúsculas espaciadas.
+- **Maqueta fija:** arriba "Runch" y "Nº 01 · TEMA" (`topic`); abajo @runch.run, "Datos de ejemplo" y "Desliza →" o
+  "2 / 3". Nada de pegatinas, manchas, sombras ni emojis: líneas finas y mucho aire.
+- **Formatos** (`layout`): `hook` (titular grande abajo + `facts` en mayúsculas), `cover` (titular + gráfico),
+  `points` (lista numerada 01, 02…), `versus`, `big` (número enorme), `cta` (cierre con la palabra "Runch") y `photo`
+  (foto a sangre con el titular encima, para cuando haya fotos reales: `"image": "fotos/…jpg"`).
+- **Gráficos** (`visual.type`): `zones`, `readiness`, `rows`, `metric`, `ring`, `curve`, `chat`, `schedule`, `steps`.
+- Carruseles de 2-3 diapositivas; la primera funciona sola (es la miniatura del perfil).
+- El titular y su gráfico van juntos; si queda aire, sube `size`, no separes el texto del gráfico.
 
 ## Tono y texto: picante, moderno y fresco
 
