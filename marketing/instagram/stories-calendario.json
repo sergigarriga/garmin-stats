@@ -1,0 +1,93 @@
+{
+  "notes": "Stories diarias del 4-nov al 2-dic de 2026 (las pinta stories.py). Una pareja por día a las 09:00: 1 catalán, 2 castellano; los domingos, además, «El teu torn / Tu turno» a las 12:00 (3 catalán, 4 castellano) con hueco para la encuesta de Business Suite. En los textos, la palabra entre *asteriscos* va en una pegatina rellena. cover: portada del post del día (out/…), una por idioma si el post es bilingüe.",
+  "cta": {
+    "ca": ["Activa les notificacions", "Passa-ho al teu grup de running", "Guarda't el post per després", "Et llegim als comentaris"],
+    "es": ["Activa las notificaciones", "Pásaselo a tu grupo de running", "Guárdate el post para luego", "Te leemos en comentarios"]
+  },
+  "days": [
+    {"date": "2026-11-04", "ill": "mirando-reloj", "cover": "lote-01/01-presentacion-1.png", "cover_bg": "cream",
+     "hook": {"ca": "Un rellotge de *500 €* per mirar l'hora.", "es": "Un reloj de *500 €* para mirar la hora."}},
+    {"date": "2026-11-05", "ill": "corredor-1", "cover": "lote-01/02-z2-1.png", "cover_bg": "terracotta",
+     "hook": {"ca": "Tens un Garmin i *no saps* què és la Z2.", "es": "Tienes un Garmin y *no sabes* qué es la Z2."}},
+    {"date": "2026-11-06", "ill": "cansado-feliz", "cover": "lote-01/03-preparacion-1.png", "cover_bg": "cream",
+     "hook": {"ca": "Avui no tocaven sèries. *El teu cos ho sabia.*", "es": "Hoy no tocaban series. *Tu cuerpo lo sabía.*"}},
+    {"date": "2026-11-07", "cover": "lote-01/04-ritmo-de-ego-1.png", "cover_bg": "espresso",
+     "hook": {"ca": "El teu ritme suau *no és suau*. És ego.", "es": "Tu ritmo suave *no es suave*. Es ego."}},
+    {"date": "2026-11-08", "ill": "yema-corriendo", "cover": "lote-01/05-hrv-1.png", "cover_bg": "cream",
+     "hook": {"ca": "El teu HRV fa dues nits que t'avisa. I tu: «*avui sèries*».", "es": "Tu HRV lleva dos noches avisando. Y tú: «*hoy series*»."}},
+    {"date": "2026-11-09", "cover": "lote-01/06-body-battery-1.png", "cover_bg": "sage",
+     "hook": {"ca": "Body Battery a *12* i tu pensant en la tirada llarga.", "es": "Body Battery a *12* y tú pensando en la tirada larga."}},
+    {"date": "2026-11-10", "ill": "estirando-taza", "cover": "lote-01/07-gimnasio-1.png", "cover_bg": "cream",
+     "hook": {"ca": "Runners que no trepitgen el gimnàs: *hem de parlar*.", "es": "Runners que no pisan el gimnasio: *tenemos que hablar*."}},
+    {"date": "2026-11-11", "ill": "amanecer", "cover": "lote-01/08-sueno-1.png", "cover_bg": "sea",
+     "hook": {"ca": "Dorms 5 hores i la culpa és *de les sabatilles*.", "es": "Duermes 5 horas y la culpa es *de las zapatillas*."}},
+    {"date": "2026-11-12", "ill": "mirando-reloj", "cover": "lote-01/09-coach-ia-1.png", "cover_bg": "cream",
+     "hook": {"ca": "El teu pla en PDF *no sap* que has dormit fatal.", "es": "Tu plan de PDF *no sabe* que anoche dormiste fatal."}},
+    {"date": "2026-11-13", "kind": "reel", "cover": "video/reel-z2-portada-color.png", "cover_bg": "terracotta",
+     "hook": {"ca": "Confessa: *en quina zona* corres els rodatges?", "es": "Confiesa: ¿*en qué zona* corres tus rodajes?"}},
+    {"date": "2026-11-14", "ill": "corriendo-perro", "kind": "reel", "cover": "video/showreel-portada.png", "cover_bg": "cream",
+     "hook": {"ca": "El teu rellotge sap molt de tu. *Ja tocava entendre'l.*", "es": "Tu reloj sabe mucho de ti. *Ya era hora de entenderlo.*"}},
+    {"date": "2026-11-15", "ill": "grupo-corriendo", "cover": {"ca": "lote-03/01-un-got-es-un-got-1.png", "es": "lote-03/01-un-got-es-un-got-2.png"}, "cover_bg": "sage",
+     "hook": {"ca": "Un got és un got. *Un rodatge suau és un rodatge suau.*", "es": "Un vaso es un vaso. *Un rodaje suave es un rodaje suave.*"}},
+    {"date": "2026-11-16", "ill": "mirando-reloj", "cover": "lote-02/01-z2-garmin-1.png", "cover_bg": "cream",
+     "hook": {"ca": "La Z2 del teu Garmin *no és* la teva Z2.", "es": "Tu Z2 del Garmin *no es* tu Z2."}},
+    {"date": "2026-11-17", "ill": "estirando-taza", "cover": {"ca": "lote-03/02-deu-n-hi-do-1.png", "es": "lote-03/02-deu-n-hi-do-2.png"}, "cover_bg": "terracotta",
+     "hook": {"ca": "*Déu n'hi do* les agulletes d'ahir.", "es": "*«Déu n'hi do»*, las agujetas de ayer."}},
+    {"date": "2026-11-18", "kind": "reto", "cover": "lote-02/04-reto-improductivo-1.png", "cover_bg": "cream",
+     "hook": {"ca": "Respon la pregunta als comentaris del post i entres al sorteig.", "es": "Responde la pregunta en los comentarios del post y entras en el sorteo."}},
+    {"date": "2026-11-19", "ill": "corredor-1", "cover": {"ca": "lote-03/03-sempre-negatiu-1.png", "es": "lote-03/03-sempre-negatiu-2.png"}, "cover_bg": "sea",
+     "hook": {"ca": "Sempre *negatiu*, mai positiu. Parlem de parcials.", "es": "Siempre *negativo*, nunca positivo. Hablamos de parciales."}},
+    {"date": "2026-11-20", "cover": "lote-02/02-vfc-desequilibrado-1.png", "cover_bg": "cream",
+     "hook": {"ca": "El Garmin et diu «VFC: *desequilibrado*». I ara què?", "es": "«Estado de VFC: *desequilibrado*». ¿Y ahora qué?"}},
+    {"date": "2026-11-21", "ill": "yema-cafe", "cover": {"ca": "lote-03/08-que-fort-hrv-1.png", "es": "lote-03/08-que-fort-hrv-2.png"}, "cover_bg": "espresso",
+     "hook": {"ca": "*Que fort, que fort!* El teu HRV no baixa.", "es": "*¡Qué fuerte, qué fuerte!* Tu HRV no baja."}},
+    {"date": "2026-11-22", "ill": "corredora-mayor", "cover": "lote-02/03-caminar-1.png", "cover_bg": "cream",
+     "hook": {"ca": "Caminar *també és* entrenar.", "es": "Caminar *también es* entrenar."}},
+    {"date": "2026-11-23", "cover": {"ca": "lote-03/05-garmin-i-runner-1.png", "es": "lote-03/05-garmin-i-runner-2.png"}, "cover_bg": "butter",
+     "hook": {"ca": "És el Garmin el que vol que el runner *sigui el Garmin.*", "es": "Es el Garmin el que quiere que el runner *sea el Garmin.*"}},
+    {"date": "2026-11-24", "ill": "amanecer", "cover": "lote-02/05-plan-tiempo-1.png", "cover_bg": "cream",
+     "hook": {"ca": "El teu pla: sèries a les 14:00. El temps: *36 graus*.", "es": "Tu plan: series a las 14:00. El tiempo: *36 grados*."}},
+    {"date": "2026-11-25", "ill": "cansado-feliz", "cover": {"ca": "lote-03/06-font-de-la-meva-vida-1.png", "es": "lote-03/06-font-de-la-meva-vida-2.png"}, "cover_bg": "sea",
+     "hook": {"ca": "Quilòmetre 18 i, de cop: *font de la meva vida!*", "es": "Kilómetro 18 y, de repente: *¡fuente de mi vida!*"}},
+    {"date": "2026-11-26", "kind": "sorteo", "cover": "lote-02/04-reto-improductivo-1.png", "cover_bg": "cream",
+     "hook": {"ca": "*La resposta* del repte i qui s'emporta els accessos beta.", "es": "*La respuesta* del reto y quién se lleva los accesos beta."}},
+    {"date": "2026-11-27", "ill": "grupo-corriendo", "cover": {"ca": "lote-03/07-una-mica-de-per-favor-1.png", "es": "lote-03/07-una-mica-de-per-favor-2.png"}, "cover_bg": "terracotta",
+     "hook": {"ca": "«Una mica de *per favor*» al rodatge en grup.", "es": "«Un poquito de *por favor*» en el rodaje en grupo."}},
+    {"date": "2026-11-28", "ill": "silla-deportiva", "cover": "lote-02/07-primera-semana-1.png", "cover_bg": "cream",
+     "hook": {"ca": "No comencis corrent 5 km. *Comença trotant 1 minut.*", "es": "No empieces corriendo 5 km. *Empieza trotando 1 minuto.*"}},
+    {"date": "2026-11-29", "ill": "corriendo-perro", "cover": {"ca": "lote-03/04-excelent-1.png", "es": "lote-03/04-excelent-2.png"}, "cover_bg": "butter",
+     "hook": {"ca": "«Excel·lent.» Estat d'entrenament: *Productiu.*", "es": "«Excelente.» Estado de entrenamiento: *Productivo.*"}},
+    {"date": "2026-11-30", "ill": "mirando-reloj", "cover": "lote-02/08-vo2max-1.png", "cover_bg": "cream",
+     "hook": {"ca": "El VO2màx del teu Garmin *no és* el teu VO2màx.", "es": "Tu VO2máx del Garmin *no es* tu VO2máx."}},
+    {"date": "2026-12-01", "ill": "corredor-1", "cover": {"ca": "lote-03/09-menys-mil-d-aura-1.png", "es": "lote-03/09-menys-mil-d-aura-2.png"}, "cover_bg": "sage",
+     "hook": {"ca": "*−1000 d'aura:* pausar al semàfor i no tornar a donar al play.", "es": "*−1000 de aura:* pausar en un semáforo y no volver a darle al play."}},
+    {"date": "2026-12-02", "cover": "lote-02/09-diccionario-garmin-1.png", "cover_bg": "cream",
+     "hook": {"ca": "El teu rellotge parla estrany. Aquí tens *el diccionari*.", "es": "Tu reloj habla raro. Aquí va *el diccionario*."}}
+  ],
+  "extras": [
+    {"date": "2026-11-08", "time": "1030", "n": 5, "lang": "ca", "text": "Yema: «Bon dia, runners · Corre. Esmorza. Repeteix.»", "note": "Vídeo de la mascota Yema, ya hecho (10 s)"},
+    {"date": "2026-11-08", "time": "1030", "n": 6, "lang": "es", "text": "Yema: «Buenos días, runners · Corre. Desayuna. Repite.»", "note": "Vídeo de la mascota Yema, ya hecho (10 s)"}
+  ],
+  "tu_turno": {
+    "2026-11-08": {
+      "ill": "grupo-corriendo",
+      "ca": {"lines": ["Diumenge de", "*tirada llarga*", "o de sofà?"], "options": ["Tirada llarga", "Sofà i manta"]},
+      "es": {"lines": ["¿Domingo de", "*tirada larga*", "o de sofá?"], "options": ["Tirada larga", "Sofá y manta"]}
+    },
+    "2026-11-15": {
+      "ill": "corredor-2",
+      "ca": {"lines": ["Com saps", "que vas", "*suau*?"], "options": ["Pel rellotge", "Perquè puc parlar"]},
+      "es": {"lines": ["¿Cómo sabes", "que vas", "*suave*?"], "options": ["Por el reloj", "Porque puedo hablar"]}
+    },
+    "2026-11-22": {
+      "ill": "grupo-corriendo",
+      "ca": {"lines": ["Caminar", "*compta*", "com a entreno?"], "options": ["I tant que sí", "Encara no m'ho crec"]},
+      "es": {"lines": ["¿Caminar", "*cuenta*", "como entreno?"], "options": ["Claro que sí", "Aún no me lo creo"]}
+    },
+    "2026-11-29": {
+      "ill": "yema-cafe",
+      "ca": {"lines": ["Quan corres", "*millor*:", "matí o vespre?"], "options": ["Al matí", "Al vespre"]},
+      "es": {"lines": ["¿Cuándo corres", "*mejor*:", "mañana o tarde?"], "options": ["Por la mañana", "Por la tarde"]}
+    }
+  }
+}
