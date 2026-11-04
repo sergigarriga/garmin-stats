@@ -216,10 +216,18 @@ VISUALS = {"zones": v_zones, "readiness": v_readiness, "rows": v_rows, "metric":
 
 
 # ---------------------------------------------------------------- maqueta
+def logo_src() -> str:
+    """Logotipo «runch» (Gluten) del color que contrasta con el fondo del tema."""
+    h = T["bg"].lstrip("#"); r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    light = (0.299 * r + 0.587 * g + 0.114 * b) > 150
+    color = "terracota" if light else "crema"
+    return (HERE.parent / "marca" / "logo" / f"runch-logo-{color}.svg").resolve().as_uri()
+
+
 def frame_top(post: dict, k: int, s: dict) -> str:
     topic = s.get("topic") or post.get("topic") or ""
     return f'''<div class="row" style="justify-content:space-between;align-items:center">
-      <div class="serif" style="font-size:34px;font-weight:600;letter-spacing:-.01em">Runch</div>
+      <img src="{logo_src()}" style="height:40px;display:block" alt="runch">
       {label(f"Nº {k:02d}" + (f"  ·  {topic}" if topic else ""), T["ink2"], 20)}</div>'''
 
 
