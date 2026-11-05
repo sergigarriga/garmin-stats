@@ -22,7 +22,7 @@ Publica los posts en orden (01 primero). Los carruseles se suben como una sola p
 
 Blanco roto cálido (`cream` #F7F3EC, interiores `paper` #FCFAF6, desde el lote 02), espresso y terracota (más salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva
 terracota, textos en Google Sans Flex, etiquetas en mayúsculas espaciadas y gráficos de línea fina. Maqueta fija:
-"Runch" y "Nº 01 · TEMA" arriba; @runch.run, "Datos de ejemplo" y "Desliza →" abajo. Sirve igual para los datos de
+el logotipo «runch» (`marketing/marca/logo/`, terracota sobre fondo claro y crema sobre oscuro) y "Nº 01 · TEMA" arriba; @runch.run, "Datos de ejemplo" y "Desliza →" abajo. Sirve igual para los datos de
 la app que, más adelante, para fotos de quedadas y estilo de vida (formato `photo`). La versión anterior (pastel) queda en
 `render_v1.py` y `lote-01-v1.json`.
 
@@ -95,7 +95,8 @@ uv run --no-project --with playwright python marketing/instagram/video/render_vi
   Flex) y sus animaciones (palabras que suben, cifras que cuentan, líneas que se dibujan, filas en cascada, barras),
   ilustraciones de `marketing/marca/ilustraciones/gemini/` con `figure()`, y una portada `window.cover()` con el
   titular centrado (cabe en el recorte 3:4). Zona segura: contenido entre y = 300 y 1410, subtítulos a partir de 1440,
-  columna derecha libre en la mitad de abajo. Cierre con «Segueix-nos: @runch.run».
+  columna derecha libre en la mitad de abajo. Cierre con «Segueix-nos: @runch.run». El texto «Runch» de la cabecera, del
+  cierre y de la portada lo cambia kit.js por el logotipo (terracota sobre claro, crema sobre oscuro, como los posts).
   `render_video.py reel-x.html --cover` saca solo la portada. Captions, hashtags, texto alternativo, fecha y
   `"grid": false` (no salen en la cuadrícula del perfil, para no romper el damero) en `reels.json`.
 - Salida en `out/video/<nombre>.mp4` y una portada `<nombre>-portada.png`. Necesita `ffmpeg`.

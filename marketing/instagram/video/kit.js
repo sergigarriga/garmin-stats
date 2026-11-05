@@ -12,6 +12,16 @@ const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 const eb = (x) => { const c1 = 1.70158, c3 = c1 + 1; return x <= 0 ? 0 : 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
 const set = (el, o = 1, x = 0, y = 0, s = 1, r = 0) => { el.style.opacity = o; el.style.transform = `translate(${x}px,${y}px) scale(${s}) rotate(${r}deg)`; };
 
+/* Logotipo «runch» (Gluten) en lugar del texto «Runch», como en los posts: terracota sobre fondo claro y crema sobre oscuro.
+   Son dos <img> superpuestas (los SVG locales no sirven de máscara CSS en file://); en la cabecera se funden al cambiar de
+   escena (background) y en escenas y portada manda su clase t-* (kit.css). Alto = cuerpo de letra del texto x 0,9. */
+const DARK = { cream: 0, paper: 0, terracotta: 1, espresso: 1, sage: 0, sea: 1, butter: 0 };
+document.querySelectorAll('.wm, [id^="wm"]').forEach((el) => {
+  if (el.textContent.trim() !== 'Runch') return;
+  const h = Math.round(parseFloat(getComputedStyle(el).fontSize) * 0.9), src = '../../marca/logo/runch-logo-';
+  el.innerHTML = `<span class="logo" style="height:${h}px"><img class="lt" src="${src}terracota.svg" alt="runch"><img class="lc" src="${src}crema.svg" alt=""></span>`;
+});
+
 /* Cada palabra de los titulares (y de lo que lleve data-split) en su <span class="w">, conservando las cursivas. */
 function splitWords(root) {
   const walk = (node) => {
@@ -120,6 +130,8 @@ function background(t, scenes) {
   $('stage').style.background = mix(BG[prev], BG[cur], q);
   const fr = $('frame');
   if (fr) fr.style.color = mix(INK[prev], INK[cur], q);
+  const d = DARK[prev] + (DARK[cur] - DARK[prev]) * q;
+  if (fr && fr.querySelector('.logo')) { fr.querySelector('.lc').style.opacity = d; fr.querySelector('.lt').style.opacity = 1 - d; }
 }
 
 /* Portada: oculta las escenas y enseña #cover (tema en su clase t-*). */

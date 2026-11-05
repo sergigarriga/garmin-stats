@@ -30,8 +30,8 @@ svg { display: block; overflow: visible; }
 .t-sea        { --bg: #24496D; --ink: #F3ECE2; --ink2: #BCCADA; --accent: #F4C56E; --line: rgba(243,236,226,.22); --soft: #2B5379; }
 .t-butter     { --bg: #F1DEA6; --ink: #221A15; --ink2: #6D5F43; --accent: #C24A28; --line: rgba(34,26,21,.18); --soft: #E8D294; }
 
-/* marco fijo (como los posts): Runch a la izquierda, "Nº · TEMA" a la derecha */
-#frame { position: absolute; top: 236px; left: 100px; right: 100px; display: flex; justify-content: space-between; align-items: baseline; z-index: 5; }
+/* marco fijo (como los posts): logotipo runch a la izquierda, "Nº · TEMA" a la derecha */
+#frame { position: absolute; top: 236px; left: 100px; right: 100px; display: flex; justify-content: space-between; align-items: center; z-index: 5; }
 #frame .wm { font-family: FR, Georgia, serif; font-size: 48px; font-weight: 500; letter-spacing: -.01em; }
 
 .scene { position: absolute; left: 0; right: 0; top: 320px; height: 1090px; padding: 0 100px; display: flex; flex-direction: column;
@@ -64,4 +64,9 @@ svg { display: block; overflow: visible; }
 #cover { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center;
   padding: 0 96px; background: var(--bg); color: var(--ink); z-index: 60; }
 #cover .wm { position: absolute; top: 330px; left: 0; right: 0; font-family: FR, Georgia, serif; font-size: 58px; font-weight: 500; }
+.logo { position: relative; display: inline-block; vertical-align: middle; aspect-ratio: 6423 / 1436; }
+.logo img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.logo .lc { opacity: 0; }
+.t-terracotta .logo .lc, .t-espresso .logo .lc, .t-sea .logo .lc { opacity: 1; }
+.t-terracotta .logo .lt, .t-espresso .logo .lt, .t-sea .logo .lt { opacity: 0; }
 #cover .hd { position: absolute; bottom: 330px; left: 0; right: 0; }
