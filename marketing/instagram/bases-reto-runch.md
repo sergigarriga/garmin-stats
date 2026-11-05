@@ -15,8 +15,8 @@ Plantilla para cada reto. Antes de publicar, rellena lo que va entre corchetes.
    entrenamiento del coach con IA. El premio no se puede cambiar por dinero. Para usar la app hace falta un reloj
    Garmin compatible y una cuenta de Garmin Connect. Valor estimado: inferior a 50 €.
 6. **Cómo se elige a quien gana.** Entre todos los comentarios con la respuesta correcta publicados dentro del plazo,
-   Runch elegirá a 3 ganadores por sorteo aleatorio ante [herramienta o método, p. ej. sorteo con una herramienta
-   online de comentarios, grabado en vídeo] el 26 de noviembre de 2026, y 2 suplentes.
+   Runch elegirá a 3 ganadores por sorteo aleatorio mediante una herramienta online de sorteo de comentarios,
+   grabado en vídeo, el 26 de noviembre de 2026, y 2 suplentes.
 7. **Comunicación.** Se anunciará a quienes ganen en stories de @runch.run y por mensaje directo. Si en 7 días no
    responden, el premio pasa a los suplentes.
 8. **Datos personales.** Runch solo usará el nombre de usuario de Instagram para gestionar el reto y anunciar a quien
