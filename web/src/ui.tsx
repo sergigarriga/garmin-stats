@@ -120,8 +120,8 @@ export function MetricCard({ icon, color, label, value, unit, caption, delta, sp
       </Box>
       {spark && spark.length > 2 && (
         <Box sx={{ mt: 'auto', mx: -0.5 }}>
-          <SparkLineChart data={spark} height={40} color={color} curve="natural"
-            margin={{ top: 4, bottom: 4, left: 4, right: 4 }}
+          <SparkLineChart data={spark} height={40} color={color} curve="monotoneX"
+            margin={{ top: 6, bottom: 6, left: 4, right: 4 }}
             sx={{ '& .MuiLineElement-root': { strokeWidth: 2 } }} />
         </Box>
       )}
