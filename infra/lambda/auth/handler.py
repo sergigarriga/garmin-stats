@@ -191,7 +191,7 @@ def landing(message: str = "", button_href: str = "/auth/login?go=1", button_tex
  <section class="hero">
   {RINGS}
   <h1>Tu salud, <em>clara y a tu medida</em></h1>
-  <p class="lead">Sueño, corazón y entrenos de tu Garmin en un solo sitio, con un coach con IA que aprende de ti cada semana.</p>
+  <p class="lead"><b>Runch</b> reúne el sueño, el corazón y los entrenos de tu Garmin en un solo sitio, con un coach con IA que aprende de ti cada semana.</p>
   {msg}<div><a class="btn" href="{button_href}">{G_LOGO}<span>{button_text}</span></a></div>
   <p class="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 6a3 3 0 0 1 3 3v1h1v6H8v-6h1v-1a3 3 0 0 1 3-3zm0 2a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1z"/></svg>
   Privada: solo con invitación, y cada persona ve únicamente sus datos</p>
@@ -201,7 +201,7 @@ def landing(message: str = "", button_href: str = "/auth/login?go=1", button_tex
   <div class="grid">{feats}</div>
  </section>
 </main>
-<footer>Datos de Garmin Connect · No es consejo médico · <a href="/auth/privacidad">Privacidad</a> · <a href="/auth/condiciones">Condiciones</a></footer></body></html>"""
+<footer><b>Runch</b> · Datos de Garmin Connect · No es consejo médico · <a href="/auth/privacidad">Privacidad</a> · <a href="/auth/condiciones">Condiciones</a></footer></body></html>"""
     return _resp(status, html)
 
 
@@ -211,7 +211,7 @@ def page(title, text, button=""):
 
 
 # ------------------------------------------------------------------ páginas legales (públicas, sin sesión)
-# El email de contacto sale de OWNER_EMAIL (variable de la Lambda): nunca escrito en el repositorio.
+# Sin emails personales: el contacto público es la cuenta de Instagram de la app.
 LEGAL_UPDATED = "9 de noviembre de 2026"
 
 PRIVACY = """
@@ -221,8 +221,8 @@ PRIVACY = """
 entreno con ayuda de IA. Esta página explica qué datos usa, para qué y qué puedes hacer con ellos.</p>
 
 <h2>Responsable y contacto</h2>
-<p>La app la gestiona su administrador. Para cualquier duda o para ejercer tus derechos, escribe a
-<a href="mailto:{email}">{email}</a>.</p>
+<p>La app la gestiona su administrador. Para cualquier duda o para ejercer tus derechos, escríbenos por
+mensaje directo en Instagram a <a href="https://www.instagram.com/runch.run/">@runch.run</a>.</p>
 
 <h2>Qué datos usamos</h2>
 <ul>
@@ -259,12 +259,12 @@ crear el plan y analizar fotos de comida. Según sus condiciones para empresas, 
 No hay cookies de publicidad ni de terceros.</p>
 
 <h2>Cuánto tiempo los guardamos</h2>
-<p>Mientras tengas cuenta. Si la borras (menú de la app → <b>Borrar mi cuenta</b>) o nos lo pides por email, se borran
+<p>Mientras tengas cuenta. Si la borras (menú de la app → <b>Borrar mi cuenta</b>) o nos lo pides, se borran
 tus datos y tu clave de Garmin.</p>
 
 <h2>Tus derechos</h2>
-<p>Puedes pedir acceso, corrección, borrado o una copia de tus datos, y oponerte a su uso, escribiendo a
-<a href="mailto:{email}">{email}</a>. También puedes reclamar ante la Agencia Española de Protección de Datos
+<p>Puedes pedir acceso, corrección, borrado o una copia de tus datos, y oponerte a su uso, escribiéndonos a
+<a href="https://www.instagram.com/runch.run/">@runch.run</a> en Instagram. También puedes reclamar ante la Agencia Española de Protección de Datos
 (<a href="https://www.aepd.es">aepd.es</a>).</p>
 
 <h2>Importante</h2>
@@ -303,7 +303,7 @@ daños derivados de su uso, de errores en los datos o de que no esté disponible
 
 <h2>Cambios y ley aplicable</h2>
 <p>Si cambian estas condiciones, lo avisaremos en la app. Se rigen por la ley española.
-Dudas: <a href="mailto:{email}">{email}</a>. Ver también la <a href="/auth/privacidad">política de privacidad</a>.</p>
+Dudas: <a href="https://www.instagram.com/runch.run/">@runch.run</a> en Instagram. Ver también la <a href="/auth/privacidad">política de privacidad</a>.</p>
 """
 
 LEGAL_CSS = """
@@ -322,7 +322,7 @@ code{font-size:14px}footer{text-align:center;color:var(--muted);font-size:13px;p
 
 
 def legal(kind: str):
-    body = (PRIVACY if kind == "privacidad" else TERMS).format(updated=LEGAL_UPDATED, email=html.escape(OWNER))
+    body = (PRIVACY if kind == "privacidad" else TERMS).format(updated=LEGAL_UPDATED)
     title = "Política de privacidad" if kind == "privacidad" else "Condiciones del servicio"
     doc = f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark">
@@ -332,7 +332,7 @@ def legal(kind: str):
 <style>{LEGAL_CSS}</style></head><body>
 <header><a href="/auth/login" aria-label="Runch, inicio"><span class="wm wm-l">{LOGO_LIGHT}</span><span class="wm wm-d">{LOGO_DARK}</span></a></header>
 <main>{body}</main>
-<footer><a href="/auth/login">Inicio</a> · <a href="/auth/privacidad">Privacidad</a> · <a href="/auth/condiciones">Condiciones</a></footer>
+<footer><b>Runch</b> · <a href="/auth/login">Inicio</a> · <a href="/auth/privacidad">Privacidad</a> · <a href="/auth/condiciones">Condiciones</a></footer>
 </body></html>"""
     return _resp(200, doc)
 
