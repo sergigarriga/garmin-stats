@@ -20,6 +20,7 @@ import { dateShort, dec1, duration, int, monthShort, pace } from '../format';
 import { SPORTS, ZONES, useCat, useResolvedMode } from '../theme';
 import { bandAxis, timeAxis, yClean } from '../charts';
 import { CARD_SX, ChartCard, IconBubble, InsightList, PageHeader, RangeToggle, SectionTitle, chartSx , AiBadge } from '../ui';
+import { KeyFacts, trainingFacts } from '../highlights';
 import { SportIcon } from './sport';
 
 const GROUPS = ['Correr', 'Cinta', 'Bici', 'Natación', 'Fuerza', 'Caminar', 'Otros'];
@@ -79,6 +80,7 @@ export default function Training({ data, go }: { data: GarminData; go: (k: strin
       <PageHeader title="Entreno"
         subtitle={`${acts.length} sesiones · ${int(totH)} h · ${int(totKm)} km corriendo`}
         action={<RangeToggle value={range} onChange={setRange} exclude={['7d']} />} />
+      <KeyFacts facts={trainingFacts(data)} />
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
         <ChartCard help="volume" title="Horas por semana" subtitle="Por deporte">

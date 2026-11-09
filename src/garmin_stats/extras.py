@@ -238,8 +238,8 @@ def records(acts: pd.DataFrame, day: pd.DataFrame) -> list[dict]:
         b = runs.loc[runs["distance_km"].idxmax()]
         out.append({"group": "Carrera", "label": "Carrera más larga", "value": _f(b["distance_km"], 2), "kind": "km",
                     "date": b["date"].strftime("%Y-%m-%d"), "activityId": int(b["activity_id"])})
-    if "vo2max_fit" in acts and acts["vo2max_fit"].notna().any():
-        b = acts.loc[acts["vo2max_fit"].idxmax()]
+    if "vo2max_fit" in runs and runs["vo2max_fit"].notna().any():  # solo carrera (ver export.py)
+        b = runs.loc[runs["vo2max_fit"].idxmax()]
         out.append({"group": "Carrera", "label": "VO2max más alto", "value": _f(b["vo2max_fit"], 1), "kind": "vo2",
                     "date": b["date"].strftime("%Y-%m-%d")})
     for col, label, kind, fn in (("steps", "Día con más pasos", "steps", "idxmax"),

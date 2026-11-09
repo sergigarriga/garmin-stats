@@ -6,6 +6,7 @@ import { int } from '../format';
 import { alpha } from '@mui/material/styles';
 import { useCat, useResolvedMode } from '../theme';
 import { timeAxis, yClean } from '../charts';
+import { KeyFacts, heartFacts } from '../highlights';
 import { ChartCard, InsightList, PageHeader, RangeToggle, SectionTitle, chartSx , AiBadge } from '../ui';
 
 export default function Heart({ data }: { data: GarminData }) {
@@ -26,6 +27,7 @@ export default function Heart({ data }: { data: GarminData }) {
       <PageHeader title="Corazón y recuperación"
         subtitle={`FC en reposo media ${int(mean(rows.map((r) => r.rhr)))} lpm · HRV media ${int(mean(rows.map((r) => r.hrv)))} ms`}
         action={<RangeToggle value={range} onChange={setRange} />} />
+      <KeyFacts facts={heartFacts(data)} />
 
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
         <ChartCard help="rhr" title="FC en reposo" subtitle="Más baja suele indicar mejor forma y recuperación">

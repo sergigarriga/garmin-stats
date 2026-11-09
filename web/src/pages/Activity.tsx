@@ -7,6 +7,7 @@ import { mean, rolling, sliceRange, toDate, weekly, type GarminData, type Range 
 import { int } from '../format';
 import { useCat } from '../theme';
 import { bandAxis, timeAxis, yClean } from '../charts';
+import { KeyFacts, activityFacts } from '../highlights';
 import { AiBadge, ChartCard, InsightList, PageHeader, RangeToggle, SectionTitle, chartSx } from '../ui';
 
 export default function Activity({ data }: { data: GarminData }) {
@@ -24,6 +25,7 @@ export default function Activity({ data }: { data: GarminData }) {
       <PageHeader title="Actividad diaria"
         subtitle={`Media ${int(mean(rows.map((r) => r.steps)))} pasos al día · ${int(mean(rows.map((r) => r.floors)))} pisos`}
         action={<RangeToggle value={range} onChange={setRange} />} />
+      <KeyFacts facts={activityFacts(data)} />
       <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' } }}>
         <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
           <ChartCard help="steps" title="Pasos" subtitle={useWeeks ? 'Media diaria por semana' : 'Cada día'}>

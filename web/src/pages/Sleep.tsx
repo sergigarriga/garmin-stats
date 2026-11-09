@@ -11,6 +11,7 @@ import { lastWith, mean, rolling, sliceRange, toDate, weekly, type GarminData, t
 import { clockFromNoon, dateLong, hm, hmShort, int } from '../format';
 import { SLEEP_STAGES, useCat, useResolvedMode } from '../theme';
 import { bandAxis, timeAxis, yClean } from '../charts';
+import { KeyFacts, sleepFacts } from '../highlights';
 import { CARD_SX, ChartCard, IconBubble, InsightList, PageHeader, RangeToggle, SectionTitle, chartSx , AiBadge } from '../ui';
 
 const STAGES = [
@@ -45,6 +46,7 @@ export default function Sleep({ data }: { data: GarminData }) {
     <Box>
       <PageHeader title="Sueño" subtitle={`${rows.length} noches · media ${hm(avg)} · ${Math.round(under7 * 100)} % por debajo de 7 h`}
         action={<RangeToggle value={range} onChange={setRange} />} />
+      <KeyFacts facts={sleepFacts(data)} />
 
       {night && (
         <Card sx={{ ...CARD_SX, mb: 2 }}>

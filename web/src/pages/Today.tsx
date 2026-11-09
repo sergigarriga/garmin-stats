@@ -29,6 +29,7 @@ import { CheckIn } from './Wellness';
 import { LineChart } from '@mui/x-charts/LineChart';
 import { WeatherIcon } from './PlanTime';
 import { FoodTodayCard } from './Food';
+import { KeyFacts, activityFacts, heartFacts, sleepFacts, trainingFacts } from '../highlights';
 
 const minutes = (hm: string) => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(Math.round(min % 60)).padStart(2, '0')}`;
@@ -236,7 +237,8 @@ export function TodayDetail({ data, go }: { data: GarminData; go: (tab: string) 
   const cat = useCat();
   const days = data.days;
   const { latest, hrvDay, live } = useTodayRows(data);
-  const vo2 = [...data.activities].reverse().find((a) => a.vo2 != null);
+  const isRun = (a: Activity) => a.group === 'Correr' || a.group === 'Cinta';  // VO2max solo de carrera
+  const vo2 = [...data.activities].reverse().find((a) => a.vo2 != null && isRun(a));
   const imWeek = days.slice(-7).reduce((s, d) => s + (d.imMod ?? 0) + 2 * (d.imVig ?? 0), 0);
   const loadDay = days[days.length - 1];
   const hrvStatus = hrvDay?.hrv != null && hrvDay.hrvLow != null && hrvDay.hrvHigh != null
@@ -247,6 +249,7 @@ export function TodayDetail({ data, go }: { data: GarminData; go: (tab: string) 
   return (
     <Box>
       <PageHeader title="Tu día" subtitle="Consejos, tu día hora a hora y tus métricas" />
+      <KeyFacts facts={[...sleepFacts(data), ...heartFacts(data), ...activityFacts(data)]} />
 
       <Stack direction="row" sx={{ alignItems: 'baseline', justifyContent: 'space-between', mb: 2 }}>
         <Typography variant="h6">Para ti</Typography>
@@ -274,7 +277,7 @@ export function TodayDetail({ data, go }: { data: GarminData; go: (tab: string) 
           spark={days.slice(-30).map((d) => (d.imMod ?? 0) + 2 * (d.imVig ?? 0))} onClick={() => go('actividad')} />
         <MetricCard icon={<Speed />} color={cat('training')} label="VO2max" help="vo2max" value={dec1(vo2?.vo2)} unit="ml/kg/min"
           caption={vo2 ? `Última estimación del reloj · ${dateShort(new Date(vo2.start))}` : undefined}
-          spark={data.activities.filter((a) => a.vo2 != null).slice(-30).map((a) => a.vo2!)} onClick={() => go('entreno')} />
+          spark={data.activities.filter((a) => a.vo2 != null && isRun(a)).slice(-30).map((a) => a.vo2!)} onClick={() => go('entreno')} />
         <MetricCard icon={<FitnessCenter />} color={cat('training')} label="Forma física (CTL)" help="ctl" value={int(loadDay?.ctl)}
           caption={loadDay?.acwr != null ? `Carga 7 d / 28 d: ${dec1(loadDay.acwr)}` : 'Sin carga reciente'}
           spark={series(days, (d) => d.ctl, 90)} onClick={() => go('entreno')} />
@@ -293,6 +296,7 @@ export function TodayWeek({ data, go }: { data: GarminData; go: (tab: string) =>
   return (
     <Box>
       <PageHeader title="Semana" subtitle="Tus objetivos, cómo fue la semana pasada y lo último que has hecho" />
+      <KeyFacts facts={[...trainingFacts(data), activityFacts(data)[1]]} />
       {data.ai?.weekly_focus && (
         <Card sx={{ ...CARD_SX, mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
           <IconBubble color={cat('energy')}><TipsAndUpdates /></IconBubble>

@@ -68,7 +68,8 @@ class Insights(BaseModel):
                                           "en lenguaje de calle. Primero cómo fue frente a tus entrenos parecidos ('similar_recent') "
                                           "con un dato concreto (ritmo, pulso, distancia o kilos); después qué hacer ahora (recuperar, "
                                           "comer, cómo afrontar la siguiente sesión). Sin jerga: nada de TRIMP, EF, deriva ni zonas por número; "
-                                          "di 'suave', 'cómodo' o 'exigente'. Esta tarjeta sí puede hablar de un entreno de hoy.")
+                                          "di 'suave', 'cómodo' o 'exigente'. Si no hay entrenos parecidos (count 0), no lo menciones: "
+                                          "destaca lo mejor del entreno. Km con un decimal. Esta tarjeta sí puede hablar de un entreno de hoy.")
     data_note: str = Field(description="Una o dos frases amables sobre cuántos datos hay (de 'coverage'): desde cuándo "
                                        "registras, qué parte de los días llevas el reloj y si falta algún mes reciente")
 

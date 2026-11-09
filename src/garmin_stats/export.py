@@ -73,7 +73,9 @@ def payload(A: dict, am: pd.DataFrame, last_sync: str | None, sets: dict | None 
             "type": a.type, "group": a.group, "km": _num(a.distance_km, 2), "min": _num(a.duration_min, 1),
             "pace": _num(a.pace_min_km, 3), "hr": _num(a.avg_hr, 0), "hrMax": _num(a.max_hr, 0),
             "trimp": _num(a.trimp, 0), "ef": _num(a.ef, 3), "dec": _num(a.decoupling_pct, 1),
-            "vo2": _num(getattr(a, "vo2max_fit", None), 1), "cad": _num(a.cadence_spm, 0),
+            # VO2max solo de carrera: el FIT de caminar o del gimnasio trae estimaciones que no valen (38 frente a 53)
+            "vo2": _num(getattr(a, "vo2max_fit", None), 1) if a.group in ("Correr", "Cinta") else None,
+            "cad": _num(a.cadence_spm, 0),
             "elev": _num(a.elev_gain, 0), "cal": _num(a.calories, 0),
             "z": [_num(getattr(a, f"z{i}_min"), 1) or 0 for i in range(1, 6)],
             "pr": bool(a.is_pr) or None,
