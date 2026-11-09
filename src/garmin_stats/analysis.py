@@ -100,7 +100,7 @@ def insights(A: dict, am: pd.DataFrame, rel: pd.DataFrame, best: pd.DataFrame) -
                               f"{h.iloc[-30:].mean():.0f} ms). Compárala solo contigo mismo: varía mucho entre personas.")
     if prof.get("fitness_age"):
         out["corazon"].append(f"Edad física según Garmin: {prof['fitness_age']:.0f} años "
-                              f"(edad real {prof.get('age')}; alcanzable {prof.get('achievable_fitness_age', 0):.0f}).")
+                              f"(edad real {prof.get('age')}; alcanzable {(prof.get('achievable_fitness_age') or 0):.0f}).")
 
     # ---- entreno
     acts = A["acts"]
