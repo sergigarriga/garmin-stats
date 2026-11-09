@@ -70,40 +70,34 @@ function vs30(days: Day[], ref: Day | undefined, pick: (d: Day) => number | unde
   return v != null && m != null ? v - m : undefined;
 }
 
-export default function Today({ data, go }: { data: GarminData; go: (tab: string) => void }) {
-  const cat = useCat();
-  const days = data.days;
-  // Solo datos de HOY: si Garmin aún no los tiene, se muestra "—" en vez de los de ayer.
+/** Lo que todas las vistas de "Hoy" necesitan: la fila de hoy y los datos en vivo del reloj. */
+function useTodayRows(data: GarminData) {
   const todayIso = isoLocal(new Date());
-  const row = days.find((d) => d.d === todayIso);
+  const row = data.days.find((d) => d.d === todayIso);
   const latest = row?.rhr != null || row?.steps != null ? row : undefined;
   const night = row?.sleepH != null ? row : undefined;  // la noche lleva la fecha del día en que te despiertas
   const hrvDay = row?.hrv != null ? row : undefined;
-  const lastSync = lastWith(days, (d) => d.rhr ?? d.steps);
-  const vo2 = [...data.activities].reverse().find((a) => a.vo2 != null);
-  const last7 = days.slice(-7);
-  const imWeek = last7.reduce((s, d) => s + (d.imMod ?? 0) + 2 * (d.imVig ?? 0), 0);
-  const loadDay = days[days.length - 1];
-  const today = new Date();
-  const isToday = !!latest;
-  const now = useNow(60_000);
   const live = data.live?.date === todayIso ? data.live : undefined;
+  return { latest, night, hrvDay, live };
+}
+
+/** Hoy (resumen): solo lo importante. Lo demás vive en "Tu día" y "Semana". */
+export default function Today({ data, go }: { data: GarminData; go: (tab: string) => void }) {
+  const cat = useCat();
+  const days = data.days;
+  const { latest, night, live } = useTodayRows(data);
+  const lastSync = lastWith(days, (d) => d.rhr ?? d.steps);
+  const today = new Date();
+  const now = useNow(60_000);
   const bbNow = live?.bbNow ?? latest?.bbNow;
   // El reloj solo manda datos cuando se sincroniza con el móvil: si hace rato, se avisa.
   const staleMin = live?.asOf ? now.getHours() * 60 + now.getMinutes() - minutes(live.asOf) : null;
-
-  const hrvStatus = hrvDay?.hrv != null && hrvDay.hrvLow != null && hrvDay.hrvHigh != null
-    ? hrvDay.hrv < hrvDay.hrvLow ? 'Por debajo de tu rango normal'
-      : hrvDay.hrv > hrvDay.hrvHigh ? 'Por encima de tu rango normal' : 'Dentro de tu rango normal'
-    : undefined;
-
-  const recent = [...data.activities].reverse().slice(0, 5);
 
   return (
     <Box>
       <PageHeader
         title="Hoy"
-        subtitle={`${dateLong(today).replace(/^\w/, (c) => c.toUpperCase())}${!isToday && lastSync ? ` · aún no hay datos de hoy (últimos del ${dateShort(toDate(lastSync.d))})` : ''}${live?.asOf ? ` · datos del reloj hasta las ${live.asOf}` : ''}`}
+        subtitle={`${dateLong(today).replace(/^\w/, (c) => c.toUpperCase())}${!latest && lastSync ? ` · aún no hay datos de hoy (últimos del ${dateShort(toDate(lastSync.d))})` : ''}${live?.asOf ? ` · datos del reloj hasta las ${live.asOf}` : ''}`}
       />
 
       <Alerts alerts={data.alerts} />
@@ -155,11 +149,39 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
           el móvil: abre Garmin Connect y después pulsa actualizar.
         </Typography>
       )}
-      <TodayCurve bb={live?.bbSeries} hr={live?.hrSeries} asOf={live?.asOf} />
 
       <SectionTitle>Cómo estás</SectionTitle>
       <CheckIn data={data} />
-      <FoodTodayCard go={go} />
+    </Box>
+  );
+}
+
+/** Tu día: consejos, curva hora a hora, métricas y comida. */
+export function TodayDetail({ data, go }: { data: GarminData; go: (tab: string) => void }) {
+  const cat = useCat();
+  const days = data.days;
+  const { latest, hrvDay, live } = useTodayRows(data);
+  const vo2 = [...data.activities].reverse().find((a) => a.vo2 != null);
+  const imWeek = days.slice(-7).reduce((s, d) => s + (d.imMod ?? 0) + 2 * (d.imVig ?? 0), 0);
+  const loadDay = days[days.length - 1];
+  const hrvStatus = hrvDay?.hrv != null && hrvDay.hrvLow != null && hrvDay.hrvHigh != null
+    ? hrvDay.hrv < hrvDay.hrvLow ? 'Por debajo de tu rango normal'
+      : hrvDay.hrv > hrvDay.hrvHigh ? 'Por encima de tu rango normal' : 'Dentro de tu rango normal'
+    : undefined;
+
+  return (
+    <Box>
+      <PageHeader title="Tu día" subtitle="Consejos, tu día hora a hora y tus métricas" />
+
+      <Stack direction="row" sx={{ alignItems: 'baseline', justifyContent: 'space-between', mb: 2 }}>
+        <Typography variant="h6">Para ti</Typography>
+        {data.ai && <AiBadge at={data.ai.generatedAt} />}
+      </Stack>
+      {data.ai?.today?.length
+        ? <AiCards cards={data.ai.today} />
+        : <InsightList items={data.insights.acciones} color={cat('energy')} icon={<TipsAndUpdates />} />}
+
+      <TodayCurve bb={live?.bbSeries} hr={live?.hrSeries} asOf={live?.asOf} />
 
       <SectionTitle>Tus métricas</SectionTitle>
       <Box sx={{ display: 'grid', gap: { xs: 1.25, sm: 2 }, gridTemplateColumns: { xs: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' } }}>
@@ -183,32 +205,32 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
           spark={series(days, (d) => d.ctl, 90)} onClick={() => go('entreno')} />
       </Box>
 
-      <SectionTitle>Tus objetivos de la semana</SectionTitle>
+      <SectionTitle>Comida</SectionTitle>
+      <FoodTodayCard go={go} />
+    </Box>
+  );
+}
+
+/** Semana: objetivos, semana pasada y actividades recientes. */
+export function TodayWeek({ data, go }: { data: GarminData; go: (tab: string) => void }) {
+  const cat = useCat();
+  const recent = [...data.activities].reverse().slice(0, 5);
+  return (
+    <Box>
+      <PageHeader title="Semana" subtitle="Tus objetivos, cómo fue la semana pasada y lo último que has hecho" />
+      {data.ai?.weekly_focus && (
+        <Card sx={{ ...CARD_SX, mb: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
+          <IconBubble color={cat('energy')}><TipsAndUpdates /></IconBubble>
+          <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Objetivo de la semana</Typography>
+            <Typography>{data.ai.weekly_focus}</Typography>
+          </Box>
+        </Card>
+      )}
       <Goals data={data} />
 
       <SectionTitle>Tu semana pasada</SectionTitle>
       <WeekCard data={data} />
-
-      <Stack direction="row" sx={{ alignItems: 'baseline', justifyContent: 'space-between', mt: 5, mb: 2 }}>
-        <Typography variant="h6">Para ti</Typography>
-        {data.ai && <AiBadge at={data.ai.generatedAt} />}
-      </Stack>
-      {data.ai?.today?.length ? (
-        <>
-          <AiCards cards={data.ai.today} />
-          {data.ai.weekly_focus && (
-            <Card sx={{ ...CARD_SX, mt: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-              <IconBubble color={cat('energy')}><TipsAndUpdates /></IconBubble>
-              <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Objetivo de la semana</Typography>
-                <Typography>{data.ai.weekly_focus}</Typography>
-              </Box>
-            </Card>
-          )}
-        </>
-      ) : (
-        <InsightList items={data.insights.acciones} color={cat('energy')} icon={<TipsAndUpdates />} />
-      )}
 
       <SectionTitle>Actividades recientes</SectionTitle>
       <Card sx={{ ...CARD_SX, p: { xs: 0.5, sm: 1 } }}>

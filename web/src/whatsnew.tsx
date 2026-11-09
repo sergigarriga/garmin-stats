@@ -34,6 +34,9 @@ import LockOutlined from '@mui/icons-material/LockOutlined';
 import ShoppingCartRounded from '@mui/icons-material/ShoppingCartRounded';
 import ReceiptLongRounded from '@mui/icons-material/ReceiptLongRounded';
 import SwapHorizRounded from '@mui/icons-material/SwapHorizRounded';
+import DashboardRounded from '@mui/icons-material/DashboardRounded';
+import TodayRounded from '@mui/icons-material/TodayRounded';
+import DateRangeRounded from '@mui/icons-material/DateRangeRounded';
 import { call, type Me } from './account';
 import { useResolvedMode } from './theme';
 import { spotlight } from './spotlight';
@@ -51,6 +54,17 @@ const C = {
 
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
+  {
+    id: '2026-11-09', date: '2026-11-09', title: 'Hoy, más limpio', subtitle: 'Lo importante de un vistazo; el resto, a un toque',
+    features: [
+      { icon: <DashboardRounded />, color: C.orange, title: 'Resumen', where: 'Hoy · Resumen', go: 'hoy',
+        body: 'Tu preparación, la sesión del plan, pasos, sueño, energía y cómo estás. Nada más.' },
+      { icon: <TodayRounded />, color: C.blue, title: 'Tu día', where: 'Hoy · Tu día', go: 'dia',
+        body: 'Los consejos del coach, tu día hora a hora, tus métricas y la comida.' },
+      { icon: <DateRangeRounded />, color: C.green, title: 'Semana', where: 'Hoy · Semana', go: 'semana',
+        body: 'Tus objetivos, cómo fue la semana pasada y tus últimas actividades.' },
+    ],
+  },
   {
     id: '2026-11-03-4', date: '2026-11-03', title: 'Tu compra de la semana', subtitle: 'Un menú para tu entreno y la lista del súper',
     features: [

@@ -6,6 +6,7 @@ import Divider from '@mui/material/Divider';
 import GroupAddOutlined from '@mui/icons-material/GroupAddOutlined';
 import KeyOutlined from '@mui/icons-material/KeyOutlined';
 import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined';
+import { OwnerCtx } from './owner';
 import { AdminDialog, DeleteAccountDialog, GarminKeyDialog, useMe, type Me } from './account';
 import Onboarding from './pages/Onboarding';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
@@ -29,6 +30,8 @@ import { useColorScheme, useTheme } from '@mui/material/styles';
 import HomeRounded from '@mui/icons-material/HomeRounded';
 import BedtimeRounded from '@mui/icons-material/BedtimeRounded';
 import FavoriteRounded from '@mui/icons-material/FavoriteRounded';
+import { Wordmark } from './brand/Wordmark';
+import { haptic } from './haptics';
 import DirectionsWalkRounded from '@mui/icons-material/DirectionsWalkRounded';
 import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import InsightsRounded from '@mui/icons-material/InsightsRounded';
@@ -49,7 +52,7 @@ import Button from '@mui/material/Button';
 import { canPromptInstall, enablePush, isIos, isStandalone, onInstallChange, promptInstall } from './pwa';
 import { useGarminData, useNow, type GarminData } from './data';
 import { relative, time } from './format';
-import Today from './pages/Today';
+import Today, { TodayDetail, TodayWeek } from './pages/Today';
 import Sleep from './pages/Sleep';
 import Heart from './pages/Heart';
 import Activity from './pages/Activity';
@@ -68,11 +71,14 @@ import Chat from './Chat';
 import { LATEST, WhatsNew } from './whatsnew';
 import { Spotlight } from './spotlight';
 import NewReleasesOutlined from '@mui/icons-material/NewReleasesOutlined';
+import LockRounded from '@mui/icons-material/LockRounded';
 
 type Page = { key: string; label: string; icon: ReactElement; render: (d: GarminData, go: (k: string) => void) => ReactElement };
 
 const PAGES: Page[] = [
   { key: 'hoy', label: 'Hoy', icon: <HomeRounded />, render: (d, go) => <Today data={d} go={go} /> },
+  { key: 'dia', label: 'Tu día', icon: <HomeRounded />, render: (d, go) => <TodayDetail data={d} go={go} /> },
+  { key: 'semana', label: 'Semana', icon: <HomeRounded />, render: (d, go) => <TodayWeek data={d} go={go} /> },
   { key: 'sueno', label: 'Sueño', icon: <BedtimeRounded />, render: (d) => <Sleep data={d} /> },
   { key: 'corazon', label: 'Corazón', icon: <FavoriteRounded />, render: (d) => <Heart data={d} /> },
   { key: 'actividad', label: 'Actividad', icon: <DirectionsWalkRounded />, render: (d) => <Activity data={d} /> },
@@ -120,7 +126,7 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
     <>
       <Tooltip title={`Tema: ${current.label.toLowerCase()}`}>
         <IconButton onClick={(e) => setAnchor(e.currentTarget)} aria-label="Cambiar tema"
-          aria-haspopup="menu" aria-expanded={!!anchor}>{current.icon}</IconButton>
+          aria-haspopup="menu" aria-expanded={!!anchor} sx={{ color: '#D4542F' }}>{current.icon}</IconButton>
       </Tooltip>
       <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -202,22 +208,25 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
 
 type Section = { key: string; label: string; icon: ReactElement; pages: string[] };
 const SECTIONS: Section[] = [
-  { key: 'hoy', label: 'Hoy', icon: <HomeRounded />, pages: ['hoy'] },
+  { key: 'hoy', label: 'Hoy', icon: <HomeRounded />, pages: ['hoy', 'dia', 'semana'] },
   { key: 'salud', label: 'Salud', icon: <FavoriteRounded />, pages: ['sueno', 'corazon', 'actividad', 'comida', 'compra'] },
   { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, pages: ['plan', 'entreno', 'ritmos', 'gimnasio'] },
   { key: 'progreso', label: 'Progreso', icon: <TrendingUpRounded />, pages: ['progreso', 'analisis'] },
 ];
 const SUB_LABEL: Record<string, string> = {
+  hoy: 'Resumen', dia: 'Tu día', semana: 'Semana',
   sueno: 'Sueño', corazon: 'Corazón', actividad: 'Actividad', comida: 'Comida', plan: 'Plan', entreno: 'Actividades', ritmos: 'Ritmos', gimnasio: 'Gimnasio',
   progreso: 'Progreso', analisis: 'Análisis',
 };
 const sectionOf = (page: string) => SECTIONS.find((s) => s.pages.includes(page)) ?? SECTIONS[0];
 /** Subpáginas sin pestaña propia: se ven bajo la pestaña de su página "madre" (Menú y compra cuelga de Comida). */
 const SUB_PARENT: Record<string, string> = { compra: 'comida' };
+/** Páginas solo para la dueña: las invitadas no las ven (ni la pestaña ni por enlace). */
+const OWNER_ONLY = new Set(['analisis']);
 
 /** Selector de subpágina tipo "segmented control". */
-function SubTabs({ section, page, go }: { section: Section; page: string; go: (k: string) => void }) {
-  const tabs = section.pages.filter((k) => !SUB_PARENT[k]);
+function SubTabs({ section, page, go, owner }: { section: Section; page: string; go: (k: string) => void; owner: boolean }) {
+  const tabs = section.pages.filter((k) => !SUB_PARENT[k] && (owner || !OWNER_ONLY.has(k)));
   if (tabs.length < 2) return null;
   const many = tabs.length > 3;  // 4 pestañas en el móvil: letra y márgenes algo menores
   return (
@@ -231,7 +240,12 @@ function SubTabs({ section, page, go }: { section: Section; page: string; go: (k
               font: 'inherit', fontSize: { xs: many ? 13 : 14, sm: 14 }, fontWeight: on ? 600 : 500, whiteSpace: 'nowrap', minWidth: 0,
               color: on ? 'text.primary' : 'text.secondary', bgcolor: on ? 'background.paper' : 'transparent',
               boxShadow: on ? '0 1px 3px rgba(0,0,0,.12)' : 'none', transition: 'all .2s' }}>
-            {SUB_LABEL[k]}
+            {OWNER_ONLY.has(k) ? (
+              // Solo tú la ves: candado terracota delante del nombre
+              <Box component="span" title="Solo la ves tú" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
+                <LockRounded sx={{ fontSize: 14, color: '#D4542F' }} />{SUB_LABEL[k]}
+              </Box>
+            ) : SUB_LABEL[k]}
           </Box>
         );
       })}
@@ -241,24 +255,34 @@ function SubTabs({ section, page, go }: { section: Section; page: string; go: (k
 
 /** Barra inferior flotante tipo "cristal" (móvil): 4 secciones + botón del chat aparte. */
 function GlassNav({ current, go, last }: { current: Section; go: (k: string) => void; last: Record<string, string> }) {
+  // Barra de navegación en el terracota del logo, con iconos blancos.
   const glass = {
-    backdropFilter: 'blur(22px) saturate(180%)', WebkitBackdropFilter: 'blur(22px) saturate(180%)',
-    bgcolor: 'color-mix(in srgb, var(--mui-palette-background-paper) 62%, transparent)',
-    border: '1px solid color-mix(in srgb, var(--mui-palette-text-primary) 9%, transparent)',
+    bgcolor: '#D4542F',
+    border: 0,
     boxShadow: '0 8px 32px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.35)',
   } as const;
   return (
     <Box sx={{ position: 'fixed', zIndex: 20, left: 12, right: 12, bottom: 'max(10px, calc(env(safe-area-inset-bottom) - 12px))',
       display: 'flex', gap: 1, alignItems: 'center', maxWidth: 520, mx: 'auto' }}>
-      <Box sx={{ ...glass, flex: 1, height: 64, borderRadius: 999, display: 'flex', p: 0.5 }}>
+      <Box sx={{ ...glass, flex: 1, height: 64, borderRadius: 999, display: 'flex', p: 0.5, position: 'relative' }}>
+        {/* Burbuja que se desliza hasta la sección activa (efecto líquido, con rebote suave) */}
+        <Box aria-hidden sx={{ position: 'absolute', top: 4, bottom: 4, borderRadius: 999, bgcolor: 'rgba(255,255,255,0.22)',
+          width: `calc((100% - 8px) / ${SECTIONS.length})`,
+          left: `calc(4px + (100% - 8px) / ${SECTIONS.length} * ${Math.max(0, SECTIONS.findIndex((x) => x.key === current.key))})`,
+          transition: 'left 560ms cubic-bezier(.34,1.4,.64,1), width 560ms cubic-bezier(.34,1.4,.64,1)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,.35)' }} />
         {SECTIONS.map((sec) => {
           const on = sec.key === current.key;
           return (
-            <Box key={sec.key} component="button" onClick={() => go(last[sec.key] ?? sec.pages[0])} aria-label={sec.label}
+            <Box key={sec.key} component="button" onClick={() => { haptic('tap'); go(last[sec.key] ?? sec.pages[0]); }} aria-label={sec.label}
               sx={{ flex: 1, border: 0, borderRadius: 999, cursor: 'pointer', font: 'inherit', display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: 0.25, color: on ? 'primary.main' : 'text.secondary',
-                bgcolor: on ? 'color-mix(in srgb, var(--mui-palette-primary-main) 14%, transparent)' : 'transparent',
-                transition: 'all .2s', '& svg': { fontSize: 23 } }}>
+                alignItems: 'center', justifyContent: 'center', gap: 0.25, color: '#FFFFFF', opacity: on ? 1 : 0.72,
+                position: 'relative', zIndex: 1, background: 'transparent',
+                transition: 'opacity .4s ease, transform .45s cubic-bezier(.34,1.4,.64,1)',
+                transform: on ? 'scale(1.04)' : 'scale(1)',
+                '&:active': { transform: 'scale(0.94)' },
+                '& svg': { fontSize: 23, transition: 'transform .5s cubic-bezier(.34,1.4,.64,1)' },
+                '&:hover svg': { transform: 'translateY(-1px)' } }}>
               {sec.icon}
               <Box component="span" sx={{ fontSize: 11, fontWeight: on ? 600 : 500, lineHeight: 1 }}>{sec.label}</Box>
             </Box>
@@ -267,7 +291,7 @@ function GlassNav({ current, go, last }: { current: Section; go: (k: string) => 
       </Box>
       <Box component="button" aria-label="Pregúntale a la IA" onClick={() => window.dispatchEvent(new Event('open-chat'))}
         sx={{ ...glass, width: 64, height: 64, borderRadius: '50%', cursor: 'pointer', display: 'grid', placeItems: 'center',
-          color: 'primary.main', '& svg': { fontSize: 26 } }}>
+          color: '#FFFFFF', '& svg': { fontSize: 26 } }}>
         <AutoAwesomeRounded />
       </Box>
     </Box>
@@ -282,8 +306,9 @@ export default function App() {
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down('md'));
   const [last, setLast] = useState<Record<string, string>>({});
-  const onSynced = useCallback((msg: string) => { clearFresh(); setInfo(msg); }, [clearFresh]);
+  const onSynced = useCallback((msg: string) => { clearFresh(); setInfo(msg); haptic('success'); }, [clearFresh]);
   const { me, error: meError, refresh: refreshMe } = useMe(120_000);
+  const isOwner = me?.role === 'owner';
   const [dialog, setDialog] = useState<null | 'admin' | 'key' | 'delete'>(null);
   // Ya hay datos en el servidor pero esta página se cargó antes: traerlos
   useEffect(() => { if (me?.hasData && !data) check(); }, [me?.hasData, data, check]);
@@ -292,7 +317,9 @@ export default function App() {
   useEffect(() => { const on = () => { check(); }; window.addEventListener('gs-refresh', on); return () => window.removeEventListener('gs-refresh', on); }, [check]);
 
   const actId = page.startsWith('act-') ? Number(page.slice(4)) : null;
-  const pageKey = actId != null ? 'entreno' : (PAGES.some((p) => p.key === page) ? page : 'hoy');
+  // Invitadas: las páginas solo de la dueña llevan a su página madre (Análisis → Progreso).
+  const blocked = OWNER_ONLY.has(page) && !!me && !isOwner;
+  const pageKey = actId != null ? 'entreno' : blocked ? 'progreso' : (PAGES.some((p) => p.key === page) ? page : 'hoy');
   const section = sectionOf(pageKey);
   useEffect(() => { if (actId == null) setLast((l) => ({ ...l, [section.key]: pageKey })); }, [pageKey, section.key, actId]);
 
@@ -312,32 +339,21 @@ export default function App() {
   const generated = new Date(data.generatedAt);
 
   return (
+    <OwnerCtx.Provider value={isOwner}>
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: mobile ? 'calc(92px + env(safe-area-inset-bottom))' : 6 }}>
       <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: 'color-mix(in srgb, var(--mui-palette-background-default) 82%, transparent)',
         backdropFilter: 'blur(16px) saturate(160%)', WebkitBackdropFilter: 'blur(16px) saturate(160%)' }}>
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ gap: { xs: 0.75, sm: 1.5 }, minHeight: { xs: 56, sm: 68 } }}>
-            <Box sx={{ width: 30, height: 30, borderRadius: '50%', display: 'grid', placeItems: 'center', flexShrink: 0,
-              background: 'conic-gradient(from 200deg, #D93025, #E8710A, #F6AE2D, #188038, #1A73E8, #5B5BD6, #D93025)' }}>
-              <Box sx={{ width: 21, height: 21, borderRadius: '50%', bgcolor: 'background.default', display: 'grid', placeItems: 'center' }}>
-                <FavoriteRounded sx={{ fontSize: 12, color: '#D93025' }} />
-              </Box>
-            </Box>
             {mobile ? (
               <Box sx={{ flex: 1, minWidth: 0, lineHeight: 1 }}>
-                <Typography variant="h6" sx={{ fontSize: 19, color: 'text.primary', lineHeight: 1.2 }}>Runch</Typography>
+                <Wordmark height={26} />
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }} noWrap>
                   {syncing ? 'Conectando con Garmin…' : `Actualizado ${relative(generated, now)}`}
                 </Typography>
               </Box>
             ) : (
-              <Typography variant="h6" sx={{ fontSize: 22, color: 'text.primary' }}>Runch</Typography>
-            )}
-            {mobile && (
-              <IconButton onClick={sync} disabled={syncing} aria-label="Actualizar con Garmin ahora" sx={{ color: 'text.secondary',
-                animation: syncing ? 'spin 0.8s linear infinite' : 'none', '@keyframes spin': { to: { transform: 'rotate(360deg)' } } }}>
-                <RefreshRounded />
-              </IconButton>
+              <Wordmark height={32} />
             )}
             {!mobile && (
               <Tabs value={section.key} onChange={(_, v) => { const sec = SECTIONS.find((x) => x.key === v)!; go(last[sec.key] ?? sec.pages[0]); }}
@@ -382,10 +398,10 @@ export default function App() {
         )}
         {me && me.budgetUsd > 0 && me.monthSpendUsd >= me.budgetUsd && (
           <Alert severity="info" sx={{ borderRadius: '16px', mb: 2 }}>
-            Has usado el tope de IA de este mes ({me.budgetUsd} $). Los textos del coach y el chat vuelven el día 1; tus datos se siguen actualizando.
+            Has usado el tope de IA de este mes{isOwner ? ` (${me.budgetUsd} $)` : ''}. Los textos del coach y el chat vuelven el día 1; tus datos se siguen actualizando.
           </Alert>
         )}
-        {actId == null && <SubTabs section={section} page={pageKey} go={go} />}
+        {actId == null && <SubTabs section={section} page={pageKey} go={go} owner={isOwner} />}
         {actId != null
           ? <ActivityDetail data={data} id={actId} back={() => (window.history.length > 1 ? window.history.back() : go('entreno'))} />
           : current.render(data, go)}
@@ -409,5 +425,6 @@ export default function App() {
       <Snackbar open={fresh} autoHideDuration={4000} onClose={clearFresh} message="Datos actualizados"
         anchorOrigin={{ vertical: mobile ? 'top' : 'bottom', horizontal: 'center' }} />
     </Box>
+    </OwnerCtx.Provider>
   );
 }
