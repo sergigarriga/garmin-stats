@@ -214,8 +214,8 @@ export function SessionDialog({ s, refs, onClose, onRedo, onUndo, go, todayIso, 
       <Box sx={{ p: { xs: 2.25, sm: 3 }, overflowY: 'auto' }}>
         <Stack direction="row" sx={{ alignItems: 'flex-start', gap: 1 }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
-              {toDate(s.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+            <Typography variant="caption" color="text.secondary">
+              {toDate(s.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, (c) => c.toUpperCase())}
               {' · '}<Box component="span" sx={{ color: statusColor, fontWeight: 600, textTransform: 'none' }}>
                 {s.status === 'moved' && s.moved_to ? `Pasado al ${toDate(s.moved_to).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })}` : STATUS_TEXT[s.status]}
               </Box>
