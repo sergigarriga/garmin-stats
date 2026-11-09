@@ -63,7 +63,7 @@ const TOPIC: Record<string, { icon: ReactNode; color: { light: string; dark: str
   peso: { icon: <MonitorWeightOutlined />, color: { light: '#188038', dark: '#81C995' } },
   preferencias: { icon: <TuneRounded2 />, color: { light: '#80868B', dark: '#BDC1C6' } },
 };
-import { isoLocal, mmss, stepPace, toDate, type CoachView, type GarminData, type PaceRef, type Plan, type PlanSession, type SessionType, type WeatherDay } from '../data';
+import { isoLocal, toDate, type CoachView, type GarminData, type PaceRef, type Plan, type PlanSession, type WeatherDay } from '../data';
 import { TimeEditor, TimeTag, WeatherBadge, WeatherCard } from './PlanTime';
 import WbSunnyRounded from '@mui/icons-material/WbSunnyRounded';
 import AirRounded from '@mui/icons-material/AirRounded';
@@ -79,19 +79,10 @@ import { dateLong, dateShort, dec1, duration, pace } from '../format';
 import { useResolvedMode } from '../theme';
 import { CARD_SX, IconBubble, PageHeader, SectionTitle, chartSx } from '../ui';
 import { bandAxis, yClean } from '../charts';
+import { SESSION_TYPE, SessionDialog, WorkoutView } from '../sessionDetail';
 
 const online = window.location.protocol.startsWith('http');
-const TYPE: Record<SessionType, { label: string; light: string; dark: string }> = {
-  easy: { label: 'Suave', light: '#188038', dark: '#81C995' },
-  long: { label: 'Tirada larga', light: '#1A73E8', dark: '#8AB4F8' },
-  tempo: { label: 'Ritmo', light: '#E8710A', dark: '#FCAD70' },
-  intervals: { label: 'Series', light: '#D93025', dark: '#F28B82' },
-  race: { label: 'Carrera', light: '#5B5BD6', dark: '#AFADFF' },
-  strength: { label: 'Fuerza', light: '#9334E6', dark: '#D7AEFB' },
-  swim: { label: 'Natación', light: '#00838F', dark: '#78D9EC' },
-  cross: { label: 'Cruzado', light: '#00838F', dark: '#78D9EC' },
-  rest: { label: 'Descanso', light: '#80868B', dark: '#9AA0A6' },
-};
+const TYPE = SESSION_TYPE;
 const DAYS = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
 const GOALS = ['5 km', '10 km', 'Media maratón', 'Maratón'];
 
@@ -123,6 +114,7 @@ function StatusIcon({ s }: { s: PlanSession['status'] }) {
   if (s === 'partial') return <RemoveCircleOutlineRounded sx={{ ...sx, color: 'warning.main' }} />;
   if (s === 'missed') return <CancelRounded sx={{ ...sx, color: 'text.disabled' }} />;
   if (s === 'rest') return <HotelRounded sx={{ ...sx, color: 'text.disabled' }} />;
+  if (s === 'moved') return <EventRepeatRounded sx={{ ...sx, color: 'text.secondary' }} />;
   return <RadioButtonUncheckedRounded sx={{ ...sx, color: s === 'today' ? 'primary.main' : 'text.disabled' }} />;
 }
 
@@ -166,32 +158,6 @@ export function complianceText(s: PlanSession): string | null {
   if (c.paceDeltaS != null && Math.abs(c.paceDeltaS) >= 3) bits.push(`${Math.abs(c.paceDeltaS)} s/km más ${c.paceDeltaS < 0 ? 'rápido' : 'lento'}`);
   else if (c.paceDeltaS != null) bits.push('al ritmo previsto');
   return bits.join(' · ') || null;
-}
-
-const KIND: Record<string, string> = { warmup: 'Calentamiento', active: '', recovery: 'Recuperación', cooldown: 'Vuelta a la calma', rest: 'Descanso' };
-const REF_NAME: Record<string, string> = { easy: 'suave', marathon: 'de maratón', half: 'de media', '10k': 'de 10K', '5k': 'de 5K', threshold: 'umbral', interval: 'de series', repetition: 'de repeticiones' };
-
-/** Los pasos del entreno, con los ritmos calculados con tus ritmos de referencia de AHORA. */
-function WorkoutSteps({ s, refs }: { s: PlanSession; refs: Refs }) {
-  if (!s.workout?.length && !s.strength?.length) return null;
-  const step = (st: NonNullable<PlanSession['workout']>[number]['steps'][number]) => {
-    const what = st.duration === 'distance' && st.value ? (st.value >= 1 ? `${dec1(st.value).replace(',0', '')} km` : `${Math.round(st.value * 1000)} m`)
-      : st.duration === 'time' && st.value ? `${dec1(st.value).replace(',0', '')} min` : 'hasta pulsar vuelta';
-    const rng = st.target === 'pace' ? stepPace(st, refs) : null;
-    const tgt = rng ? `${mmss(rng[0])}-${mmss(rng[1])} /km${st.pace_ref && refs?.[st.pace_ref] ? ` (ritmo ${REF_NAME[st.pace_ref]}${st.pace_ref_offset_s ? ` ${st.pace_ref_offset_s > 0 ? '+' : '−'}${Math.abs(st.pace_ref_offset_s)} s` : ''})` : ''}`
-      : st.target === 'hr' && st.hr_low && st.hr_high ? `${st.hr_low}-${st.hr_high} lpm` : '';
-    return <><b>{st.name || KIND[st.kind]}</b> {what}{tgt ? ` · ${tgt}` : ''}</>;
-  };
-  return (
-    <Box component="ul" sx={{ m: 0, mt: 1, pl: 2.25, color: 'text.secondary', fontSize: 14, '& li': { mb: 0.25 }, '& b': { color: 'text.primary', fontWeight: 500 } }}>
-      {s.workout?.map((b, i) => b.repeat > 1
-        ? <li key={i}><b>{b.repeat} ×</b> {b.steps.map((st, j) => <span key={j}>{j ? ' + ' : ''}{step(st)}</span>)}</li>
-        : b.steps.map((st, j) => <li key={`${i}-${j}`}>{step(st)}</li>))}
-      {!s.workout?.length && s.strength?.map((it, i) => (
-        <li key={i}><b>{it.label}</b> {it.sets} × {it.seconds ? `${it.seconds} s` : `${it.reps} rep.`}{it.weight_kg ? ` · ${dec1(it.weight_kg).replace(',0', '')} kg` : ''} · descanso {it.rest_s} s</li>
-      ))}
-    </Box>
-  );
 }
 
 /** Ventana "Calendario": enlace privado para ver el plan en Google Calendar, el iPhone u Outlook. */
@@ -391,13 +357,13 @@ function FeedbackStars({ s, onSaved }: { s: PlanSession; onSaved: (v: CoachView)
   );
 }
 
-function DayCard({ s, go, onSaved, sets, wx }: { s: PlanSession; go: (k: string) => void; onSaved: (v: CoachView) => void; sets?: (id: number) => { ex: string }[] | null | undefined; wx?: WeatherDay }) {
+function DayCard({ s, onOpen, go, onSaved, sets, wx }: { s: PlanSession; onOpen: () => void; go: (k: string) => void; onSaved: (v: CoachView) => void; sets?: (id: number) => { ex: string }[] | null | undefined; wx?: WeatherDay }) {
   const mode = useResolvedMode();
   const c = TYPE[s.type][mode];
   const today = s.status === 'today';
   return (
-    <Card sx={{ ...CARD_SX, p: 1.75, display: 'flex', flexDirection: 'column', gap: 0.75, minHeight: 150, position: 'relative',
-      outline: today ? `2px solid ${c}` : 'none', opacity: s.status === 'missed' ? 0.7 : 1 }}>
+    <Card onClick={s.type === 'rest' ? undefined : onOpen} sx={{ ...CARD_SX, p: 1.75, display: 'flex', flexDirection: 'column', gap: 0.75, minHeight: 150, position: 'relative',
+      cursor: s.type === 'rest' ? 'default' : 'pointer', outline: today ? `2px solid ${c}` : 'none', opacity: s.status === 'missed' || s.status === 'moved' ? 0.7 : 1 }}>
       <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="caption" sx={{ fontWeight: 600, color: today ? c : 'text.secondary', textTransform: 'capitalize' }}>
           {toDate(s.date).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }).replace('.', '')}
@@ -415,26 +381,26 @@ function DayCard({ s, go, onSaved, sets, wx }: { s: PlanSession; go: (k: string)
       )}
       {(s.status === 'today' || s.status === 'upcoming') && <WeatherNote s={s} />}
       {s.actual && (
-        <Typography variant="caption" onClick={() => go(`act-${s.actual!.id}`)}
+        <Typography variant="caption" onClick={(e) => { e.stopPropagation(); go(`act-${s.actual!.id}`); }}
           sx={{ color: 'success.main', fontWeight: 500, cursor: 'pointer', mt: 'auto' }}>
           Hecho: {s.actual.km ? `${dec1(s.actual.km)} km` : `${s.actual.min} min`}{s.actual.pace ? ` · ${pace(s.actual.pace)}` : ''}
           {(() => { const st = sets?.(s.actual!.id); return st && st.length ? ` · ${new Set(st.map((x) => x.ex)).size} ejercicios, ${st.length} series` : ''; })()}
         </Typography>
       )}
       {complianceText(s) && <Typography variant="caption" color={s.status === 'partial' ? 'warning.main' : 'text.secondary'}>{complianceText(s)}</Typography>}
-      <FeedbackStars s={s} onSaved={onSaved} />
+      <Box onClick={(e) => e.stopPropagation()}><FeedbackStars s={s} onSaved={onSaved} /></Box>
     </Card>
   );
 }
 
 /** Día de la semana en una línea (móvil). */
-function DayRow({ s, go, first, wx }: { s: PlanSession; go: (k: string) => void; first: boolean; wx?: WeatherDay }) {
+function DayRow({ s, onOpen, first, wx }: { s: PlanSession; onOpen: () => void; first: boolean; wx?: WeatherDay }) {
   const mode = useResolvedMode();
   const c = TYPE[s.type][mode];
   const today = s.status === 'today';
   return (
-    <Box onClick={() => s.actual && go(`act-${s.actual.id}`)} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1.25,
-      borderTop: first ? 0 : 1, borderColor: 'divider', borderRadius: today ? '16px' : 0, cursor: s.actual ? 'pointer' : 'default',
+    <Box onClick={s.type === 'rest' ? undefined : onOpen} role={s.type === 'rest' ? undefined : 'button'} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 1.5, py: 1.25,
+      borderTop: first ? 0 : 1, borderColor: 'divider', borderRadius: today ? '16px' : 0, cursor: s.type === 'rest' ? 'default' : 'pointer',
       bgcolor: today ? alpha(c, mode === 'dark' ? 0.16 : 0.09) : 'transparent' }}>
       <Box sx={{ width: 40, textAlign: 'center', flexShrink: 0 }}>
         <Typography variant="caption" sx={{ display: 'block', color: today ? c : 'text.secondary', fontWeight: 600, textTransform: 'uppercase', lineHeight: 1.1 }}>
@@ -519,6 +485,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const [moreSummary, setMoreSummary] = useState(false);
   const [watchOpen, setWatchOpen] = useState(false);
   const [calOpen, setCalOpen] = useState(false);
+  const [sel, setSel] = useState<PlanSession | null>(null);
   const refs = data.paces?.refs;
   const [confirm, setConfirm] = useState<null | { title: string; text: string; action: () => void }>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -666,7 +633,8 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
               <Typography sx={{ mt: 1, color: 'text.secondary', '& b': { color: 'text.primary' } }}><Rich>{t.session.description}</Rich></Typography>
               <WeatherNote s={t.session} sx={{ mt: 1, fontSize: 13 }} />
               {t.session.timeWarn && <Box sx={{ mt: 1 }}><TimeTag warn={t.session.timeWarn} /></Box>}
-              <WorkoutSteps s={t.session} refs={refs} />
+              {t.session.redo_from && <Typography variant="caption" sx={{ display: 'block', mt: 1, fontWeight: 600, color: mode === 'dark' ? '#F08A66' : '#D4542F' }}>Retomado del {toDate(t.session.redo_from).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })} · <Box component="span" onClick={() => setSel(t.session)} sx={{ textDecoration: 'underline', cursor: 'pointer' }}>deshacer</Box></Typography>}
+              <WorkoutView s={t.session} refs={refs} />
             </Box>
             {(t.tip || t.weatherTip || t.bestWindow) && (
               <Stack spacing={1.5} sx={{ maxWidth: { md: 360 } }}>
@@ -698,14 +666,17 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
         <Button variant="outlined" size="small" startIcon={<WatchRounded />} onClick={() => setWatchOpen(true)}
           sx={{ borderRadius: 999, flexShrink: 0, whiteSpace: 'nowrap' }}>Pasar al reloj</Button>
       </Stack>
+      <SessionDialog s={sel} refs={refs} todayIso={todayIso} go={go} onClose={() => setSel(null)}
+        onRedo={async (x) => setView(await api('./api/plan/redo', { date: x.date, type: x.type, today: todayIso }))}
+        onUndo={async () => setView(await api('./api/plan/redo-undo', { today: todayIso }))} />
       <WatchDialog open={watchOpen} onClose={() => setWatchOpen(false)} weekStart={week.start} sessions={week.sessions} onView={setView} refs={refs} />
       {small ? (
         <Card data-new="compliance" sx={{ ...CARD_SX, p: 0.5 }}>
-          {week.sessions.map((s, i) => <DayRow key={`${s.date}-${s.type}`} s={s} go={go} first={i === 0} wx={wxBy[s.date]} />)}
+          {week.sessions.map((s, i) => <DayRow key={`${s.date}-${s.type}`} s={s} onOpen={() => setSel(s)} first={i === 0} wx={wxBy[s.date]} />)}
         </Card>
       ) : (
         <Box data-new="compliance" sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { sm: 'repeat(4, 1fr)', lg: 'repeat(7, 1fr)' } }}>
-          {week.sessions.map((s) => <DayCard key={`${s.date}-${s.type}`} s={s} go={go} onSaved={setView} wx={wxBy[s.date]} sets={(id) => data.activities.find((x) => x.id === id)?.sets} />)}
+          {week.sessions.map((s) => <DayCard key={`${s.date}-${s.type}`} s={s} onOpen={() => setSel(s)} go={go} onSaved={setView} wx={wxBy[s.date]} sets={(id) => data.activities.find((x) => x.id === id)?.sets} />)}
         </Box>
       )}
 
@@ -791,7 +762,9 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           <AccordionDetails sx={{ pt: 0 }}>
             <Stack spacing={1.25}>
               {w.sessions.map((s) => (
-                <Stack key={`${s.date}-${s.type}`} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start', minWidth: 0 }}>
+                <Stack key={`${s.date}-${s.type}`} direction="row" spacing={1.5} onClick={s.type === 'rest' ? undefined : () => setSel(s)}
+                  sx={{ alignItems: 'flex-start', minWidth: 0, cursor: s.type === 'rest' ? 'default' : 'pointer', borderRadius: '12px', p: 0.75, mx: -0.75,
+                    '&:hover': s.type === 'rest' ? {} : { bgcolor: 'action.hover' } }}>
                   <StatusIcon s={s.status} />
                   <Typography variant="body2" sx={{ minWidth: { xs: 52, sm: 70 }, color: 'text.secondary', textTransform: 'capitalize' }}>
                     {toDate(s.date).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }).replace('.', '')}
@@ -805,7 +778,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
                     {s.timeWarn && <Box sx={{ mt: 0.5 }}><TimeTag warn={s.timeWarn} /></Box>}
                     <WeatherNote s={s} sx={{ mt: 0.5 }} />
                     {complianceText(s) && <Typography variant="caption" color={s.status === 'partial' ? 'warning.main' : 'success.main'} sx={{ display: 'block' }}>Hecho: {complianceText(s)}</Typography>}
-                    <WorkoutSteps s={s} refs={refs} />
+                    {(s.workout?.length || s.strength?.length) ? <Typography variant="caption" sx={{ color: TYPE[s.type][mode], fontWeight: 600 }}>Ver el entreno por partes ›</Typography> : null}
                   </Box>
                 </Stack>
               ))}

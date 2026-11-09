@@ -55,6 +55,19 @@ const C = {
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-10', date: '2026-11-10', title: 'Tu plan, al detalle', subtitle: 'Cada entreno por partes y tus opciones de llegar',
+    features: [
+      { icon: <TaskAltRounded />, color: C.orange, title: 'Cada entreno, por partes', where: 'Entreno · Plan', go: 'plan',
+        body: 'Toca cualquier sesión: perfil de intensidad, calentamiento, series, recuperaciones y vuelta a la calma con su ritmo, pulso y duración.' },
+      { icon: <SwapHorizRounded />, color: C.blue, title: 'Hacerlo hoy', where: 'Entreno · Plan', go: 'plan',
+        body: '¿Te saltaste un entreno o quieres repetirlo? Ábrelo y pulsa «Hacerlo hoy»: sustituye lo de hoy y se puede deshacer.' },
+      { icon: <SpeedRounded />, color: C.green, title: 'Tus opciones', where: 'Hoy', go: 'hoy',
+        body: 'Cada día, la probabilidad real de llegar a tu tiempo objetivo según tu nivel, lo que cumples el plan y lo que falta.' },
+      { icon: <DashboardRounded />, color: C.orange, title: 'Menos pestañas', where: 'Entreno y Salud',
+        body: 'Tus récords están ahora en Entreno; tu año en actividad y el peso, en Salud → Actividad.' },
+    ],
+  },
+  {
     id: '2026-11-09-2', date: '2026-11-09', title: 'Lo importante, primero', subtitle: 'Qué mirar hoy, de un vistazo',
     features: [
       { icon: <TaskAltRounded />, color: C.orange, title: 'Lo importante', where: 'Arriba de cada página', go: 'sueno',

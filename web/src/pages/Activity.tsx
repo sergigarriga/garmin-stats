@@ -9,8 +9,9 @@ import { useCat } from '../theme';
 import { bandAxis, timeAxis, yClean } from '../charts';
 import { KeyFacts, activityFacts } from '../highlights';
 import { AiBadge, ChartCard, InsightList, PageHeader, RangeToggle, SectionTitle, chartSx } from '../ui';
+import { Weight, YearInActivity } from './Progress';
 
-export default function Activity({ data }: { data: GarminData }) {
+export default function Activity({ data, go }: { data: GarminData; go: (k: string) => void }) {
   const cat = useCat();
   const [range, setRange] = useState<Range>('90d');
   const rows = sliceRange(data.days, range);
@@ -59,6 +60,8 @@ export default function Activity({ data }: { data: GarminData }) {
           <InsightList items={data.ai.activity} color={cat('activity')} />
         </>
       ) : null}
+      <YearInActivity data={data} go={go} />
+      <Weight data={data} />
     </Box>
   );
 }

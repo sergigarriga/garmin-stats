@@ -26,6 +26,11 @@ export interface Prediction {
 
 export interface Relation { a: string; b: string; rho?: number; n: number; strength: string }
 
+export interface GoalOdds {
+  goal: string; goalTime: string; goalS: number; raceDate: string; daysLeft: number; pct: number;
+  predictedS: number; nowS: number; vdot: number; needVdot: number; gain: number; adherence: number | null;
+  source?: string; history?: { d: string; pct: number }[];
+}
 export interface Readiness {
   date: string; score: number; label: string; message: string;
   parts: { key: string; label: string; score: number; detail: string }[];
@@ -71,7 +76,9 @@ export interface Compliance {
 export interface PlanSession {
   date: string; type: SessionType; title: string; distance_km?: number | null; duration_min?: number | null;
   target: string; description: string;
-  status: 'done' | 'partial' | 'missed' | 'today' | 'upcoming' | 'rest';
+  status: 'done' | 'partial' | 'missed' | 'today' | 'upcoming' | 'rest' | 'moved';
+  /** 'Hacerlo hoy': el original lleva moved_to (a qué día pasó) y la copia de hoy redo_from (de qué día viene). */
+  moved_to?: string | null; redo_from?: string | null;
   actual?: { id: number; km: number; min: number; pace?: number; hr?: number; name?: string } | null;
   feedback?: { rating: number; note: string } | null;
   compliance?: Compliance | null;
@@ -187,6 +194,8 @@ export interface GarminData {
   wellness?: Wellness | null;
   availability?: Availability | null;
   weather?: WeatherBlock | null;
+  /** Probabilidad de llegar al tiempo objetivo del plan (se recalcula en cada sincronización). */
+  goalOdds?: GoalOdds | null;
   /** Zona (redondeada) de tu última carrera al aire libre, para sugerirla como ciudad. */
   lastRunArea?: { lat: number; lon: number; date: string } | null;
 }

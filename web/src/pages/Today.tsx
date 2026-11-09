@@ -25,6 +25,7 @@ import { SportIcon } from './sport';
 import { Rich } from '../rich';
 import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import { Alerts, Goals, ReadinessCard, WeekCard } from './TodayExtras';
+import { GoalOddsCard } from '../goalOdds';
 import { CheckIn } from './Wellness';
 import { LineChart } from '@mui/x-charts/LineChart';
 import { WeatherIcon } from './PlanTime';
@@ -179,6 +180,7 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
         <Typography sx={{ fontSize: { xs: 18, sm: 20 }, mt: -1.5, mb: 3, maxWidth: 820 }}><Rich>{data.ai.headline}</Rich></Typography>
       )}
       <ReadinessCard data={data} />
+      <GoalOddsCard data={data} go={go} />
       {data.coach?.today && (
         <Card onClick={() => go('plan')} sx={{ ...CARD_SX, mb: 2, py: 2, cursor: 'pointer', display: 'flex', gap: 2, alignItems: 'center' }}>
           <IconBubble color={cat('training')}><DirectionsRunRounded /></IconBubble>

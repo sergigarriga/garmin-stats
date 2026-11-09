@@ -444,6 +444,14 @@ def handler(event, _ctx):
         return _json(200, {k: data.get(k) for k in ("paces", "swim", "wellness", "coach", "availability", "weather")})
     if path == "/api/plan/feedback":
         coach.feedback(payload["date"], payload.get("rating", 3), payload.get("note", ""))
+    elif path in ("/api/plan/redo", "/api/plan/redo-undo"):
+        try:
+            if path == "/api/plan/redo":
+                coach.redo(str(payload.get("date", "")), str(payload.get("type", "")), payload.get("today"))
+            else:
+                coach.undo_redo(payload.get("today"))
+        except ValueError as e:
+            return _json(400, {"error": str(e)})
     elif path == "/api/plan/delete":
         coach.delete()
     else:

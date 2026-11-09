@@ -79,6 +79,9 @@ def cmd_report(args) -> None:
             except Exception as e:  # el informe no debe caerse por el coach
                 log.warning("Coach: no se pudo reajustar el plan (%s)", e)
         data["coach"] = X._safe("coach_view", lambda: coach.view(data), None)
+        from . import odds
+        data["goalOdds"] = X._safe("goal_odds", lambda: odds.with_history(
+            odds.compute((data.get("coach") or {}).get("plan"), data.get("paces")), store), None)
         if os.environ.get("GARMIN_STATS_OWNER") == "1":  # solo la dueña ve los costes de IA; el tope sigue activo
             data["aiUsage"] = ai.usage()
         else:

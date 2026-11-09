@@ -35,7 +35,6 @@ import { haptic } from './haptics';
 import DirectionsWalkRounded from '@mui/icons-material/DirectionsWalkRounded';
 import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import InsightsRounded from '@mui/icons-material/InsightsRounded';
-import TrendingUpRounded from '@mui/icons-material/TrendingUpRounded';
 import EventNoteRounded from '@mui/icons-material/EventNoteRounded';
 import RefreshRounded from '@mui/icons-material/RefreshRounded';
 import LightModeOutlined from '@mui/icons-material/LightModeOutlined';
@@ -58,7 +57,6 @@ import Heart from './pages/Heart';
 import Activity from './pages/Activity';
 import Training from './pages/Training';
 import Insights from './pages/Insights';
-import Progress from './pages/Progress';
 import PlanPage from './pages/PlanPage';
 import Paces from './pages/Paces';
 import Gym from './pages/Gym';
@@ -82,20 +80,20 @@ const PAGES: Page[] = [
   { key: 'semana', label: 'Semana', icon: <HomeRounded />, render: (d, go) => <TodayWeek data={d} go={go} /> },
   { key: 'sueno', label: 'Sueño', icon: <BedtimeRounded />, render: (d) => <Sleep data={d} /> },
   { key: 'corazon', label: 'Corazón', icon: <FavoriteRounded />, render: (d) => <Heart data={d} /> },
-  { key: 'actividad', label: 'Actividad', icon: <DirectionsWalkRounded />, render: (d) => <Activity data={d} /> },
+  { key: 'actividad', label: 'Actividad', icon: <DirectionsWalkRounded />, render: (d, go) => <Activity data={d} go={go} /> },
   { key: 'comida', label: 'Comida', icon: <FavoriteRounded />, render: (d, go) => <Food data={d} go={go} /> },
   { key: 'compra', label: 'Menú y compra', icon: <FavoriteRounded />, render: (_d, go) => <Shopping go={go} /> },
   { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, render: (d, go) => <Training data={d} go={go} /> },
   { key: 'plan', label: 'Plan', icon: <EventNoteRounded />, render: (d, go) => <PlanPage data={d} go={go} /> },
   { key: 'ritmos', label: 'Ritmos', icon: <SpeedRounded />, render: (d) => <Paces data={d} /> },
   { key: 'gimnasio', label: 'Gimnasio', icon: <FitnessCenterRounded />, render: (d, go) => <Gym data={d} go={go} /> },
-  { key: 'progreso', label: 'Progreso', icon: <TrendingUpRounded />, render: (d, go) => <Progress data={d} go={go} /> },
   { key: 'analisis', label: 'Análisis', icon: <InsightsRounded />, render: (d) => <Insights data={d} /> },
 ];
 
 function usePageFromHash() {
   const read = () => (window.location.hash.startsWith('#act-') ? window.location.hash.slice(1)
-    : PAGES.find((p) => `#${p.key}` === window.location.hash)?.key ?? 'hoy');
+    : window.location.hash === '#progreso' ? 'entreno'  // la antigua pestaña Progreso: sus récords están en Entreno
+      : PAGES.find((p) => `#${p.key}` === window.location.hash)?.key ?? 'hoy');
   const [page, setPage] = useState(read);
   useEffect(() => {
     const on = () => setPage(read());
@@ -207,17 +205,18 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
   );
 }
 
-type Section = { key: string; label: string; icon: ReactElement; pages: string[] };
+type Section = { key: string; label: string; icon: ReactElement; pages: string[]; owner?: boolean };
 const SECTIONS: Section[] = [
   { key: 'hoy', label: 'Hoy', icon: <HomeRounded />, pages: ['hoy', 'dia', 'semana'] },
   { key: 'salud', label: 'Salud', icon: <FavoriteRounded />, pages: ['sueno', 'corazon', 'actividad', 'comida', 'compra'] },
   { key: 'entreno', label: 'Entreno', icon: <DirectionsRunRounded />, pages: ['plan', 'entreno', 'ritmos', 'gimnasio'] },
-  { key: 'progreso', label: 'Progreso', icon: <TrendingUpRounded />, pages: ['progreso', 'analisis'] },
+  // Solo la dueña: sus análisis a fondo. Las invitadas ven 3 secciones.
+  { key: 'analisis', label: 'Análisis', icon: <InsightsRounded />, pages: ['analisis'], owner: true },
 ];
 const SUB_LABEL: Record<string, string> = {
   hoy: 'Resumen', dia: 'Tu día', semana: 'Semana',
   sueno: 'Sueño', corazon: 'Corazón', actividad: 'Actividad', comida: 'Comida', plan: 'Plan', entreno: 'Actividades', ritmos: 'Ritmos', gimnasio: 'Gimnasio',
-  progreso: 'Progreso', analisis: 'Análisis',
+  analisis: 'Análisis',
 };
 const sectionOf = (page: string) => SECTIONS.find((s) => s.pages.includes(page)) ?? SECTIONS[0];
 /** Subpáginas sin pestaña propia: se ven bajo la pestaña de su página "madre" (Menú y compra cuelga de Comida). */
@@ -255,7 +254,7 @@ function SubTabs({ section, page, go, owner }: { section: Section; page: string;
 }
 
 /** Barra inferior flotante tipo "cristal" (móvil): 4 secciones + botón del chat aparte. */
-function GlassNav({ current, go, last }: { current: Section; go: (k: string) => void; last: Record<string, string> }) {
+function GlassNav({ current, go, last, sections: SECTIONS }: { current: Section; go: (k: string) => void; last: Record<string, string>; sections: Section[] }) {
   // Barra de navegación en el terracota del logo, con iconos blancos.
   const glass = {
     bgcolor: '#D4542F',
@@ -284,7 +283,11 @@ function GlassNav({ current, go, last }: { current: Section; go: (k: string) => 
                 '&:active': { transform: 'scale(0.94)' },
                 '& svg': { fontSize: 23, transition: 'transform .5s cubic-bezier(.34,1.4,.64,1)' },
                 '&:hover svg': { transform: 'translateY(-1px)' } }}>
-              {sec.icon}
+              <Box sx={{ position: 'relative', display: 'flex' }}>
+                {sec.icon}
+                {sec.owner && <LockRounded aria-label="solo para ti" sx={{ position: 'absolute', right: -7, top: -4, fontSize: '12px !important', p: '1px',
+                  borderRadius: '50%', bgcolor: '#FFFFFF', color: '#D4542F' }} />}
+              </Box>
               <Box component="span" sx={{ fontSize: 11, fontWeight: on ? 600 : 500, lineHeight: 1 }}>{sec.label}</Box>
             </Box>
           );
@@ -318,10 +321,11 @@ export default function App() {
   useEffect(() => { const on = () => { check(); }; window.addEventListener('gs-refresh', on); return () => window.removeEventListener('gs-refresh', on); }, [check]);
 
   const actId = page.startsWith('act-') ? Number(page.slice(4)) : null;
-  // Invitadas: las páginas solo de la dueña llevan a su página madre (Análisis → Progreso).
+  // Invitadas: las páginas solo de la dueña llevan a Hoy.
   const blocked = OWNER_ONLY.has(page) && !!me && !isOwner;
-  const pageKey = actId != null ? 'entreno' : blocked ? 'progreso' : (PAGES.some((p) => p.key === page) ? page : 'hoy');
+  const pageKey = actId != null ? 'entreno' : blocked ? 'hoy' : (PAGES.some((p) => p.key === page) ? page : 'hoy');
   const section = sectionOf(pageKey);
+  const sections = SECTIONS.filter((x) => !x.owner || isOwner);
   useEffect(() => { if (actId == null) setLast((l) => ({ ...l, [section.key]: pageKey })); }, [pageKey, section.key, actId]);
 
   if (!data) {
@@ -359,7 +363,7 @@ export default function App() {
             {!mobile && (
               <Tabs value={section.key} onChange={(_, v) => { const sec = SECTIONS.find((x) => x.key === v)!; go(last[sec.key] ?? sec.pages[0]); }}
                 sx={{ flex: 1, minWidth: 0, ml: 3, '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' } }}>
-                {SECTIONS.map((sec) => <Tab key={sec.key} value={sec.key} label={sec.label} />)}
+                {sections.map((sec) => <Tab key={sec.key} value={sec.key} label={sec.label} icon={sec.owner ? <LockRounded sx={{ fontSize: 14, color: '#D4542F' }} /> : undefined} iconPosition="end" sx={{ minHeight: 48 }} />)}
               </Tabs>
             )}
             {!mobile && (
@@ -411,7 +415,7 @@ export default function App() {
         </Typography>
       </Container>
 
-      {mobile && <GlassNav current={section} go={go} last={last} />}
+      {mobile && <GlassNav current={section} go={go} last={last} sections={sections} />}
       <AdminDialog open={dialog === 'admin'} onClose={() => setDialog(null)} />
       <GarminKeyDialog open={dialog === 'key'} onClose={() => setDialog(null)} onDone={() => { refreshMe(); setInfo('Clave guardada: actualizando tus datos de Garmin…'); }} />
       <DeleteAccountDialog open={dialog === 'delete'} onClose={() => setDialog(null)} />

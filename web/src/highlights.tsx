@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 import { mean, mmss, type Day, type GarminData } from './data';
-import { dateShort, dec1, duration, hm, int } from './format';
+import { dec1, hm, int } from './format';
 import { CATEGORY, useResolvedMode, type Category } from './theme';
 import { CARD_SX } from './ui';
 
@@ -131,7 +131,6 @@ export function trainingFacts(data: GarminData): (Fact | null)[] {
 
 const RUN = (g: string) => g === 'Correr' || g === 'Cinta';
 const daysAgo = (n: number) => Date.now() - n * 864e5;
-const pctChange = (now: number, before: number) => (before > 0 ? ((now - before) / before) * 100 : null);
 
 export function pacesFacts(data: GarminData): (Fact | null)[] {
   const p = data.paces;
@@ -167,27 +166,5 @@ export function gymFacts(data: GarminData): (Fact | null)[] {
     low ? { cat: 'training', label: low.label, value: dec1(low.sets), unit: 'series/sem', tone: 'watch', note: 'Por debajo de 6 a la semana: añade alguna serie' } : null,
     w ? { cat: 'training', label: usePrev ? 'Semana pasada' : 'Esta semana', value: int(w.sets), unit: w.sets === 1 ? 'serie' : 'series', tone: 'neutral',
       note: avg != null ? `Tu media: ${int(avg)} series por semana` : `${w.sessions} sesiones` } : null,
-  ];
-}
-
-export function progressFacts(data: GarminData): (Fact | null)[] {
-  const inRange = (a: { start: string }, from: number, to: number) => { const t = new Date(a.start).getTime(); return t >= from && t < to; };
-  const now = Date.now();
-  const cur = data.activities.filter((a) => inRange(a, daysAgo(30), now + 864e5));
-  const old = data.activities.filter((a) => inRange(a, daysAgo(60), daysAgo(30)));
-  const km = (l: typeof cur) => l.reduce((s, a) => s + (RUN(a.group) ? a.km ?? 0 : 0), 0);
-  const dKm = pctChange(km(cur), km(old));
-  const dN = pctChange(cur.length, old.length);
-  const rec = (data.records ?? []).filter((r) => new Date(r.date).getTime() >= daysAgo(30)).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const recValue = (r: NonNullable<typeof rec>) => r.kind === 'time' ? duration(r.value) : r.kind === 'km' || r.kind === 'vo2' ? dec1(r.value) : int(r.value);
-  const recUnit: Record<string, string> = { km: 'km', steps: 'pasos', score: '/ 100', bpm: 'lpm', ms: 'ms' };
-  const trend = (d: number | null): Tone => d == null ? 'neutral' : d >= 10 ? 'good' : d <= -30 ? 'watch' : 'neutral';
-  const vs = (d: number | null) => `${d != null && d > 0 ? '+' : ''}${int(d)} % frente a los 30 días anteriores`;
-  return [
-    rec ? { cat: 'training', label: `Récord: ${rec.label.toLowerCase()}`, value: recValue(rec), unit: recUnit[rec.kind], tone: 'good',
-      note: `Lo conseguiste el ${dateShort(new Date(rec.date))}` } : null,
-    // Sin mes anterior con el que comparar, el bloque de abajo ya lo cuenta: no se repite
-    dKm != null ? { cat: 'training', label: 'Km corriendo · 30 días', value: dec1(km(cur)), unit: 'km', tone: trend(dKm), note: vs(dKm) } : null,
-    dN != null ? { cat: 'activity', label: 'Entrenos · 30 días', value: int(cur.length), tone: trend(dN), note: vs(dN) } : null,
   ];
 }

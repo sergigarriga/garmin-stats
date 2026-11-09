@@ -342,6 +342,8 @@ def _match(session: dict, acts_by_day: dict) -> dict:
         status = "today"
     else:
         status = "upcoming"
+    if status in ("missed", "today", "upcoming") and session.get("moved_to"):
+        status = "moved"  # se hizo (o se hará) otro día: no cuenta como fallada
     actual = None
     if done:
         a = max(done, key=lambda x: x.get("km") or x.get("min") or 0)
@@ -661,6 +663,82 @@ def feedback(day: str, rating: int, note: str = "") -> dict:
     state = load()
     state.setdefault("feedback", {})[day] = {"rating": max(1, min(5, int(rating))), "note": note[:300],
                                              "at": datetime.now().astimezone().isoformat(timespec="seconds")}
+    save(state)
+    return state
+
+
+def _family(t: str) -> str:
+    return "run" if t in RUN_TYPES else t
+
+
+def _today(client_today: str | None) -> str:
+    """El día de la persona (la web lo manda en su hora local); si no cuadra con el del servidor (±1 día), el del servidor."""
+    srv = date.today()
+    try:
+        c = date.fromisoformat(client_today or "")
+        if abs((c - srv).days) <= 1:
+            return c.isoformat()
+    except ValueError:
+        pass
+    return srv.isoformat()
+
+
+def redo(src_date: str, src_type: str, client_today: str | None = None) -> dict:
+    """'Hacerlo hoy': copia un entreno de otro día a hoy. Sustituye lo previsto hoy del mismo tipo (carrera por carrera,
+    fuerza por fuerza...) o el descanso; lo sustituido se guarda para poder deshacerlo. El original queda como 'movido'."""
+    state = load()
+    plan = state.get("plan")
+    if not plan:
+        raise ValueError("No hay plan.")
+    today = _today(client_today)
+    if (state.get("redo") or {}).get(today):
+        _undo(state, today)  # solo un cambio por día: el nuevo sustituye al anterior
+    if src_date == today:
+        raise ValueError("Ese entreno ya es de hoy.")
+    src = next((x for w in plan["weeks"] for x in w["sessions"] if x["date"] == src_date and x["type"] == src_type), None)
+    if not src or src["type"] == "rest":
+        raise ValueError("No encuentro ese entreno.")
+    week = _week_of(plan, today)
+    if not week:
+        raise ValueError("Hoy no está dentro del plan.")
+    fam = _family(src["type"])
+    replaced = [x for x in week["sessions"] if x["date"] == today and (_family(x["type"]) == fam or x["type"] == "rest")]
+    copy = {k: v for k, v in json.loads(json.dumps(src)).items() if k not in ("moved_to", "redo_from")}
+    copy.update(date=today, redo_from=src_date)
+    week["sessions"] = sorted([x for x in week["sessions"] if x not in replaced] + [copy], key=lambda x: x["date"])
+    src["moved_to"] = today
+    state.setdefault("redo", {})[today] = {"from": src_date, "type": src_type, "replaced": replaced,
+                                           "at": datetime.now().astimezone().isoformat(timespec="seconds")}
+    save(state)
+    log.info("Entreno del %s (%s) pasado a hoy %s", src_date, src_type, today)
+    return state
+
+
+def _week_of(plan: dict, day: str) -> dict | None:
+    return next((w for w in plan["weeks"]
+                 if w["start"] <= day < (date.fromisoformat(w["start"]) + timedelta(days=7)).isoformat()), None)
+
+
+def _undo(state: dict, today: str) -> None:
+    rec = (state.get("redo") or {}).pop(today, None)
+    if not rec:
+        return
+    for w in state["plan"]["weeks"]:
+        for x in w["sessions"]:
+            if x["date"] == rec["from"] and x["type"] == rec["type"] and x.get("moved_to") == today:
+                x.pop("moved_to", None)
+    week = _week_of(state["plan"], today)
+    if week:
+        keep = [x for x in week["sessions"] if not (x["date"] == today and x.get("redo_from") == rec["from"])]
+        week["sessions"] = sorted(keep + rec["replaced"], key=lambda x: x["date"])
+
+
+def undo_redo(client_today: str | None = None) -> dict:
+    """Deshace el 'Hacerlo hoy' de hoy: vuelve lo que estaba previsto."""
+    state = load()
+    if not state.get("plan"):
+        raise ValueError("No hay plan.")
+    _undo(state, _today(client_today))
     save(state)
     return state
 

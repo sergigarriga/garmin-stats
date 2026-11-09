@@ -206,6 +206,8 @@ class Handler(SimpleHTTPRequestHandler):
             "/api/plan/adapt": lambda: coach.adapt(force=True),
             "/api/plan/feedback": lambda: coach.feedback(body["date"], body.get("rating", 3), body.get("note", "")),
             "/api/plan/delete": coach.delete,
+            "/api/plan/redo": lambda: coach.redo(str(body.get("date", "")), str(body.get("type", "")), body.get("today")),
+            "/api/plan/redo-undo": lambda: coach.undo_redo(body.get("today")),
         }
         if self.path in plan_actions:
             with _plan_lock:  # una operación de plan a la vez

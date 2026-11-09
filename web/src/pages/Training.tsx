@@ -22,6 +22,7 @@ import { bandAxis, timeAxis, yClean } from '../charts';
 import { CARD_SX, ChartCard, IconBubble, InsightList, PageHeader, RangeToggle, SectionTitle, chartSx , AiBadge } from '../ui';
 import { KeyFacts, trainingFacts } from '../highlights';
 import { SportIcon } from './sport';
+import { Records } from './Progress';
 
 const GROUPS = ['Correr', 'Cinta', 'Bici', 'Natación', 'Fuerza', 'Caminar', 'Otros'];
 const ZONE_NAMES = ['Z1 muy suave', 'Z2 suave', 'Z3 moderado', 'Z4 umbral', 'Z5 máximo'];
@@ -232,6 +233,7 @@ export default function Training({ data, go }: { data: GarminData; go: (k: strin
           </Box>
         )}
       </Card>
+      <Records data={data} go={go} />
     </Box>
   );
 }
