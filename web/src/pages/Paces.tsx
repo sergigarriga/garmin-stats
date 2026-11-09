@@ -22,6 +22,7 @@ import { dateShort, dec1, duration, int } from '../format';
 import { ZONES, useCat, useResolvedMode } from '../theme';
 import { bandAxis, yClean } from '../charts';
 import { CARD_SX, IconBubble, PageHeader, SectionTitle, chartSx } from '../ui';
+import { KeyFacts, pacesFacts } from '../highlights';
 
 const online = window.location.protocol.startsWith('http');
 /** Primera letra en minúscula salvo siglas (VO2max). */
@@ -170,6 +171,7 @@ export default function Paces({ data }: { data: GarminData }) {
   return (
     <Box>
       <PageHeader title="Ritmos y zonas" subtitle="A qué ritmo entrenar según tu nivel de ahora. El plan y los entrenos del reloj los usan solos." />
+      <KeyFacts facts={pacesFacts(data)} />
 
       {p ? (
         <>

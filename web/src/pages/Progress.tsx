@@ -14,6 +14,7 @@ import { isoLocal, mean, toDate, type Activity, type Day, type GarminData, type 
 import { dateLong, dateShort, dec1, duration, hm, int } from '../format';
 import { CATEGORY, useResolvedMode, type Category } from '../theme';
 import { CARD_SX, IconBubble, PageHeader, SectionTitle, chartSx } from '../ui';
+import { KeyFacts, progressFacts } from '../highlights';
 import { LineChart } from '@mui/x-charts/LineChart';
 import { timeAxis } from '../charts';
 import MonitorWeightOutlined from '@mui/icons-material/MonitorWeightOutlined';
@@ -241,6 +242,7 @@ export default function Progress({ data, go }: { data: GarminData; go: (k: strin
             <ToggleButton value="year">Año</ToggleButton>
           </ToggleButtonGroup>
         } />
+      <KeyFacts facts={progressFacts(data)} />
       <Compare data={data} mode={cmp} />
 
       <Weight data={data} />

@@ -3,8 +3,8 @@
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import { mean, type Day, type GarminData } from './data';
-import { dec1, hm, int } from './format';
+import { mean, mmss, type Day, type GarminData } from './data';
+import { dateShort, dec1, duration, hm, int } from './format';
 import { CATEGORY, useResolvedMode, type Category } from './theme';
 import { CARD_SX } from './ui';
 
@@ -126,5 +126,68 @@ export function trainingFacts(data: GarminData): (Fact | null)[] {
       note: week.length ? (km ? `${dec1(km)} km corriendo` : 'Sin carrera esta semana') : 'Ningún entreno esta semana' },
     vo2?.vo2 != null ? { cat: 'energy', label: 'VO2max', value: dec1(vo2.vo2), tone: dv != null && dv >= 0.5 ? 'good' : dv != null && dv <= -1 ? 'watch' : 'neutral',
       note: dv == null ? 'Tu forma aeróbica según el reloj' : dv >= 0.5 ? `+${dec1(dv)} en 2 meses: estás en mejor forma` : dv <= -1 ? `${dec1(dv)} en 2 meses` : 'Estable en los últimos 2 meses' } : null,
+  ];
+}
+
+const RUN = (g: string) => g === 'Correr' || g === 'Cinta';
+const daysAgo = (n: number) => Date.now() - n * 864e5;
+const pctChange = (now: number, before: number) => (before > 0 ? ((now - before) / before) * 100 : null);
+
+export function pacesFacts(data: GarminData): (Fact | null)[] {
+  const p = data.paces;
+  const runs = data.activities.filter((a) => RUN(a.group) && new Date(a.start).getTime() >= daysAgo(14));
+  const total = runs.reduce((s, a) => s + a.z.reduce((x, v) => x + v, 0), 0);
+  const easy = runs.reduce((s, a) => s + (a.z[0] ?? 0) + (a.z[1] ?? 0), 0);
+  const pct = total >= 30 ? (easy / total) * 100 : null;
+  return [
+    pct != null ? { cat: 'heart', label: 'Tiempo suave · 14 días', value: int(pct), unit: '%', tone: pct >= 75 ? 'good' : pct < 60 ? 'watch' : 'neutral',
+      note: pct >= 75 ? 'Ruedas suave de verdad: así se gana fondo' : pct < 60 ? 'Mucho tiempo en zonas altas: los rodajes, más lentos' : 'Cerca: lo ideal es un 80 % en zonas 1-2' } : null,
+    p ? { cat: 'training', label: 'Rodaje', value: `${mmss(p.easyRange[0])}–${mmss(p.easyRange[1])}`, unit: '/km', tone: 'neutral', note: 'Tu ritmo para la mayoría de salidas' } : null,
+    p?.stale ? { cat: 'training', label: 'Tu nivel', value: dec1(p.vdot), unit: 'VDOT', tone: 'watch', note: 'Marca de hace más de 6 meses: pon una reciente' }
+      : p ? { cat: 'training', label: 'Umbral', value: mmss(p.refs.threshold), unit: '/km', tone: 'neutral', note: 'Para tempo y series largas' } : null,
+  ];
+}
+
+export function gymFacts(data: GarminData): (Fact | null)[] {
+  const g = data.gym;
+  if (!g) return [];
+  // El lunes la semana va a cero: entonces se enseña la semana pasada
+  const thisWeek = g.weeks[g.weeks.length - 1];
+  const usePrev = !!thisWeek && thisWeek.sets === 0 && g.weeks.length > 1;
+  const end = g.weeks.length - (usePrev ? 1 : 0);
+  const w = g.weeks[end - 1];
+  const prev = g.weeks.slice(Math.max(0, end - 5), end - 1);
+  const avg = prev.length ? prev.reduce((s, x) => s + x.sets, 0) / prev.length : null;
+  const low = [...g.muscleAvg4w].filter((m) => m.sets < 6).sort((a, b) => a.sets - b.sets)[0];
+  const rec = g.records.filter((r) => r.best && new Date(r.best.d).getTime() >= daysAgo(30))
+    .sort((a, b) => (b.best!.d).localeCompare(a.best!.d))[0];
+  return [
+    rec?.best ? { cat: 'training', label: `Récord en ${rec.label.toLowerCase()}`, value: int(rec.best.e1rm), unit: 'kg', tone: 'good',
+      note: `1RM estimado con ${dec1(rec.best.kg).replace(',0', '')} kg × ${rec.best.reps}` } : null,
+    low ? { cat: 'training', label: low.label, value: dec1(low.sets), unit: 'series/sem', tone: 'watch', note: 'Por debajo de 6 a la semana: añade alguna serie' } : null,
+    w ? { cat: 'training', label: usePrev ? 'Semana pasada' : 'Esta semana', value: int(w.sets), unit: w.sets === 1 ? 'serie' : 'series', tone: 'neutral',
+      note: avg != null ? `Tu media: ${int(avg)} series por semana` : `${w.sessions} sesiones` } : null,
+  ];
+}
+
+export function progressFacts(data: GarminData): (Fact | null)[] {
+  const inRange = (a: { start: string }, from: number, to: number) => { const t = new Date(a.start).getTime(); return t >= from && t < to; };
+  const now = Date.now();
+  const cur = data.activities.filter((a) => inRange(a, daysAgo(30), now + 864e5));
+  const old = data.activities.filter((a) => inRange(a, daysAgo(60), daysAgo(30)));
+  const km = (l: typeof cur) => l.reduce((s, a) => s + (RUN(a.group) ? a.km ?? 0 : 0), 0);
+  const dKm = pctChange(km(cur), km(old));
+  const dN = pctChange(cur.length, old.length);
+  const rec = (data.records ?? []).filter((r) => new Date(r.date).getTime() >= daysAgo(30)).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const recValue = (r: NonNullable<typeof rec>) => r.kind === 'time' ? duration(r.value) : r.kind === 'km' || r.kind === 'vo2' ? dec1(r.value) : int(r.value);
+  const recUnit: Record<string, string> = { km: 'km', steps: 'pasos', score: '/ 100', bpm: 'lpm', ms: 'ms' };
+  const trend = (d: number | null): Tone => d == null ? 'neutral' : d >= 10 ? 'good' : d <= -30 ? 'watch' : 'neutral';
+  const vs = (d: number | null) => `${d != null && d > 0 ? '+' : ''}${int(d)} % frente a los 30 días anteriores`;
+  return [
+    rec ? { cat: 'training', label: `Récord: ${rec.label.toLowerCase()}`, value: recValue(rec), unit: recUnit[rec.kind], tone: 'good',
+      note: `Lo conseguiste el ${dateShort(new Date(rec.date))}` } : null,
+    // Sin mes anterior con el que comparar, el bloque de abajo ya lo cuenta: no se repite
+    dKm != null ? { cat: 'training', label: 'Km corriendo · 30 días', value: dec1(km(cur)), unit: 'km', tone: trend(dKm), note: vs(dKm) } : null,
+    dN != null ? { cat: 'activity', label: 'Entrenos · 30 días', value: int(cur.length), tone: trend(dN), note: vs(dN) } : null,
   ];
 }

@@ -2,6 +2,8 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useIsOwner } from '../owner';
 import { haptic } from '../haptics';
 import Accordion from '@mui/material/Accordion';
+import Collapse from '@mui/material/Collapse';
+import ButtonBase from '@mui/material/ButtonBase';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import Alert from '@mui/material/Alert';
@@ -61,7 +63,7 @@ const TOPIC: Record<string, { icon: ReactNode; color: { light: string; dark: str
   peso: { icon: <MonitorWeightOutlined />, color: { light: '#188038', dark: '#81C995' } },
   preferencias: { icon: <TuneRounded2 />, color: { light: '#80868B', dark: '#BDC1C6' } },
 };
-import { isoLocal, mmss, stepPace, toDate, type CoachView, type GarminData, type PaceRef, type PlanSession, type SessionType, type WeatherDay } from '../data';
+import { isoLocal, mmss, stepPace, toDate, type CoachView, type GarminData, type PaceRef, type Plan, type PlanSession, type SessionType, type WeatherDay } from '../data';
 import { TimeEditor, TimeTag, WeatherBadge, WeatherCard } from './PlanTime';
 import WbSunnyRounded from '@mui/icons-material/WbSunnyRounded';
 import AirRounded from '@mui/icons-material/AirRounded';
@@ -737,21 +739,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
             <Box><Typography variant="subtitle1">Lo que tu coach sabe de ti</Typography>
               <Typography variant="caption" color="text.secondary">Se actualiza en cada ajuste con tus datos y valoraciones</Typography></Box>
           </Stack>
-          <Stack spacing={1.75}>
-            {plan.memory.map((m, i) => {
-              const it = typeof m === 'string' ? { topic: 'preferencias' as const, title: '', detail: m } : m;
-              const tc = TOPIC[it.topic] ?? TOPIC.preferencias;
-              return (
-                <Stack key={i} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
-                  <IconBubble color={tc.color[mode]} size={30}>{tc.icon}</IconBubble>
-                  <Box sx={{ minWidth: 0, pt: 0.25 }}>
-                    {it.title && <Typography variant="body2" sx={{ fontWeight: 600 }}>{it.title}</Typography>}
-                    <Typography variant="body2" color="text.secondary" sx={{ '& b': { color: 'text.primary' } }}><Rich>{it.detail}</Rich></Typography>
-                  </Box>
-                </Stack>
-              );
-            })}
-          </Stack>
+          <CoachMemory items={plan.memory} mode={mode} />
         </Card>
         {last && last.kind === 'adapt' && (
           <Card sx={{ ...CARD_SX }}>
@@ -825,6 +813,42 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           </AccordionDetails>
         </Accordion>
       ))}
+    </Box>
+  );
+}
+
+/** Lo que el coach sabe de ti: una fila por dato (icono + título); el detalle se abre al tocar. */
+function CoachMemory({ items, mode }: { items: Plan['memory']; mode: 'light' | 'dark' }) {
+  const [open, setOpen] = useState<number | null>(null);
+  return (
+    <Box>
+      {items.map((m, i) => {
+        const it = typeof m === 'string' ? { topic: 'preferencias' as const, title: '', detail: m } : m;
+        const tc = TOPIC[it.topic] ?? TOPIC.preferencias;
+        const on = open === i;
+        if (!it.title) {
+          return (
+            <Typography key={i} variant="body2" color="text.secondary" sx={{ py: 1.25, borderTop: i ? '1px solid' : 'none', borderColor: 'divider', '& b': { color: 'text.primary' } }}>
+              <Rich>{it.detail}</Rich>
+            </Typography>
+          );
+        }
+        return (
+          <Box key={i} sx={{ borderTop: i ? '1px solid' : 'none', borderColor: 'divider' }}>
+            <ButtonBase onClick={() => setOpen(on ? null : i)} aria-expanded={on}
+              sx={{ width: '100%', justifyContent: 'flex-start', textAlign: 'left', gap: 1.5, py: 1.25, borderRadius: '12px' }}>
+              <IconBubble color={tc.color[mode]} size={30}>{tc.icon}</IconBubble>
+              <Typography variant="body2" sx={{ fontWeight: 600, flex: 1, minWidth: 0 }}>{it.title}</Typography>
+              <ExpandMoreRounded sx={{ color: 'text.secondary', transition: 'transform .2s', transform: on ? 'rotate(180deg)' : 'none' }} />
+            </ButtonBase>
+            <Collapse in={on} unmountOnExit>
+              <Typography variant="body2" color="text.secondary" sx={{ pl: '42px', pb: 1.5, '& b': { color: 'text.primary' } }}>
+                <Rich>{it.detail}</Rich>
+              </Typography>
+            </Collapse>
+          </Box>
+        );
+      })}
     </Box>
   );
 }

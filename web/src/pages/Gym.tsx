@@ -18,6 +18,7 @@ import { dateShort, dec1, int } from '../format';
 import { useCat, useResolvedMode } from '../theme';
 import { bandAxis, yClean } from '../charts';
 import { CARD_SX, IconBubble, PageHeader, SectionTitle, chartSx } from '../ui';
+import { KeyFacts, gymFacts } from '../highlights';
 
 /** Un color por grupo muscular (claro, oscuro). */
 const MUSCLE_COLOR: Record<string, [string, string]> = {
@@ -53,6 +54,7 @@ export default function Gym({ data, go }: { data: GarminData; go: (k: string) =>
   return (
     <Box>
       <PageHeader title="Gimnasio" subtitle="Lo que registra tu reloj en cada serie: récords, volumen por músculo y progresión" />
+      <KeyFacts facts={gymFacts(data)} />
       <Box sx={{ display: 'grid', gap: { xs: 1.25, sm: 2 }, gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, mb: 2 }}>
         {[
           { l: 'Sesiones', v: int(g.totals.sessions), s: `${g.totals.withSets} con series` },
