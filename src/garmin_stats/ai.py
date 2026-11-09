@@ -38,7 +38,7 @@ PRICES = {
 MONTHLY_BUDGET = 50.0   # $ al mes (por defecto; en AWS cada usuaria tiene el suyo en GARMIN_STATS_AI_BUDGET)
 SAFE_LIMIT = 40.0       # al llegar aquí, chat y plan pasan a Haiku (80 % del tope)
 MAX_CALLS_PER_DAY = 3
-SCHEMA_VERSION = 2  # súbelo al cambiar los campos de Insights: fuerza una regeneración por persona
+SCHEMA_VERSION = 3  # súbelo al cambiar los campos de Insights: fuerza una regeneración por persona
 KEY_FILE = Path("~/.config/anthropic/garmin-stats-key").expanduser()
 CACHE = DATA_DIR / "ai_cache.json"
 # El PC escribe ai_usage.log y AWS Lambda ai_usage_lambda.log; los resúmenes leen los dos.
@@ -64,12 +64,18 @@ class Insights(BaseModel):
     weekly_focus: str = Field(description="El objetivo principal para esta semana, una frase")
     analysis: list[str] = Field(description="2-3 conclusiones sencillas sobre qué influye en qué (de 'relations'), "
                                             "en lenguaje de calle, con el dato de cada una y sin hablar de correlaciones ni ρ")
-    last_workout: str = Field(description="Tarjeta 'Tu último entreno' (de 'last_activity'): 2 frases, máx. 220 caracteres, "
-                                          "en lenguaje de calle. Primero cómo fue frente a tus entrenos parecidos ('similar_recent') "
-                                          "con un dato concreto (ritmo, pulso, distancia o kilos); después qué hacer ahora (recuperar, "
-                                          "comer, cómo afrontar la siguiente sesión). Sin jerga: nada de TRIMP, EF, deriva ni zonas por número; "
-                                          "di 'suave', 'cómodo' o 'exigente'. Si no hay entrenos parecidos (count 0), no lo menciones: "
-                                          "destaca lo mejor del entreno. Km con un decimal. Esta tarjeta sí puede hablar de un entreno de hoy.")
+    last_workout: str = Field(description="Tarjeta 'Tu último entreno' (de 'last_activity'): análisis técnico de 4-5 frases, "
+                                          "máx. 560 caracteres, para alguien que entrena en serio. Usa los datos que haya: "
+                                          "1) cómo fue frente a 'similar_recent' con cifras (ritmo, pulso, km, carga); "
+                                          "2) intensidad real: reparto de minutos por zona ('minutes_by_zone_1_to_5', con los lpm de 'hr_zones' si están) "
+                                          "y si fue suave, de umbral o de calidad; "
+                                          "3) eficiencia: deriva cardiaca ('dec', % que sube el pulso a igual ritmo: <5 % buena base aeróbica, >8 % fatiga, calor o falta de fondo), "
+                                          "eficiencia aeróbica ('ef', metros por latido, compárala con 'similar_recent'), cadencia y desnivel si son relevantes; "
+                                          "4) qué significa para la carga ('load_now': acwr) y qué hacer en las próximas 24-48 h. "
+                                          "Términos técnicos sí, pero cada uno con su cifra y entendible (di 'deriva cardiaca del 4 %', no solo 'dec'). "
+                                          "En caminatas o fuerza, adapta: pulso y zonas, desnivel, series y ejercicios. "
+                                          "Si no hay entrenos parecidos (count 0), no lo menciones. Km con un decimal. Sin inventar datos que no estén. "
+                                          "Esta tarjeta sí puede hablar de un entreno de hoy.")
     data_note: str = Field(description="Una o dos frases amables sobre cuántos datos hay (de 'coverage'): desde cuándo "
                                        "registras, qué parte de los días llevas el reloj y si falta algún mes reciente")
 
@@ -130,7 +136,7 @@ def _summary(data: dict) -> dict:
     yesterday = days[-2] if len(days) > 1 else None
     acts = data["activities"][-8:]
     return {
-        "last_activity": _last_activity(data["activities"]),
+        "last_activity": _last_activity(data["activities"], data.get("profile"), days),
         "today": date.today().isoformat(),
         "now": datetime.now().strftime("%H:%M"),
         "yesterday_complete": yesterday and {k: yesterday.get(k) for k in ("d", "steps", "stepGoal", "rhr", "stress", "bbMax", "bbMin", "imMod", "imVig")},
@@ -155,12 +161,12 @@ def _summary(data: dict) -> dict:
     }
 
 
-def _last_activity(acts: list[dict]) -> dict | None:
+def _last_activity(acts: list[dict], profile: dict | None = None, days: list[dict] | None = None) -> dict | None:
     """El último entreno con más detalle y la media de los parecidos (mismo deporte, 90 días antes) para comparar."""
     if not acts:
         return None
     a = acts[-1]
-    keys = ("start", "group", "name", "km", "min", "pace", "hr", "hrMax", "trimp", "vo2", "cad", "elev", "cal", "pr", "swolf")
+    keys = ("start", "group", "name", "km", "min", "pace", "hr", "hrMax", "trimp", "ef", "dec", "vo2", "cad", "elev", "cal", "pr", "swolf")
     out = {k: a.get(k) for k in keys if a.get(k) is not None}
     if a.get("z"):
         out["minutes_by_zone_1_to_5"] = a["z"]
@@ -178,8 +184,15 @@ def _last_activity(acts: list[dict]) -> dict | None:
         vals = [x[k] for x in same if x.get(k) is not None]
         return round(sum(vals) / len(vals), 2) if vals else None
 
-    out["similar_recent"] = {"count": len(same), **{k: avg(k) for k in ("km", "min", "pace", "hr", "trimp")}}
-    out["note"] = "pace = minutos por km (5,5 = 5:30 /km); similar_recent = media del mismo deporte en los 90 días anteriores."
+    out["similar_recent"] = {"count": len(same), **{k: avg(k) for k in ("km", "min", "pace", "hr", "trimp", "ef", "dec", "cad")}}
+    zones = (profile or {}).get("zones")
+    if zones:
+        out["hr_zones"] = {"floors_bpm_z1_to_z5": zones, "max_hr": (profile or {}).get("max_hr")}
+    load = next((d for d in reversed(days or []) if d.get("acwr") is not None), None)
+    if load:
+        out["load_now"] = {k: load.get(k) for k in ("d", "acwr", "atl", "ctl", "tsb")}
+    out["note"] = ("pace = minutos por km (5,5 = 5:30 /km); similar_recent = media del mismo deporte en los 90 días anteriores; "
+                   "ef = metros por latido; dec = deriva cardiaca en %; acwr = carga 7 días / carga 28 días (0,8-1,3 seguro, >1,5 riesgo).")
     return out
 
 
