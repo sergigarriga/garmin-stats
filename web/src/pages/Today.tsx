@@ -15,8 +15,9 @@ import Bolt from '@mui/icons-material/Bolt';
 import Speed from '@mui/icons-material/Speed';
 import FitnessCenter from '@mui/icons-material/FitnessCenter';
 import TipsAndUpdates from '@mui/icons-material/TipsAndUpdates';
-import { isoLocal, lastWith, mean, toDate, useNow, type GarminData, type Day } from '../data';
-import { dateLong, dateShort, hm, int, dec1, pace } from '../format';
+import { isoLocal, lastWith, mean, toDate, useNow, type Activity, type GarminData, type Day } from '../data';
+import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
+import { dateLong, dateShort, hm, hmShort, int, dec1, pace } from '../format';
 import { useCat } from '../theme';
 import { AiBadge, AiCards, CARD_SX, IconBubble, InsightList, MetricCard, PageHeader, RingCard, SectionTitle, chartSx } from '../ui';
 import Stack from '@mui/material/Stack';
@@ -68,6 +69,78 @@ function vs30(days: Day[], ref: Day | undefined, pick: (d: Day) => number | unde
   const v = pick(ref);
   const m = mean(days.slice(Math.max(0, i - 30), i).map(pick));
   return v != null && m != null ? v - m : undefined;
+}
+
+const dayLabel = (iso: string) => {
+  const d = new Date(iso); const t = new Date();
+  const diff = Math.round((new Date(t.toDateString()).getTime() - new Date(d.toDateString()).getTime()) / 864e5);
+  return diff === 0 ? 'Hoy' : diff === 1 ? 'Ayer' : diff < 7 ? `Hace ${diff} días` : dateShort(d);
+};
+
+/** Frase de respaldo (sin IA): el último entreno frente a la media de los parecidos de los 90 días anteriores. */
+function ruleInsight(acts: Activity[]): string | null {
+  const a = acts[acts.length - 1];
+  const since = new Date(a.start).getTime() - 90 * 864e5;
+  const same = acts.slice(0, -1).filter((x) => x.group === a.group && new Date(x.start).getTime() >= since);
+  if (same.length < 2) return null;
+  const avg = (k: 'pace' | 'km' | 'min' | 'hr') => mean(same.map((x) => x[k]));
+  const p = avg('pace');
+  if (a.pace && p && a.km && a.km > 0.5) {
+    const s = Math.round((p - a.pace) * 60);
+    if (Math.abs(s) >= 5) return `Ritmo ${pace(a.pace)}: ${Math.abs(s)} s/km ${s > 0 ? 'más rápido' : 'más lento'} que tu media de ${a.group.toLowerCase()} de los últimos 3 meses.`;
+    return `Ritmo ${pace(a.pace)}, en tu línea de los últimos 3 meses.`;
+  }
+  const m = avg('min');
+  if (a.min && m) {
+    const d = Math.round(a.min - m);
+    return Math.abs(d) >= 5 ? `${int(a.min)} min: ${Math.abs(d)} min ${d > 0 ? 'más' : 'menos'} que tu sesión media de los últimos 3 meses.` : `${int(a.min)} min, como tu sesión habitual.`;
+  }
+  return null;
+}
+
+/** Tu último entreno con los datos clave y un comentario de la IA (o una frase por reglas si no hay IA). */
+function LastWorkoutCard({ data, go }: { data: GarminData; go: (tab: string) => void }) {
+  const cat = useCat();
+  const a = data.activities[data.activities.length - 1];
+  if (!a) return null;
+  const ai = data.ai?.last_workout && data.ai.last_workout_id === a.id ? data.ai.last_workout : null;
+  const text = ai ?? ruleInsight(data.activities);
+  const color = cat(a.group === 'Correr' || a.group === 'Cinta' ? 'training' : a.group === 'Natación' ? 'recovery' : 'activity');
+  const stats = [
+    a.km ? { v: dec1(a.km), u: 'km' } : null,
+    a.min ? (a.min >= 60 ? { v: hmShort(a.min / 60), u: '' } : { v: int(a.min), u: 'min' }) : null,
+    a.pace && a.km && a.km > 0.5 ? { v: pace(a.pace).replace(' /km', ''), u: '/km' } : null,
+    a.hr ? { v: String(a.hr), u: 'lpm' } : null,
+    !a.km && a.sets?.length ? { v: String(a.sets.length), u: 'series' } : null,
+  ].filter((x): x is { v: string; u: string } => !!x).slice(0, 3);
+  return (
+    <Card onClick={() => go(`act-${a.id}`)} sx={{ ...CARD_SX, mt: 2, cursor: 'pointer' }}>
+      <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+        <IconBubble color={color}><SportIcon group={a.group} /></IconBubble>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>TU ÚLTIMO ENTRENO · {dayLabel(a.start).toUpperCase()}</Typography>
+          <Typography variant="subtitle1" noWrap>{a.name ?? a.group}</Typography>
+        </Box>
+      </Stack>
+      {stats.length > 0 && (
+        <Box sx={{ display: 'grid', gridTemplateColumns: `repeat(${stats.length}, 1fr)`, gap: 1, mt: 2 }}>
+          {stats.map((x, i) => (
+            <Box key={i}>
+              <Typography component="span" sx={{ fontSize: 22, fontWeight: 600 }}>{x.v}</Typography>
+              {x.u && <Typography component="span" variant="body2" color="text.secondary"> {x.u}</Typography>}
+            </Box>
+          ))}
+        </Box>
+      )}
+      {text && (
+        <Box sx={{ mt: 2, p: 1.5, borderRadius: '16px', display: 'flex', gap: 1, alignItems: 'flex-start',
+          bgcolor: 'color-mix(in srgb, #D4542F 8%, transparent)' }}>
+          {ai && <AutoAwesomeRounded sx={{ fontSize: 18, color: '#D4542F', mt: '2px', flexShrink: 0 }} />}
+          <Typography variant="body2"><Rich>{text}</Rich></Typography>
+        </Box>
+      )}
+    </Card>
+  );
 }
 
 /** Lo que todas las vistas de "Hoy" necesitan: la fila de hoy y los datos en vivo del reloj. */
@@ -150,6 +223,8 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
         </Typography>
       )}
 
+      <LastWorkoutCard data={data} go={go} />
+
       <SectionTitle>Cómo estás</SectionTitle>
       <CheckIn data={data} />
     </Box>
@@ -206,7 +281,7 @@ export function TodayDetail({ data, go }: { data: GarminData; go: (tab: string) 
       </Box>
 
       <SectionTitle>Comida</SectionTitle>
-      <FoodTodayCard go={go} />
+      <FoodTodayCard go={go} mt={0} />
     </Box>
   );
 }

@@ -14,7 +14,7 @@ import hashlib
 import os
 import json
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -38,6 +38,7 @@ PRICES = {
 MONTHLY_BUDGET = 50.0   # $ al mes (por defecto; en AWS cada usuaria tiene el suyo en GARMIN_STATS_AI_BUDGET)
 SAFE_LIMIT = 40.0       # al llegar aquí, chat y plan pasan a Haiku (80 % del tope)
 MAX_CALLS_PER_DAY = 3
+SCHEMA_VERSION = 2  # súbelo al cambiar los campos de Insights: fuerza una regeneración por persona
 KEY_FILE = Path("~/.config/anthropic/garmin-stats-key").expanduser()
 CACHE = DATA_DIR / "ai_cache.json"
 # El PC escribe ai_usage.log y AWS Lambda ai_usage_lambda.log; los resúmenes leen los dos.
@@ -63,6 +64,11 @@ class Insights(BaseModel):
     weekly_focus: str = Field(description="El objetivo principal para esta semana, una frase")
     analysis: list[str] = Field(description="2-3 conclusiones sencillas sobre qué influye en qué (de 'relations'), "
                                             "en lenguaje de calle, con el dato de cada una y sin hablar de correlaciones ni ρ")
+    last_workout: str = Field(description="Tarjeta 'Tu último entreno' (de 'last_activity'): 2 frases, máx. 220 caracteres, "
+                                          "en lenguaje de calle. Primero cómo fue frente a tus entrenos parecidos ('similar_recent') "
+                                          "con un dato concreto (ritmo, pulso, distancia o kilos); después qué hacer ahora (recuperar, "
+                                          "comer, cómo afrontar la siguiente sesión). Sin jerga: nada de TRIMP, EF, deriva ni zonas por número; "
+                                          "di 'suave', 'cómodo' o 'exigente'. Esta tarjeta sí puede hablar de un entreno de hoy.")
     data_note: str = Field(description="Una o dos frases amables sobre cuántos datos hay (de 'coverage'): desde cuándo "
                                        "registras, qué parte de los días llevas el reloj y si falta algún mes reciente")
 
@@ -123,6 +129,7 @@ def _summary(data: dict) -> dict:
     yesterday = days[-2] if len(days) > 1 else None
     acts = data["activities"][-8:]
     return {
+        "last_activity": _last_activity(data["activities"]),
         "today": date.today().isoformat(),
         "now": datetime.now().strftime("%H:%M"),
         "yesterday_complete": yesterday and {k: yesterday.get(k) for k in ("d", "steps", "stepGoal", "rhr", "stress", "bbMax", "bbMin", "imMod", "imVig")},
@@ -147,12 +154,40 @@ def _summary(data: dict) -> dict:
     }
 
 
+def _last_activity(acts: list[dict]) -> dict | None:
+    """El último entreno con más detalle y la media de los parecidos (mismo deporte, 90 días antes) para comparar."""
+    if not acts:
+        return None
+    a = acts[-1]
+    keys = ("start", "group", "name", "km", "min", "pace", "hr", "hrMax", "trimp", "vo2", "cad", "elev", "cal", "pr", "swolf")
+    out = {k: a.get(k) for k in keys if a.get(k) is not None}
+    if a.get("z"):
+        out["minutes_by_zone_1_to_5"] = a["z"]
+    if a.get("sets"):
+        out["sets"] = len(a["sets"])
+        out["exercises"] = sorted({x.get("ex") for x in a["sets"] if x.get("ex")})[:8]
+    start = (a.get("start") or "")[:10]
+    try:
+        since = (date.fromisoformat(start) - timedelta(days=90)).isoformat()
+    except ValueError:
+        since = ""
+    same = [x for x in acts[:-1] if x.get("group") == a.get("group") and (x.get("start") or "")[:10] >= since]
+
+    def avg(k):
+        vals = [x[k] for x in same if x.get(k) is not None]
+        return round(sum(vals) / len(vals), 2) if vals else None
+
+    out["similar_recent"] = {"count": len(same), **{k: avg(k) for k in ("km", "min", "pace", "hr", "trimp")}}
+    out["note"] = "pace = minutos por km (5,5 = 5:30 /km); similar_recent = media del mismo deporte en los 90 días anteriores."
+    return out
+
+
 def _fingerprint(data: dict) -> str:
     """Cambia solo cuando hay algo nuevo que comentar: día, última noche o última actividad."""
     days = data["days"]
     night = next((d["d"] for d in reversed(days) if d.get("sleepH") is not None), None)
     act = data["activities"][-1]["id"] if data["activities"] else None
-    return hashlib.sha256(json.dumps([date.today().isoformat(), night, act]).encode()).hexdigest()[:16]
+    return hashlib.sha256(json.dumps([SCHEMA_VERSION, date.today().isoformat(), night, act]).encode()).hexdigest()[:16]
 
 
 def _load_cache() -> dict:
@@ -226,6 +261,8 @@ def generate(data: dict, force: bool = False, offline: bool = False) -> dict | N
         "model": MODEL,
         "generatedAt": stamp,
         **resp.parsed_output.model_dump(),
+        # A qué entreno se refiere last_workout: la web solo lo enseña si sigue siendo el último
+        "last_workout_id": data["activities"][-1]["id"] if data["activities"] else None,
     }
     cache.update({"fingerprint": fp, "result": result})
     CACHE.write_text(json.dumps(cache, ensure_ascii=False, indent=1))

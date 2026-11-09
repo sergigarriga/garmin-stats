@@ -777,22 +777,38 @@ export default function Food({ data, go }: { data: GarminData; go: (k: string) =
 }
 
 /** Tarjeta pequeña en Hoy (solo si tienes Comida activada en este navegador): lo comido hoy y un botón para añadir. */
-export function FoodTodayCard({ go }: { go: (k: string) => void }) {
+export function FoodTodayCard({ go, mt = 2 }: { go: (k: string) => void; mt?: number }) {
   const mode = useResolvedMode() as Mode;
   const on = (() => { try { return localStorage.getItem(FOOD_ON) === '1'; } catch { return false; } })();
   const [v, setV] = useState<FoodView | null>(null);
-  useEffect(() => { if (on) call<FoodView>('./api/food').then(setV).catch(() => setV(null)); }, [on]);
-  if (!on || !v?.prefs.enabled) return null;
+  const [loaded, setLoaded] = useState(!on);
+  useEffect(() => { if (on) call<FoodView>('./api/food').then(setV).catch(() => setV(null)).finally(() => setLoaded(true)); }, [on]);
+  if (!loaded) return null;
+  if (!on || !v?.prefs.enabled) {
+    // Sin el módulo activado: invitación amable en vez de un hueco vacío
+    return (
+      <Card onClick={() => go('comida')} sx={{ ...CARD_SX, mt, display: 'flex', gap: 2, alignItems: 'center', cursor: 'pointer' }}>
+        <IconBubble color={COL.intake[mode]}><RestaurantRounded /></IconBubble>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="subtitle1">Apunta lo que comes con una foto</Typography>
+          <Typography variant="body2" color="text.secondary">
+            La IA calcula calorías y proteína y lo compara con lo que gastas. Está apagado hasta que tú lo actives.
+          </Typography>
+        </Box>
+        <Button variant="outlined" sx={{ ...PILL, flexShrink: 0 }} onClick={(e) => { e.stopPropagation(); go('comida'); }}>Probar</Button>
+      </Card>
+    );
+  }
   const t = v.today;
   const hide = v.prefs.hideCalories;
   const addNow = () => { sessionStorage.setItem('food-add', '1'); go('comida'); };
   return (
-    <Card sx={{ ...CARD_SX, mt: 2, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+    <Card sx={{ ...CARD_SX, mt, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
       <IconBubble color={COL.intake[mode]}><RestaurantRounded /></IconBubble>
       <Box sx={{ flex: 1, minWidth: 160, cursor: 'pointer' }} onClick={() => go('comida')}>
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Comida de hoy</Typography>
         <Typography>
-          {!t.entries ? 'Aún no has apuntado nada.'
+          {!t.entries ? 'Aún no has apuntado nada hoy. Haz una foto de tu próxima comida y listo.'
             : hide ? `Proteína ${g1(t.protein)} · hidratos ${g1(t.carbs)} · grasa ${g1(t.fat)}`
               : `Comido ${kc(t.intakeKcal)}${t.burnedKcal != null ? ` · gastado ${kc(t.burnedKcal)} (previsto)` : ''} · proteína ${g1(t.protein)}`}
         </Typography>

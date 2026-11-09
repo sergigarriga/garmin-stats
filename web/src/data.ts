@@ -100,7 +100,7 @@ export interface AiCard { category: AiCategory; tone: 'positive' | 'neutral' | '
 export interface AiInsights {
   model: string; generatedAt: string; headline: string; today: AiCard[];
   sleep: string[]; heart: string[]; activity: string[]; training: string[]; weekly_focus: string;
-  analysis?: string[]; data_note?: string;
+  analysis?: string[]; data_note?: string; last_workout?: string; last_workout_id?: number | null;
 }
 
 export interface AiUsage {
