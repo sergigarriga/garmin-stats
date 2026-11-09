@@ -326,6 +326,8 @@ export default function App() {
   const pageKey = actId != null ? 'entreno' : blocked ? 'hoy' : (PAGES.some((p) => p.key === page) ? page : 'hoy');
   const section = sectionOf(pageKey);
   const sections = SECTIONS.filter((x) => !x.owner || isOwner);
+  // El logo lleva al inicio: Hoy → Resumen, arriba del todo.
+  const goHome = () => { haptic('tap'); go('hoy'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   useEffect(() => { if (actId == null) setLast((l) => ({ ...l, [section.key]: pageKey })); }, [pageKey, section.key, actId]);
 
   if (!data) {
@@ -352,13 +354,19 @@ export default function App() {
           <Toolbar disableGutters sx={{ gap: { xs: 0.75, sm: 1.5 }, minHeight: { xs: 56, sm: 68 } }}>
             {mobile ? (
               <Box sx={{ flex: 1, minWidth: 0, lineHeight: 1 }}>
-                <Wordmark height={26} />
+                <Box component="button" aria-label="Ir al inicio" onClick={goHome}
+                  sx={{ p: 0, border: 0, background: 'none', cursor: 'pointer', display: 'inline-flex', '&:active': { transform: 'scale(0.96)' } }}>
+                  <Wordmark height={26} />
+                </Box>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.2 }} noWrap>
                   {syncing ? 'Conectando con Garmin…' : `Actualizado ${relative(generated, now)}`}
                 </Typography>
               </Box>
             ) : (
-              <Wordmark height={32} />
+              <Box component="button" aria-label="Ir al inicio" onClick={goHome}
+                  sx={{ p: 0, border: 0, background: 'none', cursor: 'pointer', display: 'inline-flex', '&:active': { transform: 'scale(0.96)' } }}>
+                  <Wordmark height={32} />
+                </Box>
             )}
             {!mobile && (
               <Tabs value={section.key} onChange={(_, v) => { const sec = SECTIONS.find((x) => x.key === v)!; go(last[sec.key] ?? sec.pages[0]); }}
