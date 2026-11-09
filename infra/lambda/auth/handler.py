@@ -14,7 +14,6 @@ import hmac
 import html
 import json
 import os
-import re
 import secrets
 import time
 import urllib.parse
@@ -214,6 +213,7 @@ def page(title, text, button=""):
 # ------------------------------------------------------------------ páginas legales (públicas, sin sesión)
 # Sin emails personales: el contacto público es la cuenta de Instagram de la app.
 LEGAL_UPDATED = "9 de noviembre de 2026"
+GOOGLE_SITE_FILES = {"google91ccfe2d5b372e65.html"}  # el archivo que da Search Console (URL-prefix de la web)
 
 PRIVACY = """
 <h1>Política de privacidad</h1>
@@ -350,8 +350,9 @@ def handler(event, _ctx):
     cookies = dict(c.split("=", 1) for c in event.get("cookies") or [] if "=" in c)
     g = _google()
 
-    # Verificación de propiedad en Google Search Console (método "archivo HTML"): el contenido es fijo según el nombre
-    if re.fullmatch(r"/google[0-9a-f]{16}\.html", path):
+    # Verificación de propiedad en Google Search Console (método "archivo HTML"). Solo el nombre exacto que da Google:
+    # Google prueba también un nombre inventado y, si la web responde 200 a cualquiera, la marca como pirateada.
+    if path[1:] in GOOGLE_SITE_FILES:
         return _resp(200, f"google-site-verification: {path[1:]}", ctype="text/html; charset=utf-8")
     if path in ("/auth/privacidad", "/auth/condiciones"):
         return legal(path.rsplit("/", 1)[1])
