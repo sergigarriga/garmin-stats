@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import math
 import re
 from datetime import date, datetime
@@ -12,6 +13,20 @@ import pandas as pd
 from . import metrics as M
 from .analysis import insights
 from . import extras as E
+
+log = logging.getLogger(__name__)
+# Secciones que fallaron en este informe: la web sale igual (sin esa parte) y la sincronización avisa a la dueña.
+SECTION_ERRORS: list[str] = []
+
+
+def _safe(name: str, fn, default):
+    """Una sección rota (datos raros de un reloj, un bug) no tumba todo el informe: se queda vacía y se avisa."""
+    try:
+        return fn()
+    except Exception as e:  # noqa: BLE001
+        log.exception("Sección '%s' ha fallado; sigue sin ella", name)
+        SECTION_ERRORS.append(f"{name}: {type(e).__name__}: {e}"[:300])
+        return default
 
 
 def _num(v, nd=2):
@@ -50,11 +65,11 @@ DAY_FIELDS = {
 
 def payload(A: dict, am: pd.DataFrame, last_sync: str | None, sets: dict | None = None) -> dict:
     day = A["day"].copy()
-    ready, ready_latest = E.readiness(day)
+    ready, ready_latest = _safe("readiness", lambda: E.readiness(day), (pd.Series(float("nan"), index=day.index), None))
     day["ready"] = ready
-    rel = M.relations(day)
-    best = M.best_efforts(am) if not am.empty else pd.DataFrame()
-    ins = insights(A, am, rel, best)
+    rel = _safe("relations", lambda: M.relations(day), pd.DataFrame(columns=["a", "b", "rho", "n", "strength"]))
+    best = _safe("best_efforts", lambda: M.best_efforts(am) if not am.empty else pd.DataFrame(), pd.DataFrame())
+    ins = _safe("insights", lambda: insights(A, am, rel, best), {})
     # Coma decimal en castellano (las fechas usan guiones, no se tocan).
     ins = {k: [re.sub(r"(\d)\.(\d)", r"\1,\2", t) for t in v] for k, v in ins.items()}
 
@@ -84,6 +99,38 @@ def payload(A: dict, am: pd.DataFrame, last_sync: str | None, sets: dict | None 
             "sets": (sets or {}).get(str(a.activity_id)) or None,
         }))
 
+    preds = _safe("predictions", lambda: _predictions(am, best), [])
+    worn = day["rhr"].notna() if "rhr" in day else pd.Series(False, index=day.index)  # mismo criterio que las conclusiones
+    g = worn.groupby(day.index.to_period("M"))
+    coverage = [{"month": str(m), "worn": int(v.sum()), "days": int(len(v))} for m, v in g]
+
+    prof = A["prof"]
+    return {
+        "coverage": coverage,
+        "weights": _safe("weights", lambda: [_clean({"d": r.date.strftime("%Y-%m-%d"), "kg": _num(r.weight_kg, 1),
+                            "fat": _num(getattr(r, "body_fat", None), 1), "muscle": _num(getattr(r, "muscle_kg", None), 1)})
+                    for r in A["weight"].itertuples()] if not A["weight"].empty else [], []),
+        "strength": _safe("strength", lambda: E.strength_summary(sets or {}, am) if not am.empty else None, None),
+        "push": {"vapidPublicKey": __import__("os").environ.get("VAPID_PUBLIC_KEY")} if __import__("os").environ.get("VAPID_PUBLIC_KEY") else None,
+        "readiness": ready_latest,
+        "alerts": _safe("alerts", lambda: E.alerts(day), []),
+        "weeks": _safe("weeks", lambda: E.last_weeks(day, am), None),
+        "records": _safe("records", lambda: E.records(am, day) if not am.empty else [], []),
+        "generatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "lastSync": last_sync,
+        "period": {"start": A["start"].strftime("%Y-%m-%d"), "end": A["end"].strftime("%Y-%m-%d")},
+        "profile": _clean({k: (_num(v, 1) if isinstance(v, (int, float)) else v) for k, v in prof.items()
+                           if k != "display_name" and not isinstance(v, list)}) | {"zones": prof.get("zones")},
+        "days": days,
+        "activities": acts,
+        "insights": ins,
+        "relations": [_clean({"a": r.a, "b": r.b, "rho": _num(r.rho, 2), "n": int(r.n), "strength": r.strength})
+                      for r in rel.itertuples()],
+        "predictions": preds,
+    }
+
+
+def _predictions(am: pd.DataFrame, best: pd.DataFrame) -> list[dict]:
     preds = []
     v = am.dropna(subset=["vo2max_fit"]).sort_values("date") if "vo2max_fit" in am else pd.DataFrame()
     if not v.empty:
@@ -97,35 +144,7 @@ def payload(A: dict, am: pd.DataFrame, last_sync: str | None, sets: dict | None 
                 "bestDate": b["best_date"].iloc[0].strftime("%Y-%m-%d") if not b.empty else None,
                 "best90": _num(b["best_90d_s"].iloc[0], 0) if not b.empty else None,
             }))
-
-    worn = day["rhr"].notna() if "rhr" in day else pd.Series(False, index=day.index)  # mismo criterio que las conclusiones
-    g = worn.groupby(day.index.to_period("M"))
-    coverage = [{"month": str(m), "worn": int(v.sum()), "days": int(len(v))} for m, v in g]
-
-    prof = A["prof"]
-    return {
-        "coverage": coverage,
-        "weights": [_clean({"d": r.date.strftime("%Y-%m-%d"), "kg": _num(r.weight_kg, 1),
-                            "fat": _num(getattr(r, "body_fat", None), 1), "muscle": _num(getattr(r, "muscle_kg", None), 1)})
-                    for r in A["weight"].itertuples()] if not A["weight"].empty else [],
-        "strength": E.strength_summary(sets or {}, am) if not am.empty else None,
-        "push": {"vapidPublicKey": __import__("os").environ.get("VAPID_PUBLIC_KEY")} if __import__("os").environ.get("VAPID_PUBLIC_KEY") else None,
-        "readiness": ready_latest,
-        "alerts": E.alerts(day),
-        "weeks": E.last_weeks(day, am),
-        "records": E.records(am, day) if not am.empty else [],
-        "generatedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
-        "lastSync": last_sync,
-        "period": {"start": A["start"].strftime("%Y-%m-%d"), "end": A["end"].strftime("%Y-%m-%d")},
-        "profile": _clean({k: (_num(v, 1) if isinstance(v, (int, float)) else v) for k, v in prof.items()
-                           if k != "display_name" and not isinstance(v, list)}) | {"zones": prof.get("zones")},
-        "days": days,
-        "activities": acts,
-        "insights": ins,
-        "relations": [_clean({"a": r.a, "b": r.b, "rho": _num(r.rho, 2), "n": int(r.n), "strength": r.strength})
-                      for r in rel.itertuples()],
-        "predictions": preds,
-    }
+    return preds
 
 
 def write_site(data: dict, site_dir) -> object:

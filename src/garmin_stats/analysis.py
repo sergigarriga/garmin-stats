@@ -25,7 +25,17 @@ def assemble(t: dict, prof: dict) -> dict:
     for df in (daily, sleep.drop(columns=["start", "end"], errors="ignore"), hrv, load):
         if not df.empty:
             day = day.join(df.set_index("date"), how="left", rsuffix="_dup")
+        else:  # sin datos de ese tipo (p. ej. reloj sin HRV): columnas vacías en vez de ausentes
+            for c in df.columns:
+                if c != "date" and c not in day:
+                    day[c] = float("nan")
     day = day[[c for c in day.columns if not c.endswith("_dup")]]
+    # Cada reloj mide cosas distintas (sin HRV, sin sueño, sin Body Battery...): toda columna conocida existe,
+    # vacía si hace falta, para que ningún cálculo falle por una columna que no está.
+    from .export import DAY_FIELDS
+    for c in DAY_FIELDS:
+        if c not in day and c != "ready":
+            day[c] = float("nan")
     return {"day": day, "acts": acts, "sleep": sleep, "hrv": hrv, "load": load, "prof": prof,
             "weight": t.get("weight", pd.DataFrame()), "start": start, "end": end}
 

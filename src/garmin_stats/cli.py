@@ -58,15 +58,15 @@ def cmd_report(args) -> None:
                                "day": A["day"].reset_index()})
         data = X.payload(A, am, store.state("last_sync"), sets)
         from . import extras, training
-        data["live"] = extras.live(store)
+        data["live"] = X._safe("live", lambda: extras.live(store), None)
         from . import weather
         try:
             weather.refresh()  # previsión de tu ciudad (como mucho cada ~3 h; si falla, sin previsión)
             data["lastRunArea"] = weather.last_run_area(store)
         except Exception as e:  # noqa: BLE001 - el informe no se cae por el tiempo
             log.warning("Previsión del tiempo: %s", e)
-        training.enrich(data)
-        n_det = extras.write_activity_details(am, SITE_DIR, prof.get("zones"))
+        X._safe("training", lambda: training.enrich(data), None)
+        n_det = X._safe("activity_details", lambda: extras.write_activity_details(am, SITE_DIR, prof.get("zones")), 0)
         if n_det:
             log.info("Detalle de actividades: %d archivos", n_det)
         from . import ai
@@ -78,7 +78,7 @@ def cmd_report(args) -> None:
                 coach.adapt(data=data)  # solo hace algo el primer informe de cada semana
             except Exception as e:  # el informe no debe caerse por el coach
                 log.warning("Coach: no se pudo reajustar el plan (%s)", e)
-        data["coach"] = coach.view(data)
+        data["coach"] = X._safe("coach_view", lambda: coach.view(data), None)
         if os.environ.get("GARMIN_STATS_OWNER") == "1":  # solo la dueña ve los costes de IA; el tope sigue activo
             data["aiUsage"] = ai.usage()
         else:

@@ -128,7 +128,8 @@ def hrv(store: Store) -> pd.DataFrame:
             "base_high": _g(r, "baseline", "balancedUpper"),
             "status": r.get("status"),
         })
-    df = pd.DataFrame(rows)
+    # Relojes sin HRV: tabla vacía pero con sus columnas, para que el resto no falle
+    df = pd.DataFrame(rows, columns=["date", "hrv", "hrv_5min_high", "hrv_weekly", "base_low", "base_high", "status"])
     if not df.empty:
         df["date"] = pd.to_datetime(df["date"])
     return df

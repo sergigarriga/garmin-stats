@@ -48,6 +48,8 @@ READ_ONLY = {"settings.json", "wellness.json", "food.json", "ai_usage_lambda.log
 STALE = 960      # una sincronización "en marcha" de hace más de 16 min se da por muerta
 SYNC_SECONDS = 420  # trabajo con Garmin por ejecución; el resto queda para recalcular, IA y subir
 MAX_PARTS = 15   # tandas como mucho en la primera descarga
+ALERTS_TOPIC = os.environ.get("ALERTS_TOPIC")
+ALERT_EVERY = 6 * 3600  # el mismo fallo de la misma persona se avisa como mucho cada 6 h
 log = logging.getLogger("garmin_stats")
 PULLED: dict[str, str] = {}  # huella de cada archivo de estado al bajarlo: solo se sube lo que esta ejecución cambia
 
@@ -146,6 +148,32 @@ def _push(uid: str) -> None:
         s3.upload_file(str(f), BUCKET, f"{site}acts/{f.name}", ExtraArgs=js)
 
 
+# ------------------------------------------------------------------ avisos
+def _alert(uid: str, kind: str, detail: str) -> None:
+    """Email inmediato a la dueña con qué ha fallado y a quién. Nunca tumba la sincronización."""
+    if not ALERTS_TOPIC:
+        return
+    try:
+        sig = hashlib.sha256(f"{kind}|{detail[:160]}".encode()).hexdigest()[:12]
+        key = users.state_prefix(uid) + "alerts_sent.json"
+        sent = _get_json(key, {})
+        now = time.time()
+        if now - sent.get(sig, 0) < ALERT_EVERY:
+            return
+        u = users.find(users.load(s3, BUCKET), uid=uid) or {}
+        who = u.get("email") or uid
+        boto3.client("sns").publish(
+            TopicArn=ALERTS_TOPIC, Subject=f"Runch: {kind} ({who})"[:99],
+            Message=(f"Persona: {who} (uid {uid})\nQué: {kind}\n\n{detail[-3000:]}\n\n"
+                     "Lo descargado ya está guardado; la sincronización lo reintenta sola cada hora. "
+                     "Logs: CloudWatch /aws/lambda/garmin-stats-sync"))
+        sent = {k: v for k, v in sent.items() if now - v < 7 * 86400}
+        sent[sig] = now
+        _put_json(key, sent)
+    except Exception:  # noqa: BLE001
+        log.exception("No se pudo enviar el aviso")
+
+
 # ------------------------------------------------------------------ entrada
 def handler(event, ctx):
     event = event or {}
@@ -193,7 +221,15 @@ def _sync_user(event: dict, ctx) -> dict:
         return {"ok": False, "key_invalid": True}  # no es un fallo del sistema: no salta la alarma
     except Exception as e:
         _put_json(_status_key(uid), {"status": "error", "at": started, "finished": int(time.time()), "error": str(e)[:200]})
+        import traceback
+        _alert(uid, "la sincronización ha fallado", traceback.format_exc())
         raise  # la alarma "sync falla" sigue saltando
+    try:
+        from garmin_stats import export as X
+        if X.SECTION_ERRORS:
+            _alert(uid, "una parte de la web no se ha podido calcular", "\n".join(X.SECTION_ERRORS))
+    except Exception:  # noqa: BLE001
+        log.exception("Revisión de secciones")
     if partial and part < MAX_PARTS:
         # Queda historial: se publica lo que hay y sigue otra ejecución (mismo candado)
         _put_json(_status_key(uid), {"status": "running", "at": int(time.time()), "token": token, "manual": manual,
@@ -234,10 +270,18 @@ def _run(user: dict, ctx) -> bool:
             raise KeyRejected() from e
         raise
 
-    from garmin_stats import sync
+    from garmin_stats import export, sync
     from garmin_stats.cli import main
-    main(["all"])
-    _push(uid)
+    export.SECTION_ERRORS.clear()
+    try:
+        main(["all"])
+    finally:
+        # Aunque el informe falle, lo descargado de Garmin se guarda: el reintento sigue donde se quedó
+        # en vez de volver a bajar todo el historial desde cero.
+        try:
+            _push(uid)
+        except Exception:  # noqa: BLE001
+            log.exception("No se pudo guardar el estado tras el fallo")
     return bool(sync.LAST_PARTIAL)
 
 
