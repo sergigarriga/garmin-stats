@@ -1,9 +1,8 @@
-// "Lo importante": 2-3 datos clave arriba de cada página, en el color de su categoría y con una marca
-// "Bien" / "Ojo" para ver de un vistazo qué mirar. Todo sale de los datos (sin IA), así que siempre es exacto.
+// "Lo importante": 2-3 datos clave arriba de cada página. Filas limpias: dato grande en el color de su
+// categoría y una nota que se tiñe de verde (bien) o terracota (ojo). Todo sale de los datos (sin IA).
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
-import { alpha } from '@mui/material/styles';
 import { mean, type Day, type GarminData } from './data';
 import { dec1, hm, int } from './format';
 import { CATEGORY, useResolvedMode, type Category } from './theme';
@@ -12,8 +11,7 @@ import { CARD_SX } from './ui';
 type Tone = 'good' | 'watch' | 'neutral';
 export interface Fact { cat: Category; label: string; value: string; unit?: string; note: string; tone: Tone }
 
-const BRAND = { light: '#D4542F', dark: '#F08A66' };
-const TONE_LABEL: Record<Tone, string> = { good: 'Bien', watch: 'Ojo', neutral: '' };
+const TONE = { good: { light: '#146C2E', dark: '#6DD58C' }, watch: { light: '#D4542F', dark: '#F08A66' } };
 const ORDER: Record<Tone, number> = { watch: 0, good: 1, neutral: 2 };
 
 export function KeyFacts({ facts }: { facts: (Fact | null)[] }) {
@@ -21,34 +19,24 @@ export function KeyFacts({ facts }: { facts: (Fact | null)[] }) {
   const list = facts.filter((f): f is Fact => !!f).sort((a, b) => ORDER[a.tone] - ORDER[b.tone]).slice(0, 3);
   if (!list.length) return null;
   return (
-    <Card sx={{ ...CARD_SX, mb: { xs: 2.5, sm: 3 }, p: { xs: 1, sm: 1.5 } }}>
-      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600, px: 1.25, pt: 0.75, pb: 0.5 }}>
-        LO IMPORTANTE
-      </Typography>
-      <Box sx={{ display: 'grid', gap: { xs: 0.75, md: 1.25 }, gridTemplateColumns: { xs: '1fr', md: `repeat(${list.length}, 1fr)` } }}>
-        {list.map((f) => {
-          const c = CATEGORY[f.cat][mode];
-          const toneColor = f.tone === 'watch' ? BRAND[mode] : CATEGORY.activity[mode];
-          return (
-            <Box key={f.label} sx={{ display: 'flex', gap: 1.5, alignItems: 'center', p: 1.25, borderRadius: '18px', bgcolor: alpha(c, mode === 'dark' ? 0.12 : 0.07),
-              borderLeft: `4px solid ${f.tone === 'watch' ? BRAND[mode] : c}` }}>
-              <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{f.label}</Typography>
-                  {f.tone !== 'neutral' && (
-                    <Box component="span" sx={{ px: 0.9, py: 0.1, borderRadius: 999, fontSize: 11, fontWeight: 700, lineHeight: 1.6,
-                      color: toneColor, bgcolor: alpha(toneColor, 0.14) }}>{TONE_LABEL[f.tone]}</Box>
-                  )}
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.35 }}>{f.note}</Typography>
-              </Box>
-              <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
-                <Typography component="span" sx={{ fontSize: 22, fontWeight: 600, color: c }}>{f.value}</Typography>
-                {f.unit && <Typography component="span" variant="caption" color="text.secondary"> {f.unit}</Typography>}
-              </Box>
+    <Card sx={{ ...CARD_SX, mb: { xs: 2.5, sm: 3 }, px: { xs: 2, sm: 2.5 }, py: { xs: 1.5, sm: 2 } }}>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontWeight: 600 }}>LO IMPORTANTE</Typography>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: `repeat(${list.length}, 1fr)` }, columnGap: 3 }}>
+        {list.map((f, k) => (
+          <Box key={f.label} sx={{ display: 'flex', alignItems: 'center', gap: 2, py: 1.25,
+            borderTopStyle: 'solid', borderTopColor: 'divider', borderTopWidth: { xs: k ? '1px' : 0, md: 0 } }}>
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography variant="body2" color="text.secondary">{f.label}</Typography>
+              <Typography variant="body2" sx={{ mt: 0.25, lineHeight: 1.35, fontWeight: f.tone === 'neutral' ? 400 : 500,
+                color: f.tone === 'neutral' ? 'text.primary' : TONE[f.tone][mode] }}>{f.note}</Typography>
             </Box>
-          );
-        })}
+            <Typography sx={{ flexShrink: 0, fontSize: 26, fontWeight: 600, lineHeight: 1, letterSpacing: '-0.01em',
+              color: CATEGORY[f.cat][mode], fontVariantNumeric: 'tabular-nums' }}>
+              {f.value}
+              {f.unit && <Typography component="span" variant="caption" sx={{ ml: 0.5, letterSpacing: 0, color: "text.secondary", fontWeight: 400 }}>{f.unit}</Typography>}
+            </Typography>
+          </Box>
+        ))}
       </Box>
     </Card>
   );

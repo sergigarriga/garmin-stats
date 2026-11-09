@@ -18,8 +18,8 @@ const BRAND = '#D4542F';
 const SLIDES: { icon: ReactNode; color: string; title: string; body: ReactNode }[] = [
   { icon: <HomeRounded />, color: BRAND, title: 'Hoy: lo importante',
     body: <>Cada mañana, de un vistazo: <b>cómo llegas</b>, tu sesión del plan, pasos, sueño, energía y tu <b>último entreno</b> comentado por la IA.</> },
-  { icon: <FavoriteRounded />, color: '#D93025', title: 'Bien u Ojo',
-    body: <>Arriba de cada página verás <b>Lo importante</b>: 2-3 datos con una marca verde <b>Bien</b> o terracota <b>Ojo</b>. Empieza siempre por los <b>Ojo</b>.</> },
+  { icon: <FavoriteRounded />, color: '#D93025', title: 'Lo importante, arriba',
+    body: <>Arriba de cada página verás 2-3 datos clave. Si la nota sale en <b>terracota</b>, mírala primero; en <b>verde</b>, vas bien.</> },
   { icon: <DirectionsRunRounded />, color: '#E8710A', title: 'Tu plan se ajusta solo',
     body: <>En <b>Entreno → Plan</b> está tu semana. El coach la reajusta cada lunes según lo que hagas y cómo te encuentres.</> },
   { icon: <AutoAwesomeRounded />, color: BRAND, title: 'Pregunta lo que quieras',
