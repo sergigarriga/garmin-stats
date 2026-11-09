@@ -156,6 +156,7 @@ h1 em{font-style:normal;background:linear-gradient(90deg,var(--r3),var(--r2) 50%
 .f i{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;margin-bottom:8px;color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent)}
 .f svg{width:19px;height:19px}.f b{display:block;font-weight:500;font-size:15px}.f span{display:block;color:var(--muted);font-size:13px;line-height:1.4;margin-top:2px}
 footer{position:relative;z-index:1;text-align:center;color:var(--muted);font-size:12px;padding:0 16px 24px;opacity:.85}
+footer a{color:inherit}
 @media (max-width:959px){.preview .top{display:none}.preview{background:none;border:0;box-shadow:none;padding:0}}
 @media (max-width:380px){.grid{grid-template-columns:1fr}}
 .a1,.a2,.a3{animation:fill 1.4s cubic-bezier(.2,.8,.2,1) both}.a2{animation-delay:.12s}.a3{animation-delay:.24s}
@@ -200,13 +201,140 @@ def landing(message: str = "", button_href: str = "/auth/login?go=1", button_tex
   <div class="grid">{feats}</div>
  </section>
 </main>
-<footer>Datos de Garmin Connect · No es consejo médico</footer></body></html>"""
+<footer>Datos de Garmin Connect · No es consejo médico · <a href="/auth/privacidad">Privacidad</a> · <a href="/auth/condiciones">Condiciones</a></footer></body></html>"""
     return _resp(status, html)
 
 
 def page(title, text, button=""):
     """Compatibilidad: mensajes con el diseño de la portada."""
     return landing(f"<b>{title}.</b> {text}")
+
+
+# ------------------------------------------------------------------ páginas legales (públicas, sin sesión)
+# El email de contacto sale de OWNER_EMAIL (variable de la Lambda): nunca escrito en el repositorio.
+LEGAL_UPDATED = "9 de noviembre de 2026"
+
+PRIVACY = """
+<h1>Política de privacidad</h1>
+<p class="upd">Última actualización: {updated}</p>
+<p>Runch es una app privada, gratuita y solo con invitación que muestra tus datos de Garmin y te da consejos y un plan de
+entreno con ayuda de IA. Esta página explica qué datos usa, para qué y qué puedes hacer con ellos.</p>
+
+<h2>Responsable y contacto</h2>
+<p>La app la gestiona su administrador. Para cualquier duda o para ejercer tus derechos, escribe a
+<a href="mailto:{email}">{email}</a>.</p>
+
+<h2>Qué datos usamos</h2>
+<ul>
+<li><b>Tu cuenta de Google:</b> solo tu nombre y tu email, para iniciar sesión y comprobar que tienes invitación.
+No accedemos a tu Gmail, tus contactos, tu Drive ni nada más de tu cuenta.</li>
+<li><b>Tus datos de Garmin Connect:</b> sueño, pulso, HRV, estrés, Body Battery, pasos, actividades (con su ruta GPS),
+series de fuerza, peso y datos parecidos, leídos con tu clave personal de la API de Garmin. La clave se guarda cifrada.</li>
+<li><b>Lo que escribes en la app:</b> cómo te encuentras, molestias o lesiones, objetivos, disponibilidad, comidas,
+preferencias del menú y lo que preguntas al chat.</li>
+<li><b>Fotos de comida:</b> si usas esta función, la foto se analiza al momento y se descarta. Solo se guardan los
+alimentos y cantidades estimados.</li>
+<li><b>Tiempo:</b> la población que indiques para la previsión del tiempo.</li>
+<li><b>Avisos:</b> si los activas, la suscripción de tu navegador para poder enviarte notificaciones.</li>
+</ul>
+
+<h2>Para qué</h2>
+<p>Solo para enseñarte tus datos, calcular tendencias, escribir tus consejos, crear y ajustar tu plan y enviarte los
+avisos que actives. No hay publicidad, no vendemos ni cedemos datos y no usamos analítica ni rastreadores.
+Cada persona ve únicamente sus propios datos.</p>
+
+<h2>Quién nos ayuda a prestar el servicio</h2>
+<ul>
+<li><b>Amazon Web Services</b>: alojamiento y almacenamiento, en la Unión Europea (Irlanda).</li>
+<li><b>Anthropic</b> (IA Claude): recibe el resumen de tus datos necesario para escribir consejos, responder al chat,
+crear el plan y analizar fotos de comida. Según sus condiciones para empresas, no usa estos datos para entrenar sus modelos.</li>
+<li><b>Google</b>: inicio de sesión y tipografía de esta página.</li>
+<li><b>Garmin</b>: origen de tus datos de actividad y salud.</li>
+<li><b>Open-Meteo</b>: previsión del tiempo (solo recibe la población o sus coordenadas).</li>
+<li><b>El servicio de avisos de tu navegador</b> (Google, Apple o Mozilla), si activas las notificaciones.</li>
+</ul>
+
+<h2>Cookies</h2>
+<p>Solo usamos una cookie técnica de sesión (<code>gs_session</code>) para mantenerte dentro durante 30 días.
+No hay cookies de publicidad ni de terceros.</p>
+
+<h2>Cuánto tiempo los guardamos</h2>
+<p>Mientras tengas cuenta. Si la borras (menú de la app → <b>Borrar mi cuenta</b>) o nos lo pides por email, se borran
+tus datos y tu clave de Garmin.</p>
+
+<h2>Tus derechos</h2>
+<p>Puedes pedir acceso, corrección, borrado o una copia de tus datos, y oponerte a su uso, escribiendo a
+<a href="mailto:{email}">{email}</a>. También puedes reclamar ante la Agencia Española de Protección de Datos
+(<a href="https://www.aepd.es">aepd.es</a>).</p>
+
+<h2>Importante</h2>
+<p>Runch no es un producto sanitario y no sustituye el consejo de un profesional de la salud.</p>
+"""
+
+TERMS = """
+<h1>Condiciones del servicio</h1>
+<p class="upd">Última actualización: {updated}</p>
+
+<h2>El servicio</h2>
+<p>Runch es una app privada y gratuita, solo con invitación y en fase beta. Puede cambiar, fallar o dejar de estar
+disponible en cualquier momento.</p>
+
+<h2>No es consejo médico</h2>
+<p>Los datos, consejos y planes de entreno son orientativos y en parte los escribe una IA que puede equivocarse.
+No sustituyen a un médico, fisioterapeuta ni entrenador. Escucha a tu cuerpo: entrenas bajo tu responsabilidad.</p>
+
+<h2>Tu cuenta</h2>
+<ul>
+<li>Necesitas una cuenta de Google con invitación y tu propia clave de la API de Garmin, que debes cuidar como una contraseña.</li>
+<li>El acceso es personal: no lo compartas ni intentes ver datos de otras personas.</li>
+<li>El uso de la IA tiene un tope mensual; al llegar a él, los textos de IA vuelven el mes siguiente.</li>
+<li>Puedes borrar tu cuenta y tus datos cuando quieras desde el menú de la app.</li>
+</ul>
+
+<h2>Invitaciones</h2>
+<p>El administrador puede retirar una invitación o cerrar el servicio. Si lo cierra, borrará los datos.</p>
+
+<h2>Responsabilidad</h2>
+<p>El servicio se ofrece tal cual, sin garantías. En la medida en que lo permita la ley, no nos hacemos responsables de
+daños derivados de su uso, de errores en los datos o de que no esté disponible.</p>
+
+<h2>Marcas</h2>
+<p>Garmin y Garmin Connect son marcas de Garmin Ltd. Runch no está afiliada a Garmin, Google ni Anthropic.</p>
+
+<h2>Cambios y ley aplicable</h2>
+<p>Si cambian estas condiciones, lo avisaremos en la app. Se rigen por la ley española.
+Dudas: <a href="mailto:{email}">{email}</a>. Ver también la <a href="/auth/privacidad">política de privacidad</a>.</p>
+"""
+
+LEGAL_CSS = """
+:root{--bg:#f2f5fa;--card:#fff;--text:#1f1f1f;--muted:#5f6368;--line:#e3e6ea;--brand:#d4542f}
+@media (prefers-color-scheme:dark){:root{--bg:#0e0e0f;--card:#1e1f20;--text:#e3e3e3;--muted:#a8abaf;--line:#2e3134;--brand:#f08a66}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 "Google Sans Flex",system-ui,sans-serif}
+header{max-width:760px;margin:0 auto;padding:20px 16px 0}header a{display:inline-flex}
+.wm svg{height:28px;width:auto;display:block}.wm-d{display:none}
+@media (prefers-color-scheme:dark){.wm-l{display:none}.wm-d{display:inline-flex}}
+main{max-width:760px;margin:16px auto 32px;padding:28px 24px;background:var(--card);border:1px solid var(--line);border-radius:28px}
+@media (max-width:600px){main{margin:12px 12px 24px;padding:22px 18px;border-radius:24px}}
+h1{font-size:28px;font-weight:500;margin:0 0 4px}h2{font-size:18px;font-weight:600;margin:28px 0 6px}
+.upd{color:var(--muted);font-size:14px;margin-top:0}a{color:var(--brand)}ul{padding-left:20px}li{margin:6px 0}
+code{font-size:14px}footer{text-align:center;color:var(--muted);font-size:13px;padding:0 16px 28px}
+"""
+
+
+def legal(kind: str):
+    body = (PRIVACY if kind == "privacidad" else TERMS).format(updated=LEGAL_UPDATED, email=html.escape(OWNER))
+    title = "Política de privacidad" if kind == "privacidad" else "Condiciones del servicio"
+    doc = f"""<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark">
+<title>{title} · Runch</title><link rel="icon" href="/icons/icon-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..600&display=swap" rel="stylesheet">
+<style>{LEGAL_CSS}</style></head><body>
+<header><a href="/auth/login" aria-label="Runch, inicio"><span class="wm wm-l">{LOGO_LIGHT}</span><span class="wm wm-d">{LOGO_DARK}</span></a></header>
+<main>{body}</main>
+<footer><a href="/auth/login">Inicio</a> · <a href="/auth/privacidad">Privacidad</a> · <a href="/auth/condiciones">Condiciones</a></footer>
+</body></html>"""
+    return _resp(200, doc)
 
 
 def handler(event, _ctx):
@@ -221,6 +349,8 @@ def handler(event, _ctx):
     cookies = dict(c.split("=", 1) for c in event.get("cookies") or [] if "=" in c)
     g = _google()
 
+    if path in ("/auth/privacidad", "/auth/condiciones"):
+        return legal(path.rsplit("/", 1)[1])
     if path == "/auth/logout":
         return _resp(302, headers={"location": "/auth/login?out=1"},
                      cookies=["gs_session=; Path=/; Max-Age=0; Secure; HttpOnly; SameSite=Lax"])
