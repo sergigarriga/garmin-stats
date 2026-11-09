@@ -134,8 +134,9 @@ def _push(uid: str) -> None:
         p = ROOT / "data" / name
         # Sin cambios aquí, no se sube: así no se pisa lo que la API haya guardado mientras tanto (p. ej. un
         # reajuste del plan o su estado "en marcha" en coach.json).
-        if p.exists() and name not in READ_ONLY and _digest(p) != PULLED.get(name):
+        if p.exists() and name not in READ_ONLY and (dg := _digest(p)) != PULLED.get(name):
             s3.upload_file(str(p), BUCKET, sp + name)
+            PULLED[name] = dg  # un segundo _push en la misma ejecución no lo vuelve a subir
     js = {"ContentType": "text/javascript; charset=utf-8", "CacheControl": "no-store"}
     if (ROOT / "site" / "data.js").exists():
         s3.upload_file(str(ROOT / "site" / "data.js"), BUCKET, site + "data.js", ExtraArgs=js)
@@ -274,7 +275,11 @@ def _run(user: dict, ctx) -> bool:
     from garmin_stats.cli import main
     export.SECTION_ERRORS.clear()
     try:
-        main(["all"])
+        main(["sync"])
+        # Lo descargado se guarda YA: si el cálculo de la web falla o se queda sin tiempo/memoria,
+        # la siguiente ejecución sigue desde aquí en vez de repetir la descarga.
+        _push(uid)
+        main(["report"])
     finally:
         # Aunque el informe falle, lo descargado de Garmin se guarda: el reintento sigue donde se quedó
         # en vez de volver a bajar todo el historial desde cero.

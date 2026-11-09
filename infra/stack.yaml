@@ -282,7 +282,7 @@ Resources:
       Code: sync
       Role: !GetAtt SyncRole.Arn
       Timeout: 900
-      MemorySize: 1024
+      MemorySize: 3008  # historiales grandes (1.900+ actividades) no caben en 1 GB
       EphemeralStorage: { Size: 1024 }
       Environment:
         Variables:
