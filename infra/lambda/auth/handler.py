@@ -14,6 +14,7 @@ import hmac
 import html
 import json
 import os
+import re
 import secrets
 import time
 import urllib.parse
@@ -349,6 +350,9 @@ def handler(event, _ctx):
     cookies = dict(c.split("=", 1) for c in event.get("cookies") or [] if "=" in c)
     g = _google()
 
+    # Verificación de propiedad en Google Search Console (método "archivo HTML"): el contenido es fijo según el nombre
+    if re.fullmatch(r"/google[0-9a-f]{16}\.html", path):
+        return _resp(200, f"google-site-verification: {path[1:]}", ctype="text/html; charset=utf-8")
     if path in ("/auth/privacidad", "/auth/condiciones"):
         return legal(path.rsplit("/", 1)[1])
     if path == "/auth/logout":
