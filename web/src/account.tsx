@@ -151,6 +151,7 @@ export function DeleteAccountDialog({ open, onClose }: { open: boolean; onClose:
 interface AdminUser {
   email: string; name: string; role: 'owner' | 'friend'; status: Me['status']; budgetUsd: number; monthSpendUsd: number;
   invitedAt?: number; joinedAt?: number; lastSync?: number; syncStatus?: string;
+  totalCostUsd?: number; calls?: number; lastAi?: string | null;
 }
 const STATUS: Record<string, { label: string; color: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
   invited: { label: 'Invitación enviada', color: 'default' },

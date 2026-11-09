@@ -120,7 +120,7 @@ export const GLOSSARY = {
   },
   aiUsage: {
     title: 'Uso de la IA',
-    body: 'Claude Sonnet 5.5 escribe los textos de la app y responde al chat; Claude Opus 5.5, el modelo más capaz, diseña y reajusta tu plan de entreno. Se cobra por tokens: trozos de texto de unas ¾ partes de una palabra. Solo se llama cuando hay datos nuevos, y como mucho 3 veces al día.',
+    body: 'Claude Sonnet 5.5 escribe los textos de la app, responde al chat y diseña y reajusta tu plan de entreno. Se cobra por tokens: trozos de texto de unas ¾ partes de una palabra. Solo se llama cuando hay datos nuevos, y como mucho 3 veces al día.',
     good: 'Cada persona tiene su tope de gasto al mes. Al llegar al 80 %, la app pasa sola a Haiku 5.5, un modelo mucho más barato; al 100 %, la IA se pausa hasta el día 1.',
   },
 } satisfies Record<string, HelpEntry>;

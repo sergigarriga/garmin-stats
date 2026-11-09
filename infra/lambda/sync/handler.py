@@ -220,6 +220,7 @@ def _run(user: dict, ctx) -> bool:
     os.environ["GARMIN_STATS_UID"] = uid
     os.environ["GARMIN_STATS_AI_BUDGET"] = str(user.get("budgetUsd") or 5)
     os.environ["GARMIN_STATS_ADAPT_MODEL"] = "" if owner else "claude-sonnet-5-5"
+    os.environ["GARMIN_STATS_OWNER"] = "1" if owner else "0"
     left = ctx.get_remaining_time_in_millis() / 1000 if ctx else 900
     os.environ["GARMIN_STATS_DEADLINE"] = str(time.time() + max(60, min(SYNC_SECONDS, left - 420)))
     _pull(uid)

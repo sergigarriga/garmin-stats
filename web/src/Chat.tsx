@@ -14,6 +14,23 @@ import CloseRounded from '@mui/icons-material/CloseRounded';
 import ArrowUpwardRounded from '@mui/icons-material/ArrowUpwardRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 
+// iOS Safari se queda con zoom al cerrar el teclado: forzamos un re-layout cambiando un instante el viewport.
+function resetZoom() {
+  try {
+    const m = document.querySelector('meta[name="viewport"]');
+    if (!m) return;
+    const base = m.getAttribute('content') ?? '';
+    m.setAttribute('content', `${base}, maximum-scale=1`);
+    window.scrollTo(window.scrollX, window.scrollY);
+    setTimeout(() => m.setAttribute('content', base), 150);
+  } catch { /* sin efecto en navegadores sin viewport */ }
+}
+
+// Color de marca (terracota del logo) para todo lo del chat.
+import { haptic } from './haptics';
+const BRAND = '#D4542F';
+const BRAND_DARK = '#B9441F';
+
 type Msg = { role: 'user' | 'assistant'; content: string; error?: boolean };
 
 /** **negrita** dentro de una línea. */
@@ -42,10 +59,10 @@ function Formatted({ text }: { text: string }) {
           <Typography key={i} component="li" sx={{ display: 'flex', gap: 1.25, fontSize: 15, lineHeight: 1.55 }}>
             <Box sx={{ height: '1lh', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
               {ordered ? (
-                <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent)',
-                  color: 'primary.main', fontSize: 12, fontWeight: 700, display: 'grid', placeItems: 'center' }}>{i + 1}</Box>
+                <Box sx={{ width: 22, height: 22, borderRadius: '50%', bgcolor: `color-mix(in srgb, ${BRAND} 16%, transparent)`,
+                  color: BRAND, fontSize: 12, fontWeight: 700, display: 'grid', placeItems: 'center' }}>{i + 1}</Box>
               ) : (
-                <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: 'primary.main' }} />
+                <Box sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: BRAND }} />
               )}
             </Box>
             <span>{inline(it)}</span>
@@ -95,8 +112,8 @@ function Bubble({ m }: { m: Msg }) {
     <Box sx={{ alignSelf: user ? 'flex-end' : 'flex-start', maxWidth: user ? '85%' : '100%' }}>
       <Box sx={(t) => ({
         px: 2, py: 1.25, borderRadius: user ? '20px 20px 6px 20px' : '20px 20px 20px 6px', whiteSpace: user ? 'pre-wrap' : 'normal', lineHeight: 1.55,
-        bgcolor: user ? 'primary.main' : m.error ? alpha(t.palette.error.main, 0.12) : 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)',
-        color: user ? 'primary.contrastText' : 'text.primary', fontSize: 15,
+        bgcolor: user ? BRAND : m.error ? alpha(t.palette.error.main, 0.12) : 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)',
+        color: user ? '#FFFFFF' : 'text.primary', fontSize: 15,
         ...(user ? {} : { px: 2.25, py: 1.75 }),
       })}>{user || m.error ? m.content : <Formatted text={m.content} />}</Box>
     </Box>
@@ -151,9 +168,9 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
 
   return (
     <>
-      {showFab && <Fab variant="extended" color="primary" onClick={() => setOpen(true)} aria-label="Pregúntale a la IA"
+      {showFab && <Fab variant="extended" onClick={() => setOpen(true)} aria-label="Pregúntale a la IA"
         sx={{ position: 'fixed', right: { xs: 16, md: 28 }, bottom: { xs: 88, md: 28 }, zIndex: 20, textTransform: 'none',
-          borderRadius: '18px', px: 2.5, height: 56, boxShadow: '0 2px 6px rgba(0,0,0,.2), 0 6px 18px rgba(0,0,0,.12)' }}>
+          bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: BRAND_DARK }, borderRadius: '18px', px: 2.5, height: 56, boxShadow: '0 2px 6px rgba(0,0,0,.2), 0 6px 18px rgba(0,0,0,.12)' }}>
         <AutoAwesomeRounded sx={{ mr: 1 }} /> Pregunta
       </Fab>}
       <Drawer anchor={mobile ? 'bottom' : 'right'} open={open} onClose={() => setOpen(false)}
@@ -161,7 +178,7 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
           borderRadius: mobile ? '28px 28px 0 0' : '28px 0 0 28px', bgcolor: 'background.paper', backgroundImage: 'none' } } }}>
         <Stack sx={{ height: '100%' }}>
           <Stack direction="row" sx={{ alignItems: 'center', px: 2.5, pt: 2.5, pb: 1.5 }} spacing={1.5}>
-            <AutoAwesomeRounded color="primary" />
+            <AutoAwesomeRounded sx={{ color: BRAND }} />
             <Box sx={{ flex: 1 }}>
               <Typography variant="h6" sx={{ lineHeight: 1.2 }}>Pregunta a tus datos</Typography>
               <Typography variant="caption" color="text.secondary">Claude Sonnet 5.5 · lee tu histórico completo</Typography>
@@ -207,10 +224,11 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
             sx={{ m: 2, mt: 1, display: 'flex', alignItems: 'flex-end', gap: 1, p: 0.75, pl: 2, borderRadius: '24px',
               bgcolor: 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)' }}>
             <InputBase value={text} onChange={(e) => setText(e.target.value)} placeholder="Escribe tu pregunta…" disabled={!online}
-              multiline maxRows={4} sx={{ flex: 1, py: 1, fontSize: 15 }}
+              multiline maxRows={4} sx={{ flex: 1, py: 1, fontSize: 16 }}  /* 16px: iOS no hace zoom al escribir */
+              onBlur={resetZoom}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(text); } }} />
-            <IconButton type="submit" disabled={!text.trim() || busy || !online} aria-label="Enviar"
-              sx={{ bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' },
+            <IconButton type="submit" onClick={() => haptic('tap')} disabled={!text.trim() || busy || !online} aria-label="Enviar"
+              sx={{ bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: BRAND_DARK },
                 '&.Mui-disabled': { bgcolor: 'action.disabledBackground' } }}>
               <ArrowUpwardRounded />
             </IconButton>

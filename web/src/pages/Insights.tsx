@@ -1,4 +1,6 @@
-import { useMemo, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
+import { useIsOwner } from '../owner';
+import { call } from '../account';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
@@ -117,8 +119,9 @@ function Coverage({ data }: { data: GarminData }) {
 
 function AiUsageCard({ data }: { data: GarminData }) {
   const mode = useResolvedMode();
+  const isOwner = useIsOwner();
   const u = data.aiUsage;
-  if (!u) return null;
+  if (!u || !isOwner) return null;
   const color = CATEGORY.energy[mode];
   const usd = (v?: number | null, d = 3) => (v == null ? '–' : `${v.toFixed(d).replace('.', ',')} $`);
   const KIND: Record<string, string> = { textos: 'Textos diarios', chat: 'Chat', weekly: 'Resumen semanal', 'plan-create': 'Crear el plan', 'plan-adapt': 'Ajustes del plan', 'plan-structure': 'Entrenos para el reloj · carrera', 'plan-structure-gym': 'Entrenos para el reloj · gimnasio', comida: 'Comida (fotos)', compra: 'Menú y compra semanal' };
@@ -135,7 +138,7 @@ function AiUsageCard({ data }: { data: GarminData }) {
       <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 2 }}>
         <IconBubble color={color} size={36}><AutoAwesomeOutlined /></IconBubble>
         <Box>
-          <Typography variant="subtitle1">Claude Sonnet 5.5 y Opus 5.5</Typography>
+          <Typography variant="subtitle1">Claude Sonnet 5.5</Typography>
           <Typography variant="body2" color="text.secondary">
             Escribe los textos de la app{u.last ? ` · última vez ${dateShort(new Date(u.last))} a las ${new Date(u.last).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : ''}
           </Typography>
@@ -182,6 +185,50 @@ function AiUsageCard({ data }: { data: GarminData }) {
             series={[{ data: u.byDay.map((d) => d.cost), color, label: 'Gasto', valueFormatter: (v) => usd(v, 4) }]} />
         </Box>
       )}
+    </Card>
+  );
+}
+
+interface AiUserRow { email: string; name: string; role: 'owner' | 'friend'; status: string; budgetUsd: number; monthSpendUsd: number;
+  totalCostUsd?: number; calls?: number; lastAi?: string | null }
+const AI_STATUS: Record<string, string> = { invited: 'Invitada', onboarding: 'Sin Garmin', active: 'Activa', key_invalid: 'Clave no válida' };
+
+// Coste de IA por persona (solo la dueña): una fila por usuaria, con su gasto de este mes y el total.
+function AiByUserCard() {
+  const isOwner = useIsOwner();
+  const mode = useResolvedMode();
+  const [rows, setRows] = useState<AiUserRow[] | null>(null);
+  useEffect(() => {
+    if (!isOwner) return;
+    call<{ users: AiUserRow[] }>('./api/admin/users').then((r) => setRows(r.users)).catch(() => setRows([]));
+  }, [isOwner]);
+  if (!isOwner || !rows) return null;
+  const color = CATEGORY.energy[mode];
+  const usd = (v?: number | null, d = 2) => (v == null ? '–' : `${v.toFixed(d).replace('.', ',')} $`);
+  const sorted = [...rows].sort((a, b) => (b.totalCostUsd ?? 0) - (a.totalCostUsd ?? 0));
+  const monthTotal = rows.reduce((t, r) => t + (r.monthSpendUsd ?? 0), 0);
+  const total = rows.reduce((t, r) => t + (r.totalCostUsd ?? 0), 0);
+  return (
+    <Card sx={{ ...CARD_SX }}>
+      <Typography variant="subtitle1">Coste de IA por persona</Typography>
+      <Typography variant="body2" color="text.secondary">Este mes {usd(monthTotal)} · total {usd(total)}</Typography>
+      <Box sx={{ mt: 2, display: 'grid', gap: 1 }}>
+        {sorted.map((r) => (
+          <Stack key={r.email} direction="row" spacing={2} sx={{ justifyContent: 'space-between', alignItems: 'center', py: 1, borderTop: 1, borderColor: 'divider' }}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>{r.name || r.email.split('@')[0]}{r.role === 'owner' ? ' (tú)' : ''}</Typography>
+              <Typography variant="caption" color="text.secondary">
+                {AI_STATUS[r.status] ?? r.status} · {r.calls ?? 0} {(r.calls ?? 0) === 1 ? 'llamada' : 'llamadas'}
+                {r.lastAi ? ` · última ${new Date(r.lastAi).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
+              </Typography>
+            </Box>
+            <Box sx={{ textAlign: 'right', flexShrink: 0 }}>
+              <Typography variant="body2" sx={{ fontWeight: 600, color, whiteSpace: 'nowrap' }}>{usd(r.totalCostUsd)} total</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>este mes {usd(r.monthSpendUsd)} de {usd(r.budgetUsd, 0)}</Typography>
+            </Box>
+          </Stack>
+        ))}
+      </Box>
     </Card>
   );
 }
@@ -237,7 +284,10 @@ export default function Insights({ data }: { data: GarminData }) {
       <Coverage data={data} />
 
       <SectionTitle help="aiUsage">Uso de la IA</SectionTitle>
-      <AiUsageCard data={data} />
+      <Stack spacing={2.5}>
+        <AiUsageCard data={data} />
+        <AiByUserCard />
+      </Stack>
     </Box>
   );
 }

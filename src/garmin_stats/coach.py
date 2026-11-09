@@ -5,7 +5,7 @@ Se vuelve más listo con el tiempo porque guarda en data/coach.json:
 - tu valoración de cada sesión (1-5 y una nota),
 - una "memoria" de lo que ha aprendido de ti, que la IA lee y actualiza en cada ajuste.
 
-Modelo: Claude Opus 5.5 para crear y reajustar (pocas llamadas, mucho razonamiento), con
+Modelo: Claude Sonnet 5.5 para crear y reajustar (el mismo para todas las personas), con
 alternativas automáticas del servidor si un modelo rechazara la petición.
 """
 
@@ -37,14 +37,14 @@ class Cancelled(Exception):
 # Función que dice si hay que cancelar (la pone la Lambda; consulta S3). None = no se puede cancelar.
 CANCEL_CHECK = None
 
-MODEL = "claude-opus-5-5"  # el plan es lo más difícil y se llama poco: Opus 5.5 (con el tope de gasto cae a Haiku)
+MODEL = "claude-sonnet-5-5"  # plan y reajustes: Sonnet 5.5 para todas (con el tope de gasto cae a Haiku)
 STATE = DATA_DIR / "coach.json"
 RUN_TYPES = ("easy", "long", "tempo", "intervals", "race")
 
 SessionType = Literal["easy", "long", "tempo", "intervals", "race", "strength", "swim", "cross", "rest"]
 PaceRef = Literal["easy", "marathon", "half", "10k", "5k", "threshold", "interval", "repetition"]
 DONE_RATIO = 0.85  # al menos el 85 % de lo previsto cuenta como hecha
-MAX_TOKENS = 128000  # máximo de Opus/Sonnet 5.5 (con streaming); el pensamiento también cuenta
+MAX_TOKENS = 128000  # máximo de Sonnet 5.5 (con streaming); el pensamiento también cuenta
 
 
 class Step(BaseModel):

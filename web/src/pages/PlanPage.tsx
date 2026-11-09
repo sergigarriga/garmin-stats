@@ -1,4 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { useIsOwner } from '../owner';
+import { haptic } from '../haptics';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -263,13 +265,17 @@ export function CreateForm({ onDone, onSubmit, submitLabel, onSkip }: {
   const [gymDays, setGymDays] = useState(0);
   const [ambition, setAmbition] = useState<'realista' | 'exigente'>('realista');
   const [bodyGoal, setBodyGoal] = useState('');
+  const [include, setInclude] = useState<string[]>([]);
+  const [avoid, setAvoid] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const submit = async () => {
     setBusy(true); setErr(null);
-    const body = { goal, date, goalTime, daysPerWeek: days, longRunDay: longDay, notes, gymDays, bodyGoal, ambition };
-    try { if (onSubmit) await onSubmit(body); else onDone?.(await settle(await api('./api/plan/create', body))); }
-    catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+    const rules = [include.length ? `Incluir en la semana: ${include.join(', ')}.` : '', avoid.length ? `Evitar: ${avoid.join(', ')}.` : '']
+      .filter(Boolean).join(' ');
+    const body = { goal, date, goalTime, daysPerWeek: days, longRunDay: longDay, notes: [rules, notes].filter(Boolean).join(' '), gymDays, bodyGoal, ambition };
+    try { if (onSubmit) await onSubmit(body); else onDone?.(await settle(await api('./api/plan/create', body))); haptic('success'); }
+    catch (e) { setErr((e as Error).message); haptic('warning'); } finally { setBusy(false); }
   };
   return (
     <Card sx={{ ...CARD_SX, maxWidth: 720 }}>
@@ -328,7 +334,23 @@ export function CreateForm({ onDone, onSubmit, submitLabel, onSkip }: {
             <ToggleButton value="exigente">🔥 Exigente: quiero un reto</ToggleButton>
           </ToggleButtonGroup>
         </Box>
-        <TextField label="Algo que deba saber (opcional)" placeholder="Molestias, días que no puedes, si prefieres cinta…" value={notes}
+        <Box>
+          <Typography variant="subtitle2" sx={{ mb: 0.5 }}>Reglas a tu medida</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>Marca lo que quieres ver en tu semana. Puedes combinar varias cosas.</Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>Quiero incluir</Typography>
+          <ToggleButtonGroup value={include} onChange={(_, v) => setInclude(v)} size="small"
+            sx={{ flexWrap: 'wrap', gap: 1, mb: 2, '& .MuiToggleButton-root': { borderRadius: '999px !important', border: '1px solid', borderColor: 'divider', px: 1.75 },
+              '& .Mui-selected': { bgcolor: 'color-mix(in srgb, #D4542F 16%, transparent) !important', color: '#D4542F', borderColor: '#D4542F' } }}>
+            {['Natación', 'Bici', 'Cinta', 'Gimnasio (fuerza)', 'Yoga o movilidad', 'Caminar'].map((o) => <ToggleButton key={o} value={o}>{o}</ToggleButton>)}
+          </ToggleButtonGroup>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>Quiero evitar</Typography>
+          <ToggleButtonGroup value={avoid} onChange={(_, v) => setAvoid(v)} size="small"
+            sx={{ flexWrap: 'wrap', gap: 1, '& .MuiToggleButton-root': { borderRadius: '999px !important', border: '1px solid', borderColor: 'divider', px: 1.75 },
+              '& .Mui-selected': { bgcolor: 'color-mix(in srgb, #D4542F 16%, transparent) !important', color: '#D4542F', borderColor: '#D4542F' } }}>
+            {['Cuestas', 'Series', 'Correr días seguidos', 'Madrugar'].map((o) => <ToggleButton key={o} value={o}>{o}</ToggleButton>)}
+          </ToggleButtonGroup>
+        </Box>
+        <TextField label="Otras reglas o molestias (opcional)" placeholder="Ej.: nado 2 días, sin cuestas hasta junio, no puedo los martes…" value={notes}
           onChange={(e) => setNotes(e.target.value)} multiline minRows={2} />
         {err && <Alert severity="error" sx={{ borderRadius: '14px' }}>{err}</Alert>}
         {!online && <Alert severity="info" sx={{ borderRadius: '14px' }}>Para crear el plan abre la web desde http://localhost:8765.</Alert>}
@@ -487,6 +509,7 @@ function WatchDialog({ open, onClose, weekStart, sessions, onView, refs }: {
 
 // ------------------------------------------------------------------ página
 export default function PlanPage({ data, go }: { data: GarminData; go: (k: string) => void }) {
+  const isOwner = useIsOwner();
   const mode = useResolvedMode();
   const [view, setView] = useState<CoachView | undefined>(data.coach);
   const [busy, setBusy] = useState(false);
@@ -561,7 +584,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           <Stack direction="row" spacing={1}>
             <Tooltip title="Ver el plan en tu calendario"><IconButton data-new="calendar" onClick={() => setCalOpen(true)} aria-label="Calendario"><CalendarMonthOutlined /></IconButton></Tooltip>
             <Button variant="outlined" startIcon={busy ? <CircularProgress size={16} /> : <TuneRounded />} disabled={busy}
-              onClick={() => ask('¿Reajustar el plan ahora?', 'El coach revisa tus últimos datos y rehace las semanas que quedan. Tarda 1-3 minutos y gasta unos 0,25-0,50 $ de tu tope de IA. Ya se reajusta solo cada lunes.', () => run('./api/plan/adapt'))}
+              onClick={() => ask('¿Reajustar el plan ahora?', 'El coach revisa tus últimos datos y rehace las semanas que quedan. Tarda 1-3 minutos.' + (isOwner ? ' Gasta unos 0,25-0,50 $ de tu tope de IA.' : '') + ' Ya se reajusta solo cada lunes.', () => run('./api/plan/adapt'))}
               sx={{ borderRadius: 999 }}>{busy ? 'Reajustando…' : 'Reajustar ahora'}</Button>
             <Tooltip title="Borrar plan"><IconButton onClick={() => run('./api/plan/delete', '¿Borrar el plan? Se guarda una copia en el historial.')}><DeleteOutlineRounded /></IconButton></Tooltip>
           </Stack>
@@ -574,7 +597,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
           <ToggleButtonGroup exclusive size="small" value={plan.ambition ?? 'realista'} disabled={busy}
             onChange={(_, v) => v && v !== (plan.ambition ?? 'realista') && ask(v === 'exigente' ? '¿Pasar al modo exigente? 🔥' : '¿Pasar al modo realista?',
               (v === 'exigente' ? 'Mantiene tu objetivo, sube el volumen y pone 2 sesiones de calidad por semana.' : 'Prioriza llegar sano y ajusta el objetivo si no es realista.')
-              + ' Se reajusta todo el plan: tarda 1-3 minutos y gasta unos 0,25-0,50 $ de tu tope de IA.', () => run('./api/plan/ambition', undefined, { ambition: v }))}
+              + ' Se reajusta todo el plan: tarda 1-3 minutos.' + (isOwner ? ' Gasta unos 0,25-0,50 $ de tu tope de IA.' : ''), () => run('./api/plan/ambition', undefined, { ambition: v }))}
             sx={{ bgcolor: 'background.paper', '& .MuiToggleButton-root': { borderRadius: '999px !important', px: 2, color: 'text.secondary' },
               '& .Mui-selected': { bgcolor: 'color-mix(in srgb, var(--mui-palette-primary-main) 16%, transparent) !important', color: 'primary.main' } }}>
             <ToggleButton value="realista">Realista</ToggleButton>
@@ -689,7 +712,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
         <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, mt: 2, alignItems: 'start' }}>
           <TimeEditor value={avail} busy={busy} warnings={timeWarnings}
             onSaved={(a, c) => { setAvail(a); if (c) setView((v) => ({ ...c, job: v?.job })); }}
-            onReplan={() => ask('¿Reajustar el plan con tu tiempo?', 'El coach rehace las semanas que quedan para que cada sesión quepa en el tiempo que tienes (y mira la previsión del tiempo). Tarda 1-3 minutos y gasta unos 0,25-0,50 $ de tu tope de IA.', () => run('./api/plan/adapt'))} />
+            onReplan={() => ask('¿Reajustar el plan con tu tiempo?', 'El coach rehace las semanas que quedan para que cada sesión quepa en el tiempo que tienes (y mira la previsión del tiempo). Tarda 1-3 minutos.' + (isOwner ? ' Gasta unos 0,25-0,50 $ de tu tope de IA.' : ''), () => run('./api/plan/adapt'))} />
           <WeatherCard value={wx} lastRun={data.lastRunArea}
             onSaved={(w, c) => { setWx(w); if (c) setView((v) => ({ ...c, job: v?.job })); }} />
         </Box>

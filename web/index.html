@@ -12,6 +12,13 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Runch" />
+    <style>
+      /* La web se pinta también bajo la barra de estado (hora, batería): el fondo acompaña al tema. */
+      html { background: #F2F5FA; }
+      @media (prefers-color-scheme: dark) { html { background: #0E0E0F; } }
+      html[data-theme="light"] { background: #F2F5FA; }
+      html[data-theme="dark"] { background: #0E0E0F; }
+    </style>
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
     <!-- Datos generados por `garmin-stats report`. Se recargan solos cada minuto. -->

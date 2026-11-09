@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 
 from . import DB_PATH, REPORTS_DIR, SITE_DIR
@@ -78,11 +79,27 @@ def cmd_report(args) -> None:
             except Exception as e:  # el informe no debe caerse por el coach
                 log.warning("Coach: no se pudo reajustar el plan (%s)", e)
         data["coach"] = coach.view(data)
-        data["aiUsage"] = ai.usage()
+        if os.environ.get("GARMIN_STATS_OWNER") == "1":  # solo la dueña ve los costes de IA; el tope sigue activo
+            data["aiUsage"] = ai.usage()
+        else:
+            _strip_costs(data.get("coach"))
         log.info("Web: %s", X.write_site(data, SITE_DIR))
         log.info("Resumen: %s", X.write_markdown(data, REPORTS_DIR))
     finally:
         store.close()
+
+
+
+def _strip_costs(node) -> None:
+    """Quita los campos de coste (€/$ de IA) de un bloque de datos, en cualquier nivel."""
+    if isinstance(node, dict):
+        for k in [k for k in node if k in ("cost", "costUsd")]:
+            node.pop(k)
+        for v in node.values():
+            _strip_costs(v)
+    elif isinstance(node, list):
+        for v in node:
+            _strip_costs(v)
 
 
 def main(argv=None) -> None:

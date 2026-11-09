@@ -13,6 +13,8 @@ import Typography from '@mui/material/Typography';
 import BedtimeRounded from '@mui/icons-material/BedtimeRounded';
 import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import FavoriteRounded from '@mui/icons-material/FavoriteRounded';
+import TuneRounded from '@mui/icons-material/TuneRounded';
+import { Wordmark } from '../brand/Wordmark';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
 import { call, GarminKeyForm, GarminKeySteps, type Me } from '../account';
@@ -60,13 +62,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', py: { xs: 3, sm: 6 }, pt: 'calc(env(safe-area-inset-top) + 24px)' }}>
       <Container maxWidth="sm" sx={{ px: { xs: 2, sm: 3 } }}>
         <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center', mb: 3 }}>
-          <Box sx={{ width: 30, height: 30, borderRadius: '50%', display: 'grid', placeItems: 'center',
-            background: 'conic-gradient(from 200deg, #D93025, #E8710A, #F6AE2D, #188038, #1A73E8, #5B5BD6, #D93025)' }}>
-            <Box sx={{ width: 21, height: 21, borderRadius: '50%', bgcolor: 'background.default', display: 'grid', placeItems: 'center' }}>
-              <FavoriteRounded sx={{ fontSize: 12, color: '#D93025' }} />
-            </Box>
-          </Box>
-          <Typography variant="h6" sx={{ fontSize: 20 }}>Runch</Typography>
+          <Wordmark height={30} />
         </Stack>
 
         <Stack direction="row" spacing={0.75} sx={{ mb: 1 }}>
@@ -87,7 +83,8 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
             <Stack spacing={1.5}>
               {[
                 { icon: <BedtimeRounded />, color: '#5B5BD6', t: 'Sueño, corazón y energía', d: 'Cómo duermes, tu HRV y cómo llegas cada mañana para entrenar.' },
-                { icon: <DirectionsRunRounded />, color: '#E8710A', t: 'Plan de entreno con IA', d: 'Para tu objetivo (5 km, 10 km, media, maratón) y con gimnasio si quieres.' },
+                { icon: <DirectionsRunRounded />, color: '#E8710A', t: 'Plan de entreno con IA', d: 'Para tu objetivo (5 km, 10 km, media, maratón).' },
+                { icon: <TuneRounded />, color: '#D4542F', t: 'Reglas a tu medida', d: 'Más natación, bici, gimnasio o menos series: tú decides qué entra en tu semana, y el coach lo respeta.' },
                 { icon: <FavoriteRounded />, color: '#D93025', t: 'Un coach al que preguntar', d: '"¿Por qué duermo peor los domingos?" y te responde con tus datos.' },
               ].map((f) => (
                 <Stack key={f.t} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>

@@ -152,6 +152,31 @@ def _refresh_site(coach) -> None:
                   CacheControl="no-store")
 
 
+def _usage_stats(uid: str) -> dict:
+    """Coste de IA de una persona: este mes, total, llamadas y última vez (de sus registros ai_usage*.log)."""
+    month = date.today().isoformat()[:7]
+    out = {"monthCostUsd": 0.0, "totalCostUsd": 0.0, "calls": 0, "lastAi": None}
+    for name in ("ai_usage.log", "ai_usage_lambda.log"):
+        try:
+            text = s3.get_object(Bucket=BUCKET, Key=U.state_prefix(uid) + name)["Body"].read().decode()
+        except s3.exceptions.ClientError:
+            continue
+        for line in text.splitlines():
+            parts = line.split()
+            cost = next((float(p[6:]) for p in parts if p.startswith("cost=$")), None)
+            if not parts or cost is None:
+                continue
+            out["totalCostUsd"] += cost
+            out["calls"] += 1
+            if parts[0].startswith(month):
+                out["monthCostUsd"] += cost
+            if out["lastAi"] is None or parts[0] > out["lastAi"]:
+                out["lastAi"] = parts[0]
+    out["monthCostUsd"] = round(out["monthCostUsd"], 4)
+    out["totalCostUsd"] = round(out["totalCostUsd"], 4)
+    return out
+
+
 def _month_spend(uid: str) -> float:
     month = date.today().isoformat()[:7]
     total = 0.0
@@ -780,8 +805,10 @@ def _admin(path: str, method: str, payload: dict):
         out = []
         for u in users:
             st = _get_json(U.state_prefix(u["uid"]) + "sync_status.json", {})
+            stats = _usage_stats(u["uid"])
             out.append({"email": u["email"], "name": u.get("name") or "", "role": u.get("role"), "status": u.get("status"),
-                        "budgetUsd": u.get("budgetUsd"), "monthSpendUsd": _month_spend(u["uid"]),
+                        "budgetUsd": u.get("budgetUsd"), "monthSpendUsd": stats["monthCostUsd"],
+                        "totalCostUsd": stats["totalCostUsd"], "calls": stats["calls"], "lastAi": stats["lastAi"],
                         "invitedAt": u.get("invitedAt"), "joinedAt": u.get("joinedAt"),
                         "lastSync": st.get("finished"), "syncStatus": st.get("status")})
         return _json(200, {"users": out})
