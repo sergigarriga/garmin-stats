@@ -17,11 +17,24 @@ import TuneRounded from '@mui/icons-material/TuneRounded';
 import { Wordmark } from '../brand/Wordmark';
 import LockOutlined from '@mui/icons-material/LockOutlined';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
+import WatchRounded from '@mui/icons-material/WatchRounded';
+import ScheduleRounded from '@mui/icons-material/ScheduleRounded';
+import InstallMobileRounded from '@mui/icons-material/InstallMobileRounded';
+import ExpandMoreRounded from '@mui/icons-material/ExpandMoreRounded';
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import { canPromptInstall, isIos, isStandalone, onInstallChange, promptInstall } from '../pwa';
 import { call, GarminKeyForm, GarminKeySteps, type Me } from '../account';
 import { CARD_SX, IconBubble } from '../ui';
 import { CreateForm } from './PlanPage';
 
 type Step = 'welcome' | 'garmin' | 'goal' | 'download';
+
+/** Terracota del logo: el onboarding va con los colores de Runch. */
+const BRAND = '#D4542F';
+const BRAND_DARK = '#B9441F';
+const BTN = { borderRadius: 999, bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: BRAND_DARK } } as const;
 
 function stepFor(me: Me, skippedGoal: boolean): Step {
   if (me.status !== 'active' && me.status !== 'key_invalid') return me.consented ? 'garmin' : 'welcome';
@@ -66,7 +79,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
         </Stack>
 
         <Stack direction="row" spacing={0.75} sx={{ mb: 1 }}>
-          {STEPS.map((s, i) => <Box key={s.key} sx={{ flex: 1, height: 4, borderRadius: 2, bgcolor: i <= idx ? 'primary.main' : 'action.selected' }} />)}
+          {STEPS.map((s, i) => <Box key={s.key} sx={{ flex: 1, height: 4, borderRadius: 2, bgcolor: i <= idx ? BRAND : 'action.selected', transition: 'background-color .4s' }} />)}
         </Stack>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 3 }}>Paso {idx + 1} de {STEPS.length} · {STEPS[idx].label}</Typography>
 
@@ -74,7 +87,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
           <Stack spacing={3}>
             <Box>
               <Typography sx={{ fontSize: { xs: 28, sm: 34 }, fontWeight: 500, lineHeight: 1.15, letterSpacing: '-0.01em' }}>
-                ¡Hola{first ? `, ${first}` : ''}! 👋
+                ¡Hola{first ? `, ${first}` : ''}!
               </Typography>
               <Typography color="text.secondary" sx={{ mt: 1, fontSize: 17 }}>
                 Te han invitado a Runch: tus datos de Garmin, claros y en un solo sitio, con un coach con IA que te prepara un plan y lo ajusta cada semana.
@@ -94,8 +107,32 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
               ))}
             </Stack>
             <Card sx={{ ...CARD_SX, p: 2.5 }}>
+              <Typography sx={{ fontWeight: 600, mb: 1.5 }}>Cómo empezar (unos 3 minutos)</Typography>
+              <Stack spacing={1.25}>
+                {[
+                  'Conectas tu Garmin con una clave que te da el propio Garmin.',
+                  'Eliges tu objetivo: una carrera, ponerte en forma o solo ver tus datos.',
+                  'Bajamos tu historial y el coach te prepara el plan. Ya está.',
+                ].map((t, i) => (
+                  <Stack key={i} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                    <Box sx={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 700,
+                      bgcolor: BRAND, color: '#FFFFFF' }}>{i + 1}</Box>
+                    <Typography variant="body2" sx={{ pt: 0.25 }}>{t}</Typography>
+                  </Stack>
+                ))}
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+                <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', color: 'text.secondary' }}>
+                  <WatchRounded sx={{ fontSize: 18 }} /><Typography variant="body2">Un reloj Garmin y tu cuenta de Garmin Connect</Typography>
+                </Stack>
+                <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', color: 'text.secondary' }}>
+                  <ScheduleRounded sx={{ fontSize: 18 }} /><Typography variant="body2">3 minutos</Typography>
+                </Stack>
+              </Stack>
+            </Card>
+            <Card sx={{ ...CARD_SX, p: 2.5 }}>
               <Stack direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
-                <LockOutlined color="primary" sx={{ mt: 0.25 }} />
+                <LockOutlined sx={{ mt: 0.25, color: BRAND }} />
                 <Box>
                   <Typography sx={{ fontWeight: 500, mb: 0.5 }}>Tus datos</Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -103,14 +140,16 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
                     que como administrador podría acceder a ellos técnicamente. Para los textos y el plan se envía un resumen a la IA de Anthropic (Claude).
                     Puedes borrar tu cuenta y todo lo guardado cuando quieras desde el menú.
                   </Typography>
-                  <FormControlLabel sx={{ mt: 1 }} control={<Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} />}
+                  <FormControlLabel sx={{ mt: 1 }} control={<Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} sx={{ '&.Mui-checked': { color: BRAND } }} />}
                     label={<Typography variant="body2">Acepto que se guarden y analicen mis datos de salud de Garmin para usar la app.</Typography>} />
                 </Box>
               </Stack>
             </Card>
-            <Button variant="contained" disableElevation size="large" disabled={!consent} onClick={start} sx={{ borderRadius: 999, alignSelf: 'flex-start', px: 4 }}>
+            <Button variant="contained" disableElevation size="large" disabled={!consent} onClick={start}
+              sx={{ ...BTN, alignSelf: { xs: 'stretch', sm: 'flex-start' }, px: 4, py: 1.5 }}>
               Empezar
             </Button>
+            {!consent && <Typography variant="caption" color="text.secondary" sx={{ mt: -2 }}>Marca la casilla de arriba para continuar.</Typography>}
           </Stack>
         )}
 
@@ -130,7 +169,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
                 {copied ? 'Copiado' : 'Copiar enlace'}
               </Button>
             </Card>
-            <Button onClick={() => setLater(false)} sx={{ borderRadius: 999, alignSelf: 'flex-start' }}>Conectar Garmin ahora</Button>
+            <Button onClick={() => setLater(false)} sx={{ borderRadius: 999, alignSelf: 'flex-start', color: BRAND }}>Conectar Garmin ahora</Button>
           </Stack>
         )}
 
@@ -146,9 +185,10 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
               <Alert severity="warning" sx={{ borderRadius: '14px' }}>Garmin ya no acepta tu clave anterior (puede haber caducado). Crea una nueva.</Alert>
             )}
             <Card sx={{ ...CARD_SX, p: 2.5 }}><GarminKeySteps /></Card>
+            <KeyFaq />
             <GarminKeyForm consent={consent || !!me.consented || me.status === 'key_invalid'} onDone={async () => { const m = await refresh(); if (m) setStep(stepFor(m, skippedGoal)); }} />
             {me.status !== 'key_invalid' && (
-              <Button onClick={() => setLater(true)} sx={{ borderRadius: 999, alignSelf: 'flex-start' }}>Ahora no, lo haré luego</Button>
+              <Button onClick={() => setLater(true)} sx={{ borderRadius: 999, alignSelf: 'flex-start', color: BRAND }}>Ahora no, lo haré luego</Button>
             )}
           </Stack>
         )}
@@ -204,6 +244,61 @@ function Download({ me, skippedGoal }: { me: Me; skippedGoal: boolean }) {
           Cuando termine la descarga, tu coach creará tu plan (1-3 minutos más). Lo verás en la pestaña Entreno → Plan.
         </Typography>
       )}
+      <InstallCard />
+      <Card sx={{ ...CARD_SX, p: 2.5 }}>
+        <Typography sx={{ fontWeight: 600, mb: 1.5 }}>Qué vas a encontrar</Typography>
+        <Stack spacing={1.25}>
+          {[
+            { t: 'Hoy', d: 'Lo importante de un vistazo: cómo llegas, tu sesión del día y tu último entreno.' },
+            { t: 'Salud', d: 'Sueño, corazón, actividad y comida, con lo que va bien y lo que hay que vigilar.' },
+            { t: 'Entreno', d: 'Tu plan, tus actividades, tus ritmos y el gimnasio.' },
+            { t: 'El botón ✦', d: 'Pregúntale lo que quieras al coach: responde con tus datos.' },
+          ].map((x) => (
+            <Box key={x.t}><Typography variant="body2"><b>{x.t}</b> · <Box component="span" sx={{ color: 'text.secondary' }}>{x.d}</Box></Typography></Box>
+          ))}
+        </Stack>
+      </Card>
     </Stack>
+  );
+}
+
+/** Preguntas típicas sobre la clave de Garmin, plegadas para no agobiar. */
+function KeyFaq() {
+  const items = [
+    { q: '¿Qué es esta clave?', a: 'Una función oficial de Garmin Connect para que una app lea tus datos sin darle tu contraseña. Solo permite leer: la app no puede cambiar nada de tu cuenta.' },
+    { q: '¿Es seguro?', a: 'Se guarda cifrada y solo la usa la app para bajar tus datos. Puedes borrarla en Garmin Connect cuando quieras y la app deja de tener acceso al momento.' },
+    { q: 'No encuentro la opción', a: 'Abre el enlace del paso 1 desde el navegador (mejor en el ordenador) e inicia sesión con tu cuenta de Garmin. Si te pide aceptar condiciones, acéptalas y vuelve a abrir el enlace.' },
+    { q: '¿Puedo hacerlo desde el móvil?', a: 'Sí: abre el enlace, crea la clave, cópiala y vuelve aquí. Con el botón Pegar se pone sola.' },
+  ];
+  return (
+    <Box>
+      {items.map((x) => (
+        <Accordion key={x.q} disableGutters elevation={0} sx={{ bgcolor: 'transparent', '&:before': { display: 'none' } }}>
+          <AccordionSummary expandIcon={<ExpandMoreRounded />} sx={{ px: 0.5, minHeight: 44 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>{x.q}</Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ px: 0.5, pt: 0 }}><Typography variant="body2" color="text.secondary">{x.a}</Typography></AccordionDetails>
+        </Accordion>
+      ))}
+    </Box>
+  );
+}
+
+/** Instalar la app en la pantalla de inicio mientras se descargan los datos (Android: botón; iPhone: instrucciones). */
+function InstallCard() {
+  const [, force] = useState(0);
+  useEffect(() => onInstallChange(() => force((n) => n + 1)) as unknown as () => void, []);
+  if (isStandalone() || (!canPromptInstall() && !isIos())) return null;
+  return (
+    <Card sx={{ ...CARD_SX, p: 2.5, display: 'flex', gap: 2, alignItems: 'center' }}>
+      <IconBubble color={BRAND}><InstallMobileRounded /></IconBubble>
+      <Box sx={{ flex: 1, minWidth: 0 }}>
+        <Typography sx={{ fontWeight: 600 }}>Mientras tanto, instala la app</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {isIos() ? 'En Safari: Compartir → Añadir a pantalla de inicio.' : 'Tendrás Runch en tu pantalla de inicio, como cualquier otra app.'}
+        </Typography>
+      </Box>
+      {canPromptInstall() && <Button variant="contained" disableElevation onClick={() => promptInstall()} sx={{ ...BTN, flexShrink: 0 }}>Instalar</Button>}
+    </Card>
   );
 }

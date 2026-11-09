@@ -55,6 +55,17 @@ const C = {
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-09-2', date: '2026-11-09', title: 'Lo importante, primero', subtitle: 'Qué mirar hoy, de un vistazo',
+    features: [
+      { icon: <TaskAltRounded />, color: C.orange, title: 'Bien u Ojo', where: 'Arriba de cada página', go: 'sueno',
+        body: '2-3 datos clave en cada página con una marca verde (Bien) o terracota (Ojo). Empieza por los Ojo.' },
+      { icon: <AutoAwesomeRounded />, color: C.blue, title: 'Tu último entreno', where: 'Hoy · Resumen', go: 'hoy',
+        body: 'Los datos clave de tu última sesión y un comentario de la IA: cómo fue frente a las parecidas y qué hacer ahora.' },
+      { icon: <SpeedRounded />, color: C.green, title: 'VO2max más fiable', where: 'Entreno', go: 'entreno',
+        body: 'Ahora solo cuenta el de tus carreras: las caminatas daban estimaciones que no valían.' },
+    ],
+  },
+  {
     id: '2026-11-09', date: '2026-11-09', title: 'Hoy, más limpio', subtitle: 'Lo importante de un vistazo; el resto, a un toque',
     features: [
       { icon: <DashboardRounded />, color: C.orange, title: 'Resumen', where: 'Hoy · Resumen', go: 'hoy',

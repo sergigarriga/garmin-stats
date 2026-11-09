@@ -70,6 +70,7 @@ import ActivityDetail from './pages/ActivityDetail';
 import Chat from './Chat';
 import { LATEST, WhatsNew } from './whatsnew';
 import { Spotlight } from './spotlight';
+import { WelcomeTour } from './tour';
 import NewReleasesOutlined from '@mui/icons-material/NewReleasesOutlined';
 import LockRounded from '@mui/icons-material/LockRounded';
 
@@ -419,6 +420,7 @@ export default function App() {
 
       <Chat showFab={!mobile} />
       <WhatsNew me={me} go={go} ready={!!me} />
+      <WelcomeTour me={me} />
       <Spotlight />
       <Snackbar open={!!info} autoHideDuration={9000} onClose={() => setInfo(null)} message={info}
         anchorOrigin={{ vertical: mobile ? 'top' : 'bottom', horizontal: 'center' }} sx={{ '& .MuiSnackbarContent-root': { maxWidth: 520 } }} />

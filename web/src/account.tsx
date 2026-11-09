@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
+import ContentPasteRounded from '@mui/icons-material/ContentPasteRounded';
 import OpenInNewRounded from '@mui/icons-material/OpenInNewRounded';
 import { relative } from './format';
 
@@ -62,7 +63,7 @@ export function useMe(pollMs = 0) {
 // ------------------------------------------------------------------ clave de Garmin
 export function GarminKeySteps() {
   const steps = [
-    <>Abre <Link href={GARMIN_KEY_URL} target="_blank" rel="noopener">Garmin Connect → Clave de API personal <OpenInNewRounded sx={{ fontSize: 14, verticalAlign: '-2px' }} /></Link> e inicia sesión (mejor desde el ordenador).</>,
+    <>Abre <Link href={GARMIN_KEY_URL} target="_blank" rel="noopener" sx={{ color: '#D4542F', fontWeight: 600 }}>Garmin Connect → Clave de API personal <OpenInNewRounded sx={{ fontSize: 14, verticalAlign: '-2px' }} /></Link> e inicia sesión (mejor desde el ordenador).</>,
     <>Pulsa <b>Crear clave</b>, acepta las condiciones de Garmin y elige que caduque en <b>1 año</b>.</>,
     <>Copia la clave: Garmin solo la enseña <b>una vez</b>. Pégala aquí abajo.</>,
   ];
@@ -71,7 +72,7 @@ export function GarminKeySteps() {
       {steps.map((s, i) => (
         <Stack key={i} component="li" direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
           <Box sx={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 600,
-            bgcolor: 'primary.main', color: 'primary.contrastText' }}>{i + 1}</Box>
+            bgcolor: '#D4542F', color: '#FFFFFF' }}>{i + 1}</Box>
           <Typography variant="body2" sx={{ pt: 0.25 }}>{s}</Typography>
         </Stack>
       ))}
@@ -87,13 +88,22 @@ export function GarminKeyForm({ consent = true, onDone, submitLabel = 'Conectar 
     setBusy(true); setErr(null);
     try { await call('./api/onboarding/key', { key, consent }); onDone(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   };
+  // Pegar con un toque (en el móvil es lo más cómodo); si el navegador no deja, se pega a mano
+  const canPaste = typeof navigator !== 'undefined' && !!navigator.clipboard?.readText;
+  const paste = async () => { try { const t = (await navigator.clipboard.readText()).trim(); if (t) setKey(t); } catch { /* sin permiso */ } };
   return (
     <Stack spacing={1.5}>
       <TextField label="Tu clave de Garmin" value={key} onChange={(e) => setKey(e.target.value)} fullWidth multiline minRows={2}
-        autoComplete="off" spellCheck={false} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 13 } } }} />
+        placeholder="Pega aquí la clave que te ha dado Garmin"
+        autoComplete="off" spellCheck={false} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 16 } } }} />
+      {canPaste && !key && (
+        <Button variant="outlined" startIcon={<ContentPasteRounded />} onClick={paste}
+          sx={{ borderRadius: 999, alignSelf: 'flex-start', color: '#D4542F', borderColor: 'color-mix(in srgb, #D4542F 50%, transparent)' }}>Pegar</Button>
+      )}
       {err && <Alert severity="error" sx={{ borderRadius: '14px' }}>{err}</Alert>}
       <Button variant="contained" disableElevation size="large" onClick={submit} disabled={busy || key.trim().length < 20}
-        startIcon={busy ? <CircularProgress size={18} color="inherit" /> : undefined} sx={{ borderRadius: 999, alignSelf: 'flex-start' }}>
+        startIcon={busy ? <CircularProgress size={18} color="inherit" /> : undefined}
+        sx={{ borderRadius: 999, alignSelf: { xs: 'stretch', sm: 'flex-start' }, py: 1.4, bgcolor: '#D4542F', color: '#FFFFFF', '&:hover': { bgcolor: '#B9441F' } }}>
         {busy ? 'Comprobando con Garmin…' : submitLabel}
       </Button>
       <Typography variant="caption" color="text.secondary">
