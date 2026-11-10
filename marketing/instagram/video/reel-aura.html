@@ -37,7 +37,7 @@
   <!-- 3 · +1000 -->
   <div class="scene center t-sage" id="s3">
     <div class="row" style="align-items:center;gap:30px">
-      <img id="im3" src="../../marca/ilustraciones/gemini/corredora-mayor-terracota.png" style="height:440px" alt="">
+      <img id="im3" src="../../marca/ilustraciones/gemini/corredora-mayor-espresso.png" style="height:440px" alt="">
       <div class="col" style="align-items:center"><div class="num aura" id="n3" style="font-size:210px">+1000</div>
       <div class="serif" id="a3" style="font-size:70px;font-style:italic;margin-top:4px;font-variation-settings:'SOFT' 100,'WONK' 1">de aura</div></div>
     </div>
@@ -67,7 +67,7 @@
   </div>
 
   <!-- 6 · cierre -->
-  <div class="scene center t-terracotta" id="s6">
+  <div class="scene center t-olive" id="s6">
     <div class="title" id="t6" style="font-size:118px">¿+1000 o −1000? <em>Comenta.</em></div>
     <div class="serif" id="wm6" style="font-size:170px;line-height:.9;letter-spacing:-.04em;margin-top:100px">Runch</div>
     <div class="chip cream" id="c6" style="margin-top:50px">Segueix-nos: @runch.run</div>
@@ -86,7 +86,7 @@
 <script src="kit.js"></script>
 <script>
   window.DURATION = 23;
-  const SC = [[0, 3.8, 'espresso'], [3.6, 7.4, 'paper'], [7.2, 11.6, 'sage'], [11.4, 15.0, 'butter'], [14.8, 18.8, 'paper'], [18.6, 23.2, 'terracotta']];
+  const SC = [[0, 3.8, 'espresso'], [3.6, 7.4, 'paper'], [7.2, 11.6, 'sage'], [11.4, 15.0, 'butter'], [14.8, 18.8, 'paper'], [18.6, 23.2, 'olive']];
   window.render = function (t, rt = t) {
     background(t, SC);
     const s = (k) => $('s' + k);
@@ -126,7 +126,7 @@
     rise($('sw5'), t, 15.0);
     const k = eb(p(t, 15.9, 16.3));
     $('knob').style.transform = `translateX(${86 * k}px)`;
-    $('sw').style.background = mix('#D4C9BC', '#D4542F', clamp(p(t, 15.9, 16.2)));
+    $('sw').style.background = mix('#D4C9BC', '#5A6B32', clamp(p(t, 15.9, 16.2)));
     rise($('l5'), t, 16.4);
 
     // 6 · cierre

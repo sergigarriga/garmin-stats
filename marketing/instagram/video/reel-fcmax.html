@@ -29,7 +29,7 @@
   </div>
 
   <!-- 2 · la fórmula -->
-  <div class="scene center t-terracotta" id="s2">
+  <div class="scene center t-olive" id="s2">
     <div class="lab acc" id="k2">Si no le has dicho tu máximo</div>
     <div class="serif big" id="f2" style="margin-top:40px">220 <em>−</em> edad</div>
     <div class="lead" id="l2" style="margin-top:44px;max-width:780px">Es la fórmula que usa para calcular tu pulso máximo y, con él, todas tus zonas.</div>
@@ -47,9 +47,9 @@
       <line x1="0" y1="88" x2="830" y2="88" stroke="var(--line)" stroke-width="3"/>
       <g id="ticks"></g>
       <rect id="bF" y="62" height="52" rx="26" fill="rgba(34,26,21,.16)"/>
-      <rect id="bR" y="62" height="52" rx="26" fill="#D4542F"/>
+      <rect id="bR" y="62" height="52" rx="26" fill="#5A6B32"/>
       <text id="tF" y="38" class="tick" text-anchor="middle" style="fill:var(--ink2)">Z2 FÓRMULA 105–123</text>
-      <text id="tR" y="214" class="tick" text-anchor="middle" style="fill:#D4542F;font-size:26px">TU Z2 REAL 114–133</text>
+      <text id="tR" y="214" class="tick" text-anchor="middle" style="fill:#5A6B32;font-size:26px">TU Z2 REAL 114–133</text>
     </svg>
     <div class="example" id="ex3" style="margin-top:34px">Zona 2 = 60–70 % de la FC máx. · Datos de ejemplo</div>
   </div>
@@ -84,7 +84,7 @@
   </div>
 
   <!-- portada -->
-  <div id="cover" class="t-terracotta">
+  <div id="cover" class="t-olive">
     <div class="wm">Runch</div>
     <div class="chip cream" style="margin-bottom:54px">Spoiler</div>
     <div class="title" style="font-size:150px">Tu Z2 del Garmin no es <em>tu Z2.</em></div>
@@ -96,7 +96,7 @@
 <script src="kit.js"></script>
 <script>
   window.DURATION = 24;
-  const SC = [[0, 4.0, 'cream'], [3.8, 8.0, 'terracotta'], [7.8, 12.6, 'paper'], [12.4, 16.0, 'butter'], [15.8, 20.0, 'paper'], [19.8, 24.2, 'espresso']];
+  const SC = [[0, 4.0, 'cream'], [3.8, 8.0, 'olive'], [7.8, 12.6, 'paper'], [12.4, 16.0, 'butter'], [15.8, 20.0, 'paper'], [19.8, 24.2, 'espresso']];
   // escala de pulso 90–200 lpm en 830 px
   const X = (hr) => (hr - 90) / 110 * 830;
   $('ticks').innerHTML = [100, 120, 140, 160, 180].map((h) =>

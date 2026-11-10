@@ -16,12 +16,16 @@ con un hueco libre para la encuesta de Business Suite; el hueco solo se marca en
 Salida en out/stories/calendario/: `AAAA-MM-DD_HHMM_N-idioma.mp4` (9 s, 30 fps, H.264 yuv420p, música propia afro house de 120 bpm
 hecha por código en marketing/marca/musica/afro_house.py, a −14 LUFS, AAC 160k), su póster `.png`, una hoja de contacto por semana y GUIA.md.
 Cada fotograma se pinta llamando a render(t) en la página; el primero y el último son iguales (fondo y logotipo).
+
+Con `--out=carpeta` (relativa a out/, p. ej. `--out=olivo`) las portadas de los posts se toman de out/<carpeta>/ (si
+no están, de out/) y todo sale en out/<carpeta>/stories/calendario/.
 """
 from __future__ import annotations
 
 import datetime as dt
 import html
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -36,24 +40,28 @@ sys.path.insert(0, str(MARCA))
 from kit import C, Renderer, fontface  # noqa: E402
 from templates import ILL_DIR, ILLUS, ffmpeg_bin, stamp, wordmark_letters  # noqa: E402
 
-SRC = HERE / "out"
-OUT = HERE / "out" / "stories" / "calendario"
+BASE = HERE / "out"
+SRC = Path(os.environ.get("RUNCH_STORIES_ROOT", BASE))   # raíz de las portadas (y de la salida); ver --out
+OUT = SRC / "stories" / "calendario"
 COPY = HERE / "stories-calendario.json"
 LOOP = MARCA / "musica" / "afro-house-120bpm.wav"  # música propia (afro house, 120 bpm), la hace musica/afro_house.py
 W, H = 1080, 1920
 FPS, DUR = 30, 9.0
 SAFE = (230, 1735)                                 # zona libre de la interfaz de stories (arriba / abajo)
 
-# Fondo, tinta, sombra de la hora, pegatina «Nou post» (fondo, texto) y tinta del corredor.
+# Fondo, tinta, sombra de la hora, pegatina «Nou post» (fondo, texto) y tinta del corredor. Una sola tinta por pieza;
+# el olivo (marca) solo hace de segundo color en la pegatina y en la sombra.
 THEMES = {
-    "terracotta": dict(bg=C["terracotta"], ink=C["cream"], sh="#B8442A", chip=(C["butter"], C["espresso"]), ill="crema"),
-    "espresso": dict(bg=C["espresso"], ink=C["cream"], sh=C["terracotta"], chip=(C["terracotta"], C["cream"]), ill="crema"),
-    "sage": dict(bg=C["sage"], ink=C["espresso"], sh="#AAB495", chip=(C["terracotta"], C["cream"]), ill="espresso"),
+    "olive": dict(bg=C["brand"], ink=C["cream"], sh=C["olive_dark"], chip=(C["butter"], C["espresso"]), ill="crema"),
+    "espresso": dict(bg=C["espresso"], ink=C["cream"], sh=C["brand"], chip=(C["olive_light"], C["espresso"]), ill="crema"),
+    "sage": dict(bg=C["sage"], ink=C["espresso"], sh="#AAB495", chip=(C["brand"], C["cream"]), ill="espresso"),
     "sea": dict(bg=C["sea"], ink=C["cream"], sh="#163049", chip=(C["butter"], C["espresso"]), ill="crema"),
-    "butter": dict(bg=C["butter"], ink=C["espresso"], sh="#DBC17A", chip=(C["terracotta"], C["cream"]), ill="espresso"),
-    "cream": dict(bg=C["cream"], ink=C["terracotta"], sh="#EBD3C3", chip=(C["espresso"], C["cream"]), ill="terracota"),
+    "butter": dict(bg=C["butter"], ink=C["espresso"], sh="#DBC17A", chip=(C["brand"], C["cream"]), ill="espresso"),
+    "cream": dict(bg=C["cream"], ink=C["brand"], sh="#D5DDB8", chip=(C["espresso"], C["cream"]), ill="olivo"),
+    # Legado (marca anterior): solo para volver a pintar stories antiguas.
+    "terracotta": dict(bg=C["terracotta"], ink=C["cream"], sh="#B8442A", chip=(C["butter"], C["espresso"]), ill="crema"),
 }
-CYCLE = ["terracotta", "espresso", "sage", "sea", "butter", "cream"]
+CYCLE = ["olive", "espresso", "sage", "sea", "butter", "cream"]
 
 DAYS = {"ca": ["dilluns", "dimarts", "dimecres", "dijous", "divendres", "dissabte", "diumenge"],
         "es": ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]}
@@ -437,7 +445,7 @@ def plan() -> list[dict]:
             t = T[lang]
             cover = day["cover"][lang] if isinstance(day["cover"], dict) else day["cover"]
             s = dict(date=day["date"], time="0900", n=n, lang=lang, kind=kind, bg=bg, variant=i, ill=day.get("ill"),
-                     cover=SRC / cover, hook=day["hook"][lang],
+                     cover=cover_path(cover), hook=day["hook"][lang],
                      date_label=f'{DAYS[lang][date.weekday()]} {date.day} {MONTHS[lang][date.month]}',
                      cta=data["cta"][lang][i % len(data["cta"][lang])])
             if kind == "reel":
@@ -448,12 +456,17 @@ def plan() -> list[dict]:
                 s["cta"] = t["last_cta"] if left == 0 else t["count_cta"]
             out.append(s)
         if day["date"] in data["tu_turno"]:
-            tbg = next(c for c in ["espresso", "sea", "terracotta"] if c != bg)
+            tbg = next(c for c in ["espresso", "sea", "olive"] if c != bg)
             for lang, n in LANGS:
                 out.append(dict(date=day["date"], time="1200", n=n + 2, lang=lang, kind="turno", bg=tbg,
                                 turn=data["tu_turno"][day["date"]][lang], hook="",
                                 ill=data["tu_turno"][day["date"]].get("ill")))
     return out
+
+
+def cover_path(rel: str) -> Path:
+    """Portada del post: la de la raíz elegida (--out) si existe; si no, la de out/."""
+    return SRC / rel if (SRC / rel).exists() else BASE / rel
 
 
 def name(s: dict) -> str:
@@ -607,6 +620,8 @@ def guide_md(stories: list[dict]) -> str:
         f'(catalán: «{plain(" ".join(q["ca"]["lines"]))}» — {" / ".join(q["ca"]["options"])})'
         for date, q in data["tu_turno"].items())
     first = stories[0]
+    REL = OUT.relative_to(HERE.parent.parent).as_posix()
+    WIN = str(OUT).replace("/", "\\")
     extras = "".join(f'- **{e["date"]} {e["time"][:2]}:{e["time"][2:]}:** {e["text"]} ({e["note"]}).\n'
                      for e in data.get("extras", []) if e["lang"] == "es")
     return f"""# Stories de @runch.run · 4-nov → 2-dic de 2026
@@ -615,8 +630,8 @@ Vídeos de 9 s con música (1080 × 1920, listos para subir). Cada día, a las *
 la de **catalán** (`_1-ca`) y después la de **castellano** (`_2-es`). Los domingos, además, a las **12:00**,
 «El teu torn / Tu turno» (`_3-ca` y `_4-es`), donde tú pones la encuesta.
 
-Carpeta: `marketing/instagram/out/stories/calendario/` (en Windows:
-`\\\\wsl.localhost\\Ubuntu\\home\\garrigas\\personal\\garmin_stats\\marketing\\instagram\\out\\stories\\calendario`).
+Carpeta: `{REL}/` (en Windows:
+`\\\\wsl.localhost\\Ubuntu{WIN}`).
 Cada vídeo tiene su póster `.png` con el mismo nombre; las hojas `hoja-semana-*.png` enseñan la semana entera.
 
 ## Lo primero: mañana, miércoles 4 de noviembre, a las 09:00
@@ -703,6 +718,12 @@ def remux_all(stories: list[dict]) -> None:
 
 
 def main() -> None:
+    global SRC, OUT
+    sub = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--out=")), "")
+    if sub:   # los procesos hijos leen la raíz de la variable de entorno
+        SRC = BASE / sub
+        OUT = SRC / "stories" / "calendario"
+        os.environ["RUNCH_STORIES_ROOT"] = str(SRC)
     video = "--sin-video" not in sys.argv
     jobs_n = next((int(a.split("=")[1]) for a in sys.argv if a.startswith("--jobs=")), 4)
     only = [a for a in sys.argv[1:] if not a.startswith("--")]

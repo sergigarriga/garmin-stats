@@ -64,7 +64,7 @@
     {
       "id": "deu-n-hi-do",
       "title": "Déu n'hi do les agulletes",
-      "bg": "terracotta",
+      "bg": "olive",
       "inner": "cream",
       "topic": "Frases",
       "slides": [
@@ -97,7 +97,7 @@
         },
         {
           "layout": "cta",
-          "bg": "terracotta",
+          "bg": "olive",
           "title": "El teu torn: **quin dia** et fan més mal les agulletes?",
           "body": "Tu turno: ¿**qué día** te duelen más las agujetas?",
           "size": 58,
@@ -239,7 +239,7 @@
       "id": "garmin-i-runner",
       "title": "El Garmin i el runner",
       "bg": "butter",
-      "inner": "terracotta",
+      "inner": "olive",
       "topic": "Frases",
       "slides": [
         {
@@ -257,7 +257,7 @@
         },
         {
           "layout": "hook",
-          "bg": "terracotta",
+          "bg": "olive",
           "kicker": "Reloj y sensaciones",
           "title": "Es el Garmin el que quiere que **el runner sea el Garmin.**",
           "body": "El reloj da información, no órdenes. Cruza la nota de preparación con cómo te encuentras: si no cuadran, ajusta el plan.",
@@ -354,7 +354,7 @@
     {
       "id": "una-mica-de-per-favor",
       "title": "Una mica de per favor",
-      "bg": "terracotta",
+      "bg": "lavender",
       "inner": "sage",
       "topic": "Frases",
       "slides": [
@@ -387,7 +387,7 @@
         },
         {
           "layout": "cta",
-          "bg": "terracotta",
+          "bg": "lavender",
           "title": "El teu torn: **qui marca** el ritme al teu grup?",
           "body": "Tu turno: ¿**quién marca** el ritmo en tu grupo?",
           "size": 58,

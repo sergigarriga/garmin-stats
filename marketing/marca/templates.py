@@ -437,6 +437,7 @@ def main() -> None:
     only = [a for a in sys.argv[1:] if not a.startswith("--")]
     OUT.mkdir(exist_ok=True)
     with Renderer() as r:
+        r.pg.set_default_timeout(180_000)  # con la máquina cargada, una captura puede tardar más de 30 s
         if not only:  # se borra lo generado antes, para que no queden archivos con nombres viejos
             # (con --sin-video, los vídeos y sus hojas de fotogramas se quedan; los -musica.mp4 no los hace este script)
             old = [*OUT.glob("*.png"), *OUT.glob("*.mp4")] if video else OUT.glob("*.png")

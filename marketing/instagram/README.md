@@ -9,7 +9,7 @@ El agente `.claude/agents/instagram-posts.md` los crea: pídele "usa el agente d
 uv run --no-project --with playwright python marketing/instagram/render.py marketing/instagram/lote-01.json
 ```
 
-Salida en `out/lote-01/` (no se sube a git):
+Salida en `out/lote-01/` (no se sube a git; con `--out olivo`, en `out/olivo/lote-01/`):
 - `01-presentacion-1.png`, `01-presentacion-2.png`… una imagen por diapositiva (1080 x 1350, formato 4:5), y un
   `.mp4` en las diapositivas con `"animate": true` (ver "Diapositivas animadas").
 - `captions.md`: texto del post, hashtags y texto alternativo de cada uno.
@@ -20,9 +20,9 @@ Publica los posts en orden (01 primero). Los carruseles se suben como una sola p
 
 ## Sistema visual (editorial)
 
-Blanco roto cálido (`cream` #F7F3EC, interiores `paper` #FCFAF6, desde el lote 02), espresso y terracota (más salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva
-terracota, textos en Google Sans Flex, etiquetas en mayúsculas espaciadas y gráficos de línea fina. Maqueta fija:
-el logotipo «runch» (`marketing/marca/logo/`, terracota sobre fondo claro y crema sobre oscuro) y "Nº 01 · TEMA" arriba; @runch.run, "Datos de ejemplo" y "Desliza →" abajo. Sirve igual para los datos de
+Blanco roto cálido (`cream` #F7F3EC, interiores `paper` #FCFAF6, desde el lote 02), espresso y olivo #5A6B32 (más lavanda, salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva
+olivo (sobre fondos oscuros, olivo claro o mantequilla; sobre salvia, lavanda), textos en Google Sans Flex, etiquetas en mayúsculas espaciadas y gráficos de línea fina. Maqueta fija:
+el logotipo «runch» (`marketing/marca/logo/`: olivo sobre crema y papel, espresso sobre salvia y mantequilla, crema sobre oscuro y color) y "Nº 01 · TEMA" arriba; @runch.run, "Datos de ejemplo" y "Desliza →" abajo. Sirve igual para los datos de
 la app que, más adelante, para fotos de quedadas y estilo de vida (formato `photo`). La versión anterior (pastel) queda en
 `render_v1.py` y `lote-01-v1.json`.
 
@@ -42,8 +42,8 @@ la app que, más adelante, para fotos de quedadas y estilo de vida (formato `pho
 }
 ```
 
-- `bg` (portada) y `inner` (resto, `paper` por defecto): `cream`, `paper`, `terracotta`, `espresso`, `sage`, `sea`,
-  `butter`. Cada diapositiva puede llevar su propio `bg`.
+- `bg` (portada) y `inner` (resto, `paper` por defecto): `cream`, `paper`, `olive`, `lavender`, `espresso`, `sage`, `sea`,
+  `butter` (`terracotta` queda como legado de la marca anterior, desde el 10-nov-2026 es olivo). Cada diapositiva puede llevar su propio `bg`.
 - Formatos (`layout`): `hook` (`kicker`, `title`, `body`, `facts`, `size`), `cover` (`kicker`, `title`, `body`,
   `visual`), `points` (`title`, `points` [{`title`, `body`}]), `versus` (`title`, `left`, `right`, `body`), `big`
   (`big`, `bigSize`, `title`, `body`), `cta` (`title`, `body`, `actions`) y `photo` (`image`, `title`, `body`).

@@ -28,18 +28,18 @@
   .bubble { padding: 30px 38px; font-size: 40px; line-height: 1.3; max-width: 760px; text-align: left; }
   svg { display: block; }
 
-  /* ---- sistema editorial de Runch (crema, espresso, terracota; Fraunces) ---- */
+  /* ---- sistema editorial de Runch (crema, espresso, olivo; Fraunces) ---- */
   @font-face { font-family: FR; font-weight: 1 1000; src: url("../fonts/fraunces-latin-full-normal.woff2") format("woff2-variations"); }
   @font-face { font-family: FR; font-style: italic; font-weight: 1 1000; src: url("../fonts/fraunces-latin-full-italic.woff2") format("woff2-variations"); }
   .blob { display: none !important; }
   .title { font-family: FR, Georgia, serif !important; font-weight: 440 !important; letter-spacing: -.02em !important; font-variation-settings: "SOFT" 50, "WONK" 0; }
-  .hl { background: none !important; font-style: italic; color: #D4542F; font-variation-settings: "SOFT" 100, "WONK" 1; }
+  .hl { background: none !important; font-style: italic; color: #5A6B32; font-variation-settings: "SOFT" 100, "WONK" 1; }
   .chip { box-shadow: none !important; border: 1.5px solid rgba(34,26,21,.18); text-transform: uppercase; letter-spacing: .12em; font-size: 30px !important; font-weight: 650 !important; }
   .card { box-shadow: none !important; border: 1.5px solid rgba(34,26,21,.14); }
   #brand > div { background: none !important; box-shadow: none !important; padding: 0 !important; }
   #brand > div > div:first-child { display: none !important; }
   #brand > div > div:last-child { font-family: FR, Georgia, serif; font-weight: 500 !important; font-size: 50px !important; letter-spacing: -.01em; }
-  .logo, #logo { background: #D4542F !important; border-radius: 50% !important; box-shadow: none !important; }
+  .logo, #logo { background: #5A6B32 !important; border-radius: 50% !important; box-shadow: none !important; }
   .logo svg, #logo svg { display: none; }
   .logo::after, #logo::after { content: "r"; font-family: FR, Georgia, serif; font-style: italic; color: #FBF3E8; line-height: 1; margin-top: -.12em;
     font-variation-settings: "SOFT" 100, "WONK" 1; }
@@ -48,18 +48,18 @@
 </head>
 <body>
 <div id="stage">
-  <div class="blob" id="b1" style="width:820px;height:820px;background:#F6E0D6"></div>
+  <div class="blob" id="b1" style="width:820px;height:820px;background:#E8E1F7"></div>
   <div class="blob" id="b2" style="width:760px;height:760px;background:#F1DEA6"></div>
   <div class="blob" id="b3" style="width:620px;height:620px;background:#EFE6D2"></div>
 
   <!-- marca -->
   <div class="abs" id="brand" style="top:96px;display:flex;justify-content:center">
     <div style="display:flex;gap:16px;align-items:center;padding:14px 32px 14px 14px;border-radius:999px;background:rgba(255,255,255,.75);box-shadow:0 6px 22px rgba(60,50,90,.08)">
-      <div style="width:60px;height:60px;border-radius:50%;background:conic-gradient(from 200deg,#D4542F,#E08A5A,#C9A45C,#8A9A6B,#24496D,#B4A79A,#D4542F);display:grid;place-items:center">
+      <div style="width:60px;height:60px;border-radius:50%;background:conic-gradient(from 200deg,#5A6B32,#8B6FD6,#C9A45C,#9DB43A,#24496D,#B4A79A,#5A6B32);display:grid;place-items:center">
         <div style="width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="#D4542F"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="#5A6B32"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
         </div></div>
-      <img src="../../marca/logo/runch-logo-terracota.svg" style="height:36px;display:block" alt="runch">
+      <img src="../../marca/logo/runch-logo-olivo.svg" style="height:36px;display:block" alt="runch">
     </div>
   </div>
 
@@ -85,10 +85,10 @@
       <div class="chip" id="ztag" style="position:absolute;top:-38px;right:40px;background:#F1DEA6;z-index:2">Aquí, el 80 %</div>
       <div class="card" id="zcard" style="padding:46px 44px;display:flex;flex-direction:column;gap:18px;text-align:left">
         <div class="zrow" id="z1"><div class="fill" style="background:#ECE5DA"></div><div class="zdot" style="background:#B4A79A">Z1</div><div style="flex:1;font-size:40px">Muy suave</div><div style="font-size:42px;font-weight:700">95–114</div></div>
-        <div class="zrow" id="z2"><div class="fill" style="background:#F3D9CC"></div><div class="zdot" style="background:#D4542F">Z2</div><div style="flex:1;font-size:42px;font-weight:750">Suave (Z2)</div><div style="font-size:44px;font-weight:800">114–133</div></div>
-        <div class="zrow" id="z3"><div class="fill" style="background:#E3E8D6"></div><div class="zdot" style="background:#8A9A6B">Z3</div><div style="flex:1;font-size:40px">Moderado</div><div style="font-size:42px;font-weight:700">133–152</div></div>
+        <div class="zrow" id="z2"><div class="fill" style="background:#E2E7D3"></div><div class="zdot" style="background:#5A6B32">Z2</div><div style="flex:1;font-size:42px;font-weight:750">Suave (Z2)</div><div style="font-size:44px;font-weight:800">114–133</div></div>
+        <div class="zrow" id="z3"><div class="fill" style="background:#EDF1D6"></div><div class="zdot" style="background:#9DB43A">Z3</div><div style="flex:1;font-size:40px">Moderado</div><div style="font-size:42px;font-weight:700">133–152</div></div>
         <div class="zrow" id="z4"><div class="fill" style="background:#F1E4C8"></div><div class="zdot" style="background:#C9A45C">Z4</div><div style="flex:1;font-size:40px">Umbral</div><div style="font-size:42px;font-weight:700">152–171</div></div>
-        <div class="zrow" id="z5"><div class="fill" style="background:#EFD8CF"></div><div class="zdot" style="background:#A8432A">Z5</div><div style="flex:1;font-size:40px">Máximo</div><div style="font-size:42px;font-weight:700">171–190</div></div>
+        <div class="zrow" id="z5"><div class="fill" style="background:#E8E1F7"></div><div class="zdot" style="background:#6B4FC0">Z5</div><div style="flex:1;font-size:40px">Máximo</div><div style="font-size:42px;font-weight:700">171–190</div></div>
       </div>
     </div>
     <div id="znote" style="margin-top:34px;font-size:30px;color:#76695F">Pulso en lpm, con un máximo de 190 · Datos de ejemplo</div>
@@ -100,11 +100,11 @@
       <span class="w">¿Puedes</span> <span class="w">hablar?</span><br><span class="w">Es</span> <span class="w"><span class="hl" id="hl3">Z2.</span></span>
     </div>
     <div class="card" id="hrcard" style="margin-top:70px;padding:44px 64px;display:flex;align-items:center;gap:36px">
-      <svg id="heart" viewBox="0 0 24 24" width="120" height="120" fill="#A8432A"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
+      <svg id="heart" viewBox="0 0 24 24" width="120" height="120" fill="#6B4FC0"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
       <div style="text-align:left">
         <div style="font-size:34px;color:#76695F">Tu pulso ahora</div>
         <div style="font-size:150px;font-weight:750;letter-spacing:-.05em;line-height:1"><span id="hr">168</span><span style="font-size:48px;color:#76695F;font-weight:500;letter-spacing:0"> lpm</span></div>
-        <div id="hrz" style="font-size:38px;font-weight:750;color:#A8432A">Z4 · eso no es suave</div>
+        <div id="hrz" style="font-size:38px;font-weight:750;color:#6B4FC0">Z4 · eso no es suave</div>
       </div>
     </div>
     <div style="width:100%;display:flex;flex-direction:column;gap:22px;margin-top:56px">
@@ -119,8 +119,8 @@
       <span class="w">Tu</span> <span class="w">rodaje</span> <span class="w">«suave»</span><br><span class="w">vs</span> <span class="w">uno</span> <span class="w"><span class="hl" id="hl4">de verdad</span></span>
     </div>
     <div style="position:relative;display:flex;gap:36px;width:100%">
-      <div class="card" id="vl" style="flex:1;padding:44px 40px;text-align:left;background:#F6E0D6">
-        <div style="color:#D4542F;font-weight:800;font-size:30px;letter-spacing:.04em">✕ TU RODAJE SUAVE</div>
+      <div class="card" id="vl" style="flex:1;padding:44px 40px;text-align:left;background:#E8E1F7">
+        <div style="color:#5A6B32;font-weight:800;font-size:30px;letter-spacing:.04em">✕ TU RODAJE SUAVE</div>
         <div style="font-size:110px;font-weight:750;letter-spacing:-.04em;margin-top:14px">5:15<span style="font-size:36px;color:#76695F;font-weight:500;letter-spacing:0"> /km</span></div>
         <div style="font-size:36px;color:#76695F;line-height:1.4;margin-top:8px">168 lpm<br>Jadeas en cada cuesta<br>Piernas de cemento</div>
       </div>
@@ -140,13 +140,13 @@
       <div id="o1b" class="title" style="font-size:88px">suave</div>
     </div>
     <div style="display:flex;gap:40px;align-items:baseline;margin-top:10px">
-      <div id="o2" class="title" style="font-size:190px;color:#D4542F">20 %</div>
+      <div id="o2" class="title" style="font-size:190px;color:#5A6B32">20 %</div>
       <div id="o2b" class="title" style="font-size:88px">fuerte</div>
     </div>
-    <div id="logo" style="margin-top:110px;width:220px;height:220px;border-radius:66px;background:conic-gradient(from 200deg,#D4542F,#E08A5A,#C9A45C,#8A9A6B,#24496D,#B4A79A,#D4542F);display:grid;place-items:center;box-shadow:0 26px 70px rgba(60,50,90,.2)">
+    <div id="logo" style="margin-top:110px;width:220px;height:220px;border-radius:66px;background:conic-gradient(from 200deg,#5A6B32,#8B6FD6,#C9A45C,#9DB43A,#24496D,#B4A79A,#5A6B32);display:grid;place-items:center;box-shadow:0 26px 70px rgba(60,50,90,.2)">
       <svg viewBox="0 0 24 24" width="110" height="110" fill="#fff"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
     </div>
-    <div id="wm" style="margin-top:50px"><img src="../../marca/logo/runch-logo-terracota.svg" style="height:108px;display:block" alt="runch"></div>
+    <div id="wm" style="margin-top:50px"><img src="../../marca/logo/runch-logo-olivo.svg" style="height:108px;display:block" alt="runch"></div>
     <div id="cta" class="chip" style="margin-top:34px;background:#F1DEA6">Síguenos en @runch.run</div>
   </div>
 </div>
@@ -202,7 +202,7 @@
       $(id).style.opacity = clamp(q * 2) * (id === 'z2' || t < 4.7 ? 1 : 1 - 0.45 * eo(p(t, 4.7, 5.0)));
     });
     const z2 = p(t, 4.7, 5.0);
-    $('z2').style.outline = z2 > 0 ? `${5 * z2}px solid #D4542F` : 'none';
+    $('z2').style.outline = z2 > 0 ? `${5 * z2}px solid #5A6B32` : 'none';
     $('z2').style.transform = `scale(${1 + 0.04 * eo(z2) + (t > 5 ? 0.015 * Math.sin(rt * 7) : 0)})`;
     pop($('ztag'), t, 5.1, 6);
     set($('znote'), eo(p(t, 4.4, 4.8)));
@@ -215,7 +215,7 @@
     const hr = Math.round(168 - 40 * eio(p(t, 7.4, 8.4)));
     $('hr').textContent = hr;
     $('hrz').textContent = hr > 152 ? 'Z4 · eso no es suave' : hr > 133 ? 'Z3 · aún no…' : 'Z2 · ahora sí';
-    $('hrz').style.color = hr > 152 ? '#A8432A' : hr > 133 ? '#8A9A6B' : '#24496D';
+    $('hrz').style.color = hr > 152 ? '#6B4FC0' : hr > 133 ? '#9DB43A' : '#24496D';
     const beat = 1 + 0.09 * Math.pow(Math.max(0, Math.sin(rt * (hr / 60) * Math.PI)), 6);
     $('heart').style.transform = `scale(${beat})`;
     pop($('m1'), t, 8.45, 0, 0.4); pop($('m2'), t, 8.9, 0, 0.4);

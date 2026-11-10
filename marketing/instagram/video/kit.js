@@ -12,14 +12,14 @@ const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 const eb = (x) => { const c1 = 1.70158, c3 = c1 + 1; return x <= 0 ? 0 : 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
 const set = (el, o = 1, x = 0, y = 0, s = 1, r = 0) => { el.style.opacity = o; el.style.transform = `translate(${x}px,${y}px) scale(${s}) rotate(${r}deg)`; };
 
-/* Logotipo «runch» (Gluten) en lugar del texto «Runch», como en los posts: terracota sobre fondo claro y crema sobre oscuro.
+/* Logotipo «runch» (Gluten) en lugar del texto «Runch», como en los posts: olivo sobre fondo claro y crema sobre oscuro.
    Son dos <img> superpuestas (los SVG locales no sirven de máscara CSS en file://); en la cabecera se funden al cambiar de
    escena (background) y en escenas y portada manda su clase t-* (kit.css). Alto = cuerpo de letra del texto x 0,9. */
-const DARK = { cream: 0, paper: 0, terracotta: 1, espresso: 1, sage: 0, sea: 1, butter: 0 };
+const DARK = { cream: 0, paper: 0, olive: 1, lavender: 1, terracotta: 1, espresso: 1, sage: 0, sea: 1, butter: 0 };
 document.querySelectorAll('.wm, [id^="wm"]').forEach((el) => {
   if (el.textContent.trim() !== 'Runch') return;
   const h = Math.round(parseFloat(getComputedStyle(el).fontSize) * 0.9), src = '../../marca/logo/runch-logo-';
-  el.innerHTML = `<span class="logo" style="height:${h}px"><img class="lt" src="${src}terracota.svg" alt="runch"><img class="lc" src="${src}crema.svg" alt=""></span>`;
+  el.innerHTML = `<span class="logo" style="height:${h}px"><img class="lt" src="${src}olivo.svg" alt="runch"><img class="lc" src="${src}crema.svg" alt=""></span>`;
 });
 
 /* Cada palabra de los titulares (y de lo que lleve data-split) en su <span class="w">, conservando las cursivas. */
@@ -119,8 +119,8 @@ function figure(el, t, a, rt, dur = 0.8, from = -90) {
 }
 
 /* Fondo: el de la escena actual, con un fundido corto al cambiar. scenes = [[inicio, fin, 'tema'], ...] */
-const BG = { cream: '#F7F3EC', paper: '#FCFAF6', terracotta: '#D4542F', espresso: '#221A15', sage: '#CBD3B8', sea: '#24496D', butter: '#F1DEA6' };
-const INK = { cream: '#221A15', paper: '#221A15', terracotta: '#FBF3E8', espresso: '#F3ECE2', sage: '#221A15', sea: '#F3ECE2', butter: '#221A15' };
+const BG = { cream: '#F7F3EC', paper: '#FCFAF6', olive: '#5A6B32', lavender: '#8B6FD6', terracotta: '#D4542F', espresso: '#221A15', sage: '#CBD3B8', sea: '#24496D', butter: '#F1DEA6' };
+const INK = { cream: '#221A15', paper: '#221A15', olive: '#F7F3EC', lavender: '#F7F3EC', terracotta: '#FBF3E8', espresso: '#F3ECE2', sage: '#221A15', sea: '#F3ECE2', butter: '#221A15' };
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const mix = (a, b, q) => { const x = hex(a), y = hex(b); return `rgb(${x.map((v, i) => Math.round(v + (y[i] - v) * q)).join(',')})`; };
 function background(t, scenes) {

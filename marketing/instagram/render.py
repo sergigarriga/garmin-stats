@@ -1,8 +1,10 @@
-"""Posts de Instagram de Runch (1080 x 1350, 4:5) con el sistema editorial: crema, espresso y terracota, titulares en
+"""Posts de Instagram de Runch (1080 x 1350, 4:5) con el sistema editorial: crema, espresso y olivo, titulares en
 serif (Fraunces) con la palabra clave en cursiva, textos en Google Sans Flex y gráficos de línea fina.
 
 Uso:
   uv run --no-project --with playwright python marketing/instagram/render.py marketing/instagram/lote-01.json
+
+Con `--out carpeta` (relativa a out/) sale en out/<carpeta>/lote-NN/ en lugar de out/lote-NN/ (p. ej. `--out olivo`).
 
 Salida en marketing/instagram/out/lote-NN/: un PNG por diapositiva, captions.md, grid.png (cuadrícula del perfil) y
 todos.html (todo el lote para revisar). Formato del lote y sistema visual: README.md de esta carpeta.
@@ -27,13 +29,16 @@ W, H = 1080, 1350
 # ---------------------------------------------------------------- sistema visual
 # Fondos (uno por diapositiva): tinta, tinta secundaria, acento, línea fina.
 THEMES = {
-    "cream":      {"bg": "#F7F3EC", "ink": "#221A15", "ink2": "#76695F", "accent": "#D4542F", "line": "rgba(34,26,21,.16)", "soft": "#EEE7DB"},
-    "paper":      {"bg": "#FCFAF6", "ink": "#221A15", "ink2": "#76695F", "accent": "#D4542F", "line": "rgba(34,26,21,.14)", "soft": "#F3EEE6"},
-    "terracotta": {"bg": "#D4542F", "ink": "#FBF3E8", "ink2": "rgba(251,243,232,.78)", "accent": "#FFE1A3", "line": "rgba(251,243,232,.3)", "soft": "#C64A27"},
-    "espresso":   {"bg": "#221A15", "ink": "#F3ECE2", "ink2": "#B4A79A", "accent": "#EE7550", "line": "rgba(243,236,226,.18)", "soft": "#2E241E"},
-    "sage":       {"bg": "#CBD3B8", "ink": "#221A15", "ink2": "#53584A", "accent": "#B1432A", "line": "rgba(34,26,21,.16)", "soft": "#BFC8AA"},
-    "sea":        {"bg": "#24496D", "ink": "#F3ECE2", "ink2": "#BCCADA", "accent": "#F4C56E", "line": "rgba(243,236,226,.2)", "soft": "#2B5379"},
-    "butter":     {"bg": "#F1DEA6", "ink": "#221A15", "ink2": "#6D5F43", "accent": "#C24A28", "line": "rgba(34,26,21,.16)", "soft": "#E8D294"},
+    "cream":      {"bg": "#F7F3EC", "ink": "#221A15", "ink2": "#76695F", "accent": "#5A6B32", "line": "rgba(34,26,21,.16)", "soft": "#EEE7DB", "logo": "olivo"},
+    "paper":      {"bg": "#FCFAF6", "ink": "#221A15", "ink2": "#76695F", "accent": "#5A6B32", "line": "rgba(34,26,21,.14)", "soft": "#F3EEE6", "logo": "olivo"},
+    "olive":      {"bg": "#5A6B32", "ink": "#F7F3EC", "ink2": "rgba(247,243,236,.8)", "accent": "#F1DEA6", "line": "rgba(247,243,236,.3)", "soft": "#52622D", "logo": "crema"},
+    "lavender":   {"bg": "#8B6FD6", "ink": "#FCFAF6", "ink2": "rgba(252,250,246,.86)", "accent": "#F1DEA6", "line": "rgba(252,250,246,.34)", "soft": "#8266CC", "logo": "crema"},
+    "espresso":   {"bg": "#221A15", "ink": "#F3ECE2", "ink2": "#B4A79A", "accent": "#B4C784", "line": "rgba(243,236,226,.18)", "soft": "#2E241E", "logo": "crema"},
+    "sage":       {"bg": "#CBD3B8", "ink": "#221A15", "ink2": "#53584A", "accent": "#6B4FC0", "line": "rgba(34,26,21,.16)", "soft": "#BFC8AA", "logo": "espresso"},
+    "sea":        {"bg": "#24496D", "ink": "#F3ECE2", "ink2": "#BCCADA", "accent": "#F4C56E", "line": "rgba(243,236,226,.2)", "soft": "#2B5379", "logo": "crema"},
+    "butter":     {"bg": "#F1DEA6", "ink": "#221A15", "ink2": "#6D5F43", "accent": "#5A6B32", "line": "rgba(34,26,21,.16)", "soft": "#E8D294", "logo": "espresso"},
+    # Legado (marca anterior, terracota): solo para volver a pintar piezas antiguas tal cual.
+    "terracotta": {"bg": "#D4542F", "ink": "#FBF3E8", "ink2": "rgba(251,243,232,.78)", "accent": "#FFE1A3", "line": "rgba(251,243,232,.3)", "soft": "#C64A27", "logo": "crema"},
 }
 ZONE_ALPHA = [0.35, 1.0, 0.5, 0.65, 0.8]  # opacidad de cada zona (la destacada usa el acento)
 T: dict = {}
@@ -217,10 +222,9 @@ VISUALS = {"zones": v_zones, "readiness": v_readiness, "rows": v_rows, "metric":
 
 # ---------------------------------------------------------------- maqueta
 def logo_src() -> str:
-    """Logotipo «runch» (Gluten) del color que contrasta con el fondo del tema."""
-    h = T["bg"].lstrip("#"); r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
-    light = (0.299 * r + 0.587 * g + 0.114 * b) > 150
-    color = "terracota" if light else "crema"
+    """Logotipo «runch» (Gluten) en la tinta del tema: olivo sobre crema y papel, espresso sobre salvia y mantequilla
+    (el olivo ahí apenas contrasta) y crema sobre fondos oscuros o de color."""
+    color = T.get("logo", "crema")
     return (HERE.parent / "marca" / "logo" / f"runch-logo-{color}.svg").resolve().as_uri()
 
 
@@ -473,11 +477,11 @@ def record(pg, out: Path, stem: str, duration: float) -> str | None:
 
 
 # ---------------------------------------------------------------- salida
-def main(path: str) -> None:
+def main(path: str, sub: str = "") -> None:
     from playwright.sync_api import sync_playwright
     lote = json.loads(Path(path).read_text())
     STYLE["handle"] = lote.get("handle")
-    out = HERE / "out" / f"lote-{lote['lote']}"
+    out = HERE / "out" / sub / f"lote-{lote['lote']}"
     out.mkdir(parents=True, exist_ok=True)
     for f in [*out.glob("*.png"), *out.glob("*.mp4")]:
         f.unlink()
@@ -543,12 +547,15 @@ def write_overview(lote: dict, out: Path) -> None:
       header {{ padding: 32px 36px 8px; }} header h1 {{ margin: 0; font-family: FR, serif; font-weight: 450; font-size: 40px; }} header p {{ color: #76695F; }}
       section {{ background: #FAF6F0; margin: 18px 28px; padding: 22px 24px; border-radius: 18px; }}
       .head {{ display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }} h2 {{ margin: 0; font-family: FR, serif; font-weight: 450; font-size: 26px; }}
-      .num {{ font-family: FR, serif; font-style: italic; color: #D4542F; font-size: 24px; }} .meta {{ margin-left: auto; color: #76695F; font-size: 14px; }}
+      .num {{ font-family: FR, serif; font-style: italic; color: #5A6B32; font-size: 24px; }} .meta {{ margin-left: auto; color: #76695F; font-size: 14px; }}
       .imgs {{ display: flex; gap: 12px; overflow-x: auto; }} .imgs img, .imgs video {{ height: min(52vh, 460px); aspect-ratio: 4/5; border-radius: 6px; display: block; }}
-      summary {{ cursor: pointer; color: #D4542F; font-weight: 600; margin-top: 12px; }} details p {{ max-width: 760px; line-height: 1.5; }}
-      .tags {{ color: #D4542F; }} .alt {{ color: #76695F; font-size: 14px; }}
+      summary {{ cursor: pointer; color: #5A6B32; font-weight: 600; margin-top: 12px; }} details p {{ max-width: 760px; line-height: 1.5; }}
+      .tags {{ color: #5A6B32; }} .alt {{ color: #76695F; font-size: 14px; }}
     </style></head><body><header><h1>Runch · lote {lote["lote"]}</h1><p>{esc(lote.get("notes", ""))}</p></header>{"".join(rows)}</body></html>''', encoding="utf-8")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1] if len(sys.argv) > 1 else str(HERE / "lote-01.json"))
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    sub = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else ""
+    args = [a for a in args if a != sub]
+    main(args[0] if args else str(HERE / "lote-01.json"), sub)

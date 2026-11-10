@@ -21,22 +21,22 @@
     white-space: nowrap; box-shadow: 0 12px 30px rgba(60,50,90,.13); }
   .card { background: #fff; border-radius: 52px; box-shadow: 0 2px 6px rgba(60,50,90,.04), 0 26px 64px rgba(60,50,90,.15); }
   .hl { background: linear-gradient(transparent 56%, #F1DEA6 56%, #F1DEA6 90%, transparent 90%) no-repeat; background-size: 0% 100%; padding: 0 .06em; }
-  .logo { border-radius: 30%; background: conic-gradient(from 200deg,#D4542F,#E08A5A,#C9A45C,#8A9A6B,#24496D,#B4A79A,#D4542F); display: grid; place-items: center; }
+  .logo { border-radius: 30%; background: conic-gradient(from 200deg,#5A6B32,#8B6FD6,#C9A45C,#9DB43A,#24496D,#B4A79A,#5A6B32); display: grid; place-items: center; }
   .w, .ch { display: inline-block; }
   svg { display: block; }
 
-  /* ---- sistema editorial de Runch (crema, espresso, terracota; Fraunces) ---- */
+  /* ---- sistema editorial de Runch (crema, espresso, olivo; Fraunces) ---- */
   @font-face { font-family: FR; font-weight: 1 1000; src: url("../fonts/fraunces-latin-full-normal.woff2") format("woff2-variations"); }
   @font-face { font-family: FR; font-style: italic; font-weight: 1 1000; src: url("../fonts/fraunces-latin-full-italic.woff2") format("woff2-variations"); }
   .blob { display: none !important; }
   .title { font-family: FR, Georgia, serif !important; font-weight: 440 !important; letter-spacing: -.02em !important; font-variation-settings: "SOFT" 50, "WONK" 0; }
-  .hl { background: none !important; font-style: italic; color: #D4542F; font-variation-settings: "SOFT" 100, "WONK" 1; }
+  .hl { background: none !important; font-style: italic; color: #5A6B32; font-variation-settings: "SOFT" 100, "WONK" 1; }
   .chip { box-shadow: none !important; border: 1.5px solid rgba(34,26,21,.18); text-transform: uppercase; letter-spacing: .12em; font-size: 30px !important; font-weight: 650 !important; }
   .card { box-shadow: none !important; border: 1.5px solid rgba(34,26,21,.14); }
   #brand > div { background: none !important; box-shadow: none !important; padding: 0 !important; }
   #brand > div > div:first-child { display: none !important; }
   #brand > div > div:last-child { font-family: FR, Georgia, serif; font-weight: 500 !important; font-size: 50px !important; letter-spacing: -.01em; }
-  .logo, #logo { background: #D4542F !important; border-radius: 50% !important; box-shadow: none !important; }
+  .logo, #logo { background: #5A6B32 !important; border-radius: 50% !important; box-shadow: none !important; }
   .logo svg, #logo svg { display: none; }
   .logo::after, #logo::after { content: "r"; font-family: FR, Georgia, serif; font-style: italic; color: #FBF3E8; line-height: 1; margin-top: -.12em;
     font-variation-settings: "SOFT" 100, "WONK" 1; }
@@ -45,7 +45,7 @@
 </head>
 <body>
 <div id="stage">
-  <div class="blob" id="b1" style="width:900px;height:900px;background:#F6E0D6"></div>
+  <div class="blob" id="b1" style="width:900px;height:900px;background:#E8E1F7"></div>
   <div class="blob" id="b2" style="width:820px;height:820px;background:#E3E8D6"></div>
   <div class="blob" id="b3" style="width:700px;height:700px;background:#F1DEA6"></div>
   <div class="abs" id="wipe" style="left:540px;top:960px;width:10px;height:10px;border-radius:50%;background:#F1DEA6"></div>
@@ -54,8 +54,8 @@
   <div class="abs" id="brand" style="left:0;right:0;top:96px;display:flex;justify-content:center;z-index:5">
     <div style="display:flex;gap:16px;align-items:center;padding:14px 32px 14px 14px;border-radius:999px;background:rgba(255,255,255,.78);box-shadow:0 6px 22px rgba(60,50,90,.08)">
       <div class="logo" style="width:60px;height:60px;border-radius:50%"><div style="width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="#D4542F"><path id="heartpath" d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg></div></div>
-      <img src="../../marca/logo/runch-logo-terracota.svg" style="height:36px;display:block" alt="runch">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="#5A6B32"><path id="heartpath" d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg></div></div>
+      <img src="../../marca/logo/runch-logo-olivo.svg" style="height:36px;display:block" alt="runch">
     </div>
   </div>
 
@@ -104,7 +104,7 @@
               <div class="card" style="padding:22px 10px;border-radius:32px;text-align:center"><svg width="120" height="120" style="margin:0 auto;transform:rotate(-90deg)"><circle cx="60" cy="60" r="48" fill="none" stroke="#F3ECE2" stroke-width="14"/><circle class="ring" data-v=".58" cx="60" cy="60" r="48" fill="none" stroke="#24496D" stroke-width="14" stroke-linecap="round" stroke-dasharray="0 302"/></svg><div style="font-size:24px;margin-top:8px;font-weight:600">Energía</div></div>
             </div>
             <div class="card" style="margin-top:22px;padding:28px 30px;border-radius:36px;display:flex;gap:20px;align-items:center">
-              <div style="width:70px;height:70px;border-radius:22px;background:#F1DEA6;display:grid;place-items:center;font-size:36px;font-weight:800;color:#D4542F">Z2</div>
+              <div style="width:70px;height:70px;border-radius:22px;background:#F1DEA6;display:grid;place-items:center;font-size:36px;font-weight:800;color:#5A6B32">Z2</div>
               <div><div style="font-size:24px;color:#76695F">HOY EN TU PLAN</div><div style="font-size:34px;font-weight:700">Rodaje suave · 8 km</div></div>
             </div>
             <div style="font-size:20px;color:#A89A8C;margin-top:18px">Datos de ejemplo</div>
@@ -136,7 +136,7 @@
 
   <!-- D · forma que se convierte en zonas -->
   <div class="layer" id="D">
-    <div class="abs" id="Dmorph" style="left:340px;top:700px;width:400px;height:400px;border-radius:50%;background:#D4542F"></div>
+    <div class="abs" id="Dmorph" style="left:340px;top:700px;width:400px;height:400px;border-radius:50%;background:#5A6B32"></div>
     <div class="abs" id="Dbars" style="left:120px;right:120px;top:600px;height:580px;display:flex;align-items:flex-end;gap:26px"></div>
     <div class="abs" style="left:0;right:0;top:300px;text-align:center"><div class="title" id="Dtitle" style="font-size:118px"><span class="w">Entrena</span> <span class="w">en</span> <span class="w">tu</span> <span class="w"><span class="hl" id="Dhl">zona.</span></span></div></div>
     <div class="chip abs" id="Dtag" style="left:300px;top:1240px;background:#fff">Z2 · puedes hablar</div>
@@ -168,7 +168,7 @@
     <div class="logo" id="Glogo" style="width:260px;height:260px;box-shadow:0 30px 80px rgba(60,50,90,.22)">
       <svg viewBox="0 0 24 24" width="130" height="130" fill="#fff"><path d="M13.35 20.13c-.76.69-1.93.69-2.69-.01l-.11-.1C5.3 15.27 1.87 12.16 2 8.28c.06-1.7.93-3.33 2.34-4.29 2.64-1.8 5.9-.96 7.66 1.1 1.76-2.06 5.02-2.91 7.66-1.1 1.41.96 2.28 2.59 2.34 4.29.14 3.88-3.3 6.99-8.55 11.76z"/></svg>
     </div>
-    <div id="Gword" style="margin-top:60px"><img src="../../marca/logo/runch-logo-terracota.svg" style="height:150px;display:block" alt="runch"></div>
+    <div id="Gword" style="margin-top:60px"><img src="../../marca/logo/runch-logo-olivo.svg" style="height:150px;display:block" alt="runch"></div>
     <div id="Gtag" style="font-size:48px;font-weight:600;color:#76695F;margin-top:8px">Tu coach de running con IA</div>
     <div class="chip" id="Gcta" style="margin-top:50px;background:#F1DEA6">Síguenos en @runch.run</div>
   </div>
@@ -202,17 +202,17 @@
   // contenido generado una vez: cintas, barras, abanico, confeti, órbita
   const ROWS = [['HRV', 'Z2', 'Body Battery', 'VDOT', 'Sueño', 'Ritmos'], ['Preparación', 'Zonas', '1RM', 'Carga', 'Pulso'],
     ['Coach con IA', 'Plan', 'Series', 'Tirada larga', 'Recuperación'], ['Natación', 'CSS', 'SWOLF', 'Gimnasio', 'Récords'], ['Z2', 'HRV', 'Sueño', 'Ritmo de ego', 'Body Battery']];
-  const CH = ['#fff', '#F1DEA6', '#DDE2CF', '#EFE6D2', '#F6E0D6', '#F3ECE2', '#F1DEA6'];
+  const CH = ['#fff', '#F1DEA6', '#DDE2CF', '#EFE6D2', '#E8E1F7', '#F3ECE2', '#F1DEA6'];
   document.querySelectorAll('.Brow').forEach((row, r) => {
     const items = [...ROWS[r], ...ROWS[r], ...ROWS[r]];
     row.innerHTML = items.map((x, i) => `<div class="chip" style="background:${CH[(i + r * 2) % CH.length]};font-size:58px;padding:26px 46px">${x}</div>`).join('');
   });
-  const ZB = [{ h: .32, c: '#B4A79A', n: 'Z1' }, { h: .55, c: '#D4542F', n: 'Z2' }, { h: .72, c: '#8A9A6B', n: 'Z3' }, { h: .86, c: '#C9A45C', n: 'Z4' }, { h: 1, c: '#A8432A', n: 'Z5' }];
+  const ZB = [{ h: .32, c: '#B4A79A', n: 'Z1' }, { h: .55, c: '#5A6B32', n: 'Z2' }, { h: .72, c: '#9DB43A', n: 'Z3' }, { h: .86, c: '#C9A45C', n: 'Z4' }, { h: 1, c: '#6B4FC0', n: 'Z5' }];
   $('Dbars').innerHTML = ZB.map((z) => `<div class="zb" style="flex:1;height:${z.h * 100}%;border-radius:36px;background:${z.c};transform-origin:bottom;display:flex;align-items:flex-end;justify-content:center;padding-bottom:24px;color:#fff;font-weight:850;font-size:46px">${z.n}</div>`).join('');
-  const DAYS = [['L', 'Suave', '#DDE2CF'], ['M', 'Series', '#F6E0D6'], ['X', 'Descanso', '#ECE5DA'], ['J', 'Tempo', '#F1DEA6'], ['S', 'Larga', '#F3ECE2']];
+  const DAYS = [['L', 'Suave', '#DDE2CF'], ['M', 'Series', '#E8E1F7'], ['X', 'Descanso', '#ECE5DA'], ['J', 'Tempo', '#F1DEA6'], ['S', 'Larga', '#F3ECE2']];
   $('Efan').innerHTML = DAYS.map((d) => `<div class="fc card" style="position:absolute;left:-110px;top:0;width:220px;height:280px;border-radius:40px;background:${d[2]};padding:28px 24px;text-align:left">
     <div style="font-size:60px;font-weight:800">${d[0]}</div><div style="font-size:32px;font-weight:650;margin-top:70px">${d[1]}</div></div>`).join('');
-  $('Fconf').innerHTML = Array.from({ length: 70 }, (_, i) => `<div class="cf" style="position:absolute;width:${18 + rnd(i) * 22}px;height:${18 + rnd(i) * 22}px;border-radius:${rnd(i + 9) > .5 ? '50%' : '6px'};background:${['#D4542F', '#E08A5A', '#C9A45C', '#8A9A6B', '#24496D', '#B4A79A'][i % 6]}"></div>`).join('');
+  $('Fconf').innerHTML = Array.from({ length: 70 }, (_, i) => `<div class="cf" style="position:absolute;width:${18 + rnd(i) * 22}px;height:${18 + rnd(i) * 22}px;border-radius:${rnd(i + 9) > .5 ? '50%' : '6px'};background:${['#5A6B32', '#8B6FD6', '#C9A45C', '#9DB43A', '#24496D', '#B4A79A'][i % 6]}"></div>`).join('');
   const AV = ['AG', 'MR', 'LS', 'JP', 'NC', 'EV', 'IB', 'TM'];
   $('Forbit').innerHTML = AV.map((a, i) => `<div class="av" style="position:absolute;left:-60px;top:-60px;width:120px;height:120px;border-radius:50%;background:${CH[(i % 6) + 1]};border:6px solid #fff;display:grid;place-items:center;font-size:40px;font-weight:800;box-shadow:0 10px 26px rgba(60,50,90,.15)">${a}</div>`).join('');
 

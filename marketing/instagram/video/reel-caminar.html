@@ -23,7 +23,7 @@
   <div class="scene center t-cream" id="s1">
     <div class="chip solid" id="st1" style="margin-bottom:56px">Empezar desde cero</div>
     <div class="title" style="font-size:156px">Caminar también <em>es entrenar.</em></div>
-    <img id="im1" src="../../marca/ilustraciones/gemini/corredora-mayor-terracota.png" style="height:400px;margin-top:56px" alt="">
+    <img id="im1" src="../../marca/ilustraciones/gemini/corredora-mayor-olivo.png" style="height:400px;margin-top:56px" alt="">
   </div>
 
   <!-- 2 · OMS -->
@@ -70,7 +70,7 @@
   </div>
 
   <!-- 6 · cierre -->
-  <div class="scene center t-terracotta" id="s6">
+  <div class="scene center t-olive" id="s6">
     <img id="im6" src="../../marca/ilustraciones/gemini/silla-deportiva-crema.png" style="height:380px;margin-bottom:50px" alt="">
     <div class="title" id="t6" style="font-size:130px">Tu ritmo es <em>tu ritmo.</em></div>
     <div class="serif" id="wm6" style="font-size:150px;line-height:.9;letter-spacing:-.04em;margin-top:70px">Runch</div>
@@ -90,7 +90,7 @@
 <script src="kit.js"></script>
 <script>
   window.DURATION = 24;
-  const SC = [[0, 4.0, 'cream'], [3.8, 8.4, 'sage'], [8.2, 12.2, 'paper'], [12.0, 16.4, 'butter'], [16.2, 20.4, 'paper'], [20.2, 24.2, 'terracotta']];
+  const SC = [[0, 4.0, 'cream'], [3.8, 8.4, 'sage'], [8.2, 12.2, 'paper'], [12.0, 16.4, 'butter'], [16.2, 20.4, 'paper'], [20.2, 24.2, 'olive']];
   // 1 min trotando + 2 min caminando, 6 veces (18 min)
   $('bar').innerHTML = Array.from({ length: 6 }, () => '<div class="seg" style="flex:1;background:var(--accent)"></div><div class="seg" style="flex:2;background:rgba(34,26,21,.2)"></div>').join('');
   window.render = function (t, rt = t) {

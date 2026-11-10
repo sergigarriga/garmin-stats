@@ -3,7 +3,8 @@
 Se edita a mano desde la app de Instagram (Editar perfil). No usar sesiones copiadas ni robots: Instagram bloquea las
 cuentas nuevas con accesos raros.
 
-- **Foto:** `out/perfil/logo-perfil-a.png`: logotipo «runch» (Gluten) en crema sobre terracota.
+- **Foto:** `out/olivo/perfil/logo-perfil-a.png`: logotipo «runch» (Gluten) en crema sobre olivo #5A6B32 (la anterior,
+  crema sobre terracota, queda en `out/perfil/logo-perfil-a.png`).
 - **Nombre** (sale en negrita y cuenta para las búsquedas; máximo 30 caracteres):
   `Runch · Running con datos`
 - **Usuario:** `runch.run`

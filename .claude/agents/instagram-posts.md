@@ -32,7 +32,7 @@ Lee `marketing/instagram/README.md` (formato completo) y usa `lote-01.json` como
 Moderno, limpio y "aesthetic", como una revista de running: vale para los datos de la app y, más adelante,
 para fotos de quedadas y estilo de vida.
 - **Colores** (`bg` de la portada; las diapositivas interiores van en `paper` salvo que digas otra cosa):
-  `cream` (por defecto), `terracotta`, `espresso`, `sage`, `sea`, `butter`. Tinta espresso, acento terracota. En un
+  `cream` (por defecto), `olive`, `lavender`, `espresso`, `sage`, `sea`, `butter`. Tinta espresso, acento olivo (marca desde el 10-nov-2026; `terracotta` es legado, no lo uses). En un
   lote de 9 alterna crema y color en tablero de ajedrez (5 crema, 4 de color, sin dos colores iguales al lado).
 - **Letra:** titulares en Fraunces (serif) con la palabra clave entre `**` (sale en cursiva y en el color de acento);
   textos en Google Sans Flex; etiquetas pequeñas en mayúsculas espaciadas.

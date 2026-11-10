@@ -84,8 +84,8 @@ con el mismo diseño: la 1 en catalán y la 2 en castellano. Por eso cada pieza 
 - `<post|story>-<nombre>-1-ca.png` y `<post|story>-<nombre>-2-es.png`: listas para usar.
 - Una plantilla sin ilustración (`"ilustracion": None`) lleva un hueco con el patrón y saca además
   `<post|story>-<nombre>-hueco.png`, el hueco marcado con sus medidas.
-- `<post|story>-<nombre>-1-ca.mp4` y `-2-es.mp4`: la misma pieza animada (los vídeos actuales siguen en terracota:
-  se rehacen con `templates.py` sin `--sin-video`), 6 s, 30 fps, sin sonido, H.264 (yuv420p), ~1-1,5 MB.
+- `<post|story>-<nombre>-1-ca.mp4` y `-2-es.mp4`: la misma pieza animada (se rehacen con `templates.py` sin
+  `--sin-video`; los `-musica.mp4` son el mismo vídeo con el bucle de `musica/` montado encima), 6 s, 30 fps, sin sonido, H.264 (yuv420p), ~1-1,5 MB.
   El corredor entra corriendo desde la izquierda, se queda botando 3 px a ritmo de zancada (~170 pasos/min) y al
   final sale por la derecha; la corredora de la taza sube desde abajo y se mece despacio. La protagonista entra con
   un pequeño rebote, el sello entra girando y luego gira despacio, las etiquetas suben una a una, el subrayado se

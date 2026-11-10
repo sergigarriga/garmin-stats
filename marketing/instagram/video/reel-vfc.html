@@ -40,8 +40,8 @@
       <line id="bl1" x1="0" x2="830" stroke="rgba(34,26,21,.22)" stroke-width="2" stroke-dasharray="6 8"/>
       <line id="bl2" x1="0" x2="830" stroke="rgba(34,26,21,.22)" stroke-width="2" stroke-dasharray="6 8"/>
       <text id="bt" x="10" class="tick">TU RANGO NORMAL · 48–62 MS</text>
-      <path id="line2" fill="none" stroke="#D4542F" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle id="head2" r="13" fill="#D4542F"/>
+      <path id="line2" fill="none" stroke="#5A6B32" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle id="head2" r="13" fill="#5A6B32"/>
       <text x="0" y="436" class="tick">HACE 3 SEMANAS</text><text x="830" y="436" class="tick" text-anchor="end">HOY</text>
     </svg>
     <div class="row" id="lab2" style="justify-content:space-between;align-items:baseline;margin-top:30px">
@@ -124,7 +124,7 @@
     const w = p(t, 0.3, 0.9); set($('w1'), clamp(w * 2.5), 0, (1 - eb(w)) * 120, 0.9 + 0.1 * eb(w), -2 * (1 - eo(w)));
     count($('n1'), t, 0.6, 1.2);
     words($('t1'), t, 1.4, 0.12);
-    if (t > 2.4) $('w1').style.borderColor = `rgba(212,84,47,${0.35 + 0.3 * Math.sin(rt * 4) ** 2})`;
+    if (t > 2.4) $('w1').style.borderColor = `rgba(90,107,50,${0.35 + 0.3 * Math.sin(rt * 4) ** 2})`;
 
     // 2 · gráfico
     scene(s(2), t, SC[1][0], SC[1][1]);

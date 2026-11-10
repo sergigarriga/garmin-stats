@@ -1,5 +1,5 @@
 /* Kit de los Reels editoriales de Runch (1080 x 1920): el mismo sistema que los posts (render.py).
-   Crema, espresso y terracota (más salvia, mar y mantequilla), titulares en Fraunces con la palabra clave en cursiva de
+   Crema, espresso y olivo (más lavanda, pistacho, salvia, mar y mantequilla; terracota queda como legado), titulares en Fraunces con la palabra clave en cursiva de
    color, textos en Google Sans Flex, etiquetas en mayúsculas espaciadas y líneas finas. Lo usan los reel-*.html con
    kit.js. Zona segura: el contenido va entre y = 300 y 1410 (arriba, la cabecera de Instagram; de 1440 a 1600, los
    subtítulos; abajo, el texto del post) y lo de la mitad de abajo deja libre la columna de botones (derecha). */
@@ -22,13 +22,15 @@ body { width: 1080px; height: 1920px; overflow: hidden; font-family: GSF, system
 svg { display: block; overflow: visible; }
 
 /* fondos: los mismos de los posts */
-.t-cream      { --bg: #F7F3EC; --ink: #221A15; --ink2: #76695F; --accent: #D4542F; --line: rgba(34,26,21,.16); --soft: #EEE7DB; }
-.t-paper      { --bg: #FCFAF6; --ink: #221A15; --ink2: #76695F; --accent: #D4542F; --line: rgba(34,26,21,.14); --soft: #F3EEE6; }
+.t-cream      { --bg: #F7F3EC; --ink: #221A15; --ink2: #76695F; --accent: #5A6B32; --line: rgba(34,26,21,.16); --soft: #EEE7DB; }
+.t-paper      { --bg: #FCFAF6; --ink: #221A15; --ink2: #76695F; --accent: #5A6B32; --line: rgba(34,26,21,.14); --soft: #F3EEE6; }
+.t-olive      { --bg: #5A6B32; --ink: #F7F3EC; --ink2: rgba(247,243,236,.8); --accent: #F1DEA6; --line: rgba(247,243,236,.3); --soft: #52622D; }
+.t-lavender   { --bg: #8B6FD6; --ink: #F7F3EC; --ink2: rgba(247,243,236,.84); --accent: #F1DEA6; --line: rgba(247,243,236,.32); --soft: #7F62CC; }
 .t-terracotta { --bg: #D4542F; --ink: #FBF3E8; --ink2: rgba(251,243,232,.8); --accent: #FFE1A3; --line: rgba(251,243,232,.32); --soft: #C64A27; }
-.t-espresso   { --bg: #221A15; --ink: #F3ECE2; --ink2: #B4A79A; --accent: #EE7550; --line: rgba(243,236,226,.2); --soft: #2E241E; }
-.t-sage       { --bg: #CBD3B8; --ink: #221A15; --ink2: #53584A; --accent: #B1432A; --line: rgba(34,26,21,.18); --soft: #BFC8AA; }
+.t-espresso   { --bg: #221A15; --ink: #F3ECE2; --ink2: #B4A79A; --accent: #B4C784; --line: rgba(243,236,226,.2); --soft: #2E241E; }
+.t-sage       { --bg: #CBD3B8; --ink: #221A15; --ink2: #53584A; --accent: #6B4FC0; --line: rgba(34,26,21,.18); --soft: #BFC8AA; }
 .t-sea        { --bg: #24496D; --ink: #F3ECE2; --ink2: #BCCADA; --accent: #F4C56E; --line: rgba(243,236,226,.22); --soft: #2B5379; }
-.t-butter     { --bg: #F1DEA6; --ink: #221A15; --ink2: #6D5F43; --accent: #C24A28; --line: rgba(34,26,21,.18); --soft: #E8D294; }
+.t-butter     { --bg: #F1DEA6; --ink: #221A15; --ink2: #6D5F43; --accent: #46542A; --line: rgba(34,26,21,.18); --soft: #E8D294; }
 
 /* marco fijo (como los posts): logotipo runch a la izquierda, "Nº · TEMA" a la derecha */
 #frame { position: absolute; top: 236px; left: 100px; right: 100px; display: flex; justify-content: space-between; align-items: center; z-index: 5; }
@@ -67,6 +69,6 @@ svg { display: block; overflow: visible; }
 .logo { position: relative; display: inline-block; vertical-align: middle; aspect-ratio: 6423 / 1436; }
 .logo img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .logo .lc { opacity: 0; }
-.t-terracotta .logo .lc, .t-espresso .logo .lc, .t-sea .logo .lc { opacity: 1; }
-.t-terracotta .logo .lt, .t-espresso .logo .lt, .t-sea .logo .lt { opacity: 0; }
+.t-olive .logo .lc, .t-lavender .logo .lc, .t-terracotta .logo .lc, .t-espresso .logo .lc, .t-sea .logo .lc { opacity: 1; }
+.t-olive .logo .lt, .t-lavender .logo .lt, .t-terracotta .logo .lt, .t-espresso .logo .lt, .t-sea .logo .lt { opacity: 0; }
 #cover .hd { position: absolute; bottom: 330px; left: 0; right: 0; }

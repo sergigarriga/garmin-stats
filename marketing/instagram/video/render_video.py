@@ -6,7 +6,10 @@ Uso:
 Si existen en marketing/instagram/out/video/ los archivos de voiceover.py (<nombre>.captions.json, <nombre>-voz.wav y
 <nombre>-musica.wav), el vídeo sale completo: subtítulos + voz + música, listo para publicar. Si no, sin audio ni
 subtítulos, y además <nombre>-sin-musica.mp4 (voz + subtítulos, para poner un sonido en tendencia desde la app). También deja la
-portada <nombre>-portada.png (sin subtítulos).
+portada <nombre>-portada.png (sin subtítulos) y su recorte 4:5 de la cuadrícula <nombre>-portada-4x5.png (1080 x 1350).
+
+--out <carpeta>: deja el vídeo y la portada en otra carpeta (p. ej. out/video-olivo); la voz, la música y los subtítulos se
+siguen leyendo de out/video, así el audio, el ritmo y el texto no cambian.
 
 Cada fotograma se pinta llamando a render(t) (sin animaciones CSS, así no hay saltos) y se monta con ffmpeg (H.264,
 1080 x 1920). El audio se mezcla con la música bajando sola cuando habla la voz y se normaliza a -14 LUFS.
@@ -27,7 +30,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from timewarp import warp  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
-OUT = HERE.parent / "out" / "video"
+SRC = HERE.parent / "out" / "video"  # voz, música, subtítulos y ritmo (voiceover.py)
+OUT = SRC  # vídeo y portada (--out para otra carpeta)
 
 # Subtítulos: cápsula blanca en la zona segura (encima de los botones de Instagram), palabra activa en amarillo.
 CAPTION_JS = r"""
@@ -61,7 +65,7 @@ CAPTION_JS = r"""
       const w = c.words[i];
       const on = t >= w.t0 && t < w.t1 + (i === c.words.length - 1 ? 0.25 : 0);
       s.style.background = 'transparent';
-      s.style.color = on ? '#D4542F' : t < w.t0 ? 'rgba(34,26,21,.35)' : '#221A15';
+      s.style.color = on ? '#5A6B32' : t < w.t0 ? 'rgba(34,26,21,.35)' : '#221A15';
     });
   };
 })();
@@ -76,7 +80,22 @@ def cover(pg, page_path: Path) -> None:
     else:
         pg.evaluate("render(2.6, 2.6); window.__caption && window.__caption(-9)")
     pg.wait_for_timeout(200)
-    pg.screenshot(path=str(OUT / f"{page_path.stem}-portada.png"))
+    png = OUT / f"{page_path.stem}-portada.png"
+    pg.screenshot(path=str(png))
+    # recorte 4:5 centrado: lo que enseña la cuadrícula del perfil (la portada deja el titular entre y = 300 y 1620)
+    pg.screenshot(path=str(OUT / f"{page_path.stem}-portada-4x5.png"), clip={"x": 0, "y": 285, "width": 1080, "height": 1350})
+
+
+def shot(pg, path: Path, tries: int = 4) -> None:
+    """Captura de un fotograma; con la máquina muy cargada Chromium a veces falla una captura: se reintenta."""
+    for k in range(tries):
+        try:
+            pg.screenshot(path=str(path), type="jpeg", quality=94)
+            return
+        except Exception:  # noqa: BLE001
+            if k == tries - 1:
+                raise
+            pg.wait_for_timeout(1500)
 
 
 def frames(page_path: Path, dest: Path, fps: int, captions: list | None, timing: dict | None = None, only_cover: bool = False) -> float:
@@ -87,6 +106,7 @@ def frames(page_path: Path, dest: Path, fps: int, captions: list | None, timing:
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path=exe) if exe else p.chromium.launch()
         pg = b.new_page(viewport={"width": 1080, "height": 1920}, device_scale_factor=1)
+        pg.set_default_timeout(180_000)  # con la máquina cargada, una captura puede tardar más de 30 s
         pg.goto(page_path.as_uri())
         pg.evaluate("document.fonts.ready")
         if captions is not None:
@@ -99,7 +119,7 @@ def frames(page_path: Path, dest: Path, fps: int, captions: list | None, timing:
             t = i / fps
             a = warp(t, timing["anchors"]) if timing else t  # la animación sigue a la voz
             pg.evaluate(f"render({a}, {t}); window.__caption && window.__caption({t})")
-            pg.screenshot(path=str(dest / f"{i:05d}.jpg"), type="jpeg", quality=94)
+            shot(pg, dest / f"{i:05d}.jpg")
             if i % 90 == 0:
                 print(f"  fotograma {i}/{n}")
         cover(pg, page_path)
@@ -140,14 +160,18 @@ def main() -> None:
     ap.add_argument("page")
     ap.add_argument("fps", nargs="?", type=int, default=30)
     ap.add_argument("--cover", action="store_true", help="solo la portada (rápido)")
+    ap.add_argument("--out", help="carpeta de salida (por defecto out/video)")
     a = ap.parse_args()
+    global OUT
+    if a.out:
+        OUT = Path(a.out).resolve()
     page = Path(a.page).resolve()
     OUT.mkdir(parents=True, exist_ok=True)
     name = page.stem
-    caps, voice, music = OUT / f"{name}.captions.json", OUT / f"{name}-voz.wav", OUT / f"{name}-musica.wav"
+    caps, voice, music = SRC / f"{name}.captions.json", SRC / f"{name}-voz.wav", SRC / f"{name}-musica.wav"
     tmp = OUT / f"_frames-{name}"
     with_audio = caps.exists() and voice.exists()
-    tfile = OUT / f"{name}.timing.json"
+    tfile = SRC / f"{name}.timing.json"
     timing = json.loads(tfile.read_text()) if with_audio and tfile.exists() else None
     if a.cover:
         frames(page, tmp, a.fps, None, None, only_cover=True)

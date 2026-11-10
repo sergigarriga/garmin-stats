@@ -1,7 +1,7 @@
 {
   "lote": "01",
   "handle": "@runch.run",
-  "notes": "Sistema editorial (crema, espresso, terracota; titulares en Fraunces). Publicar en orden, uno al día: en el perfil el 9 queda arriba a la izquierda y la cuadrícula alterna crema y color. Números de ejemplo.",
+  "notes": "Sistema editorial (crema, espresso, olivo; titulares en Fraunces). Publicar en orden, uno al día: en el perfil el 9 queda arriba a la izquierda y la cuadrícula alterna crema y color. Números de ejemplo.",
   "posts": [
     {
       "id": "presentacion",
@@ -62,7 +62,7 @@
     {
       "id": "z2",
       "title": "¿Qué es la Z2?",
-      "bg": "terracotta",
+      "bg": "olive",
       "topic": "Zonas",
       "caption": "La Z2 es la zona en la que puedes correr y mantener una conversación. Ni más ni menos.\n\nEl problema: casi todo el mundo corre sus rodajes «suaves» en Z3 o Z4. Ni recupera ni construye base. Resultado: cansancio, estancamiento y alguna lesión de regalo.\n\nLa regla: el 80 % del tiempo, suave de verdad. El 20 %, fuerte de verdad.\n\nMira la media de pulso de tu último rodaje. ¿Era Z2?",
       "hashtags": [
@@ -586,7 +586,7 @@
               1.5,
               2.5
             ],
-            "note": "La franja es tu horario habitual (±30 min). En terracota, el fin de semana."
+            "note": "La franja es tu horario habitual (±30 min). En olivo, el fin de semana."
           }
         },
         {
