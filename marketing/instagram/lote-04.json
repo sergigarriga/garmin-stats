@@ -1,0 +1,3109 @@
+{
+ "lote": "04",
+ "handle": "@runch.run",
+ "notes": "Lote 04: serie «El porqué» (explicar cada dato de la app con su porqué), 28 posts del 4 al 31-dic-2026, uno al día a las 19:00 hora España. Mezcla de explicadores (ES y CA), mitos, «cómo leer esta pantalla», funciones de la app, Empezar desde cero y comunidad (bilingües: catalán primero, castellano después). Publicar en orden. Números de ejemplo.",
+ "posts": [
+  {
+   "id": "preparacion-piezas",
+   "title": "Hoy tienes las piernas pesadas y no sabes por qué",
+   "bg": "olive",
+   "topic": "El porqué",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Te suena",
+     "title": "Hoy tienes las **piernas pesadas** y no sabes por qué.",
+     "size": 108,
+     "body": "Tu reloj tiene pistas. Vamos a leerlas.",
+     "facts": [
+      "HRV",
+      "Sueño",
+      "Pulso en reposo",
+      "Carga"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "La nota de Preparación",
+     "title": "Una nota. **Cuatro** piezas.",
+     "size": 88,
+     "visual": {
+      "type": "readiness",
+      "score": 54,
+      "label": "Moderada",
+      "parts": [
+       {
+        "label": "HRV · 30 %",
+        "score": 40
+       },
+       {
+        "label": "Sueño · 30 %",
+        "score": 60
+       },
+       {
+        "label": "Pulso · 20 %",
+        "score": 50
+       },
+       {
+        "label": "Carga · 20 %",
+        "score": 70
+       }
+      ]
+     },
+     "body": "Cada pieza se compara con tu normalidad de las últimas 4 semanas.",
+     "animate": true
+    },
+    {
+     "layout": "points",
+     "kicker": "Qué mira cada pieza",
+     "title": "Y **por qué** pesa cada una",
+     "size": 78,
+     "points": [
+      {
+       "title": "HRV",
+       "body": "Cuánto varía el tiempo entre latidos al dormir. Baja con estrés, alcohol, enfermedad o entrenos duros."
+      },
+      {
+       "title": "Sueño",
+       "body": "Horas y calidad de la noche. Con poco sueño, tu cuerpo repara menos."
+      },
+      {
+       "title": "Pulso en reposo",
+       "body": "Si va por encima de tu media: fatiga, poco sueño o algo que empieza."
+      },
+      {
+       "title": "Carga reciente",
+       "body": "Lo entrenado esta semana frente a tu mes. Una subida brusca pasa factura."
+      }
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Qué hacer con ella",
+     "title": "Tu nota, **en plan**.",
+     "size": 88,
+     "visual": {
+      "type": "rows",
+      "title": "Preparación · qué toca",
+      "rows": [
+       {
+        "label": "Óptima",
+        "detail": "Día para un entreno exigente",
+        "value": "80+"
+       },
+       {
+        "label": "Buena",
+        "detail": "Entreno normal",
+        "value": "60-79"
+       },
+       {
+        "label": "Moderada",
+        "detail": "Mejor suave o técnico",
+        "value": "40-59"
+       },
+       {
+        "label": "Baja",
+        "detail": "Descanso o algo muy suave",
+        "value": "< 40"
+       }
+      ]
+     }
+    },
+    {
+     "layout": "cta",
+     "title": "¿Cómo está **tu nota** hoy?",
+     "size": 58,
+     "body": "Míralo antes de decidir si hoy toca series. Y guárdalo para el próximo día de piernas pesadas.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Hoy tienes las piernas pesadas y no sabes por qué. Tu reloj sí tiene pistas.\n\nLa nota de Preparación de Runch (de 0 a 100) no sale de un solo dato. Mezcla cuatro: tu HRV (30 %), tu sueño (30 %), tu pulso en reposo (20 %) y tu carga de entreno reciente (20 %). Y siempre frente a lo que es normal para ti en las últimas 4 semanas, no frente a la media de nadie.\n\nPor eso una noche corta puede tumbar la nota aunque ayer no hicieras nada, y por eso un día de descanso la levanta. Cada pieza es una razón concreta: si sabes cuál está baja, sabes qué hacer hoy.\n\nNo es un diagnóstico: es una guía para decidir si hoy aprietas o aflojas.\n\nGuárdalo para el próximo día de piernas pesadas y pásaselo a tu grupo de running.",
+   "hashtags": [
+    "#recuperacion",
+    "#hrv",
+    "#garmin",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch con la nota de Preparación 54 sobre 100 desglosada en HRV, sueño, pulso en reposo y carga reciente, qué mira cada pieza y qué hacer según la nota. Datos de ejemplo."
+  },
+  {
+   "id": "pols-en-repos",
+   "title": "El pols en repòs: la dada més avorrida",
+   "bg": "cream",
+   "topic": "El perquè",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Dada incòmoda",
+     "title": "El teu **pols en repòs** és la dada més avorrida. I la més honesta.",
+     "size": 100,
+     "body": "No fa soroll i no té gràfics bonics. Però no sap mentir.",
+     "facts": [
+      "Dormint",
+      "Sense esforç",
+      "Només teu"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Per què baixa",
+     "title": "Un cor entrenat **batega menys**.",
+     "size": 88,
+     "visual": {
+      "type": "metric",
+      "label": "Pols en repòs · mitjana de la nit",
+      "value": "48",
+      "unit": "ppm",
+      "caption": "7 ppm menys en un mes",
+      "points": [
+       55,
+       54,
+       56,
+       53,
+       54,
+       52,
+       53,
+       54,
+       52,
+       51,
+       53,
+       52,
+       51,
+       52,
+       50,
+       51,
+       52,
+       50,
+       51,
+       50,
+       52,
+       50,
+       49,
+       51,
+       50,
+       49,
+       50,
+       49,
+       50,
+       48
+      ],
+      "note": "Exemple de 30 dies: baixa a poc a poc."
+     },
+     "body": "Bombeja més sang a cada batec: amb menys batecs en té prou."
+    },
+    {
+     "layout": "cover",
+     "kicker": "Què el mou",
+     "title": "El que el **puja** i el que el **baixa**.",
+     "size": 88,
+     "visual": {
+      "type": "levers",
+      "up": {
+       "label": "El puja",
+       "items": [
+        "Dormir poc",
+        "Alcohol",
+        "Un refredat que comença",
+        "Una setmana molt dura"
+       ]
+      },
+      "down": {
+       "label": "El baixa",
+       "items": [
+        "Mesos d'entrenament constant",
+        "Dormir bé",
+        "Menys alcohol",
+        "Menys estrès"
+       ]
+      }
+     },
+     "example": false
+    },
+    {
+     "layout": "points",
+     "kicker": "Què en fas",
+     "title": "Com **llegir-lo**",
+     "size": 84,
+     "points": [
+      {
+       "title": "Mira la tendència, no el dia",
+       "body": "Un dia alt no vol dir res. Uns quants seguits, sí."
+      },
+      {
+       "title": "Compara't amb tu",
+       "body": "48 i 68 poden ser normals en dues persones sanes."
+      },
+      {
+       "title": "Si puja 5 ppm o més uns dies",
+       "body": "Rodatge suau o descans i dorm bé. Si et trobes malament, parla amb el teu metge."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "Quin és **el teu** pols en repòs?",
+     "size": 58,
+     "body": "Un número i prou. I passa-ho a qui no sap què és aquesta dada.",
+     "actions": [
+      "Desa",
+      "Envia",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "El pols en repòs és la dada més avorrida del teu rellotge. I la més honesta.\n\nSón els batecs per minut quan estàs del tot relaxat, normalment dormint. Quan t'entrenes de manera constant, el cor bombeja més sang a cada batec i en té prou amb menys batecs. Per això, amb els mesos, sol baixar.\n\nEl que importa és la tendència, no el dia. Si puja 5 pulsacions o més durant uns dies, pot ser cansament, poc son, alcohol o un refredat que comença. Si és així: rodatge suau o descans i una nit bona.\n\nI compara't només amb tu: dues persones sanes poden tenir un pols en repòs molt diferent. Si et trobes malament uns quants dies, parla amb el teu metge.\n\nDesa'l i passa'l a qui no sap què és aquesta xifra. Quin és el teu pols en repòs?",
+   "hashtags": [
+    "#polsenrepos",
+    "#córrer",
+    "#runningcatalunya",
+    "#garmin",
+    "#recuperació"
+   ],
+   "alt": "Carrusel de Runch en catalán sobre el pulso en reposo: una línea que baja de 55 a 48 pulsaciones en 30 días, qué lo sube y qué lo baja, y tres consejos para leerlo. Datos de ejemplo."
+  },
+  {
+   "id": "no-reventado",
+   "title": "Si no acabas reventado, no has entrenado",
+   "bg": "olive",
+   "topic": "Mito",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Red flag",
+     "title": "Acabas **todos** los rodajes reventado.",
+     "size": 112,
+     "body": "Si cada salida te deja sin aire, el problema no es tu forma: es tu ritmo.",
+     "facts": [
+      "Rodaje suave",
+      "Pulso bajo",
+      "Poder hablar"
+     ]
+    },
+    {
+     "layout": "myth",
+     "kicker": "Mito o realidad",
+     "title": "Entrenar es **sufrir**.",
+     "size": 96,
+     "myth": "Si no acabas reventado, no has entrenado.",
+     "fact": "Lo suave **también es entrenamiento**. Y es lo que sostiene a lo fuerte.",
+     "mythLabel": "Mito"
+    },
+    {
+     "layout": "cover",
+     "kicker": "La regla del 80/20",
+     "title": "Quien corre rápido **corre mucho suave**.",
+     "size": 78,
+     "visual": {
+      "type": "bars",
+      "title": "Reparto del tiempo de entreno",
+      "max": 100,
+      "h": 280,
+      "bars": [
+       {
+        "label": "Suave (Z1-Z2)",
+        "value": 80,
+        "text": "80 %",
+        "hot": true
+       },
+       {
+        "label": "Fuerte (Z4-Z5)",
+        "value": 20,
+        "text": "20 %"
+       }
+      ]
+     },
+     "body": "Es una referencia general, no una receta para todo el mundo."
+    },
+    {
+     "layout": "points",
+     "kicker": "Por qué funciona",
+     "title": "Tres razones **para ir suave**",
+     "size": 80,
+     "points": [
+      {
+       "title": "Construye base",
+       "body": "Tu corazón y tus músculos se adaptan sin pagar una fatiga extra."
+      },
+      {
+       "title": "Te deja recuperar",
+       "body": "Llegas con piernas frescas a las series, que es donde se aprieta."
+      },
+      {
+       "title": "Cuida tus articulaciones",
+       "body": "Menos carga acumulada en tendones y articulaciones."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "Mañana: rodaje **de conversación**.",
+     "size": 58,
+     "body": "Si puedes hablar, vas bien. Guárdalo para el domingo.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Red flag: acabar todos los rodajes reventado.\n\nSi cada salida te deja sin aire, el problema no es tu forma: es tu ritmo. Lo suave también es entrenamiento, y es lo que sostiene a lo fuerte. Incluso quienes corren muy rápido pasan la mayor parte del tiempo en intensidad baja: la regla del 80/20 dice alrededor del 80 % suave y 20 % fuerte.\n\nQué consigues yendo suave: construyes base aeróbica sin acumular fatiga de más, llegas con piernas frescas a las series y cargas menos tus articulaciones y tendones. Y entre lo suave y lo fuerte hay una zona gris donde ni recuperas ni trabajas del todo.\n\nLa prueba más simple: ¿puedes hablar mientras corres? Entonces vas bien.\n\nGuárdalo para el domingo y pásaselo a quien siempre va a tope. Tu turno: ¿a qué ritmo vas de verdad en tu rodaje suave?",
+   "hashtags": [
+    "#rodajesuave",
+    "#zona2",
+    "#entrenamiento",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch: mito y realidad sobre acabar reventado, reparto 80/20 entre suave y fuerte en un gráfico de barras y tres razones por las que lo suave funciona."
+  },
+  {
+   "id": "fases-sueno",
+   "title": "Dormir siete horas no es dormir siete horas iguales",
+   "bg": "cream",
+   "topic": "El porqué",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Dato incómodo",
+     "title": "Dormir siete horas **no es** dormir siete horas iguales.",
+     "size": 104,
+     "body": "Lo que importa es qué hace tu cuerpo mientras duermes.",
+     "facts": [
+      "Profundo",
+      "REM",
+      "Ligero"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Una noche por dentro",
+     "title": "Cada fase tiene **su trabajo**.",
+     "size": 88,
+     "visual": {
+      "type": "hypno",
+      "start": "23:20",
+      "segments": [
+       [
+        "l",
+        15
+       ],
+       [
+        "d",
+        40
+       ],
+       [
+        "l",
+        20
+       ],
+       [
+        "r",
+        10
+       ],
+       [
+        "l",
+        25
+       ],
+       [
+        "d",
+        35
+       ],
+       [
+        "l",
+        25
+       ],
+       [
+        "r",
+        15
+       ],
+       [
+        "w",
+        5
+       ],
+       [
+        "l",
+        35
+       ],
+       [
+        "d",
+        20
+       ],
+       [
+        "l",
+        30
+       ],
+       [
+        "r",
+        20
+       ],
+       [
+        "l",
+        35
+       ],
+       [
+        "r",
+        30
+       ],
+       [
+        "w",
+        5
+       ],
+       [
+        "l",
+        25
+       ],
+       [
+        "r",
+        25
+       ],
+       [
+        "l",
+        20
+       ],
+       [
+        "w",
+        5
+       ]
+      ]
+     },
+     "body": "El profundo, al principio. El REM, hacia la mañana.",
+     "animate": true
+    },
+    {
+     "layout": "points",
+     "kicker": "Qué hace cada fase",
+     "title": "Y **para qué** sirve",
+     "size": 82,
+     "points": [
+      {
+       "title": "Profundo",
+       "body": "El cuerpo se repara. Abunda en la primera mitad de la noche."
+      },
+      {
+       "title": "REM",
+       "body": "El cerebro ordena recuerdos y emociones. Es cuando sueñas."
+      },
+      {
+       "title": "Ligero",
+       "body": "El puente entre fases. Es más de la mitad de la noche y es normal."
+      },
+      {
+       "title": "Despierto",
+       "body": "Pequeños despertares que casi nunca recuerdas."
+      }
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Qué las cuida",
+     "title": "Lo que las **cuida** y lo que las **frena**.",
+     "size": 84,
+     "visual": {
+      "type": "levers",
+      "up": {
+       "label": "Las cuida",
+       "items": [
+        "Horario regular",
+        "Cuarto fresco y oscuro",
+        "Cenar con tiempo"
+       ]
+      },
+      "down": {
+       "label": "Las frena",
+       "items": [
+        "Alcohol",
+        "Cafeína por la tarde",
+        "Acostarte a horas distintas"
+       ]
+      }
+     },
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "Mira tu noche **por fases**.",
+     "size": 60,
+     "body": "No busques el número perfecto: busca tu patrón de la semana. Tu reloj las estima, no las mide en un laboratorio.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Dormir siete horas no es dormir siete horas iguales.\n\nUna noche tiene fases, y cada una hace su trabajo: en el sueño profundo el cuerpo se repara (sobre todo en la primera mitad de la noche); en el REM el cerebro ordena recuerdos y emociones (abunda hacia la mañana); el ligero hace de puente entre fases. Y hay pequeños despertares que casi nunca recuerdas.\n\nUna noche típica tiene entre un 13 y un 23 % de profundo y entre un 20 y un 25 % de REM. Recortar la noche suele recortar sobre todo ese último tramo.\n\nOjo: tu reloj estima las fases con el pulso y el movimiento. Sirve para ver tu patrón de semanas, no para diagnosticar nada.\n\nGuárdalo y mira tu noche de hoy por fases. ¿Cuánto profundo has tenido?",
+   "hashtags": [
+    "#sueño",
+    "#fasesdelsueño",
+    "#recuperacion",
+    "#garmin",
+    "#running"
+   ],
+   "alt": "Carrusel de Runch con una noche de sueño de ejemplo dibujada por fases (despierto, REM, ligero y profundo), qué hace cada fase y qué las cuida o las frena. Datos de ejemplo."
+  },
+  {
+   "id": "test-del-habla",
+   "title": "Si puedes hablar, vas bien",
+   "bg": "terracotta",
+   "topic": "Començar · Empezar",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Començar des de zero",
+     "title": "Si pots **parlar**, vas bé.",
+     "size": 124,
+     "body": "Test de la conversa: si pots dir una frase sencera mentre corres o camines a bon pas, el ritme és bo. El teu ritme.",
+     "facts": [
+      "Frases senceres",
+      "Si no pots, camina"
+     ]
+    },
+    {
+     "layout": "hook",
+     "kicker": "Empezar desde cero",
+     "title": "Si puedes **hablar**, vas bien.",
+     "size": 124,
+     "body": "Test del habla: si puedes decir una frase entera mientras corres o caminas a buen paso, el ritmo es bueno. Tu ritmo.",
+     "facts": [
+      "Frases enteras",
+      "Si no puedes, camina"
+     ],
+     "bg": "terracotta"
+    }
+   ],
+   "caption": "Si pots parlar, vas bé.\n\nAquest és el test de la conversa: si pots dir una frase sencera mentre corres (o camines a bon pas), el ritme és bo. És el teu ritme, no el d'una altra persona. Si no pots, baixa a caminar: caminar també compta.\n\nPer començar, 3 dies per setmana amb un dia de descans entremig, i puja a poc a poc. Si tens algun problema de salut, consulta-ho abans amb el teu metge.\n\nDesa'l i passa'l a qui vol començar.\n\n—\n\nSi puedes hablar, vas bien.\n\nEste es el test del habla: si puedes decir una frase entera mientras corres (o caminas a buen paso), el ritmo es bueno. Es tu ritmo, no el de otra persona. Si no puedes, baja a caminar: caminar también cuenta.\n\nPara empezar, 3 días por semana con un día de descanso entre medias, y sube poco a poco. Si tienes algún problema de salud, consúltalo antes con tu médico.\n\nGuárdalo y pásaselo a quien quiere empezar.",
+   "hashtags": [
+    "#empezaracorrer",
+    "#testdelhabla",
+    "#córrer",
+    "#runningcatalunya",
+    "#running"
+   ],
+   "alt": "Carrusel bilingüe de Runch: «Si pots parlar, vas bé» en catalán y «Si puedes hablar, vas bien» en castellano, sobre el test del habla para empezar a correr a tu ritmo.",
+   "inner": "terracotta"
+  },
+  {
+   "id": "como-te-encuentras",
+   "title": "Tu reloj no sabe que te duele la rodilla",
+   "bg": "butter",
+   "topic": "En la app",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Confiesa",
+     "title": "Tu reloj sabe tu pulso. **No sabe** que hoy te duele la rodilla.",
+     "size": 104,
+     "body": "Hay cosas que solo sabes tú. Y tu coach necesita saberlas.",
+     "facts": [
+      "Ánimo",
+      "Agujetas",
+      "Molestias"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Se lo cuentas",
+     "title": "Tú se lo cuentas. **Él ajusta.**",
+     "size": 88,
+     "visual": {
+      "type": "chat",
+      "messages": [
+       {
+        "from": "user",
+        "text": "Hoy piernas muy cargadas y la rodilla derecha molesta."
+       },
+       {
+        "from": "coach",
+        "text": "Anotado. Hoy, rodaje suave y sin cuestas. Si la rodilla **no mejora en unos días**, que la vea tu fisio."
+       }
+      ]
+     },
+     "body": "Un par de toques en la app. Sin escribir un informe."
+    },
+    {
+     "layout": "points",
+     "kicker": "Qué puedes apuntar",
+     "title": "Tres cosas que **solo tú** sabes",
+     "size": 80,
+     "points": [
+      {
+       "title": "Ánimo",
+       "body": "De «muy mal» a «genial». Dormir mal o un día de estrés también cuentan."
+      },
+      {
+       "title": "Agujetas o cansancio muscular",
+       "body": "De «nada» a «muy fuertes». El reloj no ve tus piernas."
+      },
+      {
+       "title": "Molestias",
+       "body": "Zona, desde cuándo y cuánto molesta. Y cuando se va, la marcas recuperada."
+      }
+     ]
+    },
+    {
+     "layout": "points",
+     "kicker": "Qué hace con ello",
+     "title": "Lo que hace **con ello**",
+     "size": 80,
+     "points": [
+      {
+       "title": "Ajusta el consejo del día",
+       "body": "Con tu preparación baja y piernas cargadas, una sesión más suave."
+      },
+      {
+       "title": "Reajusta el plan",
+       "body": "En el siguiente ajuste, con tus molestias en cuenta."
+      },
+      {
+       "title": "No sustituye a tu fisio",
+       "body": "Si algo duele y no mejora, habla con tu médico o tu fisio."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "¿Cómo te encuentras **hoy**?",
+     "size": 58,
+     "body": "Del 1 (muy mal) al 5 (genial), en comentarios. Un número y ya.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Tu reloj sabe tu pulso. No sabe que hoy te duele la rodilla.\n\nHay cosas que solo sabes tú: cómo estás de ánimo, si tienes las piernas cargadas, si hay una molestia que no se va. Por eso Runch te pregunta «¿Cómo te encuentras hoy?» y tu coach lo usa para el consejo del día y para reajustar tu plan.\n\nSon un par de toques: ánimo (de «muy mal» a «genial»), agujetas o cansancio muscular (de «nada» a «muy fuertes») y, si hace falta, una molestia con su zona, desde cuándo y cuánto duele. Cuando se recupera, la marcas como recuperada.\n\nImportante: la app no diagnostica. Si algo duele y no mejora, habla con tu médico o tu fisio.\n\nTu turno: ¿cómo te encuentras hoy, del 1 (muy mal) al 5 (genial)?",
+   "hashtags": [
+    "#coach",
+    "#recuperacion",
+    "#running",
+    "#garmin",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch sobre la tarjeta «¿Cómo te encuentras hoy?»: una conversación de ejemplo con el coach tras apuntar piernas cargadas y una molestia en la rodilla, lo que se puede apuntar y qué hace el coach con ello."
+  },
+  {
+   "id": "estres-reloj",
+   "title": "Tu reloj dice estrés alto y tú estabas en el sofá",
+   "bg": "cream",
+   "topic": "El porqué",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Nadie: / Tu reloj:",
+     "title": "«Estrés alto». Y tú estabas **en el sofá**.",
+     "size": 112,
+     "body": "No mide tus emociones. Mide cuánto trabaja tu cuerpo.",
+     "facts": [
+      "0-100",
+      "Pulso + HRV"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "La escala",
+     "title": "Una nota **de 0 a 100**.",
+     "size": 92,
+     "visual": {
+      "type": "scale",
+      "title": "Estrés medio de un día",
+      "min": 0,
+      "max": 100,
+      "segments": [
+       {
+        "to": 25,
+        "label": "Descanso",
+        "sub": "0-25",
+        "good": true
+       },
+       {
+        "to": 50,
+        "label": "Bajo",
+        "sub": "26-50"
+       },
+       {
+        "to": 75,
+        "label": "Medio",
+        "sub": "51-75"
+       },
+       {
+        "to": 100,
+        "label": "Alto",
+        "sub": "76-100",
+        "dim": true
+       }
+      ],
+      "marker": {
+       "value": 62,
+       "label": "Ese día · 62"
+      },
+      "note": "Se calcula minuto a minuto con tu pulso y tu HRV."
+     },
+     "body": "Tu sistema nervioso trabaja aunque estés quieto."
+    },
+    {
+     "layout": "cover",
+     "kicker": "Qué lo mueve",
+     "title": "Lo que lo **sube** y lo que lo **baja**.",
+     "size": 88,
+     "visual": {
+      "type": "levers",
+      "up": {
+       "label": "Lo sube",
+       "items": [
+        "Cafeína",
+        "Comida pesada",
+        "Poco sueño",
+        "Alcohol",
+        "Preocupaciones"
+       ]
+      },
+      "down": {
+       "label": "Lo baja",
+       "items": [
+        "Dormir bien",
+        "Paseo tranquilo",
+        "Respirar despacio unos minutos",
+        "Pausas entre esfuerzos"
+       ]
+      }
+     },
+     "example": false
+    },
+    {
+     "layout": "points",
+     "kicker": "Cómo leerlo",
+     "title": "Mira el **patrón**, no el pico",
+     "size": 84,
+     "points": [
+      {
+       "title": "La curva del día",
+       "body": "Un pico tras el café o una discusión no es un problema."
+      },
+      {
+       "title": "Tu patrón",
+       "body": "¿Sube tras cenar tarde o con poco sueño? Ahí hay una palanca."
+      },
+      {
+       "title": "Una pista, no un diagnóstico",
+       "body": "Si te notas mal de forma continuada, habla con tu médico."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "¿Qué **te sube** el estrés?",
+     "size": 58,
+     "body": "Cuéntalo en comentarios: nos sirve para el próximo porqué. Y guárdalo.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Nadie: / Tu reloj: «Estrés alto». Tú: en el sofá.\n\nEl estrés del reloj no mide tus emociones. Es un nivel de 0 a 100 calculado con tu pulso y tu HRV (la variación entre latidos): mide cuánto está trabajando tu sistema nervioso. De 0 a 25, descanso; de 26 a 50, bajo; de 51 a 75, medio; de 76 a 100, alto.\n\nPor eso puede subir con cafeína, una digestión pesada, poco sueño, alcohol o preocupaciones, aunque estés quieto. Y por eso lo que importa es el patrón: ¿sube siempre tras cenar tarde o los días de poco sueño? Ahí tienes una palanca.\n\nEs una pista, no un diagnóstico. Si te notas mal de forma continuada, habla con tu médico.\n\nGuárdalo. ¿Qué te sube el estrés en el reloj?",
+   "hashtags": [
+    "#estres",
+    "#hrv",
+    "#garmin",
+    "#recuperacion",
+    "#running"
+   ],
+   "alt": "Carrusel de Runch sobre el estrés del reloj: una escala de 0 a 100 con un marcador en 62, lo que lo sube y lo baja, y tres consejos para leerlo. Datos de ejemplo."
+  },
+  {
+   "id": "ratio-carrega",
+   "title": "Has pujat els quilòmetres de cop",
+   "bg": "cream",
+   "topic": "El perquè",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Et sona?",
+     "title": "Has pujat els quilòmetres **de cop**. El cos ho nota.",
+     "size": 108,
+     "body": "Els tendons i els ossos s'adapten més a poc a poc que el cor i els pulmons.",
+     "facts": [
+      "Aguda",
+      "Crònica",
+      "Ràtio"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Un exemple",
+     "title": "De 31 a 42 km **en una setmana**.",
+     "size": 86,
+     "visual": {
+      "type": "bars",
+      "title": "Quilòmetres per setmana",
+      "max": 50,
+      "h": 280,
+      "gap": 26,
+      "bars": [
+       {
+        "label": "Setm. 1",
+        "value": 28
+       },
+       {
+        "label": "Setm. 2",
+        "value": 30
+       },
+       {
+        "label": "Setm. 3",
+        "value": 29
+       },
+       {
+        "label": "Setm. 4",
+        "value": 31
+       },
+       {
+        "label": "Aquesta",
+        "value": 42,
+        "hot": true
+       }
+      ],
+      "ref": {
+       "value": 29.5,
+       "label": "Mitjana del mes · 29,5"
+      }
+     },
+     "body": "Les quatre setmanes anteriors: 29,5 km de mitjana. Aquesta: 42."
+    },
+    {
+     "layout": "cover",
+     "kicker": "La ràtio",
+     "title": "La **ràtio de càrrega** t'ho diu en un número.",
+     "size": 88,
+     "visual": {
+      "type": "scale",
+      "title": "Càrrega de 7 dies ÷ mitjana del mes",
+      "min": 0.4,
+      "max": 2,
+      "segments": [
+       {
+        "to": 0.8,
+        "label": "Baixa",
+        "sub": "< 0,8"
+       },
+       {
+        "to": 1.3,
+        "label": "Zona habitual",
+        "sub": "0,8-1,3",
+        "good": true
+       },
+       {
+        "to": 1.5,
+        "label": "Compte",
+        "sub": "1,3-1,5"
+       },
+       {
+        "to": 2,
+        "label": "Pujada brusca",
+        "sub": "> 1,5",
+        "dim": true
+       }
+      ],
+      "marker": {
+       "value": 1.42,
+       "label": "Tu · 1,4"
+      },
+      "note": "Referència orientativa, no una garantia. El rellotge la calcula amb càrrega, no només amb km."
+     },
+     "animate": true
+    },
+    {
+     "layout": "points",
+     "kicker": "Què fer",
+     "title": "Pujar **a poc a poc**",
+     "size": 88,
+     "points": [
+      {
+       "title": "Com a màxim un 10 % més",
+       "body": "Una regla habitual de volum per setmana."
+      },
+      {
+       "title": "Una setmana lleugera cada 3-4",
+       "body": "Descarregar deixa que el cos assimili."
+      },
+      {
+       "title": "Si la ràtio es dispara, afluixa",
+       "body": "Un parell de rodatges suaus abans de tornar a pujar."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "Quant has **pujat** aquesta setmana?",
+     "size": 58,
+     "body": "Desa'l per a la propera vegada que et vinguin ganes de pujar de cop.",
+     "actions": [
+      "Desa",
+      "Envia",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Has pujat els quilòmetres de cop i el cos ho nota.\n\nLa ràtio de càrrega compara el que has entrenat aquests 7 dies amb la teva mitjana del mes. Entre 0,8 i 1,3 és la zona habitual; per sobre d'1,5 vol dir que has pujat massa de pressa. Per què importa? Perquè el cor i els pulmons s'adapten ràpid, però els tendons i els ossos van més a poc a poc.\n\nExemple: quatre setmanes a 29,5 km de mitjana i, de cop, 42 km. La ràtio és 1,4: toca afluixar uns dies.\n\nUna regla habitual: puja com a màxim un 10 % de volum per setmana i fes una setmana més lleugera cada 3-4. És una referència orientativa, no una garantia: si tens dolor, para i parla amb el teu fisio.\n\nDesa'l per a la propera vegada que et vinguin ganes de pujar de cop.",
+   "hashtags": [
+    "#càrregadentrenament",
+    "#córrer",
+    "#runningcatalunya",
+    "#garmin",
+    "#prevenciódelesions"
+   ],
+   "alt": "Carrusel de Runch en catalán sobre el ratio de carga: semanas de 28 a 42 km en un gráfico de barras, una escala con el ratio 1,4 fuera de la zona habitual y tres consejos para subir poco a poco. Datos de ejemplo."
+  },
+  {
+   "id": "antes-de-empezar",
+   "title": "Antes de empezar a correr: una conversación",
+   "bg": "espresso",
+   "topic": "Empezar desde cero",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Empezar desde cero",
+     "title": "Quieres empezar a correr. Antes, **una conversación** de cinco minutos.",
+     "size": 100,
+     "body": "No es un trámite ni un miedo. Es empezar con buen pie.",
+     "facts": [
+      "Una vez",
+      "Sin alarmismo",
+      "Y a disfrutar"
+     ]
+    },
+    {
+     "layout": "points",
+     "kicker": "Habla antes con tu médico",
+     "title": "Si te pasa **alguna** de estas",
+     "size": 76,
+     "points": [
+      {
+       "title": "Corazón o tensión",
+       "body": "Alguna enfermedad cardiaca o tensión alta."
+      },
+      {
+       "title": "Diabetes u otra enfermedad crónica",
+       "body": "Te dirá cómo adaptar el esfuerzo."
+      },
+      {
+       "title": "Embarazo, posparto o lesión reciente",
+       "body": "Pide el alta o las pautas a tu médico o fisio."
+      },
+      {
+       "title": "Años sin moverte u obesidad",
+       "body": "No es un obstáculo: es para que el plan sea a tu medida."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "points",
+     "kicker": "Y durante el ejercicio",
+     "title": "Para y consulta si notas…",
+     "size": 80,
+     "points": [
+      {
+       "title": "Dolor u opresión en el pecho",
+       "body": "Para, siéntate y llama a tu médico o a emergencias."
+      },
+      {
+       "title": "Mareo",
+       "body": "O sensación de desmayo."
+      },
+      {
+       "title": "Falta de aire que no es normal",
+       "body": "Más de lo que esperas para ese esfuerzo."
+      },
+      {
+       "title": "Dolor que crece",
+       "body": "O que te hace cojear."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "Empieza **donde estás**.",
+     "size": 64,
+     "body": "Caminar también cuenta. Esto es información general: tu médico conoce tu caso.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Empieza"
+     ]
+    }
+   ],
+   "caption": "Quieres empezar a correr. Antes, una conversación de cinco minutos.\n\nNo es un trámite ni un motivo para tener miedo: es empezar con buen pie. Habla antes con tu médico si tienes una enfermedad del corazón o tensión alta, diabetes u otra enfermedad crónica, si estás embarazada o has dado a luz hace poco, si vienes de una lesión, o si llevas años sin moverte o tienes obesidad. No es un obstáculo: es para que el plan sea a tu medida.\n\nY mientras corres o caminas, para y consulta si notas dolor u opresión en el pecho, mareo, o falta de aire que no es normal.\n\nCon el visto bueno, a tu ritmo: caminar también cuenta, y la OMS habla de 150 a 300 minutos semanales de actividad moderada. Esto es información general, no consejo médico personal.\n\nGuárdalo y mándaselo a quien lleva meses diciendo «el lunes empiezo».",
+   "hashtags": [
+    "#empezaracorrer",
+    "#correrdesdecero",
+    "#salud",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch para quien empieza desde cero: cuándo hablar antes con tu médico, qué síntomas son motivo para parar y consultar, y un cierre que invita a empezar donde estás."
+  },
+  {
+   "id": "tu-turno-datos",
+   "title": "¿Qué dato de tu reloj no entiendes?",
+   "bg": "cream",
+   "topic": "Tu turno · El teu torn",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "El teu torn",
+     "title": "Quina dada del teu rellotge **no entens**?",
+     "size": 116,
+     "body": "Digues-la als comentaris. La propera explicació serà la teva.",
+     "facts": [
+      "HRV",
+      "Body Battery",
+      "VO2 màx",
+      "Estrès"
+     ]
+    },
+    {
+     "layout": "hook",
+     "kicker": "Tu turno",
+     "title": "¿Qué dato de tu reloj **no entiendes**?",
+     "size": 116,
+     "body": "Dilo en los comentarios. El próximo «porqué» será el tuyo.",
+     "facts": [
+      "HRV",
+      "Body Battery",
+      "VO2máx",
+      "Estrés"
+     ]
+    }
+   ],
+   "caption": "Quina dada del teu rellotge no entens?\n\nDigues-la als comentaris. La propera explicació de «El perquè» serà la teva: HRV, Body Battery, VO2 màx, estrès, càrrega… El que sigui.\n\nDesa'l i etiqueta algú que mira el rellotge i fa «mmm».\n\n—\n\n¿Qué dato de tu reloj no entiendes?\n\nDilo en los comentarios. El próximo «porqué» será el tuyo: HRV, Body Battery, VO2máx, estrés, carga… Lo que sea.\n\nGuárdalo y etiqueta a alguien que mira el reloj y hace «mmm».",
+   "hashtags": [
+    "#garmin",
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#runch"
+   ],
+   "alt": "Carrusel bilingüe de Runch: pregunta «Quina dada del teu rellotge no entens?» en catalán y «¿Qué dato de tu reloj no entiendes?» en castellano, con la invitación a comentarlo."
+  },
+  {
+   "id": "forma-y-fatiga",
+   "title": "Estás en forma y tienes fatiga",
+   "bg": "olive",
+   "topic": "El porqué",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Spoiler",
+     "title": "Estás en forma. Y **también** tienes fatiga.",
+     "size": 112,
+     "body": "Forma y fatiga no son opuestas: se mueven a distinto ritmo.",
+     "facts": [
+      "Forma · 6 semanas",
+      "Fatiga · 7 días"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Dos líneas, dos ritmos",
+     "title": "La fatiga **sube y baja**. La forma, no.",
+     "size": 84,
+     "visual": {
+      "type": "lines",
+      "title": "Últimas 6 semanas",
+      "xticks": [
+       "hace 6 sem.",
+       "hoy"
+      ],
+      "mark": {
+       "at": 0.6,
+       "label": "Semana dura"
+      },
+      "series": [
+       {
+        "name": "Forma",
+        "sub": "media de 6 semanas",
+        "points": [
+         32,
+         33,
+         35,
+         37,
+         39,
+         41,
+         42,
+         44,
+         45,
+         46
+        ],
+        "dy": -6
+       },
+       {
+        "name": "Fatiga",
+        "sub": "últimos 7 días",
+        "hot": true,
+        "points": [
+         30,
+         36,
+         44,
+         38,
+         34,
+         48,
+         58,
+         46,
+         40,
+         34
+        ],
+        "dy": 10
+       }
+      ]
+     },
+     "body": "La forma tarda semanas en construirse. La fatiga se va en días.",
+     "animate": true
+    },
+    {
+     "layout": "points",
+     "kicker": "Cómo leerlas",
+     "title": "Según **dónde** esté la fatiga",
+     "size": 82,
+     "points": [
+      {
+       "title": "Por encima de la forma",
+       "body": "Estás cargando: buen momento para rodajes suaves, no para marcas."
+      },
+      {
+       "title": "Cerca de la forma",
+       "body": "Entrenando con normalidad."
+      },
+      {
+       "title": "Por debajo de la forma",
+       "body": "Piernas frescas: ideal para una carrera o unas series buenas."
+      }
+     ]
+    },
+    {
+     "layout": "myth",
+     "kicker": "Mito o realidad",
+     "title": "Si descanso, **pierdo la forma**.",
+     "size": 90,
+     "myth": "Si paro tres días, lo pierdo todo.",
+     "fact": "Unos días de descanso bajan **tu fatiga** mucho más que tu forma. La forma es la media de 6 semanas."
+    },
+    {
+     "layout": "cta",
+     "title": "Antes de una carrera: **menos fatiga**, misma forma.",
+     "size": 56,
+     "body": "Por eso se baja el volumen la última semana. Guárdalo para tu próxima carrera.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Spoiler: estás en forma. Y también tienes fatiga. Las dos cosas a la vez.\n\nEn la app son dos líneas con dos ritmos. La forma (CTL) es tu carga media de las últimas 6 semanas: sube despacio y baja despacio. La fatiga (ATL) es la de los últimos 7 días: sube y baja rápido, con cada semana dura.\n\nCuando tu fatiga queda por debajo de tu forma, llegas con piernas frescas para rendir. Cuando queda por encima, estás cargando: toca suave, no batir marcas.\n\nY un mito que cae solo: unos días de descanso bajan tu fatiga mucho más que tu forma. Por eso se rebaja el volumen la última semana antes de una carrera.\n\nGuárdalo para tu próxima carrera. ¿Ahora mismo, forma o fatiga?",
+   "hashtags": [
+    "#formafisica",
+    "#fatiga",
+    "#garmin",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch con dos líneas, forma de 6 semanas que sube despacio y fatiga de 7 días que sube y baja rápido, tres situaciones según su posición y el mito de que descansar unos días hace perder la forma. Datos de ejemplo."
+  },
+  {
+   "id": "leer-sueno",
+   "title": "La pantalla de Sueño en 30 segundos",
+   "bg": "cream",
+   "topic": "Cómo leer",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Cómo leer esta pantalla",
+     "title": "La pantalla de **Sueño**, en 30 segundos.",
+     "size": 112,
+     "body": "Tres cosas que mirar y una que no te debe agobiar.",
+     "facts": [
+      "Horas",
+      "Fases",
+      "Horario"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Duración y fases",
+     "title": "Tres números **que mirar**.",
+     "size": 84,
+     "visual": {
+      "type": "annot",
+      "label": "Duración y fases",
+      "value": "7 h 05 min",
+      "inner": {
+       "type": "hypno",
+       "start": "23:20",
+       "stats": false,
+       "segments": [
+        [
+         "l",
+         15
+        ],
+        [
+         "d",
+         40
+        ],
+        [
+         "l",
+         20
+        ],
+        [
+         "r",
+         10
+        ],
+        [
+         "l",
+         25
+        ],
+        [
+         "d",
+         35
+        ],
+        [
+         "l",
+         25
+        ],
+        [
+         "r",
+         15
+        ],
+        [
+         "w",
+         5
+        ],
+        [
+         "l",
+         35
+        ],
+        [
+         "d",
+         20
+        ],
+        [
+         "l",
+         30
+        ],
+        [
+         "r",
+         20
+        ],
+        [
+         "l",
+         35
+        ],
+        [
+         "r",
+         30
+        ],
+        [
+         "w",
+         5
+        ],
+        [
+         "l",
+         25
+        ],
+        [
+         "r",
+         25
+        ],
+        [
+         "l",
+         20
+        ],
+        [
+         "w",
+         5
+        ]
+       ]
+      },
+      "marks": [
+       {
+        "x": 76,
+        "y": -12,
+        "n": 1
+       },
+       {
+        "x": 24,
+        "y": 67,
+        "n": 2
+       },
+       {
+        "x": 82,
+        "y": 28,
+        "n": 3
+       }
+      ],
+      "notes": [
+       {
+        "title": "Horas dormidas.",
+        "body": "Los adultos suelen necesitar entre 7 y 9."
+       },
+       {
+        "title": "Profundo.",
+        "body": "13-23 % en una noche típica."
+       },
+       {
+        "title": "REM.",
+        "body": "20-25 %, sobre todo hacia la mañana."
+       }
+      ]
+     }
+    },
+    {
+     "layout": "cover",
+     "kicker": "La nota",
+     "title": "La nota **de 0 a 100**.",
+     "size": 92,
+     "visual": {
+      "type": "scale",
+      "title": "Puntuación de sueño",
+      "min": 0,
+      "max": 100,
+      "segments": [
+       {
+        "to": 60,
+        "label": "Mejorable",
+        "sub": "menos de 60"
+       },
+       {
+        "to": 80,
+        "label": "Bien",
+        "sub": "60-79"
+       },
+       {
+        "to": 100,
+        "label": "Excelente",
+        "sub": "80 o más",
+        "good": true
+       }
+      ],
+      "marker": {
+       "value": 74,
+       "label": "Anoche · 74"
+      },
+      "note": "Resume duración, profundo y REM, despertares y lo relajado que estaba tu cuerpo."
+     }
+    },
+    {
+     "layout": "points",
+     "kicker": "Lo que de verdad importa",
+     "title": "No te quedes con **una noche**",
+     "size": 84,
+     "points": [
+      {
+       "title": "La media de la semana",
+       "body": "Una noche mala pasa. Tres seguidas ya son un patrón."
+      },
+      {
+       "title": "Tu horario",
+       "body": "Acostarte y levantarte a horas parecidas (± 30 min) mejora la calidad del sueño."
+      },
+      {
+       "title": "Cómo te sientes",
+       "body": "Si duermes 8 horas y estás sin energía, apúntalo en la app."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "Tu sueño de esta semana, **en una mirada**.",
+     "size": 56,
+     "body": "Mira tu media y cuéntanos: ¿cuántas horas duermes de media?",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "La pantalla de Sueño, en 30 segundos.\n\nTres cosas que mirar: las horas que has dormido (los adultos suelen necesitar entre 7 y 9), las fases (una noche típica tiene un 13-23 % de profundo y un 20-25 % de REM) y tu horario (acostarte y levantarte a horas parecidas, más o menos 30 minutos).\n\nLa nota de sueño va de 0 a 100 y resume duración, profundo y REM, despertares y lo relajado que estaba tu cuerpo: 80 o más es excelente, de 60 a 79 está bien y por debajo de 60 se puede mejorar.\n\nY lo que de verdad importa es la media de la semana. Una noche mala pasa; tres seguidas ya son un patrón.\n\nGuárdalo. ¿Cuántas horas duermes de media?",
+   "hashtags": [
+    "#sueño",
+    "#dormirbien",
+    "#garmin",
+    "#recuperacion",
+    "#running"
+   ],
+   "alt": "Carrusel de Runch que enseña a leer la pantalla de Sueño: una noche por fases con tres números explicados, la nota de sueño en una escala de 0 a 100 y qué mirar de verdad. Datos de ejemplo."
+  },
+  {
+   "id": "deriva-cardiaca",
+   "title": "Mateix ritme, més pols",
+   "bg": "cream",
+   "topic": "El perquè",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Et sona?",
+     "title": "Mateix ritme. **Més pols** a cada quilòmetre.",
+     "size": 108,
+     "body": "No ho fas malament. Es diu deriva cardíaca i té explicació.",
+     "facts": [
+      "Ritme igual",
+      "Pols que puja",
+      "Calor i cansament"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Un rodatge",
+     "title": "El pols **puja**. El ritme, no.",
+     "size": 92,
+     "visual": {
+      "type": "lines",
+      "title": "Pols durant un rodatge a 6:00/km constant",
+      "xticks": [
+       "0 min",
+       "30",
+       "60 min"
+      ],
+      "series": [
+       {
+        "name": "150 ppm",
+        "sub": "al final",
+        "hot": true,
+        "points": [
+         142,
+         143,
+         144,
+         145,
+         146,
+         147,
+         148,
+         149,
+         149,
+         150
+        ]
+       }
+      ],
+      "note": "Al principi, 142 ppm. Una hora després, 150, al mateix ritme."
+     },
+     "animate": true
+    },
+    {
+     "layout": "cover",
+     "kicker": "Què és normal",
+     "title": "Quin és el nivell **que preocupa**?",
+     "size": 84,
+     "visual": {
+      "type": "bars",
+      "title": "Deriva cardíaca · dos dies, el mateix ritme",
+      "max": 12,
+      "h": 260,
+      "gap": 120,
+      "bars": [
+       {
+        "label": "Dia fresc i descansat",
+        "value": 3,
+        "text": "3 %"
+       },
+       {
+        "label": "Dia de calor i poc son",
+        "value": 9,
+        "text": "9 %",
+        "hot": true
+       }
+      ],
+      "ref": {
+       "value": 5,
+       "label": "5 % · referència"
+      }
+     },
+     "body": "Per sota del 5 %, bona base aeròbica. Per sobre del 8 %, calor, fatiga o poc fons."
+    },
+    {
+     "layout": "cover",
+     "kicker": "Què la mou",
+     "title": "El que la **puja** i el que la **baixa**.",
+     "size": 88,
+     "visual": {
+      "type": "levers",
+      "up": {
+       "label": "La puja",
+       "items": [
+        "Calor",
+        "Poca hidratació",
+        "Cansament acumulat",
+        "Poc fons"
+       ]
+      },
+      "down": {
+       "label": "La baixa",
+       "items": [
+        "Rodatges suaus constants",
+        "Hidratar-te",
+        "L'hora fresca",
+        "Un ritme més suau"
+       ]
+      }
+     },
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "Mira la deriva **del teu últim rodatge**.",
+     "size": 54,
+     "body": "Si és alta, no és un fracàs: és informació. Desa'l.",
+     "actions": [
+      "Desa",
+      "Envia",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Mateix ritme. Més pols a cada quilòmetre. No ho estàs fent malament.\n\nEs diu deriva cardíaca: en un esforç llarg i estable, el pols va pujant encara que el ritme no canviï. La causa és sobretot la calor, la set (amb la suor baixa el volum de sang i el cor ha de bategar més) i el cansament acumulat.\n\nUna referència habitual: una deriva per sota del 5 % indica una bona base aeròbica; per sobre d'un 8 %, el cos està pagant calor, fatiga o poc fons.\n\nQuè fer: rodatges suaus constants per fer base, hidratar-te, buscar l'hora fresca i, si és un dia dur, acceptar un ritme una mica més suau. Runch la calcula a l'anàlisi del teu últim entrenament.\n\nDesa'l. Quanta deriva tenia el teu últim rodatge?",
+   "hashtags": [
+    "#derivacardíaca",
+    "#córrer",
+    "#runningcatalunya",
+    "#garmin",
+    "#pulsacions"
+   ],
+   "alt": "Carrusel de Runch en catalán sobre la deriva cardiaca: una línea de pulso que sube de 142 a 150 pulsaciones a ritmo constante, barras con un 3 % y un 9 % frente a la referencia del 5 %, y qué la sube y qué la baja. Datos de ejemplo."
+  },
+  {
+   "id": "cadencia-180",
+   "title": "Cadencia 180: mito",
+   "bg": "terracotta",
+   "topic": "Mito",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Mito",
+     "title": "«Tu cadencia tiene que ser **180**». Pues no.",
+     "size": 108,
+     "body": "Es el número más repetido de los grupos de running. Y el más mal entendido.",
+     "facts": [
+      "Pasos por minuto",
+      "Depende del ritmo",
+      "Depende de ti"
+     ]
+    },
+    {
+     "layout": "myth",
+     "kicker": "Cadencia 180",
+     "title": "El número **mágico**.",
+     "size": 96,
+     "myth": "Hay que correr a 180 pasos por minuto.",
+     "fact": "No hay un número único: sube con el ritmo y cambia con tu altura y tu zancada. El 180 viene de observar a corredores de élite a ritmos de carrera.",
+     "textSize": 52
+    },
+    {
+     "layout": "cover",
+     "kicker": "La misma persona",
+     "title": "Cuatro ritmos, **cuatro cadencias**.",
+     "size": 84,
+     "visual": {
+      "type": "bars",
+      "title": "Pasos por minuto",
+      "max": 200,
+      "h": 280,
+      "gap": 34,
+      "bars": [
+       {
+        "label": "8:00 /km",
+        "value": 158
+       },
+       {
+        "label": "6:30 /km",
+        "value": 166
+       },
+       {
+        "label": "5:30 /km",
+        "value": 174
+       },
+       {
+        "label": "4:45 /km",
+        "value": 182,
+        "hot": true
+       }
+      ]
+     },
+     "body": "A más ritmo, más pasos. Es normal.",
+     "animate": true
+    },
+    {
+     "layout": "points",
+     "kicker": "Qué hacer",
+     "title": "Úsala, **no la persigas**",
+     "size": 84,
+     "points": [
+      {
+       "title": "Mídela",
+       "body": "Mira tu media en rodajes parecidos, en «Técnica de carrera»."
+      },
+      {
+       "title": "Si quieres cambiarla, poco",
+       "body": "Un 5 % más con el mismo ritmo, solo en rodajes suaves."
+      },
+      {
+       "title": "Mira también cuánto botas",
+       "body": "La oscilación vertical: cuánto subes y bajas en cada zancada."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "¿Cuál es **tu cadencia** en el rodaje suave?",
+     "size": 54,
+     "body": "Un número y ya. El de verdad, no el de 180.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "«Tu cadencia tiene que ser 180». Pues no.\n\nEs el número más repetido en los grupos de running y el más mal entendido. El 180 viene de observar a corredoras y corredores de élite a ritmos de carrera. No existe un número único: la cadencia (pasos por minuto) sube con el ritmo y cambia con tu altura y tu zancada. La misma persona puede llevar 158 en un rodaje suave y 182 en un ritmo fuerte.\n\nQué hacer: mide tu cadencia media en rodajes parecidos (en Runch sale en «Técnica de carrera», junto a la zancada y la oscilación vertical). Y si quieres probar un cambio, un 5 % más con el mismo ritmo y solo en rodajes suaves; lo importante es cómo te sientes, no cuántos pasos cuentas.\n\nTu turno: ¿cuál es tu cadencia en el rodaje suave? El número de verdad, no el de 180.",
+   "hashtags": [
+    "#cadencia",
+    "#tecnicadecarrera",
+    "#garmin",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch que desmonta el mito de la cadencia 180: la misma persona lleva de 158 a 182 pasos por minuto según el ritmo, en un gráfico de barras, y tres consejos para usarla. Datos de ejemplo.",
+   "inner": "terracotta"
+  },
+  {
+   "id": "eficiencia-aerobica",
+   "title": "Cómo saber si mejoras sin competir",
+   "bg": "butter",
+   "topic": "El porqué",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Sin competir",
+     "title": "¿Cómo sabes que **mejoras** si no hay carrera hasta marzo?",
+     "size": 104,
+     "body": "Hay una línea que sube cuando te pones en forma. Y no necesita dorsal.",
+     "facts": [
+      "Metros por latido",
+      "Mismo esfuerzo"
+     ]
+    },
+    {
+     "layout": "versus",
+     "kicker": "Eficiencia aeróbica",
+     "title": "Mismo pulso, **más metros**.",
+     "size": 84,
+     "left": {
+      "label": "Septiembre",
+      "value": "1,11",
+      "unit": "metros por minuto y latido",
+      "lines": [
+       "6:00 por km",
+       "150 lpm"
+      ]
+     },
+     "right": {
+      "label": "Diciembre",
+      "value": "1,16",
+      "unit": "metros por minuto y latido",
+      "lines": [
+       "5:45 por km",
+       "150 lpm"
+      ]
+     },
+     "body": "No has sufrido más: corres más rápido con **el mismo esfuerzo** del corazón."
+    },
+    {
+     "layout": "cover",
+     "kicker": "Tu tendencia",
+     "title": "Mira la **línea**, no el punto.",
+     "size": 88,
+     "visual": {
+      "type": "trend",
+      "title": "Eficiencia aeróbica · cada carrera",
+      "dots": "Cada carrera",
+      "line": "Tendencia",
+      "window": 5,
+      "ticks": [
+       1.05,
+       1.15
+      ],
+      "min": 1.04,
+      "max": 1.17,
+      "points": [
+       1.07,
+       1.05,
+       1.09,
+       1.06,
+       1.08,
+       1.1,
+       1.07,
+       1.09,
+       1.11,
+       1.08,
+       1.12,
+       1.1,
+       1.13,
+       1.11,
+       1.14,
+       1.12,
+       1.15,
+       1.13,
+       1.16,
+       1.14
+      ]
+     },
+     "body": "Un mal día no cuenta. Las semanas, sí.",
+     "animate": true
+    },
+    {
+     "layout": "points",
+     "kicker": "Para que sea justa",
+     "title": "Compara **como toca**",
+     "size": 84,
+     "points": [
+      {
+       "title": "Carreras parecidas",
+       "body": "Mismo terreno y tipo de rodaje. Una cuesta no se compara con un llano."
+      },
+      {
+       "title": "Cinta y calle, por separado",
+       "body": "Runch las separa para que no se mezclen."
+      },
+      {
+       "title": "Un mal día no cuenta",
+       "body": "Calor, poco sueño o fatiga la bajan. Mira semanas, no días."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "Tu mejor prueba de que mejoras **no lleva dorsal**.",
+     "size": 54,
+     "body": "Guárdalo para mirarlo dentro de un mes.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "¿Cómo sabes que mejoras si no hay carrera hasta marzo?\n\nHay una línea que sube cuando te pones en forma y no necesita dorsal: la eficiencia aeróbica. Son los metros que avanzas por minuto por cada latido. Si sube con el tiempo, corres más rápido con el mismo esfuerzo del corazón.\n\nEjemplo: en septiembre, 6:00 por km a 150 pulsaciones. En diciembre, 5:45 por km con las mismas 150. No has sufrido más: has mejorado.\n\nPara que la comparación sea justa, usa carreras parecidas (mismo terreno y tipo de rodaje), mira cinta y calle por separado (Runch las separa) y no te fíes de un mal día: calor, poco sueño o fatiga la bajan. Mira la tendencia de semanas.\n\nGuárdalo para mirarlo dentro de un mes.",
+   "hashtags": [
+    "#eficienciaaerobica",
+    "#progreso",
+    "#garmin",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch sobre la eficiencia aeróbica: 1,11 en septiembre frente a 1,16 en diciembre con el mismo pulso, una nube de puntos con línea de tendencia que sube y tres consejos para comparar bien. Datos de ejemplo."
+  },
+  {
+   "id": "genolls",
+   "title": "Genolls: el que sí ajuda quan comences",
+   "bg": "cream",
+   "topic": "Començar",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Començar des de zero",
+     "title": "Genolls: el que **sí** ajuda quan comences.",
+     "size": 104,
+     "body": "Sense por i sense pressa. Quatre coses que et faran la vida més fàcil, tinguis el cos que tinguis.",
+     "facts": [
+      "Superfície tova",
+      "Calçat còmode",
+      "Força suau"
+     ]
+    },
+    {
+     "layout": "points",
+     "kicker": "Quatre coses",
+     "title": "El que **sí** ajuda",
+     "size": 84,
+     "points": [
+      {
+       "title": "Camina abans de trotar",
+       "body": "Tendons i articulacions triguen setmanes a adaptar-se. Caminar no és un pas enrere."
+      },
+      {
+       "title": "Varia la superfície",
+       "body": "Terra i camins compactes quan puguis, no sempre asfalt."
+      },
+      {
+       "title": "Calçat còmode",
+       "body": "El que et vagi bé a tu, no el més car."
+      },
+      {
+       "title": "Força suau, dos dies",
+       "body": "Cadira, esquats a poc a poc, un esglaó, bessons. Cinc minuts compten."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cover",
+     "kicker": "Una progressió d'exemple",
+     "title": "Del caminar al **trot**, sense pressa.",
+     "size": 88,
+     "visual": {
+      "type": "steps",
+      "kicker": "3 dies per setmana, un de descans entremig",
+      "title": "Exemple, no una recepta",
+      "steps": [
+       {
+        "name": "Setmanes 1-2",
+        "detail": "Caminar a bon pas",
+        "pace": "20-30 min"
+       },
+       {
+        "name": "Setmanes 3-4",
+        "detail": "1 min trotant + 2 min caminant",
+        "pace": "× 6-8",
+        "hot": true
+       },
+       {
+        "name": "Setmanes 5-6",
+        "detail": "2 min trotant + 1 min caminant",
+        "pace": "× 6-8"
+       }
+      ]
+     }
+    },
+    {
+     "layout": "points",
+     "kicker": "Quan parar",
+     "title": "Para i **parla amb el teu fisio**",
+     "size": 84,
+     "points": [
+      {
+       "title": "El dolor puja",
+       "body": "O et fa coixejar mentre camines o corres."
+      },
+      {
+       "title": "Genoll inflat",
+       "body": "O dolor que et desperta de nit."
+      },
+      {
+       "title": "Dolor que no marxa",
+       "body": "Ni amb uns dies de descans."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "El millor ritme és **el que pots mantenir**.",
+     "size": 52,
+     "body": "Si tens una malaltia o mobilitat limitada, consulta-ho abans amb el teu metge. Desa'l.",
+     "actions": [
+      "Desa",
+      "Envia",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Genolls: el que sí que ajuda quan comences a córrer.\n\nSense por i sense pressa. Els tendons, els ossos i les articulacions necessiten setmanes per adaptar-se, més que el cor i els pulmons. Per això començar caminant no és un pas enrere: és el pla.\n\nQuatre coses que fan la vida més fàcil, tinguis el cos que tinguis: camina abans de trotar, varia la superfície (terra i camins compactes quan puguis), tria un calçat còmode (el que et vagi bé a tu, no el més car) i fes força suau dos dies per setmana: cadira, esquats a poc a poc, pujar un esglaó, bessons.\n\nUna progressió d'exemple: 3 dies per setmana amb un dia de descans entremig, de caminar a trotar 1 minut i caminar 2. Si el dolor puja, el genoll s'infla o el dolor no marxa amb uns dies de descans, parla amb el teu metge o fisio. I si tens una malaltia o mobilitat limitada, consulta-ho abans amb el teu metge.\n\nDesa'l i passa'l a qui vol començar.",
+   "hashtags": [
+    "#començaracórrer",
+    "#genolls",
+    "#córrer",
+    "#runningcatalunya",
+    "#força"
+   ],
+   "alt": "Carrusel de Runch en catalán para quien empieza: cuatro cosas que ayudan a las rodillas, una progresión de ejemplo de caminar a trotar y cuándo parar y hablar con el fisio."
+  },
+  {
+   "id": "leer-relaciones",
+   "title": "Tus datos se explican entre sí",
+   "bg": "sea",
+   "topic": "Cómo leer",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Cómo leer esta pantalla",
+     "title": "Tus datos **se explican** entre sí.",
+     "size": 110,
+     "body": "Una pantalla que cruza tu sueño, tu estrés, tu HRV y tus entrenos. Solo con tus días.",
+     "facts": [
+      "Sueño",
+      "Estrés",
+      "HRV",
+      "Carga"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Una tarjeta de ejemplo",
+     "title": "Cómo leer **una relación**.",
+     "size": 84,
+     "visual": {
+      "type": "annot",
+      "label": "Más horas de sueño, mejor HRV",
+      "value": "●●○ clara",
+      "inner": {
+       "type": "bars",
+       "h": 190,
+       "max": 70,
+       "gap": 36,
+       "bars": [
+        {
+         "label": "Menos de 6 h 30",
+         "value": 41,
+         "text": "41 ms"
+        },
+        {
+         "label": "6 h 30 – 7 h 30",
+         "value": 47,
+         "text": "47 ms"
+        },
+        {
+         "label": "Más de 7 h 30",
+         "value": 54,
+         "text": "54 ms",
+         "hot": true
+        }
+       ]
+      },
+      "marks": [
+       {
+        "x": 16,
+        "y": 58,
+        "n": 1
+       },
+       {
+        "x": 59,
+        "y": 26,
+        "n": 2
+       },
+       {
+        "x": 79,
+        "y": -11,
+        "n": 3
+       }
+      ],
+      "notes": [
+       {
+        "title": "Tres grupos.",
+        "body": "Tus días, según las horas dormidas."
+       },
+       {
+        "title": "La media.",
+        "body": "Tu HRV media en los días de cada grupo."
+       },
+       {
+        "title": "La fuerza.",
+        "body": "●●● fuerte, ●●○ clara, ●○○ débil."
+       }
+      ]
+     }
+    },
+    {
+     "layout": "myth",
+     "kicker": "Ojo con la trampa",
+     "title": "Que vayan juntas **no es causa**.",
+     "size": 84,
+     "myth": "Si dos cosas van juntas, una causa la otra.",
+     "fact": "Es una pista para probar: duerme más una semana y mira qué pasa con **tu** HRV."
+    },
+    {
+     "layout": "points",
+     "kicker": "Cómo usarlo",
+     "title": "Pruébalo, **no sentencies**",
+     "size": 84,
+     "points": [
+      {
+       "title": "Cuantos más días de reloj, mejor",
+       "body": "Con pocos datos, la relación aún no es fiable."
+      },
+      {
+       "title": "Cambia una sola cosa",
+       "body": "Una semana durmiendo más, o cenando antes. Y mira qué se mueve."
+      },
+      {
+       "title": "Compárate solo contigo",
+       "body": "Tu cuerpo, tu patrón. Lo de otra persona no vale."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "¿Qué relación **te sorprendió** en tus datos?",
+     "size": 54,
+     "body": "Cuéntalo en comentarios y guárdalo para la próxima.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Tus datos se explican entre sí.\n\nEn «Qué dicen tus datos», Runch cruza tu sueño, tu estrés, tu HRV y tus entrenos y te dice, solo con tus días, qué va con qué. Por ejemplo: «Más horas de sueño, mejor HRV».\n\nCómo se lee: la app divide tus días en tres grupos según la primera cosa (por ejemplo, pocas, normales y muchas horas de sueño) y compara la media de la segunda en cada grupo. La fuerza va de ●●● fuerte a ●○○ débil.\n\nY un aviso importante: que dos cosas vayan juntas no demuestra que una cause la otra. Es una pista para probar, no una sentencia. Ejemplo: duerme más una semana y mira qué pasa con tu HRV.\n\nGuárdalo. ¿Qué relación te sorprendió en tus datos?",
+   "hashtags": [
+    "#datos",
+    "#hrv",
+    "#garmin",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch con una tarjeta de ejemplo de «Qué dicen tus datos»: tres barras con la HRV media según las horas dormidas, números que explican grupos, media y fuerza, y el aviso de que correlación no es causa. Datos de ejemplo."
+  },
+  {
+   "id": "horari-de-son",
+   "title": "Dormir més el cap de setmana no ho arregla tot",
+   "bg": "cream",
+   "topic": "El perquè",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Dada incòmoda",
+     "title": "Dormir més el cap de setmana **no ho arregla tot**.",
+     "size": 104,
+     "body": "Al teu cos li agrada la rutina.",
+     "facts": [
+      "Mateixa hora",
+      "± 30 minuts",
+      "També el cap de setmana"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Un horari d'exemple",
+     "title": "La **mateixa hora**, set dies.",
+     "size": 92,
+     "visual": {
+      "type": "schedule",
+      "title": "Hora d'anar a dormir · una setmana",
+      "points": [
+       1.9,
+       2.1,
+       2.0,
+       2.2,
+       3.6,
+       3.9,
+       2.0
+      ],
+      "band": [
+       1.5,
+       2.5
+      ],
+      "note": "La banda és ± 30 minuts de la teva hora habitual. Divendres i dissabte, fora."
+     }
+    },
+    {
+     "layout": "points",
+     "kicker": "Per què importa",
+     "title": "El cos **és un rellotge**",
+     "size": 84,
+     "points": [
+      {
+       "title": "Ritmes de son",
+       "body": "Un horari estable l'ajuda a adormir-se i a despertar-se més fàcilment."
+      },
+      {
+       "title": "Més qualitat",
+       "body": "Un horari regular s'associa a un son millor, amb les mateixes hores de son."
+      },
+      {
+       "title": "El diumenge ajuda, però poc",
+       "body": "El son extra del cap de setmana no ho arregla tot."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "points",
+     "kicker": "Què fer",
+     "title": "Tres coses **fàcils**",
+     "size": 84,
+     "points": [
+      {
+       "title": "Tria l'hora de llevar-te",
+       "body": "És més fàcil fixar l'alarma que l'hora d'adormir-se."
+      },
+      {
+       "title": "Llum al matí",
+       "body": "Sortir al carrer al matí ajuda el rellotge intern."
+      },
+      {
+       "title": "Cafeïna i pantalles lluny",
+       "body": "Allunya-les de l'hora d'anar a dormir."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "A quina hora t'adorms **el cap de setmana**?",
+     "size": 54,
+     "body": "Desa'l i digues-ho als comentaris.",
+     "actions": [
+      "Desa",
+      "Envia",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Dormir més el cap de setmana no ho arregla tot.\n\nAl teu cos li agrada la rutina. Té ritmes de son i de vigília, i un horari estable l'ajuda a adormir-se i a despertar-se més fàcilment. Un horari regular s'associa a un son de més qualitat, amb les mateixes hores de son: la referència és anar a dormir i llevar-te a la mateixa hora, amb un marge d'uns 30 minuts, també el cap de setmana.\n\nEl son extra del diumenge ajuda una mica, però no ho arregla tot. És millor que el cap de setmana s'assembli a la setmana.\n\nQuè fer: tria una hora per llevar-te (és més fàcil fixar l'alarma que l'hora d'adormir-se), surt al carrer al matí i allunya la cafeïna i les pantalles de l'hora d'anar a dormir.\n\nDesa'l. A quina hora t'adorms el cap de setmana?",
+   "hashtags": [
+    "#son",
+    "#dormirbé",
+    "#garmin",
+    "#córrer",
+    "#runningcatalunya"
+   ],
+   "alt": "Carrusel de Runch en catalán sobre el horario de sueño: puntos de la hora de acostarse en una semana, con la noche de viernes y sábado fuera de la banda de más o menos 30 minutos, y tres consejos para regularlo. Datos de ejemplo."
+  },
+  {
+   "id": "fa-fred",
+   "title": "Fa fred: vesteix-te com si fes 10 graus més",
+   "bg": "terracotta",
+   "topic": "Truc · Truco",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Truc d'hivern",
+     "title": "Fa fred? **Vesteix-te com si fes 10 graus més.**",
+     "size": 100,
+     "body": "Els primers minuts tindràs una mica de fred. Després, a punt.",
+     "facts": [
+      "Capes fines",
+      "Guants",
+      "Escalfa primer"
+     ]
+    },
+    {
+     "layout": "hook",
+     "kicker": "Truco de invierno",
+     "title": "¿Hace frío? **Vístete como si hiciera 10 grados más.**",
+     "size": 100,
+     "body": "Los primeros minutos pasarás un poco de frío. Después, a punto.",
+     "facts": [
+      "Capas finas",
+      "Guantes",
+      "Calienta primero"
+     ],
+     "bg": "terracotta"
+    }
+   ],
+   "caption": "Fa fred? Vesteix-te com si fes uns 10 graus més.\n\nEls primers minuts tindràs una mica de fred; després, a punt. Capes fines millor que una de gruixuda, guants i una braga de coll, i una estona per escalfar abans de sortir. Si tens asma o l'aire fred t'irrita, protegeix nas i boca i porta l'inhalador si te l'han pautat.\n\nDesa'l i passa'l al teu grup de running.\n\n—\n\n¿Hace frío? Vístete como si hiciera unos 10 grados más.\n\nLos primeros minutos pasarás un poco de frío; después, a punto. Mejor capas finas que una gruesa, guantes y una braga de cuello, y un rato de calentamiento antes de salir. Si tienes asma o el aire frío te irrita, protege nariz y boca y lleva tu inhalador si te lo han pautado.\n\nGuárdalo y pásaselo a tu grupo de running.",
+   "hashtags": [
+    "#correrenfrio",
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#frío"
+   ],
+   "alt": "Carrusel bilingüe de Runch: «Fa fred? Vesteix-te com si fes 10 graus més» en catalán y «¿Hace frío? Vístete como si hiciera 10 grados más» en castellano.",
+   "inner": "terracotta"
+  },
+  {
+   "id": "prediccion-carrera",
+   "title": "Tu reloj dice que corres la media en 1:55",
+   "bg": "lavender",
+   "topic": "El porqué",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Confiesa",
+     "title": "Tu reloj dice que corres la media en **1:55**. ¿Seguro?",
+     "size": 106,
+     "body": "Es tu potencial, no una promesa. Y hay un motivo por el que suele salir optimista.",
+     "facts": [
+      "Fórmula de Daniels",
+      "VO2máx"
+     ],
+     "example": true
+    },
+    {
+     "layout": "cover",
+     "kicker": "Cuatro distancias",
+     "title": "Cuatro tiempos, **un solo dato**.",
+     "size": 88,
+     "visual": {
+      "type": "rows",
+      "title": "Predicción según tu VO2máx",
+      "rows": [
+       {
+        "label": "5 km",
+        "detail": "Casi no depende del fondo",
+        "value": "24:50"
+       },
+       {
+        "label": "10 km",
+        "detail": "",
+        "value": "51:40"
+       },
+       {
+        "label": "Media maratón",
+        "detail": "Aquí ya pesan las tiradas largas",
+        "value": "1:54:30"
+       },
+       {
+        "label": "Maratón",
+        "detail": "Aquí, todavía más",
+        "value": "3:58:00"
+       }
+      ]
+     },
+     "body": "Todas salen de tu VO2máx, no de tus entrenos largos."
+    },
+    {
+     "layout": "points",
+     "kicker": "Por qué suele ser optimista",
+     "title": "Mide tu **motor**, no tu depósito",
+     "size": 82,
+     "points": [
+      {
+       "title": "Aguantar pide más",
+       "body": "Fondo, piernas fuertes y gestionar la energía."
+      },
+      {
+       "title": "Cuanto más larga, más optimista",
+       "body": "En 5 km casi no importa. En maratón, mucho."
+      },
+      {
+       "title": "Supone que entrenas esa distancia",
+       "body": "Si nunca pasas de 10 km, la media es un sueño, no un plan."
+      }
+     ]
+    },
+    {
+     "layout": "points",
+     "kicker": "Cómo usarla",
+     "title": "Como **techo**, no como objetivo",
+     "size": 82,
+     "points": [
+      {
+       "title": "Compárala con tu mejor marca",
+       "body": "Runch te la enseña al lado."
+      },
+      {
+       "title": "Si va muy por delante, falta fondo",
+       "body": "O una carrera que lo demuestre."
+      },
+      {
+       "title": "Entrena la distancia",
+       "body": "Tiradas largas suaves, subiendo poco a poco."
+      }
+     ]
+    },
+    {
+     "layout": "cta",
+     "title": "¿Cuál es **tu mejor marca**?",
+     "size": 56,
+     "body": "Cuéntanos tu distancia favorita. Y guarda el post antes de apuntarte.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Confiesa: tu reloj dice que corres la media maratón en 1:55. ¿Seguro?\n\nLas predicciones de carrera de Runch salen de tu VO2máx con la fórmula de Daniels: es tu potencial si entrenas esa distancia, no una garantía. Y suelen salir optimistas en media y maratón.\n\nPor qué: el VO2máx mide tu motor, no tu depósito. Aguantar 21 kilómetros también pide fondo, piernas fuertes y gestionar la energía. En 5 km casi no importa; en una maratón, mucho.\n\nÚsala como techo, no como objetivo. Compárala con tu mejor marca real (Runch te la enseña al lado): si la predicción va muy por delante, lo que falta es fondo, o una carrera. Y entrena la distancia: tiradas largas suaves, subiendo poco a poco.\n\nGuárdalo antes de apuntarte. ¿Cuál es tu mejor marca?",
+   "hashtags": [
+    "#vo2max",
+    "#mediamaraton",
+    "#garmin",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch sobre las predicciones de carrera del reloj: cuatro distancias de ejemplo a partir de un solo dato, por qué suelen salir optimistas y cómo usarlas como techo. Datos de ejemplo."
+  },
+  {
+   "id": "nochebuena",
+   "title": "Hoy, un paseo antes de cenar también cuenta",
+   "bg": "cream",
+   "topic": "Nadal · Navidad",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "24 de desembre",
+     "title": "Avui, una **caminada** abans de sopar també compta.",
+     "size": 108,
+     "body": "Sense comptes i sense números. Mou-te una mica, respira i gaudeix de la nit.",
+     "facts": [
+      "Caminar compta",
+      "Sense números",
+      "Bon Nadal"
+     ]
+    },
+    {
+     "layout": "hook",
+     "kicker": "24 de diciembre",
+     "title": "Hoy, un **paseo** antes de cenar también cuenta.",
+     "size": 108,
+     "body": "Sin cuentas y sin números. Muévete un poco, respira y disfruta de la noche.",
+     "facts": [
+      "Caminar cuenta",
+      "Sin números",
+      "Feliz Navidad"
+     ]
+    }
+   ],
+   "caption": "Avui, una caminada abans de sopar també compta.\n\nSense comptes i sense números. Mou-te una mica, respira i gaudeix de la nit. Caminar també és entrenar, i una volta amb algú és un bon regal.\n\nBon Nadal de part de Runch. Desa'l i passa'l a qui sortiria amb tu.\n\n—\n\nHoy, un paseo antes de cenar también cuenta.\n\nSin cuentas y sin números. Muévete un poco, respira y disfruta de la noche. Caminar también es entrenar, y dar una vuelta con alguien es un buen regalo.\n\nFeliz Navidad de parte de Runch. Guárdalo y pásaselo a quien saldría contigo.",
+   "hashtags": [
+    "#nadal",
+    "#caminar",
+    "#córrer",
+    "#runningcatalunya",
+    "#runch"
+   ],
+   "alt": "Carrusel bilingüe de Runch por Nochebuena: «Avui, una caminada abans de sopar també compta» en catalán y «Hoy, un paseo antes de cenar también cuenta» en castellano."
+  },
+  {
+   "id": "bascula-tendencia",
+   "title": "La báscula cambia cada día. Tu progreso, no",
+   "bg": "cream",
+   "topic": "Empezar desde cero",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Empezar desde cero",
+     "title": "La báscula cambia **cada día**. Tu progreso, no.",
+     "size": 108,
+     "body": "Un número suelto no te cuenta nada. Cuéntalo en semanas, o cuéntalo en otras cosas.",
+     "facts": [
+      "Agua",
+      "Sal",
+      "Hora del día"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Ruido y tendencia",
+     "title": "Un kilo arriba, un kilo abajo: **ruido**.",
+     "size": 84,
+     "visual": {
+      "type": "trend",
+      "title": "Peso diario · 5 semanas",
+      "unit": "kg",
+      "ticks": [
+       73,
+       75
+      ],
+      "min": 72.6,
+      "max": 75.4,
+      "window": 7,
+      "points": [
+       73.8,
+       74.0,
+       74.7,
+       73.9,
+       74.1,
+       74.3,
+       73.6,
+       73.9,
+       74.1,
+       74.5,
+       73.3,
+       73.7,
+       73.4,
+       74.7,
+       74.2,
+       73.1,
+       74.8,
+       74.8,
+       74.3,
+       74.3,
+       73.5,
+       73.0,
+       74.0,
+       73.2,
+       73.4,
+       73.6,
+       73.3,
+       74.1,
+       73.7,
+       74.5,
+       74.0,
+       74.3,
+       74.0,
+       74.4,
+       74.1
+      ],
+      "line": "Tendencia (media de 7 días)"
+     },
+     "body": "Cada punto es un día. La línea casi no se mueve.",
+     "animate": true
+    },
+    {
+     "layout": "points",
+     "kicker": "Qué la mueve",
+     "title": "Y **no eres tú**",
+     "size": 82,
+     "points": [
+      {
+       "title": "Agua y sal",
+       "body": "Una cena salada y la báscula sube. Nada de eso es tu cuerpo a largo plazo."
+      },
+      {
+       "title": "Lo que aún estás digiriendo",
+       "body": "La comida de ayer también pesa."
+      },
+      {
+       "title": "El ciclo y un entreno duro",
+       "body": "Pueden retener líquido unos días."
+      },
+      {
+       "title": "La hora del día",
+       "body": "Por eso: misma hora, mismas condiciones."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cover",
+     "kicker": "Lo que sí mejora antes",
+     "title": "Datos que **mejoran antes** que el peso.",
+     "size": 80,
+     "visual": {
+      "type": "rows",
+      "title": "Seis semanas empezando desde cero",
+      "rows": [
+       {
+        "label": "Minutos seguidos trotando",
+        "detail": "",
+        "value": "3 → 12",
+        "unit": "min"
+       },
+       {
+        "label": "Pulso en reposo",
+        "detail": "",
+        "value": "62 → 58",
+        "unit": "lpm"
+       },
+       {
+        "label": "Pasos al día",
+        "detail": "",
+        "value": "5.200 → 7.800"
+       },
+       {
+        "label": "Sueño",
+        "detail": "",
+        "value": "6:40 → 7:10",
+        "unit": "h"
+       }
+      ]
+     }
+    },
+    {
+     "layout": "cta",
+     "title": "Tu progreso **no cabe** en un número.",
+     "size": 60,
+     "body": "Guárdalo y mándaselo a quien lo necesite oír.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "La báscula cambia cada día. Tu progreso, no.\n\nUn número suelto no te cuenta nada. Agua, sal, lo que has comido ayer, el ciclo, un entreno duro o la hora del día pueden moverla un kilo o más sin que haya cambiado nada. Si te pesas, hazlo en condiciones parecidas (por la mañana, en ayunas) y mira la línea de varias semanas, no el punto de hoy.\n\nY si pesarte te agobia, puedes no hacerlo: el progreso de quien empieza se ve antes en otros sitios. Los minutos seguidos que aguantas trotando, tu pulso en reposo, tus pasos y tu sueño suelen mejorar antes que cualquier número.\n\nCorrer es para todos los cuerpos. El objetivo es la constancia y disfrutar, no un número.\n\nGuárdalo y mándaselo a quien lo necesite oír.",
+   "hashtags": [
+    "#empezaracorrer",
+    "#correrdesdecero",
+    "#constancia",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch: puntos de peso diario que suben y bajan alrededor de una línea de tendencia casi plana, qué mueve la báscula cada día y cuatro datos que mejoran antes en seis semanas empezando desde cero. Datos de ejemplo."
+  },
+  {
+   "id": "comida-entreno",
+   "title": "Lo que comes también entrena",
+   "bg": "sage",
+   "topic": "El porqué",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Nadie te lo dice",
+     "title": "Entrenas con datos. ¿Y **lo que comes**?",
+     "size": 112,
+     "body": "Lo que comes también forma parte del plan.",
+     "facts": [
+      "Proteína",
+      "Hidratos",
+      "Energía"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Un día de ejemplo",
+     "title": "Tu día en **tres números**.",
+     "size": 84,
+     "visual": {
+      "type": "bars",
+      "title": "Gramos al día",
+      "max": 360,
+      "h": 270,
+      "gap": 70,
+      "bars": [
+       {
+        "label": "Proteína",
+        "value": 105,
+        "text": "105 g",
+        "hot": true
+       },
+       {
+        "label": "Hidratos",
+        "value": 290,
+        "text": "290 g"
+       },
+       {
+        "label": "Grasa",
+        "value": 70,
+        "text": "70 g"
+       }
+      ]
+     },
+     "body": "Con una foto de cada plato, la app estima alimentos, gramos y macros."
+    },
+    {
+     "layout": "points",
+     "kicker": "Qué aporta cada uno",
+     "title": "Para **qué** sirve cada cosa",
+     "size": 80,
+     "points": [
+      {
+       "title": "Proteína",
+       "body": "Referencia habitual si entrenas: 1,2-1,6 g por kilo al día. La app lo calcula con tu peso."
+      },
+      {
+       "title": "Hidratos",
+       "body": "El combustible de los rodajes largos y las series."
+      },
+      {
+       "title": "Energía suficiente",
+       "body": "Entrenar mucho y comer poco pasa factura. Si te cuesta, habla con un profesional de la nutrición."
+      }
+     ]
+    },
+    {
+     "layout": "points",
+     "kicker": "Cómo empezar",
+     "title": "Sin **obsesionarte**",
+     "size": 80,
+     "points": [
+      {
+       "title": "Una semana de fotos",
+       "body": "No hace falta pesar nada: foto al plato y la app estima."
+      },
+      {
+       "title": "Mira la semana, no el día",
+       "body": "Un día flojo no es nada."
+      },
+      {
+       "title": "Si te agobia, no lo hagas",
+       "body": "Hay otras formas de cuidar lo que comes."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "¿Qué **comes** antes de tu tirada larga?",
+     "size": 56,
+     "body": "Cuéntalo en comentarios. Y guarda el post.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Entrenas con datos. ¿Y lo que comes?\n\nLo que comes también forma parte del plan, y no hace falta ser perfecto para que ayude. En Runch apuntas lo que comes con una foto (o escribiéndolo) y la app estima alimentos, gramos y macros: proteína, hidratos y grasa.\n\nUna referencia habitual para quien entrena es de 1,2 a 1,6 gramos de proteína por kilo de peso al día; la app la calcula con tu peso. Los hidratos son el combustible de los rodajes largos y las series. Y entrenar mucho comiendo poco pasa factura en cansancio y recuperación: si te cuesta comer lo que necesitas, habla con un profesional de la nutrición.\n\nMira la semana, no el día. Y si apuntar la comida te genera ansiedad, no lo hagas: hay otras formas de cuidarte.\n\nGuárdalo. ¿Qué comes antes de tu tirada larga?",
+   "hashtags": [
+    "#nutricion",
+    "#alimentacion",
+    "#tiradalarga",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch sobre comida y entreno: un día de ejemplo en tres barras de proteína, hidratos y grasa, qué aporta cada una y cómo empezar sin obsesionarse. Datos de ejemplo."
+  },
+  {
+   "id": "chuleta-reloj",
+   "title": "Tu reloj en una página",
+   "bg": "cream",
+   "topic": "Chuleta",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Guárdalo",
+     "title": "Tu reloj **en una página**.",
+     "size": 124,
+     "body": "Doce datos, qué te dicen y qué los mueve. La chuleta de «El porqué».",
+     "facts": [
+      "Descanso",
+      "Carga",
+      "Rendimiento"
+     ]
+    },
+    {
+     "layout": "points",
+     "kicker": "Descanso",
+     "title": "Lo que **dice** tu descanso",
+     "size": 84,
+     "points": [
+      {
+       "title": "HRV",
+       "body": "Variación entre latidos al dormir. Baja con estrés, alcohol, poco sueño o enfermedad."
+      },
+      {
+       "title": "Pulso en reposo",
+       "body": "Si sube 5 o más durante días: fatiga o algo que empieza."
+      },
+      {
+       "title": "Sueño",
+       "body": "7-9 horas para adultos y un horario regular (± 30 min)."
+      },
+      {
+       "title": "Body Battery",
+       "body": "De 0 a 100. Se carga al descansar; lo ideal es levantarte por encima de 70."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "points",
+     "kicker": "Carga",
+     "title": "Lo que **dice** tu carga",
+     "size": 84,
+     "points": [
+      {
+       "title": "Preparación",
+       "body": "Nota de 0 a 100: HRV, sueño, pulso y carga frente a tu normal."
+      },
+      {
+       "title": "Ratio de carga",
+       "body": "Esta semana frente a tu mes. Entre 0,8 y 1,3, zona habitual."
+      },
+      {
+       "title": "Forma y fatiga",
+       "body": "Forma = 6 semanas, fatiga = 7 días. Fatiga por debajo, piernas frescas."
+      },
+      {
+       "title": "Zonas",
+       "body": "Alrededor del 80 % del tiempo en Z1-Z2 para ganar fondo."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "points",
+     "kicker": "Rendimiento",
+     "title": "Lo que **dice** tu rendimiento",
+     "size": 80,
+     "points": [
+      {
+       "title": "Eficiencia aeróbica",
+       "body": "Metros por latido. Si sube, corres más rápido con el mismo esfuerzo."
+      },
+      {
+       "title": "Deriva cardiaca",
+       "body": "Cuánto sube el pulso a igual ritmo. Menos de un 5 %, buena base."
+      },
+      {
+       "title": "VO2máx",
+       "body": "Tu capacidad aeróbica estimada. Sube con constancia, baja tras 3-4 semanas de parón."
+      },
+      {
+       "title": "Estrés",
+       "body": "De 0 a 100 según pulso y HRV. Mide cuánto trabaja tu cuerpo, no tus emociones."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "Guárdala. Y cuando un dato **te asuste**, vuelve aquí.",
+     "size": 52,
+     "body": "Un dato suelto no es un diagnóstico. Dinos qué falta por explicar.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Guárdalo: tu reloj en una página.\n\nDoce datos de «El porqué» en tres tarjetas: qué te dice cada uno y qué lo mueve. HRV, pulso en reposo, sueño, Body Battery, preparación, ratio de carga, forma y fatiga, zonas, eficiencia, deriva cardiaca, VO2máx y estrés.\n\nÚsala cuando un dato te asuste. Un dato suelto no es un diagnóstico: mira la tendencia y cuéntalo en contexto. Si te encuentras mal de forma continuada, habla con tu médico.\n\nGuárdalo y pásaselo a tu grupo de running. Y dinos en comentarios qué dato falta por explicar.",
+   "hashtags": [
+    "#garmin",
+    "#datosderunning",
+    "#entrenamiento",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch tipo chuleta con doce datos del reloj en tres tarjetas: descanso, carga y rendimiento, con una frase de qué dice cada uno."
+  },
+  {
+   "id": "passos",
+   "title": "10.000 passos: un número rodó",
+   "bg": "olive",
+   "topic": "El perquè",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Dada incòmoda",
+     "title": "10.000 passos: un número rodó, **no un llindar màgic**.",
+     "size": 100,
+     "body": "La salut millora de manera gradual a mesura que et mous més. Cada pas suma.",
+     "facts": [
+      "Mou-te més",
+      "Qualsevol pas compta"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "Una setmana d'exemple",
+     "title": "Una setmana de passos, **una mitjana**.",
+     "size": 84,
+     "visual": {
+      "type": "bars",
+      "title": "Passos per dia",
+      "max": 13000,
+      "h": 270,
+      "gap": 18,
+      "fmt": "{:,.0f}",
+      "bars": [
+       {
+        "label": "dl",
+        "value": 6400,
+        "text": "6.400"
+       },
+       {
+        "label": "dt",
+        "value": 8900,
+        "text": "8.900"
+       },
+       {
+        "label": "dc",
+        "value": 7200,
+        "text": "7.200"
+       },
+       {
+        "label": "dj",
+        "value": 5800,
+        "text": "5.800"
+       },
+       {
+        "label": "dv",
+        "value": 9600,
+        "text": "9.600"
+       },
+       {
+        "label": "ds",
+        "value": 11200,
+        "text": "11.200",
+        "hot": true
+       },
+       {
+        "label": "dg",
+        "value": 4300,
+        "text": "4.300"
+       }
+      ],
+      "ref": {
+       "value": 7000,
+       "label": "7.000 · referència"
+      }
+     },
+     "body": "Mitjana d'aquesta setmana: 7.630. Una referència habitual: entre 7.000 i 10.000.",
+     "animate": true
+    },
+    {
+     "layout": "points",
+     "kicker": "Què compten",
+     "title": "Els passos de **veritat**",
+     "size": 84,
+     "points": [
+      {
+       "title": "Tots, no només els de córrer",
+       "body": "Caminar a la feina, passejar el gos, pujar escales."
+      },
+      {
+       "title": "L'objectiu s'adapta",
+       "body": "Garmin l'ajusta cada dia segons el que sols caminar."
+      },
+      {
+       "title": "Passos no són entrenament",
+       "body": "Per saber l'esforç, mira els minuts d'intensitat."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "points",
+     "kicker": "Com pujar-los",
+     "title": "Sense **pensar-hi**",
+     "size": 84,
+     "points": [
+      {
+       "title": "Uns minuts després de dinar",
+       "body": "Fàcil de repetir cada dia."
+      },
+      {
+       "title": "Una parada abans",
+       "body": "Baixa del bus o del tren una abans."
+      },
+      {
+       "title": "Trucades caminant",
+       "body": "Una trucada llarga és una volta."
+      }
+     ],
+     "example": false
+    },
+    {
+     "layout": "cta",
+     "title": "Quants passos has fet **avui**?",
+     "size": 54,
+     "body": "Un número i prou. Els dies de poc moviment també compten per a la mitjana.",
+     "actions": [
+      "Desa",
+      "Envia",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "10.000 passos: un número rodó, no un llindar màgic.\n\nLa salut va millorant de manera gradual a mesura que et mous més, i una referència habitual és entre 7.000 i 10.000 passos al dia. No és una frontera: cada pas suma.\n\nEls passos que compta el rellotge són tots, no només els de córrer: caminar a la feina, passejar el gos, pujar escales. Garmin ajusta l'objectiu cada dia segons el que sols caminar. I recorda: un rodatge suma passos, però no tots els passos entrenen; per saber l'esforç, mira els minuts d'intensitat (la recomanació de l'OMS és de 150 a 300 minuts setmanals).\n\nCom pujar-los sense pensar-hi: passejar uns minuts després de dinar, baixar una parada abans o fer una trucada caminant.\n\nDesa'l. Quants passos has fet avui?",
+   "hashtags": [
+    "#passos",
+    "#caminar",
+    "#garmin",
+    "#córrer",
+    "#runningcatalunya"
+   ],
+   "alt": "Carrusel de Runch en catalán sobre los pasos: una semana de ejemplo en barras con media de 7.630 y la referencia de 7.000, qué cuentan los pasos y tres formas fáciles de sumar. Datos de ejemplo."
+  },
+  {
+   "id": "sant-silvestre",
+   "title": "El dia de la cursa, res de nou",
+   "bg": "cream",
+   "topic": "Truc · Truco",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Sant Silvestre",
+     "title": "El dia de la cursa, **res de nou**.",
+     "size": 116,
+     "body": "Ni bambes, ni gel, ni esmorzar nous. Tot, provat abans en un rodatge.",
+     "facts": [
+      "Bambes provades",
+      "Roba provada",
+      "Esmorzar provat"
+     ]
+    },
+    {
+     "layout": "hook",
+     "kicker": "San Silvestre",
+     "title": "El día de la carrera, **nada nuevo**.",
+     "size": 116,
+     "body": "Ni zapatillas, ni gel, ni desayuno nuevos. Todo, probado antes en un rodaje.",
+     "facts": [
+      "Zapatillas probadas",
+      "Ropa probada",
+      "Desayuno probado"
+     ]
+    }
+   ],
+   "caption": "Sant Silvestre: el dia de la cursa, res de nou.\n\nNi bambes, ni gel, ni esmorzar nous. Tot el que facis el dia de la cursa, que ho hagis provat abans en un rodatge. I després, gaudeix-ne: és una festa.\n\nDesa'l i passa'l al teu grup de running.\n\n—\n\nSan Silvestre: el día de la carrera, nada nuevo.\n\nNi zapatillas, ni gel, ni desayuno nuevos. Todo lo que hagas el día de la carrera, pruébalo antes en un rodaje. Y luego, disfrútala: es una fiesta.\n\nGuárdalo y pásaselo a tu grupo de running.",
+   "hashtags": [
+    "#santsilvestre",
+    "#sansilvestre",
+    "#córrer",
+    "#runningcatalunya",
+    "#running"
+   ],
+   "alt": "Carrusel bilingüe de Runch: «El dia de la cursa, res de nou» en catalán y «El día de la carrera, nada nuevo» en castellano, para la San Silvestre."
+  },
+  {
+   "id": "leer-hoy",
+   "title": "Tu pantalla Hoy en 10 segundos",
+   "bg": "cream",
+   "topic": "Cómo leer",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Cómo leer esta pantalla",
+     "title": "Tu pantalla **Hoy**, en 10 segundos.",
+     "size": 112,
+     "body": "Una nota, una sesión y tres números. El resto, cuando quieras.",
+     "facts": [
+      "Preparación",
+      "Plan",
+      "Sueño y energía"
+     ]
+    },
+    {
+     "layout": "cover",
+     "kicker": "En este orden",
+     "title": "Cuatro cosas, **en este orden**.",
+     "size": 84,
+     "visual": {
+      "type": "annot",
+      "label": "Hoy",
+      "value": "",
+      "inner": {
+       "type": "rows",
+       "rows": [
+        {
+         "label": "Preparación",
+         "detail": "Buena · entreno normal",
+         "value": "74"
+        },
+        {
+         "label": "Hoy en tu plan",
+         "detail": "Rodaje suave · 8 km",
+         "value": "Z2"
+        },
+        {
+         "label": "Sueño",
+         "detail": "Anoche · puntuación 78",
+         "value": "7 h 20"
+        },
+        {
+         "label": "Body Battery",
+         "detail": "Ahora",
+         "value": "64"
+        }
+       ]
+      },
+      "marks": [
+       {
+        "x": -4,
+        "y": 11,
+        "n": 1
+       },
+       {
+        "x": -4,
+        "y": 35,
+        "n": 2
+       },
+       {
+        "x": -4,
+        "y": 59,
+        "n": 3
+       },
+       {
+        "x": -4,
+        "y": 83,
+        "n": 4
+       }
+      ],
+      "notes": [
+       {
+        "title": "Preparación.",
+        "body": "Tu nota de 0 a 100: ¿aprietas o aflojas?"
+       },
+       {
+        "title": "Tu plan.",
+        "body": "La sesión y un consejo, con tu nota en cuenta."
+       },
+       {
+        "title": "Sueño.",
+        "body": "Cómo has dormido anoche."
+       },
+       {
+        "title": "Body Battery.",
+        "body": "Cuánta energía te queda ahora."
+       }
+      ]
+     }
+    },
+    {
+     "layout": "cover",
+     "kicker": "Y si preguntas",
+     "title": "El coach **te responde**.",
+     "size": 88,
+     "visual": {
+      "type": "chat",
+      "messages": [
+       {
+        "from": "user",
+        "text": "¿Hoy aprieto?"
+       },
+       {
+        "from": "coach",
+        "text": "Tu preparación es **74** y hoy toca rodaje suave: adelante, en la parte baja de los ritmos. Si quieres apretar, mejor mañana."
+       }
+      ]
+     },
+     "body": "Con tus datos delante, no con un consejo genérico."
+    },
+    {
+     "layout": "cta",
+     "title": "Abre **Hoy** antes de calzarte.",
+     "size": 60,
+     "body": "Diez segundos que te ahorran un día de piernas pesadas. Guárdalo.",
+     "actions": [
+      "Guarda",
+      "Envía",
+      "Comenta"
+     ]
+    }
+   ],
+   "caption": "Abres la app y no sabes qué mirar. Empieza por aquí.\n\nLa pantalla Hoy tiene un orden: primero tu nota de Preparación (de 0 a 100: ¿día de apretar o de aflojar?), después «Hoy en tu plan» con la sesión y un consejo (con tu nota y el tiempo en cuenta), luego cómo has dormido y cuánta Body Battery te queda, y al final «Cómo te encuentras», donde tu coach lee tu ánimo y tus molestias.\n\nSi quieres preguntar algo, el coach te responde en el chat con tus datos delante.\n\nDiez segundos que te ahorran un día de piernas pesadas. Guárdalo para el primer entrenamiento del año y pásaselo a quien no abre la app.",
+   "hashtags": [
+    "#garmin",
+    "#coach",
+    "#entrenamiento",
+    "#running",
+    "#runnersespaña"
+   ],
+   "alt": "Carrusel de Runch que enseña a leer la pantalla Hoy: una lista de ejemplo con preparación, sesión del plan, sueño, Body Battery y pasos, numerada con lo que mirar primero, y un ejemplo de pregunta al coach. Datos de ejemplo."
+  },
+  {
+   "id": "cierre-de-ano",
+   "title": "Gracias por entender tu reloj con nosotros",
+   "bg": "terracotta",
+   "topic": "Fi d'any · Fin de año",
+   "slides": [
+    {
+     "layout": "hook",
+     "kicker": "Fi d'any",
+     "title": "Gràcies per **entendre el teu rellotge** amb nosaltres.",
+     "size": 108,
+     "body": "Bon any: que el 2027 et trobi corrent al teu ritme i amb ganes de tornar demà.",
+     "facts": [
+      "Bon any",
+      "Al teu ritme",
+      "Ningú es queda enrere"
+     ]
+    },
+    {
+     "layout": "hook",
+     "kicker": "Fin de año",
+     "title": "Gracias por **entender tu reloj** con nosotros.",
+     "size": 108,
+     "body": "Feliz año: que 2027 te encuentre corriendo a tu ritmo y con ganas de volver mañana.",
+     "facts": [
+      "Feliz año",
+      "A tu ritmo",
+      "Nadie se queda atrás"
+     ],
+     "bg": "terracotta"
+    }
+   ],
+   "caption": "Gràcies per entendre el teu rellotge amb nosaltres.\n\nBon any: que el 2027 et trobi corrent al teu ritme i amb ganes de tornar demà. Més «perquès», més rodatges suaus i la mateixa idea de sempre: ningú es queda enrere.\n\nExplica'ns: quina ha estat la teva millor sortida d'aquest any? Als comentaris.\n\n—\n\nGracias por entender tu reloj con nosotros.\n\nFeliz año: que 2027 te encuentre corriendo a tu ritmo y con ganas de volver mañana. Más «porqués», más rodajes suaves y la misma idea de siempre: nadie se queda atrás.\n\nCuéntanos: ¿cuál ha sido tu mejor salida de este año? En comentarios.",
+   "hashtags": [
+    "#añonuevo",
+    "#córrer",
+    "#runningcatalunya",
+    "#running",
+    "#runch"
+   ],
+   "alt": "Carrusel bilingüe de Runch de fin de año: «Gràcies per entendre el teu rellotge amb nosaltres» en catalán y «Gracias por entender tu reloj con nosotros» en castellano.",
+   "inner": "terracotta"
+  }
+ ]
+}

@@ -1,0 +1,973 @@
+{
+ "notes": "Serie «El porqué de tus datos» (dic-2026). porque.py pinta cada reel como reel-pq-<id>.html con kit.css + kit.js; render_video.py --musica lo graba. En los textos, *asteriscos* = cursiva de color. Todos los números son de ejemplo. Sin voz: se lee sin sonido; la música es el bucle propio afro house. coverBg: tono de la portada para el damero de la cuadrícula (claro/color), según marketing/privado/porque/temas-posts.md.",
+ "ui": {
+  "es": {
+   "serie": "El porqué",
+   "why": "El porqué",
+   "do": "Qué hacer",
+   "doTitle": "Y tú, *¿qué haces?*",
+   "example": "Datos de ejemplo",
+   "follow": "Segueix-nos: @runch.run",
+   "facts": [
+    "El porqué",
+    "Qué hacer"
+   ]
+  },
+  "ca": {
+   "serie": "El perquè",
+   "why": "El perquè",
+   "do": "Què fer",
+   "doTitle": "I tu, *què fas?*",
+   "example": "Dades d'exemple",
+   "follow": "Segueix-nos: @runch.run",
+   "facts": [
+    "El perquè",
+    "Què fer"
+   ]
+  }
+ },
+ "reels": [
+  {
+   "id": "reposo",
+   "n": "01",
+   "lang": "es",
+   "schedule": "2026-12-08 21:00",
+   "bg": "olive",
+   "bg3": "sage",
+   "ill": "mirando-reloj",
+   "hook": {
+    "k": "Pulso en reposo",
+    "title": "Sube *antes* de que notes el resfriado.",
+    "size": 137,
+    "sub": "A veces avisa uno o dos días antes que tú."
+   },
+   "why": {
+    "title": "Tu cuerpo trabaja *más.*",
+    "take": "Cuando pelea con algo, el corazón late más deprisa. También mientras duermes."
+   },
+   "chart": {
+    "type": "line",
+    "v": [
+     52,
+     51,
+     52,
+     53,
+     52,
+     51,
+     52,
+     52,
+     53,
+     52,
+     54,
+     56,
+     57,
+     58
+    ],
+    "lo": 47,
+    "hi": 61,
+    "band": [
+     50,
+     54
+    ],
+    "bandLabel": "TU NORMAL · 50–54 LPM",
+    "xl": "HACE 2 SEMANAS",
+    "xr": "HOY",
+    "mark": "+6 lpm",
+    "legend": "Pulso en reposo",
+    "final": "58 lpm",
+    "from": 52
+   },
+   "moves": {
+    "k": "Qué lo mueve",
+    "title": "No siempre es *un virus.*",
+    "rows": [
+     [
+      "Un resfriado en camino",
+      "↑ sube"
+     ],
+     [
+      "Dormir poco o mal",
+      "↑ sube"
+     ],
+     [
+      "Alcohol la noche anterior",
+      "↑ sube"
+     ],
+     [
+      "Un entreno muy duro ayer",
+      "↑ sube"
+     ],
+     [
+      "Meses de constancia",
+      "↓ baja"
+     ]
+    ]
+   },
+   "do": [
+    [
+     "Mira la tendencia",
+     "un día suelto no dice nada."
+    ],
+    [
+     "¿Unos 5 latidos más, varios días?",
+     "afloja: rodaje suave o descanso."
+    ],
+    [
+     "¿Te encuentras mal?",
+     "descansa. El reloj no diagnostica."
+    ]
+   ],
+   "close": {
+    "title": "Tu pulso avisa. *Escúchalo.*",
+    "lead": "Tu normal es tuyo: compárate solo contigo."
+   },
+   "cover": {
+    "k": "Pulso en reposo",
+    "title": "Sube *antes* del resfriado.",
+    "size": 138
+   },
+   "caption": "Tu pulso en reposo puede subir antes de que notes el resfriado.\n\nEl porqué: cuando tu cuerpo pelea con algo (un virus, poco sueño, alcohol, un entreno muy duro), el corazón late más deprisa también en reposo. Por eso el reloj a veces lo ve antes que tú.\n\nQué hacer: mira la tendencia y no un día suelto. Si llevas varios días unos 5 latidos por encima de tu normal, afloja: rodaje suave o descanso. Y si te encuentras mal, descansa; el reloj da pistas, no diagnostica.\n\nGuárdalo para la próxima vez que lo veas subir.\n\nSegueix-nos: @runch.run",
+   "hashtags": [
+    "#pulsoenreposo",
+    "#frecuenciacardiaca",
+    "#recuperacion",
+    "#running",
+    "#garmin"
+   ],
+   "alt": "Vídeo animado de Runch de la serie El porqué de tus datos: gráfico del pulso en reposo de dos semanas que sale por encima de la franja normal, lista de lo que lo sube o lo baja y tres pasos. Datos de ejemplo.",
+   "coverBg": "cream"
+  },
+  {
+   "id": "suave",
+   "n": "02",
+   "lang": "es",
+   "schedule": "2026-12-10 21:00",
+   "bg": "sea",
+   "bg3": "sage",
+   "ill": "corredora-mayor",
+   "hook": {
+    "k": "Rodajes suaves",
+    "title": "Si lo suave no es suave, lo fuerte *no sale.*",
+    "size": 137,
+    "sub": "Y no es por flojear."
+   },
+   "why": {
+    "title": "Cada zona hace *su trabajo.*",
+    "take": "Suave: construyes base y te recuperas. A medias cada día: llegas cansado a las series."
+   },
+   "chart": {
+    "type": "zones",
+    "legend": "Tu semana por zonas de pulso",
+    "rows": [
+     [
+      "Z1",
+      "Muy suave",
+      22
+     ],
+     [
+      "Z2",
+      "Suave",
+      58
+     ],
+     [
+      "Z3",
+      "Medio",
+      6
+     ],
+     [
+      "Z4",
+      "Umbral",
+      9
+     ],
+     [
+      "Z5",
+      "Máximo",
+      5
+     ]
+    ],
+    "tags": [
+     "80 % suave",
+     "20 % exigente"
+    ]
+   },
+   "moves": {
+    "k": "Por qué se te va",
+    "title": "El suave se escapa *sin avisar.*",
+    "rows": [
+     [
+      "El ego",
+      "ir al ritmo del grupo"
+     ],
+     [
+      "El calor",
+      "mismo ritmo, más pulso"
+     ],
+     [
+      "Las cuestas",
+      "el pulso se dispara"
+     ],
+     [
+      "Zonas mal puestas",
+      "máximo de fórmula"
+     ]
+    ]
+   },
+   "do": [
+    [
+     "Test de la charla",
+     "si puedes decir frases enteras, vas suave."
+    ],
+    [
+     "Baja el ritmo sin culpa",
+     "caminar en las cuestas también vale."
+    ],
+    [
+     "Guarda las ganas",
+     "para el día de series."
+    ]
+   ],
+   "close": {
+    "title": "Suave hoy, *fuerte mañana.*",
+    "lead": "8 de cada 10 ratos, a ritmo de charla."
+   },
+   "cover": {
+    "k": "Zonas de pulso",
+    "title": "Por qué lo suave tiene que ser *suave.*",
+    "size": 124
+   },
+   "caption": "Si tus rodajes suaves no son suaves, tus días fuertes no salen.\n\nEl porqué: cada zona hace su trabajo. A ritmo de charla construyes la base y dejas que el cuerpo asimile; los días fuertes dan la velocidad. Si todos los días vas a medias, llegas cansado a las series y ni lo uno ni lo otro.\n\nComo guía: unos 8 de cada 10 ratos suaves y 2 exigentes.\n\nQué hacer: el test de la charla (si puedes decir frases enteras, vas bien), bajar el ritmo sin culpa cuando hace calor o hay cuestas, y guardar las ganas para el día que toca.\n\nPásaselo a quien convierte cada rodaje en una carrera.\n\nSegueix-nos: @runch.run",
+   "hashtags": [
+    "#zona2",
+    "#rodajesuave",
+    "#entrenamiento",
+    "#running",
+    "#garmin"
+   ],
+   "alt": "Vídeo animado de Runch de la serie El porqué de tus datos: barras de una semana por zonas de pulso con el 80 % en zonas suaves, motivos por los que el rodaje suave se acelera y tres consejos. Datos de ejemplo.",
+   "coverBg": "sea"
+  },
+  {
+   "id": "hrv",
+   "n": "03",
+   "lang": "ca",
+   "schedule": "2026-12-15 21:00",
+   "bg": "lavender",
+   "bg3": "sage",
+   "ill": "estirando-taza",
+   "hook": {
+    "k": "HRV · variabilitat del pols",
+    "title": "La teva HRV és 45. La del teu amic, 90. *I no passa res.*",
+    "size": 116,
+    "sub": "No és una nota. És el teu punt de partida."
+   },
+   "why": {
+    "title": "És molt *personal.*",
+    "take": "Mesura quant varia el temps entre batecs mentre dorms. Només val comparar-la amb tu."
+   },
+   "chart": {
+    "type": "line",
+    "v": [
+     45,
+     45,
+     46,
+     46,
+     45,
+     44,
+     44,
+     45,
+     46,
+     47,
+     46,
+     45,
+     44,
+     44,
+     45,
+     46,
+     46,
+     45,
+     45,
+     45,
+     45
+    ],
+    "lo": 37,
+    "hi": 53,
+    "band": [
+     41,
+     49
+    ],
+    "bandLabel": "EL TEU RANG NORMAL · 41–49 MS",
+    "xl": "FA 3 SETMANES",
+    "xr": "AVUI",
+    "mark": "Dins del teu rang",
+    "legend": "Mitjana de 7 nits",
+    "final": "45 ms",
+    "from": 40,
+    "markBand": true
+   },
+   "moves": {
+    "k": "Què la mou",
+    "title": "Puja i baixa *amb la teva vida.*",
+    "rows": [
+     [
+      "Dormir bé",
+      "↑ puja"
+     ],
+     [
+      "Dies suaus",
+      "↑ puja"
+     ],
+     [
+      "Alcohol",
+      "↓ baixa"
+     ],
+     [
+      "Estrès",
+      "↓ baixa"
+     ],
+     [
+      "Entrenar molt fort",
+      "↓ baixa"
+     ]
+    ]
+   },
+   "do": [
+    [
+     "Mira la mitjana de 7 nits",
+     "una nit sola enganya."
+    ],
+    [
+     "Dins del teu rang?",
+     "endavant amb el pla."
+    ],
+    [
+     "Uns dies per sota?",
+     "afluixa: dorm i fes rodatges suaus."
+    ]
+   ],
+   "close": {
+    "title": "El teu normal és *el teu.*",
+    "lead": "Compara't amb tu, no amb el grup."
+   },
+   "cover": {
+    "k": "HRV",
+    "title": "45 o 90? *No passa res.*",
+    "size": 140
+   },
+   "caption": "La teva HRV és 45 i la del teu amic, 90. I no passa res.\n\nEl perquè: la HRV mesura quant varia el temps entre un batec i el següent mentre dorms. Depèn molt de cada persona (edat, genètica, forma), així que comparar-la amb la d'algú altre no diu res. El que compta és la teva mitjana de 7 nits respecte al teu rang normal.\n\nQuè la mou: dormir bé i els dies suaus la pugen; l'alcohol, l'estrès i els entrenaments molt forts la baixen.\n\nQuè fer: dins del teu rang, endavant amb el pla. Uns dies per sota, afluixa: dorm i fes rodatges suaus.\n\nGuarda-t'ho per quan et tornis a comparar.\n\nSegueix-nos: @runch.run",
+   "hashtags": [
+    "#hrv",
+    "#vfc",
+    "#recuperacio",
+    "#running",
+    "#garmin"
+   ],
+   "alt": "Vídeo animat de Runch de la sèrie El perquè de les teves dades: gràfic de la HRV mitjana de 7 nits dins del rang normal de la persona, què la fa pujar o baixar i tres passos. Dades d'exemple.",
+   "coverBg": "lavender"
+  },
+  {
+   "id": "carga",
+   "n": "04",
+   "lang": "es",
+   "schedule": "2026-12-17 21:00",
+   "bg": "espresso",
+   "bg3": "sea",
+   "ill": "cansado-feliz",
+   "hook": {
+    "k": "Carga de entreno",
+    "title": "No es cuánto corres. Es cuánto subes *de golpe.*",
+    "size": 132,
+    "sub": "Tu reloj lo llama ratio de carga."
+   },
+   "why": {
+    "title": "Esta semana vs *tu mes.*",
+    "take": "Músculos, tendones y huesos se adaptan más despacio que tus ganas."
+   },
+   "chart": {
+    "type": "bars",
+    "legend": "Carga por semana",
+    "bars": [
+     [
+      "Sem 1",
+      30
+     ],
+     [
+      "Sem 2",
+      30
+     ],
+     [
+      "Sem 3",
+      30
+     ],
+     [
+      "Esta",
+      54
+     ]
+    ],
+    "avg": 36,
+    "avgLabel": "MEDIA",
+    "ratio": "1,5",
+    "ratioLabel": "Ratio de carga",
+    "zone": "Zona cómoda: 0,8–1,3"
+   },
+   "moves": {
+    "k": "Cuándo se dispara",
+    "title": "Los clásicos del *subidón.*",
+    "rows": [
+     [
+      "Volver de un parón",
+      "como si nada"
+     ],
+     [
+      "Semana de carrera",
+      "más los entrenos"
+     ],
+     [
+      "Apuntarte a todo",
+      "series, tirada y gym"
+     ],
+     [
+      "Vacaciones",
+      "de 3 días a 6"
+     ]
+    ]
+   },
+   "do": [
+    [
+     "Sube poco a poco",
+     "un poco más cada semana, no el doble."
+    ],
+    [
+     "Tras un parón",
+     "vuelve por debajo de donde lo dejaste."
+    ],
+    [
+     "Cada 3 o 4 semanas",
+     "una más ligera, para asimilar."
+    ]
+   ],
+   "close": {
+    "title": "La constancia gana *a las prisas.*",
+    "lead": "El ratio es una guía, no una ley."
+   },
+   "cover": {
+    "k": "Ratio de carga",
+    "title": "No es cuánto. Es cuánto subes *de golpe.*",
+    "size": 124
+   },
+   "caption": "No es cuánto corres: es cuánto subes de golpe.\n\nEl porqué: el ratio de carga compara lo que has hecho esta semana con tu media del último mes. El cuerpo se adapta, pero músculos, tendones y huesos van más despacio que las ganas; los saltos bruscos son los que más suelen pasar factura.\n\nComo guía, entre 0,8 y 1,3 estás subiendo sin pasarte. Bastante por encima: has subido muy deprisa. Es una orientación, no una ley exacta.\n\nQué hacer: sube poco a poco, vuelve de los parones por debajo de donde lo dejaste y mete una semana más ligera cada 3 o 4.\n\nGuárdalo para cuando vuelvas con muchas ganas.\n\nSegueix-nos: @runch.run",
+   "hashtags": [
+    "#cargadeentrenamiento",
+    "#entrenamiento",
+    "#running",
+    "#runnersespaña",
+    "#garmin"
+   ],
+   "alt": "Vídeo animado de Runch de la serie El porqué de tus datos: cuatro barras de carga semanal, la última mucho más alta, con un ratio de carga de 1,5 frente a la zona cómoda de 0,8 a 1,3, situaciones típicas y tres consejos. Datos de ejemplo.",
+   "coverBg": "cream"
+  },
+  {
+   "id": "sueno",
+   "n": "05",
+   "lang": "es",
+   "schedule": "2026-12-22 21:00",
+   "bg": "sea",
+   "bg3": "lavender",
+   "ill": "amanecer",
+   "hook": {
+    "k": "Fases del sueño",
+    "title": "El sueño profundo llega pronto. El REM, *al final.*",
+    "size": 130,
+    "sub": "Por eso no da igual qué trozo de noche recortas."
+   },
+   "why": {
+    "title": "Cada fase hace *una cosa.*",
+    "take": "Profundo: el cuerpo se repara. REM: el cerebro ordena lo aprendido."
+   },
+   "chart": {
+    "type": "phases",
+    "legend": "Una noche típica",
+    "rows": [
+     "Despierto",
+     "REM",
+     "Ligero",
+     "Profundo"
+    ],
+    "seg": [
+     [
+      2,
+      0,
+      12
+     ],
+     [
+      3,
+      12,
+      52
+     ],
+     [
+      2,
+      52,
+      72
+     ],
+     [
+      1,
+      72,
+      82
+     ],
+     [
+      2,
+      82,
+      102
+     ],
+     [
+      3,
+      102,
+      137
+     ],
+     [
+      2,
+      137,
+      160
+     ],
+     [
+      1,
+      160,
+      176
+     ],
+     [
+      2,
+      176,
+      215
+     ],
+     [
+      3,
+      215,
+      230
+     ],
+     [
+      2,
+      230,
+      255
+     ],
+     [
+      1,
+      255,
+      279
+     ],
+     [
+      0,
+      279,
+      283
+     ],
+     [
+      2,
+      283,
+      337
+     ],
+     [
+      1,
+      337,
+      365
+     ],
+     [
+      2,
+      365,
+      417
+     ],
+     [
+      1,
+      417,
+      447
+     ],
+     [
+      0,
+      447,
+      450
+     ]
+    ],
+    "total": 450,
+    "xl": "23:30",
+    "xr": "07:00",
+    "tags": [
+     "Más profundo",
+     "Más REM"
+    ]
+   },
+   "moves": {
+    "k": "Qué lo estropea",
+    "title": "Los enemigos de *la noche.*",
+    "rows": [
+     [
+      "Alcohol",
+      "menos REM, más despertares"
+     ],
+     [
+      "Cenar tarde y fuerte",
+      "noche más inquieta"
+     ],
+     [
+      "Pantallas hasta tarde",
+      "te duermes más tarde"
+     ],
+     [
+      "Horario cambiante",
+      "el cuerpo se desordena"
+     ]
+    ]
+   },
+   "do": [
+    [
+     "Misma hora cada día",
+     "también el finde, más o menos media hora."
+    ],
+    [
+     "Cena 2 o 3 horas antes",
+     "y sin alcohol si mañana entrenas."
+    ],
+    [
+     "No te obsesiones con las fases",
+     "el reloj las estima. Mira la semana."
+    ]
+   ],
+   "close": {
+    "title": "Dormir también *es entrenar.*",
+    "lead": "La mayoría de adultos necesita de 7 a 9 horas."
+   },
+   "cover": {
+    "k": "Fases del sueño",
+    "title": "Profundo pronto. REM *al final.*",
+    "size": 136
+   },
+   "caption": "El sueño profundo llega sobre todo al principio de la noche. El REM, hacia el final.\n\nEl porqué: cada fase hace una cosa. En el profundo el cuerpo se repara; en el REM el cerebro ordena lo aprendido. Por eso no da igual qué trozo recortas: si te acuestas a tu hora pero madrugas mucho, lo que pierdes es sobre todo REM.\n\nQué lo estropea: el alcohol, cenar tarde y fuerte, las pantallas hasta tarde y cambiar de horario cada día.\n\nQué hacer: misma hora cada día (también el finde), cenar 2 o 3 horas antes y no obsesionarte con las fases: el reloj las estima, no las mide como en un laboratorio. Mira la semana, no una noche.\n\nGuárdalo y esta noche, a tu hora.\n\nSegueix-nos: @runch.run",
+   "hashtags": [
+    "#sueño",
+    "#descanso",
+    "#recuperacion",
+    "#running",
+    "#garmin"
+   ],
+   "alt": "Vídeo animado de Runch de la serie El porqué de tus datos: gráfico de las fases de una noche, con el sueño profundo concentrado al principio y el REM al final, lo que estropea el sueño y tres consejos. Datos de ejemplo.",
+   "coverBg": "cream"
+  },
+  {
+   "id": "peso",
+   "n": "06",
+   "lang": "ca",
+   "schedule": "2026-12-24 21:00",
+   "bg": "olive",
+   "bg3": "sage",
+   "ill": "yema-cafe",
+   "hook": {
+    "k": "El pes · tendència",
+    "title": "Ahir vas sopar fort i avui peses 1 kg més. *No és greix.*",
+    "size": 116,
+    "sub": "Respira. I mira la setmana."
+   },
+   "why": {
+    "title": "És aigua, *sobretot.*",
+    "take": "D'un dia per l'altre canvien l'aigua, la sal i el que encara tens a la panxa."
+   },
+   "chart": {
+    "type": "weight",
+    "legend": "Punts: dies · Línia: mitjana",
+    "dots": [
+     72.4,
+     71.9,
+     72.6,
+     72.0,
+     72.3,
+     71.7,
+     72.2,
+     71.8,
+     72.5,
+     71.9,
+     72.1,
+     71.6,
+     72.0,
+     73.0
+    ],
+    "lo": 71.2,
+    "hi": 73.4,
+    "xl": "FA 2 SETMANES",
+    "xr": "AVUI",
+    "mark": "+1,0 kg",
+    "final": "72,1 kg",
+    "finalLabel": "Mitjana de 7 dies"
+   },
+   "moves": {
+    "k": "Què mou la bàscula",
+    "title": "D'un dia *per l'altre.*",
+    "rows": [
+     [
+      "Un sopar salat",
+      "retens aigua"
+     ],
+     [
+      "Molts hidrats",
+      "glicogen i aigua"
+     ],
+     [
+      "Un entrenament dur",
+      "retens líquid uns dies"
+     ],
+     [
+      "Suar molt",
+      "baixa, i torna"
+     ],
+     [
+      "L'hora de pesar-te",
+      "matí i vespre no pesen igual"
+     ]
+    ]
+   },
+   "do": [
+    [
+     "Pesa't sempre igual",
+     "en llevar-te, després d'anar al lavabo."
+    ],
+    [
+     "Mira la mitjana de 7 dies",
+     "la línia, no els punts."
+    ],
+    [
+     "Un àpat de festa és un punt",
+     "la tendència ni se n'adona."
+    ]
+   ],
+   "close": {
+    "title": "Bones festes. *I bona tendència.*",
+    "lead": "Un dia no et canvia. El que fas la majoria de dies, sí."
+   },
+   "cover": {
+    "k": "El pes",
+    "title": "1 kg més d'un dia per l'altre? *No és greix.*",
+    "size": 120
+   },
+   "caption": "Ahir vas sopar fort i avui la bàscula marca 1 kg més. No és greix.\n\nEl perquè: d'un dia per l'altre el que canvia és sobretot l'aigua. La sal i els hidrats en retenen, el menjar encara és a la panxa i un entrenament dur també fa retenir líquid uns dies. El greix no es mou tan de pressa.\n\nQuè fer: pesa't sempre igual (en llevar-te, després d'anar al lavabo) i mira la mitjana de 7 dies: la línia, no els punts. Un àpat de festa és un punt; la tendència ni se n'adona.\n\nBones festes. I bona tendència.\n\nSegueix-nos: @runch.run",
+   "hashtags": [
+    "#pes",
+    "#tendencia",
+    "#nadal",
+    "#running",
+    "#garmin"
+   ],
+   "alt": "Vídeo animat de Runch de la sèrie El perquè de les teves dades: punts del pes diari que pugen i baixen al voltant d'una línia estable, la mitjana de 7 dies, amb un pic d'un quilo l'últim dia, què mou la bàscula i tres passos. Dades d'exemple.",
+   "coverBg": "olive"
+  },
+  {
+   "id": "desacople",
+   "n": "07",
+   "lang": "es",
+   "schedule": "2026-12-29 21:00",
+   "bg": "espresso",
+   "bg3": "sea",
+   "ill": "corriendo-perro",
+   "hook": {
+    "k": "Rodaje largo",
+    "title": "Mismo ritmo, y el pulso *sigue subiendo.*",
+    "size": 139,
+    "sub": "No es el reloj. Tiene nombre."
+   },
+   "why": {
+    "title": "Se llama *desacople.*",
+    "take": "Con los minutos pierdes líquido y coges calor: el corazón late más para hacer lo mismo."
+   },
+   "chart": {
+    "type": "line",
+    "v": [
+     138,
+     139,
+     141,
+     142,
+     143,
+     145,
+     146,
+     148,
+     149,
+     151,
+     152,
+     153,
+     155,
+     156
+    ],
+    "v2": [
+     146,
+     146,
+     146,
+     146,
+     146,
+     146,
+     146,
+     146,
+     146,
+     146,
+     146,
+     146,
+     146,
+     146
+    ],
+    "lo": 134,
+    "hi": 162,
+    "xl": "MIN 10",
+    "xr": "MIN 70",
+    "mark": "+7 %",
+    "legend": "Pulso",
+    "legend2": "Ritmo: 5:45 /km, estable",
+    "final": "156 lpm",
+    "from": 138
+   },
+   "moves": {
+    "k": "Qué lo aumenta",
+    "title": "Cuándo se nota *más.*",
+    "rows": [
+     [
+      "Calor y humedad",
+      "el clásico"
+     ],
+     [
+      "Beber poco",
+      "en tiradas largas"
+     ],
+     [
+      "Salir demasiado rápido",
+      "lo pagas al final"
+     ],
+     [
+      "Poca base todavía",
+      "mejora con meses de suaves"
+     ]
+    ]
+   },
+   "do": [
+    [
+     "Compara rodajes parecidos",
+     "mismo terreno y duración."
+    ],
+    [
+     "¿Menos de un 5 %?",
+     "buena señal: tu base aguanta ese ritmo."
+    ],
+    [
+     "¿Sube mucho?",
+     "sal más suave y bebe en las tiradas."
+    ]
+   ],
+   "close": {
+    "title": "Mismo pulso y más rápido: *vas mejorando.*",
+    "lead": "Eso es la eficiencia aeróbica."
+   },
+   "cover": {
+    "k": "Desacople",
+    "title": "Mismo ritmo, y el pulso *sube.*",
+    "size": 138
+   },
+   "caption": "Mismo ritmo y el pulso sigue subiendo. No es el reloj: se llama desacople (o deriva del pulso).\n\nEl porqué: con los minutos pierdes líquido y sube tu temperatura, así que el corazón tiene que latir más para mantener el mismo ritmo. Con calor, humedad o si has salido rápido, se nota más.\n\nComo guía, en un rodaje largo y estable, que suba menos de un 5 % es buena señal: tu base aguanta ese ritmo. Compara siempre rodajes parecidos.\n\nY la otra cara: si con el mismo pulso cada vez vas un poco más rápido, tu eficiencia aeróbica mejora.\n\nGuárdalo para tu próxima tirada larga.\n\nSegueix-nos: @runch.run",
+   "hashtags": [
+    "#tiradalarga",
+    "#eficienciaaerobica",
+    "#entrenamiento",
+    "#running",
+    "#garmin"
+   ],
+   "alt": "Vídeo animado de Runch de la serie El porqué de tus datos: gráfico de un rodaje de 70 minutos con el ritmo estable y el pulso subiendo un 7 %, lo que aumenta el desacople y tres consejos. Datos de ejemplo.",
+   "coverBg": "espresso"
+  },
+  {
+   "id": "preparacion",
+   "n": "08",
+   "lang": "es",
+   "schedule": "2026-12-31 21:00",
+   "bg": "olive",
+   "bg3": "sage",
+   "ill": "corredor-1",
+   "hook": {
+    "k": "Preparación",
+    "title": "¿Hoy toca apretar o aflojar? *Tu cuerpo ya lo sabe.*",
+    "size": 125,
+    "sub": "Y te lo dice con una nota."
+   },
+   "why": {
+    "title": "Una nota, *cuatro señales.*",
+    "take": "Tu HRV y tu pulso se comparan con tu normal, no con los de nadie más."
+   },
+   "chart": {
+    "type": "parts",
+    "score": 72,
+    "label": "Entreno normal",
+    "legend": "Preparación de hoy",
+    "rows": [
+     [
+      "HRV",
+      78
+     ],
+     [
+      "Sueño",
+      64
+     ],
+     [
+      "Pulso en reposo",
+      75
+     ],
+     [
+      "Carga reciente",
+      70
+     ]
+    ]
+   },
+   "moves": {
+    "k": "Cómo leerla",
+    "title": "De 0 a 100, *en cuatro tramos.*",
+    "rows": [
+     [
+      "80 o más",
+      "día para apretar"
+     ],
+     [
+      "De 60 a 79",
+      "entreno normal"
+     ],
+     [
+      "De 40 a 59",
+      "mejor suave"
+     ],
+     [
+      "Menos de 40",
+      "descanso"
+     ]
+    ]
+   },
+   "do": [
+    [
+     "Mírala antes de salir",
+     "y ajusta el plan del día."
+    ],
+    [
+     "Una nota baja no es un fracaso",
+     "es información."
+    ],
+    [
+     "Tus sensaciones también cuentan",
+     "si la nota dice sí y tú no, hazte caso."
+    ]
+   ],
+   "close": {
+    "title": "En 2027, entrena *con cabeza.*",
+    "lead": "Feliz año. Nos vemos en el primer rodaje."
+   },
+   "cover": {
+    "k": "Preparación",
+    "title": "¿Apretar o aflojar? *Tu cuerpo lo sabe.*",
+    "size": 128
+   },
+   "caption": "¿Hoy toca apretar o aflojar? Tu cuerpo ya lo sabe, y la Preparación te lo resume en una nota de 0 a 100.\n\nEl porqué: junta cuatro señales (HRV, sueño, pulso en reposo y carga reciente) y mira tu HRV y tu pulso frente a tu normal de las últimas semanas, no frente a los de nadie más.\n\nCómo leerla en Runch: 80 o más, día para apretar; de 60 a 79, entreno normal; de 40 a 59, mejor suave; menos de 40, descanso.\n\nUna nota baja no es un fracaso: es información. Y tus sensaciones también cuentan; si la nota dice sí y tú no, hazte caso.\n\nFeliz año. En 2027, a entrenar con cabeza.\n\nSegueix-nos: @runch.run",
+   "hashtags": [
+    "#recuperacion",
+    "#entrenamiento",
+    "#running",
+    "#runnersespaña",
+    "#garmin"
+   ],
+   "alt": "Vídeo animado de Runch de la serie El porqué de tus datos: anillo de Preparación con una nota de 72 y cuatro barras (HRV, sueño, pulso en reposo y carga reciente), los cuatro tramos de la nota y tres consejos. Datos de ejemplo.",
+   "coverBg": "cream"
+  }
+ ]
+}

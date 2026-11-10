@@ -17,6 +17,12 @@ Salida en out/stories/calendario/: `AAAA-MM-DD_HHMM_N-idioma.mp4` (9 s, 30 fps, 
 hecha por código en marketing/marca/musica/afro_house.py, a −14 LUFS, AAC 160k), su póster `.png`, una hoja de contacto por semana y GUIA.md.
 Cada fotograma se pinta llamando a render(t) en la página; el primero y el último son iguales (fondo y logotipo).
 
+Con `--cal=stories-porque.json` se pinta otro calendario (serie «El porqué de tus datos», dic-2026) en
+out/<carpeta>/stories/<"out" del JSON>/, sin tocar GUIA.md del calendario normal. Ese calendario usa además los tipos
+`dato` («Dato del día»: cifra gigante, etiqueta y su porqué en una frase), `mito` («Mito o realidad»: la frase, el
+veredicto que salta a los 2,6 s y el porqué), `quiz` (pregunta a las 09:00 con hueco para el sticker de quiz) y `reel`
+con `"hour": "21:00"`; cada día puede llevar `post` (el tema del post de las 19:00, que sale abajo como recordatorio).
+
 Con `--out=carpeta` (relativa a out/, p. ej. `--out=olivo`) las portadas de los posts se toman de out/<carpeta>/ (si
 no están, de out/) y todo sale en out/<carpeta>/stories/calendario/.
 """
@@ -42,8 +48,9 @@ from templates import ILL_DIR, ILLUS, ffmpeg_bin, stamp, wordmark_letters  # noq
 
 BASE = HERE / "out"
 SRC = Path(os.environ.get("RUNCH_STORIES_ROOT", BASE))   # raíz de las portadas (y de la salida); ver --out
-OUT = SRC / "stories" / "calendario"
-COPY = HERE / "stories-calendario.json"
+COPY = HERE / os.environ.get("RUNCH_STORIES_CAL", "stories-calendario.json")
+MAIN_CAL = COPY.name == "stories-calendario.json"   # el calendario normal: con GUIA.md
+OUT = SRC / "stories" / (json.loads(COPY.read_text()).get("out", "calendario") if COPY.exists() else "calendario")
 LOOP = MARCA / "musica" / "afro-house-120bpm.wav"  # música propia (afro house, 120 bpm), la hace musica/afro_house.py
 W, H = 1080, 1920
 FPS, DUR = 30, 9.0
@@ -77,7 +84,10 @@ T = {  # textos fijos de la maqueta
            "count_cta": "Comenta al post del repte", "last_cta": "Comenta al repte fins a les 23:59",
            "draw_k": "Repte Runch · sorteig", "draw_hero": "Avui", "draw_chip": "Sorteig",
            "draw_cta": "I a les 19:00, nou post",
-           "turn_k": "El teu torn", "turn_cta": "Vota i mira què diu la resta", "turn_body": "I a les 19:00, nou post al feed.", "zone": "Enganxa aquí l'enquesta"},
+           "turn_k": "El teu torn", "turn_cta": "Vota i mira què diu la resta", "turn_body": "I a les 19:00, nou post al feed.", "zone": "Enganxa aquí l'enquesta",
+           "dato_k": "Dada del dia", "mito_k": "Mite o realitat?", "verdict": {"mito": "Mite", "real": "Realitat"},
+           "quiz_k": "Quiz · tria'n una", "quiz_cta": "Tria i mira si l'encertes", "quiz_zone": "Enganxa aquí el quiz",
+           "post": "Avui a les 19:00, al feed: {p}."},
     "es": {"today": "Hoy a las", "reel_today": "Hoy reel", "new": "Nuevo post", "reel": "Reel",
            "reel_cta": "Míralo con sonido", "stamp": "UN POST CADA DÍA · A LAS 19:00 · ",
            "reto_k": "Reto Runch · hoy a las 19:00", "reto_l": ["accesos", "beta"], "reto_s": "de 3 meses",
@@ -86,7 +96,10 @@ T = {  # textos fijos de la maqueta
            "count_cta": "Comenta en el post del reto", "last_cta": "Comenta en el reto hasta las 23:59",
            "draw_k": "Reto Runch · sorteo", "draw_hero": "Hoy", "draw_chip": "Sorteo",
            "draw_cta": "Y a las 19:00, nuevo post",
-           "turn_k": "Tu turno", "turn_cta": "Vota y mira qué dice el resto", "turn_body": "Y a las 19:00, nuevo post en el feed.", "zone": "Pega aquí la encuesta"},
+           "turn_k": "Tu turno", "turn_cta": "Vota y mira qué dice el resto", "turn_body": "Y a las 19:00, nuevo post en el feed.", "zone": "Pega aquí la encuesta",
+           "dato_k": "Dato del día", "mito_k": "¿Mito o realidad?", "verdict": {"mito": "Mito", "real": "Realidad"},
+           "quiz_k": "Quiz · elige una", "quiz_cta": "Elige y mira si aciertas", "quiz_zone": "Pega aquí el quiz",
+           "post": "Hoy a las 19:00, en el feed: {p}."},
 }
 RETO_END = dt.date(2026, 11, 25)
 
@@ -202,7 +215,7 @@ def teaser(s: dict, th: dict) -> str:
     out = [top,
            at(90, 500 if s.get("count") else 486, f'<div class="day">{html.escape(t["reel_today"] if reel else t["today"])}</div>', 0,
               A("rise", .25, .6, y=40)),
-           hero("19:00", 66, 630, 314),
+           hero(s.get("hour") or "19:00", 66, 630, 314),
            f'<div class="abs" style="left:90px;top:950px;width:900px"><div class="an hook" data-maxh="175" '
            f'{A("fade", .95, .7)}>{rich(s["hook"])}</div></div>']
     chip = t["reel"] if reel else t["new"]
@@ -260,30 +273,90 @@ def tu_turno(s: dict, th: dict) -> str:
     """Domingo 12:00: la pregunta arriba, el hueco libre en medio para la encuesta y la corredora con la taza."""
     t = T[s["lang"]]
     q = s["turn"]
+    quiz = s["kind"] == "quiz"
+    body = post_line(s)
     lines = []
     for i, ln in enumerate(q["lines"]):
         cls = "hi" if ln.startswith("*") else ""
         lines.append(f'<div class="ln"><span class="an {cls}" {A("pop" if cls else "rise", .3 + i * .13, .7, y=50, r=-8)}>'
                      f'{rich(ln) if not cls else html.escape(ln.replace("*", ""))}</span></div>')
     x, y, w, h = ZONE
-    zone = (f'<div class="abs zone" style="left:{x}px;top:{y}px;width:{w}px;height:{h}px"><div><b>{t["zone"]}</b>'
+    zone = (f'<div class="abs zone" style="left:{x}px;top:{y}px;width:{w}px;height:{h}px"><div><b>{t["quiz_zone" if quiz else "zone"]}</b>'
             f'<span>Business Suite · {w} × {h} px</span><span>{" / ".join(html.escape(o) for o in q["options"])}</span>'
             f'</div></div>') if s.get("guide") else ""
     ill = s.get("ill") or "corredor-2"
     l, tt, r, b = ILL[ill]["box"]
-    fw = min(330, 290 * (r - l) / (b - tt))
+    fh, fy = (290, 1300) if MAIN_CAL else (228, 1362)   # en «El porqué» la figura no pisa el hueco del sticker
+    fw = min(330, fh * (r - l) / (b - tt))
     return "".join([
-        kicker(t["turn_k"]),
+        kicker(t["quiz_k" if quiz else "turn_k"]),
         f'<div class="abs" style="left:84px;top:505px"><div class="q" data-maxw="910">{"".join(lines)}</div></div>',
         zone,
-        fit_figure(ill, th["ill"], 130, 1300, fw, 290, 1.0, "left"),
-        f'<div class="abs" style="left:{130 + fw + 34:.0f}px;top:1430px;width:{950 - 130 - fw - 34:.0f}px"><div class="an hook small" {A("fade", 1.3, .7)}>'
-        f'{html.escape(t["turn_body"])}</div></div>',
-        pill(t["turn_cta"], 1.6),
+        fit_figure(ill, th["ill"], 130, fy, fw, fh, 1.0, "left"),
+        f'<div class="abs" style="left:{130 + fw + 34:.0f}px;top:{1400 if s.get("post") else 1430}px;width:{950 - 130 - fw - 34:.0f}px"><div class="an hook small" data-maxh="190" {A("fade", 1.3, .7)}>'
+        f'{html.escape(body)}</div></div>',
+        pill(t["quiz_cta" if quiz else "turn_cta"], 1.6),
     ])
 
 
-LAYOUTS = {"teaser": teaser, "reel": teaser, "reto": reto, "sorteo": sorteo, "turno": tu_turno}
+def post_line(s: dict) -> str:
+    """Recordatorio del post de las 19:00 («Hoy a las 19:00, en el feed: …») o, si el día no lo lleva, el texto fijo."""
+    t = T[s["lang"]]
+    if not s.get("post"):
+        return t["turn_body"]
+    txt = t["post"].format(p=s["post"])
+    return txt[:-1] if txt[-2] in "?!»" else txt
+
+
+def foot(s: dict, th: dict, d: float = 1.3) -> str:
+    """Pie de «dato» y «mito»: la ilustración a la izquierda y, al lado, el recordatorio del post de las 19:00."""
+    t = T[s["lang"]]
+    ill = s.get("ill") or "corredor-2"
+    l, tt, r, b = ILL[ill]["box"]
+    fw = min(330, 250 * (r - l) / (b - tt))
+    body = post_line(s)
+    return (fit_figure(ill, th["ill"], 110, 1335, fw, 250, d, "left")
+            + f'<div class="abs" style="left:{110 + fw + 36:.0f}px;top:1385px;width:{990 - 110 - fw - 36:.0f}px">'
+              f'<div class="an hook small" data-maxh="190" {A("fade", d + .3, .7)}>{html.escape(body)}</div></div>')
+
+
+def dato(s: dict, th: dict) -> str:
+    """«Dato del día»: una cifra gigante, su etiqueta en una pegatina y el porqué en una frase."""
+    t = T[s["lang"]]
+    return "".join([
+        kicker(t["dato_k"]),
+        hero(s["hero"], 66, 520, 330, .3, -4),
+        at(120, 815, f'<div class="sticker" data-maxw="840">{html.escape(s["unit"])}</div>', 3, A("pop", .9, .8, r=10)),
+        f'<div class="abs" style="left:90px;top:975px;width:900px"><div class="an hook why" data-maxh="330" '
+        f'{A("fade", 1.25, .7)}>{rich(s["why"])}</div></div>',
+        foot(s, th, 1.6),
+        pill(s["cta"], 2.2),
+    ])
+
+
+def mito(s: dict, th: dict) -> str:
+    """«Mito o realidad»: la frase entre comillas, el veredicto que salta a los 2,6 s (da tiempo a pensarlo) y el porqué."""
+    t = T[s["lang"]]
+    lines = "".join(f'<div class="ln"><span class="an" {A("rise", .3 + i * .13, .7, y=50)}>{html.escape(ln)}</span></div>'
+                    for i, ln in enumerate(s["claim"]))
+    n = len(s["claim"])
+    y = 505 + n * 92 + 22
+    return "".join([
+        kicker(t["mito_k"]),
+        f'<div class="abs" style="left:84px;top:505px"><div class="q claim" data-maxw="910">{lines}</div></div>',
+        f'<div class="abs" style="right:84px;top:{y}px;transform:rotate(-6deg)"><div class="an" {A("pop", 2.6, .8, r=-16)}>'
+        f'<div class="verdict">{html.escape(t["verdict"][s["verdict"]])}</div></div></div>',
+        f'<div class="abs" style="left:90px;top:{y + 152}px;width:900px"><div class="an hook why" data-maxh="{1335 - y - 160}" '
+        f'{A("fade", 3.2, .7)}>{rich(s["why"])}</div></div>',
+        foot(s, th, 1.2),
+        pill(s["cta"], 3.8),
+    ])
+
+
+LAYOUTS_EXTRA = {"dato": dato, "mito": mito, "quiz": tu_turno}
+
+
+LAYOUTS = {"teaser": teaser, "reel": teaser, "reto": reto, "sorteo": sorteo, "turno": tu_turno, **LAYOUTS_EXTRA}
 
 
 def page(s: dict) -> str:
@@ -323,6 +396,10 @@ html,body{{margin:0;padding:0;width:{W}px;height:{H}px;overflow:hidden}}
 .q .hi {{ border-radius:999px; padding:0 .28em .1em; margin:.04em 0 .06em -.06em; }}
 .zone {{ border:6px dashed {ink}; border-radius:36px; display:grid; place-items:center; text-align:center; opacity:.8; }}
 .zone b {{ display:block; font: 800 54px Gluten; }}
+.hook.why {{ font-size:54px; line-height:1.22; }}
+.q.claim {{ font-size:84px; line-height:1.095; }}
+.verdict {{ background:{cbg}; color:{cink}; font: 900 92px/1 Gluten; padding:14px 40px 26px; border-radius:999px;
+  box-shadow: 8px 10px 0 {sh}; white-space:nowrap; }}
 .zone span {{ display:block; font: 500 30px GSF; margin-top:8px; }}
 """
     body = LAYOUTS[s["kind"]](s, th).replace("{WM}", "")
@@ -443,23 +520,30 @@ def plan() -> list[dict]:
         left = (RETO_END - date).days
         for lang, n in LANGS:
             t = T[lang]
-            cover = day["cover"][lang] if isinstance(day["cover"], dict) else day["cover"]
+            pick = lambda v: v[lang] if isinstance(v, dict) and lang in v else v  # noqa: E731
+            cover = pick(day.get("cover"))
             s = dict(date=day["date"], time="0900", n=n, lang=lang, kind=kind, bg=bg, variant=i, ill=day.get("ill"),
-                     cover=cover_path(cover), hook=day["hook"][lang],
+                     cover=cover_path(cover) if cover else None, hook=pick(day.get("hook", "")),
                      date_label=f'{DAYS[lang][date.weekday()]} {date.day} {MONTHS[lang][date.month]}',
                      cta=data["cta"][lang][i % len(data["cta"][lang])])
+            for k in ("claim", "why", "unit", "hero", "post", "turn", "verdict", "hour"):   # tipos de «El porqué»
+                if k in day:
+                    s[k] = pick(day[k])
             if kind == "reel":
                 s["cta"] = t["reel_cta"]
+            if kind in data.get("cta_kind", {}):
+                c = data["cta_kind"][kind]
+                s["cta"] = pick(c.get(day.get("verdict"), c) if kind == "mito" else c)
             if date > dt.date(2026, 11, 18) and left >= 0 and kind == "teaser":
                 word = t["left"][0] if left == 0 else t["left"][1] if left == 1 else t["left"][2].format(n=left)
                 s["count"] = t["count"].format(n=word)
                 s["cta"] = t["last_cta"] if left == 0 else t["count_cta"]
             out.append(s)
-        if day["date"] in data["tu_turno"]:
+        if day["date"] in data.get("tu_turno", {}):
             tbg = next(c for c in ["espresso", "sea", "olive"] if c != bg)
             for lang, n in LANGS:
                 out.append(dict(date=day["date"], time="1200", n=n + 2, lang=lang, kind="turno", bg=tbg,
-                                turn=data["tu_turno"][day["date"]][lang], hook="",
+                                turn=data["tu_turno"][day["date"]][lang], hook="", post=(day.get("post") or {}).get(lang),
                                 ill=data["tu_turno"][day["date"]].get("ill")))
     return out
 
@@ -516,7 +600,7 @@ def _one(r, s: dict, video: bool, m4a: Path | None) -> str:
     pg = r.pg
     pg.set_viewport_size({"width": W, "height": H})
     msgs = []
-    for guide in ([False, True] if s["kind"] == "turno" else [False]):
+    for guide in ([False, True] if s["kind"] in ("turno", "quiz") else [False]):
         tmp = OUT / f"{nm}{'-guia' if guide else ''}.tmp.html"
         tmp.write_text(page({**s, "guide": guide}))
         pg.goto(tmp.as_uri())
@@ -546,7 +630,15 @@ def record(pg, mp4: Path, m4a: Path) -> None:
                           "-c:a", "copy", "-t", str(DUR), "-movflags", "+faststart", str(mp4)], stdin=subprocess.PIPE)
     for f in range(n):
         pg.evaluate(f"window.render({f / FPS})")
-        p.stdin.write(pg.screenshot())
+        for k in range(5):   # con la máquina muy cargada Chromium a veces falla una captura: se reintenta
+            try:
+                png = pg.screenshot()
+                break
+            except Exception:  # noqa: BLE001
+                if k == 4:
+                    raise
+                pg.wait_for_timeout(1500)
+        p.stdin.write(png)
     p.stdin.close()
     if p.wait():
         raise RuntimeError(f"ffmpeg falló con {mp4.name}")
@@ -719,10 +811,18 @@ def remux_all(stories: list[dict]) -> None:
 
 def main() -> None:
     global SRC, OUT
+    global COPY, MAIN_CAL
+    cal = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--cal=")), "")
+    if cal:   # otro calendario (p. ej. stories-porque.json); los procesos hijos lo leen de la variable de entorno
+        os.environ["RUNCH_STORIES_CAL"] = cal
+        COPY = HERE / cal
+        MAIN_CAL = COPY.name == "stories-calendario.json"
+    folder = json.loads(COPY.read_text()).get("out", "calendario")
+    OUT = SRC / "stories" / folder
     sub = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--out=")), "")
     if sub:   # los procesos hijos leen la raíz de la variable de entorno
         SRC = BASE / sub
-        OUT = SRC / "stories" / "calendario"
+        OUT = SRC / "stories" / folder
         os.environ["RUNCH_STORIES_ROOT"] = str(SRC)
     video = "--sin-video" not in sys.argv
     jobs_n = next((int(a.split("=")[1]) for a in sys.argv if a.startswith("--jobs=")), 4)
@@ -754,8 +854,9 @@ def main() -> None:
         with Renderer() as r:
             for p in contact_sheets(r, everything):
                 print("hoja", p.name)
-        (OUT / "GUIA.md").write_text(guide_md(everything))
-        print("GUIA.md")
+        if MAIN_CAL:   # la guía de «El porqué» (reels + stories) va aparte: marketing/privado/porque/guia-video.md
+            (OUT / "GUIA.md").write_text(guide_md(everything))
+            print("GUIA.md")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,779 @@
+{
+ "notes": "Stories de la serie «El porqué de tus datos», 4 a 31-dic de 2026 (las pinta stories.py --cal=stories-porque.json). Cada día a las 09:00, 1 catalán y 2 castellano: lunes y viernes «Mito o realidad» (mito), sábado y domingo «Dato del día» (dato), miércoles quiz con hueco para el sticker (quiz), martes y jueves «Hoy reel» a las 21:00 (reel). Domingos 12:00, «Tu turno» con hueco para la encuesta (3 y 4). post: tema del post de las 19:00 (marketing/privado/porque/temas-posts.md), sale abajo como recordatorio. *asteriscos* = pegatina rellena.",
+ "out": "porque",
+ "cta": {
+  "ca": [
+   "Passa-ho al teu grup de running"
+  ],
+  "es": [
+   "Pásaselo a tu grupo de running"
+  ]
+ },
+ "cta_kind": {
+  "dato": {
+   "ca": "Passa-ho al teu grup de running",
+   "es": "Pásaselo a tu grupo de running"
+  },
+  "mito": {
+   "mito": {
+    "ca": "Envia-ho a qui encara s'ho creu",
+    "es": "Envíaselo a quien aún se lo cree"
+   },
+   "real": {
+    "ca": "Passa-ho al teu grup de running",
+    "es": "Pásaselo a tu grupo de running"
+   }
+  },
+  "reel": {
+   "ca": "A les 21:00, al nostre perfil",
+   "es": "A las 21:00, en nuestro perfil"
+  }
+ },
+ "days": [
+  {
+   "date": "2026-12-04",
+   "kind": "mito",
+   "ill": "mirando-reloj",
+   "verdict": "mito",
+   "claim": {
+    "ca": [
+     "«Si el rellotge diu",
+     "que estic a punt,",
+     "tant és com",
+     "em trobi.»"
+    ],
+    "es": [
+     "«Si el reloj dice",
+     "que estoy listo,",
+     "da igual cómo",
+     "me sienta.»"
+    ]
+   },
+   "why": {
+    "ca": "La nota resumeix les teves dades. Les sensacions també són una dada: si no quadren, *fes-ne cas.*",
+    "es": "La nota resume tus datos. Tus sensaciones también son un dato: si no cuadran, *hazles caso.*"
+   },
+   "post": {
+    "ca": "Preparació: de què es compon la teva nota",
+    "es": "Preparación: de qué se compone tu nota"
+   }
+  },
+  {
+   "date": "2026-12-05",
+   "kind": "dato",
+   "ill": "cansado-feliz",
+   "hero": "+5",
+   "unit": {
+    "ca": "batecs en repòs",
+    "es": "latidos en reposo"
+   },
+   "why": {
+    "ca": "Si el pols en repòs et puja uns 5 batecs durant uns quants dies, *el cos et demana calma*: cansament, poc son o un refredat que arriba.",
+    "es": "Si tu pulso en reposo sube unos 5 latidos durante varios días, *tu cuerpo pide calma*: cansancio, poco sueño o un resfriado en camino."
+   },
+   "post": {
+    "ca": "el pols en repòs, la dada més honesta",
+    "es": "el pulso en reposo, el dato más honesto"
+   }
+  },
+  {
+   "date": "2026-12-06",
+   "kind": "dato",
+   "ill": "grupo-corriendo",
+   "hero": "80/20",
+   "unit": {
+    "ca": "suau / exigent",
+    "es": "suave / exigente"
+   },
+   "why": {
+    "ca": "De cada 10 estones corrent, unes 8 a ritme de xerrada i 2 d'exigents. Així *el cos assimila* la feina dura.",
+    "es": "De cada 10 ratos corriendo, unos 8 a ritmo de charla y 2 exigentes. Así *el cuerpo asimila* el trabajo duro."
+   },
+   "post": {
+    "ca": "per què el suau construeix",
+    "es": "por qué lo suave construye"
+   }
+  },
+  {
+   "date": "2026-12-07",
+   "kind": "mito",
+   "ill": "amanecer",
+   "verdict": "real",
+   "claim": {
+    "ca": [
+     "«El pols en repòs",
+     "pot avisar",
+     "d'un refredat.»"
+    ],
+    "es": [
+     "«El pulso en reposo",
+     "puede avisar",
+     "de un resfriado.»"
+    ]
+   },
+   "why": {
+    "ca": "Sol pujar uns batecs quan el cos lluita contra alguna cosa, de vegades *abans que ho notis.* Demà, el reel.",
+    "es": "Suele subir unos latidos cuando el cuerpo pelea con algo, a veces *antes de que lo notes.* Mañana, el reel."
+   },
+   "post": {
+    "ca": "les fases del son",
+    "es": "las fases del sueño"
+   }
+  },
+  {
+   "date": "2026-12-08",
+   "kind": "reel",
+   "ill": "mirando-reloj",
+   "hour": "21:00",
+   "cover": "video-porque/reel-pq-reposo-portada.png",
+   "cover_bg": "cream",
+   "reel": "reposo",
+   "hook": {
+    "ca": "El pols en repòs puja *abans* que notis el refredat.",
+    "es": "Tu pulso en reposo sube *antes* de que notes el resfriado."
+   },
+   "post": {
+    "ca": "el test de la conversa",
+    "es": "el test del habla"
+   }
+  },
+  {
+   "date": "2026-12-09",
+   "kind": "quiz",
+   "ill": "corredor-2",
+   "turn": {
+    "ca": {
+     "lines": [
+      "Què sol *pujar*",
+      "quan incubes",
+      "un refredat?"
+     ],
+     "options": [
+      "El pols en repòs",
+      "La HRV",
+      "La cadència"
+     ],
+     "answer": 0
+    },
+    "es": {
+     "lines": [
+      "¿Qué suele *subir*",
+      "cuando incubas",
+      "un resfriado?"
+     ],
+     "options": [
+      "El pulso en reposo",
+      "La HRV",
+      "La cadencia"
+     ],
+     "answer": 0
+    }
+   },
+   "post": {
+    "ca": "el que el rellotge no pot mesurar",
+    "es": "lo que tu reloj no puede medir"
+   }
+  },
+  {
+   "date": "2026-12-10",
+   "kind": "reel",
+   "ill": "corredora-mayor",
+   "hour": "21:00",
+   "cover": "video-porque/reel-pq-suave-portada.png",
+   "cover_bg": "sea",
+   "reel": "suave",
+   "hook": {
+    "ca": "Si el suau no és suau, el fort *no surt.*",
+    "es": "Si lo suave no es suave, lo fuerte *no sale.*"
+   },
+   "post": {
+    "ca": "l'estrès del rellotge",
+    "es": "el estrés del reloj"
+   }
+  },
+  {
+   "date": "2026-12-11",
+   "kind": "mito",
+   "ill": "estirando-taza",
+   "verdict": "mito",
+   "claim": {
+    "ca": [
+     "«Una HRV més alta",
+     "que la de la teva",
+     "amiga és millor",
+     "forma.»"
+    ],
+    "es": [
+     "«Una HRV más alta",
+     "que la de tu amiga",
+     "es mejor forma.»"
+    ]
+   },
+   "why": {
+    "ca": "La HRV és molt personal: depèn de l'edat, la genètica i mil coses més. *Només val comparar-la amb tu.*",
+    "es": "La HRV es muy personal: depende de la edad, la genética y mil cosas más. *Solo vale compararla contigo.*"
+   },
+   "post": {
+    "ca": "la ràtio de càrrega",
+    "es": "el ratio de carga"
+   }
+  },
+  {
+   "date": "2026-12-12",
+   "kind": "dato",
+   "ill": "amanecer",
+   "hero": "7",
+   "unit": {
+    "ca": "nits de mitjana",
+    "es": "noches de media"
+   },
+   "why": {
+    "ca": "La HRV d'una sola nit enganya. El que compta és *la mitjana de 7 nits* respecte al teu rang normal.",
+    "es": "La HRV de una sola noche engaña. Lo que cuenta es *la media de 7 noches* frente a tu rango normal."
+   },
+   "post": {
+    "ca": "quan parlar amb el metge",
+    "es": "cuándo hablar con tu médico"
+   }
+  },
+  {
+   "date": "2026-12-13",
+   "kind": "dato",
+   "ill": "corredor-1",
+   "hero": "1,3",
+   "unit": {
+    "ca": "ràtio de càrrega",
+    "es": "ratio de carga"
+   },
+   "why": {
+    "ca": "Si aquesta setmana fas més d'1,3 vegades l'habitual del teu últim mes, *estàs pujant de pressa.* És una guia, no una llei.",
+    "es": "Si esta semana haces más de 1,3 veces lo habitual de tu último mes, *estás subiendo deprisa.* Es una guía, no una ley."
+   },
+   "post": {
+    "ca": "quina dada no entens?",
+    "es": "¿qué dato no entiendes?"
+   }
+  },
+  {
+   "date": "2026-12-14",
+   "kind": "mito",
+   "ill": "cansado-feliz",
+   "verdict": "real",
+   "claim": {
+    "ca": [
+     "«Pujar quilòmetres",
+     "de cop",
+     "passa factura.»"
+    ],
+    "es": [
+     "«Subir kilómetros",
+     "de golpe",
+     "pasa factura.»"
+    ]
+   },
+   "why": {
+    "ca": "Músculs, tendons i ossos s'adapten més a poc a poc que les ganes. Millor *una mica més cada setmana.*",
+    "es": "Músculos, tendones y huesos se adaptan más despacio que las ganas. Mejor *un poco más cada semana.*"
+   },
+   "post": {
+    "ca": "forma i fatiga",
+    "es": "forma y fatiga"
+   }
+  },
+  {
+   "date": "2026-12-15",
+   "kind": "reel",
+   "ill": "estirando-taza",
+   "hour": "21:00",
+   "cover": "video-porque/reel-pq-hrv-portada.png",
+   "cover_bg": "lavender",
+   "reel": "hrv",
+   "hook": {
+    "ca": "La teva HRV és 45 i la del teu amic, 90. *I no passa res.*",
+    "es": "Tu HRV es 45 y la de tu amigo, 90. *Y no pasa nada.*"
+   },
+   "post": {
+    "ca": "com llegir el teu son",
+    "es": "cómo leer tu sueño"
+   }
+  },
+  {
+   "date": "2026-12-16",
+   "kind": "quiz",
+   "ill": "corredor-2",
+   "turn": {
+    "ca": {
+     "lines": [
+      "Amb què",
+      "*compares*",
+      "la teva HRV?"
+     ],
+     "options": [
+      "Amb el meu rang normal",
+      "Amb la del meu grup",
+      "Amb la mitjana de l'edat"
+     ],
+     "answer": 0
+    },
+    "es": {
+     "lines": [
+      "¿Con qué",
+      "*comparas*",
+      "tu HRV?"
+     ],
+     "options": [
+      "Con mi rango normal",
+      "Con la de mi grupo",
+      "Con la media de mi edad"
+     ],
+     "answer": 0
+    }
+   },
+   "post": {
+    "ca": "la deriva cardíaca",
+    "es": "la deriva cardiaca"
+   }
+  },
+  {
+   "date": "2026-12-17",
+   "kind": "reel",
+   "ill": "cansado-feliz",
+   "hour": "21:00",
+   "cover": "video-porque/reel-pq-carga-portada.png",
+   "cover_bg": "cream",
+   "reel": "carga",
+   "hook": {
+    "ca": "No és quant corres. És quant puges *de cop.*",
+    "es": "No es cuánto corres. Es cuánto subes *de golpe.*"
+   },
+   "post": {
+    "ca": "«cadència 180 o res»",
+    "es": "«cadencia 180 o nada»"
+   }
+  },
+  {
+   "date": "2026-12-18",
+   "kind": "mito",
+   "ill": "amanecer",
+   "verdict": "mito",
+   "claim": {
+    "ca": [
+     "«El que no dormo",
+     "entre setmana",
+     "ho recupero el",
+     "cap de setmana.»"
+    ],
+    "es": [
+     "«Lo que no duermo",
+     "entre semana",
+     "lo recupero",
+     "el finde.»"
+    ]
+   },
+   "why": {
+    "ca": "Ajuda una mica, però no ho compensa del tot. Al cos li va millor *un horari regular.*",
+    "es": "Ayuda un poco, pero no lo compensa del todo. Al cuerpo le sienta mejor *un horario regular.*"
+   },
+   "post": {
+    "ca": "l'eficiència aeròbica",
+    "es": "la eficiencia aeróbica"
+   }
+  },
+  {
+   "date": "2026-12-19",
+   "kind": "dato",
+   "ill": "estirando-taza",
+   "hero": "7–9",
+   "unit": {
+    "ca": "hores de son",
+    "es": "horas de sueño"
+   },
+   "why": {
+    "ca": "És el que necessita la majoria d'adults. Si entrenes, *dormir forma part de l'entrenament*: és quan assimiles la feina.",
+    "es": "Es lo que necesita la mayoría de adultos. Si entrenas, *dormir forma parte del entreno*: ahí asimilas el trabajo."
+   },
+   "post": {
+    "ca": "genolls: el que sí ajuda",
+    "es": "rodillas: lo que sí ayuda"
+   }
+  },
+  {
+   "date": "2026-12-20",
+   "kind": "dato",
+   "ill": "mirando-reloj",
+   "hero": "0–100",
+   "unit": {
+    "ca": "estrès del rellotge",
+    "es": "estrés del reloj"
+   },
+   "why": {
+    "ca": "*No mesura emocions*: mesura com d'activat està el cos, amb el pols i la HRV. Una mala digestió també el fa pujar.",
+    "es": "*No mide emociones*: mide lo activado que está tu cuerpo, con el pulso y la HRV. Una mala digestión también lo sube."
+   },
+   "post": {
+    "ca": "què diuen les teves dades",
+    "es": "qué dicen tus datos"
+   }
+  },
+  {
+   "date": "2026-12-21",
+   "kind": "mito",
+   "ill": "yema-cafe",
+   "verdict": "mito",
+   "claim": {
+    "ca": [
+     "«Si la bàscula puja",
+     "1 kg d'un dia",
+     "per l'altre, m'he",
+     "engreixat.»"
+    ],
+    "es": [
+     "«Si la báscula sube",
+     "1 kg de un día",
+     "a otro, he",
+     "engordado.»"
+    ]
+   },
+   "why": {
+    "ca": "D'un dia per l'altre gairebé tot és aigua, sal i el que has menjat. Mira *la mitjana de la setmana.*",
+    "es": "De un día a otro casi todo es agua, sal y lo que has comido. Mira *la media de la semana.*"
+   },
+   "post": {
+    "ca": "l'horari de son",
+    "es": "el horario de sueño"
+   }
+  },
+  {
+   "date": "2026-12-22",
+   "kind": "reel",
+   "ill": "amanecer",
+   "hour": "21:00",
+   "cover": "video-porque/reel-pq-sueno-portada.png",
+   "cover_bg": "cream",
+   "reel": "sueno",
+   "hook": {
+    "ca": "El son profund arriba aviat. El REM, *al final.*",
+    "es": "El sueño profundo llega pronto. El REM, *al final.*"
+   },
+   "post": {
+    "ca": "hivern: com vestir-te",
+    "es": "invierno: cómo vestirte"
+   }
+  },
+  {
+   "date": "2026-12-23",
+   "kind": "quiz",
+   "ill": "corredor-2",
+   "turn": {
+    "ca": {
+     "lines": [
+      "Quan arriba",
+      "més son",
+      "*profund*?"
+     ],
+     "options": [
+      "Al principi de la nit",
+      "Al final",
+      "Repartit igual"
+     ],
+     "answer": 0
+    },
+    "es": {
+     "lines": [
+      "¿Cuándo llega",
+      "más sueño",
+      "*profundo*?"
+     ],
+     "options": [
+      "Al principio de la noche",
+      "Al final",
+      "Repartido igual"
+     ],
+     "answer": 0
+    }
+   },
+   "post": {
+    "ca": "les prediccions de cursa",
+    "es": "las predicciones de carrera"
+   }
+  },
+  {
+   "date": "2026-12-24",
+   "kind": "reel",
+   "ill": "yema-cafe",
+   "hour": "21:00",
+   "cover": "video-porque/reel-pq-peso-portada.png",
+   "cover_bg": "olive",
+   "reel": "peso",
+   "hook": {
+    "ca": "Ahir vas sopar fort i avui peses 1 kg més. *No és greix.*",
+    "es": "Ayer cenaste fuerte y hoy pesas 1 kg más. *No es grasa.*"
+   },
+   "post": {
+    "ca": "una caminada també compta",
+    "es": "una caminata también cuenta"
+   }
+  },
+  {
+   "date": "2026-12-25",
+   "kind": "mito",
+   "ill": "grupo-corriendo",
+   "verdict": "mito",
+   "claim": {
+    "ca": [
+     "«Un bon tiberi",
+     "arruïna setmanes",
+     "d'entrenament.»"
+    ],
+    "es": [
+     "«Una comilona",
+     "arruina semanas",
+     "de entreno.»"
+    ]
+   },
+   "why": {
+    "ca": "Un dia no et canvia la forma ni la tendència. Compta *el que fas la majoria de dies.* Bon Nadal!",
+    "es": "Un día no cambia tu forma ni tu tendencia. Cuenta *lo que haces la mayoría de los días.* ¡Feliz Navidad!"
+   },
+   "post": {
+    "ca": "la bàscula, tendència i soroll",
+    "es": "la báscula, tendencia y ruido"
+   }
+  },
+  {
+   "date": "2026-12-26",
+   "kind": "dato",
+   "ill": "corriendo-perro",
+   "hero": "5 %",
+   "unit": {
+    "ca": "de desacoblament",
+    "es": "de desacople"
+   },
+   "why": {
+    "ca": "Si en un rodatge llarg i estable el pols et puja menys d'un 5 % al mateix ritme, bon senyal: *la teva base aguanta.*",
+    "es": "Si en un rodaje largo y estable tu pulso sube menos de un 5 % al mismo ritmo, buena señal: *tu base aguanta.*"
+   },
+   "post": {
+    "ca": "menjar i entrenament",
+    "es": "comida y entreno"
+   }
+  },
+  {
+   "date": "2026-12-27",
+   "kind": "dato",
+   "ill": "estirando-taza",
+   "hero": "70",
+   "unit": {
+    "ca": "Body Battery en llevar-te",
+    "es": "Body Battery al despertar"
+   },
+   "why": {
+    "ca": "Com a referència, llevar-te per sobre de 70 sol voler dir que has recarregat bé. Es carrega amb *descans de veritat*, no amb hores al llit.",
+    "es": "Como referencia, levantarte por encima de 70 suele indicar que has recargado bien. Se carga con *descanso de verdad*, no con horas en la cama."
+   },
+   "post": {
+    "ca": "la xuleta del teu rellotge",
+    "es": "la chuleta de tu reloj"
+   }
+  },
+  {
+   "date": "2026-12-28",
+   "kind": "mito",
+   "ill": "corredora-mayor",
+   "verdict": "mito",
+   "claim": {
+    "ca": [
+     "«Si el meu ritme",
+     "no millora, no",
+     "estic millorant.»"
+    ],
+    "es": [
+     "«Si mi ritmo",
+     "no mejora, no",
+     "estoy mejorando.»"
+    ]
+   },
+   "why": {
+    "ca": "Si fas el mateix ritme amb menys pols, *ja estàs millorant.* Això és l'eficiència aeròbica.",
+    "es": "Si haces el mismo ritmo con menos pulso, *ya estás mejorando.* Eso es la eficiencia aeróbica."
+   },
+   "post": {
+    "ca": "passos: què compten de veritat",
+    "es": "pasos: qué cuentan de verdad"
+   }
+  },
+  {
+   "date": "2026-12-29",
+   "kind": "reel",
+   "ill": "corriendo-perro",
+   "hour": "21:00",
+   "cover": "video-porque/reel-pq-desacople-portada.png",
+   "cover_bg": "espresso",
+   "reel": "desacople",
+   "hook": {
+    "ca": "Mateix ritme, i el pols *continua pujant.*",
+    "es": "Mismo ritmo, y el pulso *sigue subiendo.*"
+   },
+   "post": {
+    "ca": "Sant Silvestre: res de nou",
+    "es": "San Silvestre: nada nuevo"
+   }
+  },
+  {
+   "date": "2026-12-30",
+   "kind": "quiz",
+   "ill": "corredor-2",
+   "turn": {
+    "ca": {
+     "lines": [
+      "Mateix ritme i",
+      "el pols *puja*.",
+      "Què és?"
+     ],
+     "options": [
+      "Deriva del pols",
+      "Error del rellotge",
+      "Mala forma"
+     ],
+     "answer": 0
+    },
+    "es": {
+     "lines": [
+      "Mismo ritmo y",
+      "el pulso *sube*.",
+      "¿Qué es?"
+     ],
+     "options": [
+      "Deriva del pulso",
+      "Fallo del reloj",
+      "Mala forma"
+     ],
+     "answer": 0
+    }
+   },
+   "post": {
+    "ca": "com llegir «Avui» en 10 segons",
+    "es": "cómo leer «Hoy» en 10 segundos"
+   }
+  },
+  {
+   "date": "2026-12-31",
+   "kind": "reel",
+   "ill": "corredor-1",
+   "hour": "21:00",
+   "cover": "video-porque/reel-pq-preparacion-portada.png",
+   "cover_bg": "cream",
+   "reel": "preparacion",
+   "hook": {
+    "ca": "Avui toca collar o afluixar? *El teu cos ja ho sap.*",
+    "es": "¿Hoy toca apretar o aflojar? *Tu cuerpo ya lo sabe.*"
+   },
+   "post": {
+    "ca": "tancament d'any",
+    "es": "cierre de año"
+   }
+  }
+ ],
+ "tu_turno": {
+  "2026-12-06": {
+   "ill": "corredor-2",
+   "ca": {
+    "lines": [
+     "Mires el teu",
+     "*pols en repòs*",
+     "en llevar-te?"
+    ],
+    "options": [
+     "Cada matí",
+     "Ni sabia que hi era"
+    ]
+   },
+   "es": {
+    "lines": [
+     "¿Miras tu",
+     "*pulso en reposo*",
+     "al despertar?"
+    ],
+    "options": [
+     "Cada mañana",
+     "Ni sabía que estaba"
+    ]
+   }
+  },
+  "2026-12-13": {
+   "ill": "yema-cafe",
+   "ca": {
+    "lines": [
+     "Què mires",
+     "*primer*",
+     "al matí?"
+    ],
+    "options": [
+     "La HRV",
+     "Com he dormit"
+    ]
+   },
+   "es": {
+    "lines": [
+     "¿Qué miras",
+     "*primero*",
+     "por la mañana?"
+    ],
+    "options": [
+     "La HRV",
+     "Cómo he dormido"
+    ]
+   }
+  },
+  "2026-12-20": {
+   "ill": "corredor-2",
+   "ca": {
+    "lines": [
+     "Et peses",
+     "*cada dia*",
+     "o quan toca?"
+    ],
+    "options": [
+     "Cada dia",
+     "Quan me'n recordo"
+    ]
+   },
+   "es": {
+    "lines": [
+     "¿Te pesas",
+     "*cada día*",
+     "o cuando toca?"
+    ],
+    "options": [
+     "Cada día",
+     "Cuando me acuerdo"
+    ]
+   }
+  },
+  "2026-12-27": {
+   "ill": "grupo-corriendo",
+   "ca": {
+    "lines": [
+     "Entrenes per",
+     "*sensacions*",
+     "o per dades?"
+    ],
+    "options": [
+     "Per sensacions",
+     "Per dades"
+    ]
+   },
+   "es": {
+    "lines": [
+     "¿Entrenas por",
+     "*sensaciones*",
+     "o por datos?"
+    ],
+    "options": [
+     "Por sensaciones",
+     "Por datos"
+    ]
+   }
+  }
+ }
+}

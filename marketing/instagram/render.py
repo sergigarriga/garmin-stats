@@ -38,7 +38,7 @@ THEMES = {
     "sea":        {"bg": "#24496D", "ink": "#F3ECE2", "ink2": "#BCCADA", "accent": "#F4C56E", "line": "rgba(243,236,226,.2)", "soft": "#2B5379", "logo": "crema"},
     "butter":     {"bg": "#F1DEA6", "ink": "#221A15", "ink2": "#6D5F43", "accent": "#5A6B32", "line": "rgba(34,26,21,.16)", "soft": "#E8D294", "logo": "espresso"},
     # Legado (marca anterior, terracota): solo para volver a pintar piezas antiguas tal cual.
-    "terracotta": {"bg": "#D4542F", "ink": "#FBF3E8", "ink2": "rgba(251,243,232,.78)", "accent": "#FFE1A3", "line": "rgba(251,243,232,.3)", "soft": "#C64A27", "logo": "crema"},
+    "terracotta": {"bg": "#D4542F", "ink": "#FBF3E8", "ink2": "rgba(251,243,232,.92)", "accent": "#FFE1A3", "line": "rgba(251,243,232,.3)", "soft": "#C64A27", "logo": "crema"},
 }
 ZONE_ALPHA = [0.35, 1.0, 0.5, 0.65, 0.8]  # opacidad de cada zona (la destacada usa el acento)
 T: dict = {}
@@ -216,8 +216,223 @@ def v_steps(v: dict) -> str:
     return f'<div class="col" style="gap:14px">{label(v.get("kicker", ""), T["accent"])}<div class="serif" style="font-size:44px">{esc(v.get("title", ""))}</div><div class="col" style="margin-top:8px">{rows}<div style="border-top:1.5px solid {T["line"]}"></div></div></div>'
 
 
+# ---- gráficos nuevos (serie «El porqué»): barras, tendencia, fases del sueño, escala, palancas, líneas y pantalla anotada
+CW = 912  # ancho útil de la diapositiva (1080 - 2 x 84)
+
+
+def fmt_num(x: float) -> str:
+    return (f"{x:.2f}".rstrip("0").rstrip(".")).replace(".", ",")
+
+
+def v_bars(v: dict) -> str:
+    """Columnas con su cifra encima y su etiqueta debajo; `hot` en el acento, `ref` = línea de referencia."""
+    w, h, bars = v.get("w", CW), v.get("h", 300), v["bars"]
+    mx = v.get("max") or max(b["value"] for b in bars) * 1.05
+    n, gap = len(bars), v.get("gap", 22)
+    bw = (w - gap * (n - 1)) / n
+    top = 46
+    out = []
+    for j, b in enumerate(bars):
+        hb = b["value"] / mx * h
+        x = j * (bw + gap)
+        hot = b.get("hot")
+        col = T["accent"] if hot else T["ink"]
+        txt = esc(b.get("text", fmt_num(b["value"])))
+        out.append(f'<div style="position:absolute;left:{x:.0f}px;top:{top + h - hb:.0f}px;width:{bw:.0f}px;height:{hb:.0f}px;background:{col};opacity:{1 if hot else .2}"{A("grow-up", j * .12, .8)}></div>')
+        out.append(f'<div class="serif" style="position:absolute;left:{x:.0f}px;top:{top + h - hb - 46:.0f}px;width:{bw:.0f}px;height:40px;display:flex;justify-content:center;font-size:34px;color:{col if hot else T["ink"]}"{A("rise", j * .12 + .3, .6)}>'
+                   f'<span style="background:{T["bg"]};padding:0 8px;line-height:40px">{txt}</span></div>')
+        out.append(f'<div style="position:absolute;left:{x - 10:.0f}px;top:{top + h + 14}px;width:{bw + 20:.0f}px;text-align:center;font-size:21px;line-height:1.25;color:{T["ink2"]}">{esc(b["label"])}</div>')
+    ref = ""
+    if v.get("ref"):
+        y = top + h - v["ref"]["value"] / mx * h
+        ref = (f'<div style="position:absolute;left:0;top:{y:.0f}px;width:{w}px;border-top:2px dashed {T["ink2"]}"></div>'
+               f'<div class="lab" style="position:absolute;right:0;top:-6px;font-size:18px;color:{T["ink2"]};display:flex;align-items:center;gap:12px"><span style="display:inline-block;width:34px;border-top:2px dashed {T["ink2"]}"></span>{esc(v["ref"]["label"])}</div>')
+    head = label(v["title"], T["accent"]) if v.get("title") else ""
+    note = f'<div style="font-size:22px;color:{T["ink2"]};margin-top:8px">{esc(v["note"])}</div>' if v.get("note") else ""
+    return (f'<div class="col" style="gap:6px">{head}<div style="position:relative;width:{w}px;height:{top + h + 76}px">{ref}'
+            f'<div style="position:absolute;left:0;top:{top + h}px;width:{w}px;border-top:1.5px solid {T["ink"]}"></div>{"".join(out)}</div>{note}</div>')
+
+
+def moving_avg(vals: list, k: int) -> list:
+    return [sum(vals[max(0, i - k + 1): i + 1]) / len(vals[max(0, i - k + 1): i + 1]) for i in range(len(vals))]
+
+
+def v_trend(v: dict) -> str:
+    """Puntos de cada día (ruido) y, encima, la línea de tendencia (media móvil)."""
+    w, h, pts, k = v.get("w", CW), v.get("h", 330), v["points"], v.get("window", 7)
+    ma = moving_avg(pts, k)
+    lo, hi = v.get("min", min(pts)), v.get("max", max(pts))
+    pad = (hi - lo) * .12
+    lo, hi = lo - pad, hi + pad
+
+    def X(i):
+        return i * w / (len(pts) - 1)
+
+    def Y(p):
+        return h - (p - lo) / (hi - lo) * h
+
+    dots = "".join(f'<circle cx="{X(i):.1f}" cy="{Y(p):.1f}" r="7" fill="{T["ink2"]}" opacity=".6"{A("pop", i * .045, .4)}/>' for i, p in enumerate(pts))
+    d = smooth_path([(X(i), Y(p)) for i, p in enumerate(ma)])
+    ex, ey = X(len(pts) - 1), Y(ma[-1])
+    ticks = v.get("ticks") or ()
+    grid = "".join(f'<line x1="0" x2="{w}" y1="{Y(g):.1f}" y2="{Y(g):.1f}" stroke="{T["line"]}" stroke-width="1.5"/>' for g in ticks)
+    ylab = "".join(f'<div style="position:absolute;left:0;top:{Y(g) - 30:.0f}px;font-size:19px;color:{T["ink2"]}">{esc(fmt_num(g))} {esc(v.get("unit", ""))}</div>' for g in ticks)
+    head = label(v["title"], T["accent"]) if v.get("title") else ""
+    legend = (f'<div class="row" style="gap:34px;align-items:center;font-size:22px;color:{T["ink2"]};margin-top:12px">'
+              f'<div class="row" style="gap:12px;align-items:center"><div style="width:14px;height:14px;border-radius:50%;background:{T["ink2"]};opacity:.6"></div>{esc(v.get("dots", "Cada día"))}</div>'
+              f'<div class="row" style="gap:12px;align-items:center"><div style="width:34px;border-top:3px solid {T["ink"]}"></div>{esc(v.get("line", "Tendencia"))}</div></div>')
+    return (f'<div class="col" style="gap:14px">{head}<div style="position:relative;width:{w}px;height:{h}px;margin-top:36px">{ylab}'
+            f'<svg width="{w}" height="{h}" style="overflow:visible">{grid}{dots}<path d="{d}" fill="none" stroke="{T["ink"]}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"{A("draw", .5, 2.2)}/>'
+            f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="12" fill="{T["accent"]}"{A("head", .5, 2.2)}/></svg></div>{legend}</div>')
+
+
+STAGE_ROWS = [("w", "Despierto"), ("r", "REM"), ("l", "Ligero"), ("d", "Profundo")]
+
+
+def v_hypno(v: dict) -> str:
+    """Una noche en fases (hipnograma): bloques por fase; `start` = hora de inicio y `segments` = [fase, minutos] en orden."""
+    names = dict(STAGE_ROWS)
+    names.update(v.get("names", {}))
+    segs = v["segments"]
+    total = sum(m for _, m in segs)
+    full = v.get("w", CW)
+    lw, W, rh, gap = 150, full - 150, 50, 8
+    sh, sm = (int(x) for x in v["start"].split(":"))
+    s0 = sh * 60 + sm
+    codes = [c for c, _ in STAGE_ROWS]
+    blocks, x = [], 0
+    for j, (st, m) in enumerate(segs):
+        r = codes.index(st)
+        look = {"d": (T["accent"], 1), "r": (T["accent"], .5), "l": (T["ink"], .2), "w": (T["ink"], .75)}[st]
+        blocks.append(f'<div style="position:absolute;left:{lw + x / total * W:.1f}px;top:{r * (rh + gap)}px;width:{max(m / total * W - 2, 3):.1f}px;height:{rh}px;background:{look[0]};opacity:{look[1]}"{A("grow-x", j * .08, .5)}></div>')
+        x += m
+    rows = "".join(f'<div class="lab" style="position:absolute;left:0;top:{r * (rh + gap) + 14}px;font-size:19px;color:{T["ink2"]}">{esc(names[c])}</div>'
+                   f'<div style="position:absolute;left:{lw}px;top:{r * (rh + gap) + rh // 2}px;width:{W}px;border-top:1.5px solid {T["line"]}"></div>' for r, c in enumerate(codes))
+    h = 4 * rh + 3 * gap
+    ticks, hr = "", (s0 + 59) // 60
+    while hr * 60 <= s0 + total:
+        ticks += f'<div style="position:absolute;left:{lw + (hr * 60 - s0) / total * W - 40:.0f}px;width:80px;text-align:center;font-size:20px;color:{T["ink2"]}">{hr % 24:02d}:00</div>'
+        hr += 1 if total <= 600 else 2
+    mins = {c: sum(m for s, m in segs if s == c) for c in codes}
+    asleep = total - mins["w"]
+
+    def hm(m):
+        return f"{m // 60} h {m % 60:02d} min" if m >= 60 else f"{m} min"
+
+    def share(c):
+        return f"{round(mins[c] / asleep * 100)} % del sueño" if c != "w" else f"{round(mins[c] / total * 100)} % de la noche"
+
+    stats = ""
+    if v.get("stats", True):
+        for j, c in enumerate("drlw"):
+            stats += (f'<div class="col" style="flex:1;gap:2px;padding:14px 0;border-top:1.5px solid {T["line"]}"{A("rise", 1.2 + j * .15, .6)}>{label(names[c], T["accent"] if c == "d" else T["ink2"], 18)}'
+                      f'<div class="serif" style="font-size:38px;white-space:nowrap">{hm(mins[c])}</div><div style="font-size:20px;color:{T["ink2"]}">{share(c)}</div></div>')
+    head = label(v["title"], T["accent"]) if v.get("title") else ""
+    return (f'<div class="col" style="gap:20px">{head}<div style="position:relative;width:{full}px;height:{h}px">{rows}{"".join(blocks)}</div>'
+            f'<div style="position:relative;height:26px;width:{full}px">{ticks}</div><div class="row" style="gap:22px;margin-top:6px">{stats}</div></div>')
+
+
+def v_scale(v: dict) -> str:
+    """Escala con tramos (uno puede ser `good`) y un marcador «Tú»."""
+    w, mn, mx = v.get("w", CW), v["min"], v["max"]
+
+    def X(a):
+        return (a - mn) / (mx - mn) * w
+
+    segs, prev = [], mn
+    for j, s in enumerate(v["segments"]):
+        x0, x1 = X(prev), X(s["to"])
+        good = s.get("good")
+        op = 1 if good else (.35 if s.get("dim") else .16)
+        sub = f'<div style="font-size:20px;font-weight:400;color:{T["ink2"]};margin-top:3px">{esc(s["sub"])}</div>' if s.get("sub") else ""
+        segs.append(f'<div style="position:absolute;left:{x0:.0f}px;top:70px;width:{x1 - x0 - 4:.0f}px;height:26px;background:{T["accent"] if good else T["ink"]};opacity:{op}"{A("grow-x", j * .18, .6)}></div>'
+                    f'<div style="position:absolute;left:{x0:.0f}px;top:112px;width:{x1 - x0 - 4:.0f}px;font-size:24px;font-weight:{650 if good else 500};line-height:1.2;color:{T["ink"] if good else T["ink2"]}"{A("rise", j * .18 + .2, .5)}>{esc(s["label"])}{sub}</div>')
+        prev = s["to"]
+    m = v.get("marker")
+    mark = ""
+    if m:
+        mx_ = X(m["value"])
+        mark = (f'<div style="position:absolute;left:{mx_ - 1:.0f}px;top:30px;height:78px;border-left:3px solid {T["ink"]}"{A("rise", 1.1, .6)}></div>'
+                f'<div style="position:absolute;left:{mx_ - 10:.0f}px;top:20px;width:20px;height:20px;border-radius:50%;background:{T["accent"]}"{A("pop", 1.1, .5)}></div>'
+                f'<div class="serif" style="position:absolute;left:{mx_ + 20:.0f}px;top:-4px;white-space:nowrap;font-size:40px;font-style:italic;color:{T["accent"]}"{A("rise", 1.3, .6)}>{esc(m["label"])}</div>')
+    head = label(v["title"], T["accent"]) if v.get("title") else ""
+    note = f'<div style="font-size:22px;color:{T["ink2"]};margin-top:6px;max-width:860px">{esc(v["note"])}</div>' if v.get("note") else ""
+    return f'<div class="col" style="gap:10px">{head}<div style="position:relative;width:{w}px;height:{v.get("h", 200)}px">{"".join(segs)}{mark}</div>{note}</div>'
+
+
+ARROW_UP = "M20 34V8M9 18L20 7l11 11"
+ARROW_DOWN = "M20 6v26M9 22l11 11 11-11"
+
+
+def v_levers(v: dict) -> str:
+    """Dos columnas: lo que lo sube y lo que lo baja (flechas finas)."""
+    def col(x: dict, up: bool, j: int) -> str:
+        arrow = (f'<svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="{T["accent"] if up else T["ink"]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">'
+                 f'<path d="{ARROW_UP if up else ARROW_DOWN}"/></svg>')
+        items = "".join(f'<div style="padding:18px 0;border-top:1.5px solid {T["line"]};font-size:29px;line-height:1.25"{A("rise", j * .15 + k * .2, .6)}>{rich(t)}</div>' for k, t in enumerate(x["items"]))
+        return (f'<div class="col" style="flex:1"><div class="row" style="align-items:center;gap:14px;margin-bottom:16px">{arrow}{label(x["label"], T["accent"] if up else T["ink"], 22)}</div>'
+                f'{items}<div style="border-top:1.5px solid {T["line"]}"></div></div>')
+    return f'<div class="row" style="gap:56px;align-items:flex-start">{col(v["up"], True, 0)}{col(v["down"], False, 1)}</div>'
+
+
+def v_lines(v: dict) -> str:
+    """Una o dos líneas con su nombre al final; `mark` = línea vertical con texto; `band` = tramo suave."""
+    w, h, series = v.get("w", 730), v.get("h", 330), v["series"]
+    allp = [p for s in series for p in s["points"]]
+    lo, hi = v.get("min", min(allp)), v.get("max", max(allp))
+    pad = (hi - lo) * .14
+    lo, hi = (lo if "min" in v else lo - pad), (hi if "max" in v else hi + pad)
+
+    def Y(p):
+        return h - (p - lo) / (hi - lo) * h
+
+    base = "".join(f'<line x1="0" x2="{w}" y1="{h * g:.0f}" y2="{h * g:.0f}" stroke="{T["line"]}" stroke-width="1.5"/>' for g in (0, .5, 1))
+    if v.get("band"):
+        b = v["band"]
+        base = f'<rect x="0" y="{Y(b[1]):.1f}" width="{w}" height="{Y(b[0]) - Y(b[1]):.1f}" fill="{T["soft"]}"{A("grow-y", 0, .8)}/>' + base
+    layers, tags = [], []
+    for j, s in enumerate(series):
+        pts = s["points"]
+        xy = [(i * w / (len(pts) - 1), Y(p)) for i, p in enumerate(pts)]
+        hot = s.get("hot")
+        col = T["accent"] if hot else T["ink"]
+        layers.append(f'<svg width="{w}" height="{h}" style="position:absolute;left:0;top:0;overflow:visible"><path d="{smooth_path(xy)}" fill="none" stroke="{col}" stroke-width="{4 if hot else 3}" stroke-linejoin="round" stroke-linecap="round"{A("draw", .2 + j * .3, 2.4)}/>'
+                      f'<circle cx="{xy[-1][0]:.1f}" cy="{xy[-1][1]:.1f}" r="{11 if hot else 8}" fill="{col}"{A("head", .2 + j * .3, 2.4)}/></svg>')
+        sub = f'<div style="font-size:19px;color:{T["ink2"]}">{esc(s["sub"])}</div>' if s.get("sub") else ""
+        tags.append(f'<div style="position:absolute;left:{w + 26}px;top:{xy[-1][1] - 24 + s.get("dy", 0):.0f}px;width:{CW - w - 26}px;line-height:1.15"{A("fade", 2.4 + j * .2, .6)}>'
+                    f'<div class="serif" style="font-size:34px;font-style:italic;color:{col}">{esc(s["name"])}</div>{sub}</div>')
+    mark = ""
+    if v.get("mark"):
+        mx_ = v["mark"]["at"] * w
+        mark = (f'<div style="position:absolute;left:{mx_:.0f}px;top:-8px;height:{h + 16}px;border-left:2px dashed {T["ink2"]}"></div>'
+                f'<div class="lab" style="position:absolute;left:{mx_ + 12:.0f}px;top:-4px;font-size:17px;color:{T["ink2"]}">{esc(v["mark"]["label"])}</div>')
+    xt = v.get("xticks")
+    spans = "".join(f"<span>{esc(t)}</span>" for t in (xt or []))
+    ticks = f'<div class="row" style="justify-content:space-between;width:{w}px;font-size:20px;color:{T["ink2"]};margin-top:12px">{spans}</div>' if xt else ""
+    head = label(v["title"], T["accent"]) if v.get("title") else ""
+    note = f'<div style="font-size:22px;color:{T["ink2"]};margin-top:8px;max-width:860px">{esc(v["note"])}</div>' if v.get("note") else ""
+    return (f'<div class="col" style="gap:12px">{head}<div style="position:relative;width:{w}px;height:{h}px;margin-top:8px"><svg width="{w}" height="{h}" style="position:absolute;left:0;top:0;overflow:visible">{base}</svg>'
+            f'{"".join(layers)}{mark}{"".join(tags)}</div>{ticks}{note}</div>')
+
+
+def v_annot(v: dict) -> str:
+    """Pantalla de la app con numeritos: un gráfico dentro de una tarjeta, marcas {x, y, n} en % y su leyenda debajo."""
+    inner = dict(v["inner"])
+    inner.setdefault("w", v.get("w", CW - 62))
+    marks = "".join(f'<div style="position:absolute;left:{m["x"]}%;top:{m["y"]}%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:{T["accent"]};color:{T["bg"]};'
+                    f'display:grid;place-content:center;font-size:21px;font-weight:700"{A("pop", 1.4 + j * .35, .5)}>{m["n"]}</div>' for j, m in enumerate(v.get("marks", [])))
+    notes = "".join(f'<div class="row" style="gap:20px;align-items:baseline;padding:11px 0;border-top:1.5px solid {T["line"]}"{A("rise", 1.2 + j * .3, .5)}>'
+                    f'<div class="serif" style="width:34px;font-size:30px;font-style:italic;color:{T["accent"]}">{j + 1}</div>'
+                    f'<div style="flex:1;font-size:25px;line-height:1.3"><b style="font-weight:650">{rich(n["title"])}</b> <span style="color:{T["ink2"]}">{rich(n["body"])}</span></div></div>' for j, n in enumerate(v["notes"]))
+    val = f'<div class="serif" style="font-size:34px">{esc(v["value"])}</div>' if v.get("value") else ""
+    top = f'<div class="row" style="justify-content:space-between;align-items:baseline;margin-bottom:18px">{label(v["label"], T["ink2"], 19)}{val}</div>'
+    return (f'<div class="col" style="gap:20px"><div style="border:1.5px solid {T["line"]};border-radius:30px;padding:28px 30px;background:{T["bg"]}">{top}'
+            f'<div style="position:relative">{VISUALS[inner["type"]](inner)}{marks}</div></div><div class="col">{notes}<div style="border-top:1.5px solid {T["line"]}"></div></div></div>')
+
+
 VISUALS = {"zones": v_zones, "readiness": v_readiness, "rows": v_rows, "metric": v_metric, "ring": v_ring, "curve": v_curve,
-           "chat": v_chat, "schedule": v_schedule, "steps": v_steps}
+           "chat": v_chat, "schedule": v_schedule, "steps": v_steps, "bars": v_bars, "trend": v_trend, "hypno": v_hypno,
+           "scale": v_scale, "levers": v_levers, "lines": v_lines, "annot": v_annot}
 
 
 # ---------------------------------------------------------------- maqueta
@@ -282,6 +497,14 @@ def slide_html(post: dict, s: dict, i: int, n: int, k: int) -> str:
         body = f'''<div style="flex:1"></div>{kick}
           <div class="serif" style="font-size:{s.get("bigSize", 380)}px;line-height:.82;letter-spacing:-.05em;color:{T["accent"]};margin-top:10px"{A("count", 0, 2.6, mask=1)}>{esc(s["big"])}</div>
           {title(s.get("size", 70), "margin-top:36px")}{lead("margin-top:24px")}<div style="flex:.6"></div>'''
+    elif layout == "myth":  # mito tachado frente a realidad
+        tsz = s.get("textSize", 54)
+        body = f'''<div style="flex:.6"></div>{kick}{title(s.get("size", 84), "margin-top:16px")}
+          <div class="col" style="margin-top:46px"><div style="padding:34px 0;border-top:1.5px solid {T["line"]}">{label(s.get("mythLabel", "Mito"), T["ink2"])}
+            <div class="serif" style="font-size:{tsz}px;line-height:1.1;margin-top:16px;color:{T["ink2"]};text-decoration:line-through;text-decoration-thickness:2.5px;text-decoration-color:{T["accent"]}">{rich(s["myth"])}</div></div>
+            <div style="padding:34px 0;border-top:1.5px solid {T["line"]};border-bottom:1.5px solid {T["line"]}">{label(s.get("factLabel", "Realidad"), T["accent"])}
+            <div class="serif" style="font-size:{tsz}px;line-height:1.1;margin-top:16px">{rich(s["fact"])}</div></div></div>
+          {lead("margin-top:34px")}<div style="flex:1"></div>'''
     elif layout == "photo":  # para cuando haya fotos (quedadas, estilo de vida): imagen a sangre + texto abajo
         body = f'''<div style="flex:1"></div>{kick}{title(s.get("size", 100), "margin-top:16px")}{lead("margin-top:22px")}<div style="flex:.2"></div>'''
     elif layout == "cta":
@@ -395,6 +618,7 @@ ANIM_JS = r"""(() => {
         }
         case 'grow-x': st.transformOrigin = 'left center'; st.transform = `scaleX(${e})`; break;
         case 'grow-y': st.transformBox = 'fill-box'; st.transformOrigin = 'center'; st.transform = `scaleY(${e})`; st.opacity = Math.min(1, p * 2.5); break;
+        case 'grow-up': st.transformOrigin = 'bottom'; st.transform = `scaleY(${e})`; break;
         case 'pop': {
           const s0 = +(o.el.dataset.s || 0), k = s0 + (1 - s0) * back(p);
           st.transformBox = 'fill-box'; st.transformOrigin = o.el.dataset.o || 'center';
@@ -477,20 +701,23 @@ def record(pg, out: Path, stem: str, duration: float) -> str | None:
 
 
 # ---------------------------------------------------------------- salida
-def main(path: str, sub: str = "") -> None:
+def main(path: str, sub: str = "", only: set | None = None) -> None:
     from playwright.sync_api import sync_playwright
     lote = json.loads(Path(path).read_text())
     STYLE["handle"] = lote.get("handle")
     out = HERE / "out" / sub / f"lote-{lote['lote']}"
     out.mkdir(parents=True, exist_ok=True)
-    for f in [*out.glob("*.png"), *out.glob("*.mp4")]:
-        f.unlink()
+    if not only:
+        for f in [*out.glob("*.png"), *out.glob("*.mp4")]:
+            f.unlink()
     exe = (glob.glob(os.path.expanduser("~/.cache/ms-playwright/chromium_headless_shell-*/*/chrome-headless-shell")) or [None])[0]
     covers, md = [], [f"# Instagram · lote {lote['lote']}\n", lote.get("notes", ""), ""]
     with sync_playwright() as p:
         b = p.chromium.launch(executable_path=exe) if exe else p.chromium.launch()
         pg = b.new_page(viewport={"width": W, "height": H}, device_scale_factor=1)
         for k, post in enumerate(lote["posts"], 1):
+            if only and k not in only:  # `--only 12,17`: solo vuelve a pintar esos posts (sin captions ni cuadrícula)
+                continue
             files, n = [], len(post["slides"])
             for i, s in enumerate(post["slides"], 1):
                 tmp = out / "_slide.html"
@@ -515,6 +742,10 @@ def main(path: str, sub: str = "") -> None:
             md += [f"## Post {k} · {post['title']}", "", f"Archivos: {', '.join(files)}" + (" (carrusel)" if n > 1 else ""), "",
                    "**Texto:**", "", post["caption"].strip(), "", " ".join(post.get("hashtags", [])), "",
                    f"**Texto alternativo:** {post.get('alt', '')}", "", "---", ""]
+        if only:
+            b.close()
+            print(f"Repintados los posts {sorted(only)} en {out}")
+            return
         cells = "".join(f'<img src="{c.as_uri()}" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block">' for c in reversed(covers))
         pg.set_viewport_size({"width": 1080, "height": 1440})
         grid = out / "_grid.html"
@@ -557,5 +788,6 @@ def write_overview(lote: dict, out: Path) -> None:
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     sub = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else ""
-    args = [a for a in args if a != sub]
-    main(args[0] if args else str(HERE / "lote-01.json"), sub)
+    only = {int(x) for x in sys.argv[sys.argv.index("--only") + 1].split(",")} if "--only" in sys.argv else None
+    args = [a for a in args if a != sub and not (only and a == sys.argv[sys.argv.index("--only") + 1])]
+    main(args[0] if args else str(HERE / "lote-01.json"), sub, only)

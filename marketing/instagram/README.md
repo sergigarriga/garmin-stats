@@ -49,6 +49,13 @@ la app que, más adelante, para fotos de quedadas y estilo de vida (formato `pho
   (`big`, `bigSize`, `title`, `body`), `cta` (`title`, `body`, `actions`) y `photo` (`image`, `title`, `body`).
 - Gráficos (`visual.type`, ver `lote-01.json`): `zones`, `readiness`, `rows`, `metric`, `ring`, `curve`, `chat`,
   `schedule`, `steps`. `example: false` quita "Datos de ejemplo".
+- Gráficos de la serie «El porqué» (ver `lote-04.json`): `bars` (columnas, `ref` = línea de referencia, `hot` = la
+  destacada), `trend` (puntos diarios + media móvil), `hypno` (una noche por fases: `start` y `segments` [fase, minutos]
+  con fases `w`, `r`, `l`, `d`), `scale` (tramos y marcador «Tú»), `levers` (lo que lo sube / lo que lo baja), `lines`
+  (una o dos líneas con nombre al final, `mark`, `band`) y `annot` (un gráfico dentro de una tarjeta con numeritos
+  `marks` en % y su leyenda `notes`, para «cómo leer esta pantalla»). Formato nuevo `myth` (`title`, `myth`, `fact`,
+  `body`): mito tachado frente a realidad.
+- `--only 12,17` vuelve a pintar solo esos posts (sin tocar captions.md ni la cuadrícula).
 
 El script avisa si un texto no cabe o algo se acerca demasiado al borde. Todos los números deben ser de ejemplo.
 
