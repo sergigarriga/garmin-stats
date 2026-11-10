@@ -14,17 +14,34 @@ HERE = Path(__file__).resolve().parent
 FONT = HERE / "fonts" / "Gluten[slnt,wght].ttf"
 IG_FONTS = HERE.parent / "instagram" / "fonts"
 
-# Misma paleta que el sistema editorial (marketing/instagram/render.py).
+# Paleta de la marca (la misma que la app: web/index.html y web/src/brand/colors.ts).
+# Olivo es el color de marca (logotipo, botones, tinta principal); lavanda, pistacho y mar son los acentos de
+# las secciones de la app (Salud, Entreno, Análisis) y dan juego en patrones y merchandising.
 C = {
+    "olive": "#5A6B32",          # Olivo: marca
+    "olive_dark": "#46542A",     # Olivo oscuro: pulsado, sombras
+    "olive_light": "#B4C784",    # Olivo claro: tinta de marca sobre fondo oscuro
+    "lavender": "#8B6FD6",       # Lavanda: Salud
+    "lavender_ink": "#6B4FC0",
+    "lavender_light": "#C9B8F5",
+    "pistachio": "#9DB43A",      # Pistacho: Entreno
+    "pistachio_ink": "#5F7414",
+    "pistachio_light": "#CFE07A",
+    "sea": "#24496D",            # Mar: Análisis
+    "sea_light": "#9CC2E6",
     "cream": "#F7F3EC",
     "paper": "#FCFAF6",
-    "terracotta": "#D4542F",
+    "app_bg": "#F6F4EE",         # fondo de la app en modo claro
     "espresso": "#221A15",
-    "sage": "#CBD3B8",
-    "sea": "#24496D",
     "butter": "#F1DEA6",
+    "sage": "#CBD3B8",           # Salvia: secundario suave
     "blush": "#FFE1A3",
+    # Legado: color de marca anterior. Solo lo usan las piezas ya programadas de Instagram
+    # (marketing/instagram/stories.py, render.py y los lotes); la capa ilustrada ya no lo usa.
+    "terracotta": "#D4542F",
 }
+C["brand"] = C["olive"]  # tinta de marca: usar siempre esta clave, no el nombre del color
+
 
 # --------------------------------------------------------------------- logotipo
 # Ajustes por letra: (dx extra antes de la letra, dy, giro en grados). Unidades de la fuente (2000/em).

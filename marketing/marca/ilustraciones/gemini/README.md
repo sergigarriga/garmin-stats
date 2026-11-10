@@ -9,3 +9,7 @@ Originales en `nuevas/NN.jpg`. Sin fondo y en tres colores (`-terracota`, `-crem
 `grupo-corriendo`, `estirando-taza`, `mirando-reloj`, `corredora-mayor`, `corriendo-perro`, `silla-deportiva`,
 `brunch-pareja`, `amanecer`, `cansado-feliz`, `yema-corriendo`, `yema-cafe` (mascota «Yema», run + brunch).
 Iconos para destacadas en `iconos/`: `zapatilla`, `reloj`, `taza`, `croissant`, `sol`, `corazon-pulso`.
+
+## Olivo (10-11-2026)
+Con el cambio de color de marca, cada ilustración e icono tiene también `-olivo.png` (misma transparencia que
+`-terracota`, solo cambia la tinta; lo hace `build.py ilustraciones`). Las versiones `-terracota` se quedan como legado.

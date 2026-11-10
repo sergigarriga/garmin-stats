@@ -1,10 +1,10 @@
 """Genera la capa ilustrada de Runch: logotipo, patrón, maquetas (mockups) y hoja de marca.
 
-    uv run --no-project --with playwright --with fonttools python marketing/marca/build.py            # todo
-    uv run --no-project --with playwright --with fonttools python marketing/marca/build.py logo hoja  # solo partes
+    uv run --no-project --with playwright --with fonttools --with pillow python marketing/marca/build.py            # todo
+    uv run --no-project --with playwright --with fonttools --with pillow python marketing/marca/build.py logo hoja  # partes
 
-Partes: logo, patrones, mockups, hoja. Las plantillas de Instagram van aparte (templates.py) y se generan antes
-que las maquetas, porque el móvil y la hoja de marca las muestran.
+Partes: ilustraciones (versiones en olivo), logo, patrones, mockups, hoja. Las plantillas de Instagram van aparte
+(templates.py) y se generan antes que las maquetas, porque el móvil y la hoja de marca las muestran.
 """
 from __future__ import annotations
 
@@ -20,9 +20,10 @@ TAGLINES = {
     "club-de-running": "CLUB DE RUNNING",
 }
 # Combinaciones de tinta y fondo de la capa ilustrada (siempre una sola tinta).
+# Los archivos runch-logo-terracota.* de logo/ son del color anterior: se quedan como legado, no se regeneran.
 INKS = {
-    "terracota": (C["terracotta"], C["cream"]),
-    "crema": (C["cream"], C["terracotta"]),
+    "olivo": (C["brand"], C["cream"]),
+    "crema": (C["cream"], C["brand"]),
     "espresso": (C["espresso"], C["cream"]),
 }
 
@@ -103,11 +104,11 @@ def build_logo(r: Renderer) -> None:
         r.png(f'<div style="display:grid;place-items:center;height:100%;background:{bg}">'
               f'{wordmark_svg(ink, height=330)}</div>', out / f"runch-logo-{name}.png", 1600, 800)
     for slug, tag in TAGLINES.items():
-        s, _, _ = lockup(tag, C["terracotta"])
+        s, _, _ = lockup(tag, C["brand"])
         (out / f"runch-lema-{slug}.svg").write_text(s)
         r.png(f'<div style="display:grid;place-items:center;height:100%;background:{C["cream"]}">'
               f'<div style="width:1100px">{s}</div></div>', out / f"runch-lema-{slug}.png", 1600, 900)
-    sello = sello_svg(C["cream"], C["terracotta"])
+    sello = sello_svg(C["cream"], C["brand"])
     (out / "runch-sello.svg").write_text(sello)
     r.png(f'<div style="width:1000px;height:1000px">{sello}</div>', out / "runch-sello.png", 1000, 1000, transparent=True)
 
@@ -130,18 +131,36 @@ def pattern_fill(w: float, h: float, ink: str, bg: str, rot: float = -8, scale: 
             f'<rect width="{w}" height="{h}" fill="{bg}"/><rect width="{w}" height="{h}" fill="url(#{pid})"/>')
 
 
-PATTERNS = [("crema-sobre-terracota", C["cream"], C["terracotta"]), ("terracota-sobre-crema", C["terracotta"], C["cream"]),
-            ("espresso-sobre-salvia", C["espresso"], C["sage"]), ("crema-sobre-espresso", C["cream"], C["espresso"])]
+# Olivo con crema son los principales; los acentos de la app (pistacho, lavanda, mar) dan juego en merchandising.
+# Los patron-logo-*-terracota*.png que quedan en patrones/ son del color anterior (legado).
+PATTERNS = [("crema-sobre-olivo", C["cream"], C["brand"]), ("olivo-sobre-crema", C["brand"], C["cream"]),
+            ("espresso-sobre-pistacho", C["espresso"], C["pistachio"]), ("crema-sobre-lavanda", C["cream"], C["lavender"]),
+            ("mantequilla-sobre-mar", C["butter"], C["sea"]), ("crema-sobre-espresso", C["cream"], C["espresso"])]
 
 
 def build_patrones(r: Renderer) -> None:
     out = HERE / "patrones"
-    t, tw, th = pattern_logo_tile(C["terracotta"])
+    t, tw, th = pattern_logo_tile(C["brand"])
     (out / "patron-logo-baldosa.svg").write_text(
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {tw:.1f} {th:.1f}" width="{tw:.1f}" height="{th:.1f}">'
         f'<rect width="100%" height="100%" fill="{C["cream"]}"/>{t}</svg>')
     for slug, ink, bg in PATTERNS:
         r.png(svg(1080, 1350, pattern_fill(1080, 1350, ink, bg)), out / f"patron-logo-{slug}.png", 1080, 1350)
+
+
+# ============================================================================ ilustraciones
+def build_ilustraciones(r: Renderer | None = None) -> None:
+    """Versión en olivo (`-olivo.png`) de cada ilustración e icono: misma transparencia que `-terracota.png`, solo
+    cambia la tinta. Los originales y las versiones crema, espresso y terracota se quedan como están."""
+    from PIL import Image
+
+    ink = tuple(int(C["brand"][i:i + 2], 16) for i in (1, 3, 5))
+    d = HERE / "ilustraciones" / "gemini"
+    for src in [*d.glob("*-terracota.png"), *(d / "iconos").glob("*-terracota.png")]:
+        im = Image.open(src).convert("RGBA")
+        out = Image.new("RGBA", im.size, ink + (0,))
+        out.putalpha(im.getchannel("A"))
+        out.save(src.with_name(src.name.replace("-terracota.png", "-olivo.png")), optimize=True)
 
 
 # ============================================================================ maquetas
@@ -169,14 +188,14 @@ def mock_cajas() -> str:
     W, H = 1080, 1350
     bw, bh = 600, 400
     hh = fit("nadie se queda", bw * .78, 62, 820, 0)
-    f3 = (text_g("nadie se queda", C["terracotta"], bw / 2, 140, hh, wght=820, tracking=0)
-          + text_g("atrás", C["terracotta"], bw / 2, 140 + hh * 1.45, hh, wght=820, tracking=0)
-          + word_g(C["terracotta"], bw / 2, 320, 150, -3))
+    f3 = (text_g("nadie se queda", C["brand"], bw / 2, 140, hh, wght=820, tracking=0)
+          + text_g("atrás", C["brand"], bw / 2, 140 + hh * 1.45, hh, wght=820, tracking=0)
+          + word_g(C["brand"], bw / 2, 320, 150, -3))
     b3 = box(220, 820, bw, bh, 170, C["cream"], f3, 1.5)
-    b2 = box(250, 530, 540, 310, 150, C["terracotta"], pattern_fill(540, 310, C["cream"], C["terracotta"], scale=.5, pid="pb"), -2.5)
-    f1 = word_g(C["terracotta"], 230, 128, 320, -3) + text_g("RUN & BRUNCH", C["terracotta"], 230, 224, 20, tracking=320)
+    b2 = box(250, 530, 540, 310, 150, C["brand"], pattern_fill(540, 310, C["cream"], C["brand"], scale=.5, pid="pb"), -2.5)
+    f1 = word_g(C["brand"], 230, 128, 320, -3) + text_g("RUN & BRUNCH", C["brand"], 230, 224, 20, tracking=320)
     b1 = box(300, 300, 460, 270, 130, C["cream"], f1, 2)
-    return svg(W, H, shadow(560, 1236, 360, 30, C["espresso"], .16) + b3 + b2 + b1, C["sage"])
+    return svg(W, H, shadow(560, 1236, 360, 30, C["espresso"], .16) + b3 + b2 + b1, C["lavender_light"])
 
 
 def tote(cx: float, cy: float, canvas: str, print_: str) -> str:
@@ -193,12 +212,12 @@ def tote(cx: float, cy: float, canvas: str, print_: str) -> str:
 def mock_bolsas() -> str:
     W, H = 1600, 1200
     canvas = "#EFE4D0"
-    p1 = (word_g(C["terracotta"], 0, 10, 400, -3)
-          + text_g("CORRE · RECUPERA · REPITE", C["terracotta"], 0, 130, 21, tracking=300))
+    p1 = (word_g(C["brand"], 0, 10, 400, -3)
+          + text_g("CORRE · RECUPERA · REPITE", C["brand"], 0, 130, 21, tracking=300))
     clip = '<clipPath id="tc"><path d="M-226 -230 L226 -230 L246 340 L-246 340 Z"/></clipPath>'
     p2 = (f'{clip}<g clip-path="url(#tc)"><g transform="translate(-300 -260)">'
-          f'{pattern_fill(600, 640, C["cream"], C["terracotta"], scale=.62, pid="tp")}</g></g>')
-    body = tote(440, 620, canvas, p1) + tote(1160, 620, C["espresso"], p2)
+          f'{pattern_fill(600, 640, C["cream"], C["lavender"], scale=.62, pid="tp")}</g></g>')
+    body = tote(440, 620, canvas, p1) + tote(1160, 620, C["lavender"], p2)
     return svg(W, H, body, C["butter"])
 
 
@@ -220,16 +239,16 @@ def tee(cx: float, cy: float, color: str, print_: str) -> str:
 def mock_camisetas() -> str:
     W, H = 1600, 1000
     p1 = word_g(C["cream"], 0, -70, 270, -3) + text_g("CLUB DE RUNNING", C["cream"], 0, 4, 18, tracking=360)
-    p2 = (text_g("nadie se", C["terracotta"], 0, -66, 50, wght=820, tracking=0)
-          + text_g("queda atrás", C["terracotta"], 0, 4, 50, wght=820, tracking=0)
-          + text_g("RITMO Z2 · DOMINGOS", C["terracotta"], 0, 76, 16, tracking=360)
-          + word_g(C["terracotta"], 0, 190, 120, -3))
-    return svg(W, H, tee(430, 470, C["terracotta"], p1) + tee(1170, 470, C["cream"], p2), C["sage"])
+    p2 = (text_g("nadie se", C["brand"], 0, -66, 50, wght=820, tracking=0)
+          + text_g("queda atrás", C["brand"], 0, 4, 50, wght=820, tracking=0)
+          + text_g("RITMO Z2 · DOMINGOS", C["brand"], 0, 76, 16, tracking=360)
+          + word_g(C["brand"], 0, 190, 120, -3))
+    return svg(W, H, tee(430, 470, C["brand"], p1) + tee(1170, 470, C["cream"], p2), C["sea_light"])
 
 
 def mock_gorra() -> str:
     W, H = 1080, 1080
-    cap = C["espresso"]
+    cap = C["brand"]
     seam = mix(cap, "#FFFFFF", .12)
     body = (shadow(540, 850, 300, 30, "#000", .16)
             + f'<path d="M260 640 C250 420 380 300 540 300 C700 300 830 420 820 640 Z" fill="{cap}"/>'
@@ -239,20 +258,20 @@ def mock_gorra() -> str:
               f'fill="{mix(cap, "#FFFFFF", .1)}"/>'
             + f'<path d="M318 650 C420 624 660 624 762 650" fill="none" stroke="{mix(cap, "#FFFFFF", .22)}" stroke-width="4" stroke-dasharray="12 10"/>'
             + word_g(C["cream"], 540, 470, 240, -3))
-    return svg(W, H, body, C["butter"])
+    return svg(W, H, body, C["pistachio_light"])
 
 
 def mock_botella() -> str:
     W, H = 1080, 1350
-    btl = C["sage"]
+    btl = C["lavender"]
     body = (shadow(540, 1236, 200, 26, "#000", .12)
             + f'<rect x="470" y="150" width="140" height="120" rx="30" fill="{C["espresso"]}"/>'
             + f'<rect x="450" y="250" width="180" height="40" rx="16" fill="{mix(C["espresso"], "#FFFFFF", .15)}"/>'
             + f'<path d="M450 290 C450 330 380 350 380 420 L380 1170 C380 1206 410 1230 446 1230 L634 1230 C670 1230 700 1206 700 1170 '
               f'L700 420 C700 350 630 330 630 290 Z" fill="{btl}"/>'
             + f'<rect x="402" y="420" width="18" height="760" rx="9" fill="#FFFFFF" opacity=".25"/>'
-            + word_g(C["terracotta"], 548, 800, 560, -90)
-            + text_g("RUN & BRUNCH", C["terracotta"], 640, 800, 20, tracking=320, rot=-90))
+            + word_g(C["cream"], 548, 800, 560, -90)
+            + text_g("RUN & BRUNCH", C["cream"], 640, 800, 20, tracking=320, rot=-90))
     return svg(W, H, body, C["cream"])
 
 
@@ -270,25 +289,25 @@ def mock_pegatinas() -> str:
     s = [
         # logotipo en óvalo
         f'<g transform="rotate(-6 380 300)" {sh}><ellipse cx="380" cy="300" rx="250" ry="150" fill="{C["cream"]}" stroke="{wht}" stroke-width="22"/>'
-        + word_g(C["terracotta"], 380, 300, 340) + "</g>",
+        + word_g(C["brand"], 380, 300, 340) + "</g>",
         # sello
         f'<g transform="translate(1000 330) scale(.36) translate(-500 -500)" {sh}><circle cx="500" cy="500" r="525" fill="{wht}"/>'
-        + sello_inner(C["cream"], C["terracotta"]) + "</g>",
+        + sello_inner(C["cream"], C["brand"]) + "</g>",
         # Z2 club
         f'<g transform="rotate(5 340 660)" {sh}><rect x="150" y="560" width="380" height="200" rx="56" fill="{C["espresso"]}" stroke="{wht}" stroke-width="22"/>'
         + text_g("Z2", C["cream"], z2x, 660, 70, wght=840, tracking=40, anchor="start")
         + text_g("CLUB", C["cream"], z2x + text_w("Z2", 70, 840, 40) + 26, 660, 30, tracking=120, anchor="start") + "</g>",
         # nadie se queda atrás
-        f'<g transform="rotate(-4 930 700)" {sh}><rect x="660" y="610" width="540" height="180" rx="90" fill="{C["sage"]}" stroke="{wht}" stroke-width="22"/>'
+        f'<g transform="rotate(-4 930 700)" {sh}><rect x="660" y="610" width="540" height="180" rx="90" fill="{C["pistachio"]}" stroke="{wht}" stroke-width="22"/>'
         + t("nadie se queda", 930, 670, 42, 440, C["espresso"], 780) + t("atrás", 930, 732, fit("nadie se queda", 440, 42, 780, 10), 999, C["espresso"], 780) + "</g>",
         # corre despacio
         f'<g transform="rotate(-8 330 1050)" {sh}><circle cx="330" cy="1050" r="160" fill="{C["butter"]}" stroke="{wht}" stroke-width="22"/>'
-        + t("corre", 330, 1010, fit("despacio", 260, 60, 820, 10), 999, C["terracotta"]) + t("despacio", 330, 1080, 60, 260, C["terracotta"]) + "</g>",
+        + t("corre", 330, 1010, fit("despacio", 260, 60, 820, 10), 999, C["brand"]) + t("despacio", 330, 1080, 60, 260, C["brand"]) + "</g>",
         # patrón redondo
         f'<g {sh}><circle cx="760" cy="1060" r="161" fill="{wht}"/><g clip-path="url(#pc)"><g transform="translate(600 900)">'
-        + pattern_fill(320, 320, C["cream"], C["espresso"], scale=.5, pid="pp") + "</g></g></g>",
+        + pattern_fill(320, 320, C["cream"], C["brand"], scale=.5, pid="pp") + "</g></g></g>",
         # run & brunch
-        f'<g transform="rotate(6 1090 1060)" {sh}><rect x="960" y="900" width="260" height="320" rx="40" fill="{C["terracotta"]}" stroke="{wht}" stroke-width="22"/>'
+        f'<g transform="rotate(6 1090 1060)" {sh}><rect x="960" y="900" width="260" height="320" rx="40" fill="{C["lavender"]}" stroke="{wht}" stroke-width="22"/>'
         + t("RUN", 1090, 980, fit("BRUNCH", 210, 60, 760, 40), 999, C["cream"], 760, 40)
         + t("&", 1090, 1060, fit("BRUNCH", 210, 60, 760, 40), 999, C["cream"], 760, 0)
         + t("BRUNCH", 1090, 1140, 60, 210, C["cream"], 760, 40) + "</g>",
@@ -324,7 +343,7 @@ def mock_movil(story_png: Path, post_png: Path) -> str:
     iw = pw - 32
     yb = y2 + 160 + iw * 1.25
     feed = (f'<rect x="{x2 + 16}" y="{y2 + 16}" width="{iw}" height="{ph - 32}" rx="50" fill="#FFFFFF"/>'
-            + f'<circle cx="{x2 + 70}" cy="{y2 + 120}" r="26" fill="{C["terracotta"]}"/>'
+            + f'<circle cx="{x2 + 70}" cy="{y2 + 120}" r="26" fill="{C["brand"]}"/>'
             + f'<text x="{x2 + 70}" y="{y2 + 131}" text-anchor="middle" font-family="FR" font-style="italic" font-size="32" fill="{C["cream"]}">r</text>'
             + f'<text x="{x2 + 110}" y="{y2 + 128}" font-family="GSF" font-weight="600" font-size="22" fill="{C["espresso"]}">runch.run</text>'
             + img(post_png, x2 + 16, y2 + 160, iw, iw * 1350 / 1080, 0, "c2")
@@ -358,46 +377,52 @@ def build_hoja(r: Renderer) -> None:
         return "data:image/png;base64," + base64.b64encode(p.read_bytes()).decode()
 
     m = HERE / "mockups"
-    sw = [("Terracota", "terracotta", "#D4542F", C["cream"]), ("Crema", "cream", "#F7F3EC", C["espresso"]),
-          ("Papel", "paper", "#FCFAF6", C["espresso"]), ("Espresso", "espresso", "#221A15", C["cream"]),
-          ("Salvia", "sage", "#CBD3B8", C["espresso"]), ("Mar", "sea", "#24496D", C["cream"]),
-          ("Mantequilla", "butter", "#F1DEA6", C["espresso"])]
-    swatches = "".join(f'<div class="sw" style="background:{C[k]};color:{fg}"><b>{n}</b><span>{hx}</span></div>'
-                       for n, k, hx, fg in sw)
+    sw = [("Olivo", "olive", "marca", C["cream"]), ("Lavanda", "lavender", "Salud", C["cream"]),
+          ("Pistacho", "pistachio", "Entreno", C["espresso"]), ("Mar", "sea", "Análisis", C["cream"]),
+          ("Crema", "cream", "fondo", C["espresso"]), ("Papel", "paper", "fondo", C["espresso"]),
+          ("Espresso", "espresso", "texto", C["cream"]), ("Mantequilla", "butter", "cálido", C["espresso"]),
+          ("Salvia", "sage", "suave", C["espresso"])]
+    swatches = "".join(f'<div class="sw" style="background:{C[k]};color:{fg}"><b>{n}</b><span>{C[k]} · {u}</span></div>'
+                       for n, k, u, fg in sw)
+    tints = "".join(f'<div class="tn" style="background:{C[k]};color:{fg}">{n}<span>{C[k]}</span></div>' for n, k, fg in
+                    [("Olivo oscuro", "olive_dark", C["cream"]), ("Olivo claro", "olive_light", C["espresso"]),
+                     ("Lavanda tinta", "lavender_ink", C["cream"]), ("Lavanda clara", "lavender_light", C["espresso"]),
+                     ("Pistacho tinta", "pistachio_ink", C["cream"]), ("Pistacho claro", "pistachio_light", C["espresso"]),
+                     ("Mar claro", "sea_light", C["espresso"])])
     logos = "".join(f'<div class="lg" style="background:{bg}">{wordmark_svg(ink, height=120)}</div>'
                     for ink, bg in INKS.values())
-    lemas = "".join(f'<div class="lema">{lockup(t, C["terracotta"])[0]}</div>' for t in TAGLINES.values())
+    lemas = "".join(f'<div class="lema">{lockup(t, C["brand"])[0]}</div>' for t in TAGLINES.values())
     pats = "".join(f'<img src="{png(HERE / "patrones" / f"patron-logo-{slug}.png")}">' for slug, _, _ in PATTERNS)
     mocks = "".join(f'<img class="mk" src="{png(m / f)}">' for f in ["cajas.png", "botella.png", "pegatinas.png"])
     mocks_wide = "".join(f'<img class="mkw" src="{png(m / f)}">' for f in ["bolsas.png", "camisetas.png", "movil.png", "gorra.png"])
     tpls = "".join(f'<img class="tp" src="{png(HERE / "plantillas" / f)}">' for f in
                    ["post-quedada-1-ca.png", "post-reto-2-es.png", "post-tu-turno-1-ca.png", "post-cita-2-es.png"])
-    ils = "".join(f'<img src="{png(HERE / "ilustraciones" / "gemini" / f"corredor-{i}-terracota.png")}">' for i in (1, 2))
+    ils = "".join(f'<img src="{png(HERE / "ilustraciones" / "gemini" / f"corredor-{i}-olivo.png")}">' for i in (1, 2))
 
     g, (vx, vy, vw, vh) = wordmark()
 
-    def wm(style: str = "", fill: str = C["terracotta"], extra: str = "") -> str:
+    def wm(style: str = "", fill: str = C["brand"], extra: str = "") -> str:
         return f'<svg viewBox="{vx} {vy} {vw} {vh}" style="width:76%;{style}"><g fill="{fill}" {extra}>{g}</g></svg>'
 
     def dd(ok: bool, bg: str, inner: str, txt: str) -> str:
-        mark, col = ("Sí", "#4F6B33") if ok else ("No", C["terracotta"])
+        mark, col = ("Sí", C["brand"]) if ok else ("No", C["lavender_ink"])
         return (f'<div class="dd"><div class="ddbox" style="background:{bg}">{inner}</div>'
                 f'<p><b style="color:{col}">{mark}.</b> {txt}</p></div>')
 
     grad = (f'<svg viewBox="{vx} {vy} {vw} {vh}" style="width:76%"><defs><linearGradient id="gr">'
-            f'<stop offset="0" stop-color="#D4542F"/><stop offset=".5" stop-color="#24496D"/>'
-            f'<stop offset="1" stop-color="#CBD3B8"/></linearGradient></defs><g fill="url(#gr)">{g}</g></svg>')
+            f'<stop offset="0" stop-color="{C["brand"]}"/><stop offset=".5" stop-color="{C["lavender"]}"/>'
+            f'<stop offset="1" stop-color="{C["pistachio"]}"/></linearGradient></defs><g fill="url(#gr)">{g}</g></svg>')
     dos = (dd(True, C["cream"], wm(), "Una sola tinta sobre fondo liso.")
-           + dd(True, C["terracotta"], wm(fill=C["cream"]), "Crema sobre terracota.")
+           + dd(True, C["brand"], wm(fill=C["cream"]), "Crema sobre olivo.")
            + dd(False, C["cream"], wm("transform:scaleX(1.5)"), "Estirarlo o deformarlo.")
            + dd(False, C["cream"], grad, "Degradados o varias tintas.")
-           + dd(False, C["cream"], wm(fill="none", extra=f'stroke="{C["terracotta"]}" stroke-width="30"'), "Solo el contorno.")
-           + dd(False, C["sea"], wm(), "Tinta con poco contraste."))
+           + dd(False, C["cream"], wm(fill="none", extra=f'stroke="{C["brand"]}" stroke-width="30"'), "Solo el contorno.")
+           + dd(False, C["pistachio"], wm(), "Olivo sobre pistacho: poco contraste."))
 
     css = f"""
 body {{ background:{C["cream"]}; color:{C["espresso"]}; font-family:GSF, sans-serif; }}
 .page {{ padding:110px 120px 130px; display:grid; gap:80px; }}
-h2 {{ font: 700 40px Gluten; color:{C["terracotta"]}; margin:0 0 26px; }}
+h2 {{ font: 700 40px Gluten; color:{C["brand"]}; margin:0 0 26px; }}
 .hero {{ display:grid; grid-template-columns: 1.25fr 1fr; gap:80px; align-items:center; }}
 .hero h1 {{ font: 400 66px/1.06 FR; margin:36px 0 22px; }}
 .hero p {{ font-size:29px; line-height:1.5; max-width:30em; margin:0; color:#5b4f46; }}
@@ -405,15 +430,19 @@ h2 {{ font: 700 40px Gluten; color:{C["terracotta"]}; margin:0 0 26px; }}
 .lg {{ height:220px; display:grid; place-items:center; border-radius:28px; box-shadow: inset 0 0 0 2px rgba(34,26,21,.08); }}
 .lema {{ background:{C["paper"]}; border-radius:28px; padding:30px 40px; }}
 .lema svg {{ width:100%; height:auto; display:block; }}
-.sws {{ display:grid; grid-template-columns: repeat(7, 1fr); gap:16px; }}
+.sws {{ display:grid; grid-template-columns: repeat(9, 1fr); gap:16px; }}
+.tns {{ display:grid; grid-template-columns: repeat(7, 1fr); gap:16px; margin-top:16px; }}
+.tn {{ height:96px; border-radius:20px; padding:14px 18px; font-size:21px; display:flex; flex-direction:column;
+       justify-content:flex-end; box-shadow: inset 0 0 0 2px rgba(34,26,21,.08); }}
+.tn span {{ opacity:.75; font-size:18px; }}
 .sw {{ height:230px; border-radius:24px; padding:22px; display:flex; flex-direction:column; justify-content:flex-end;
        font-size:25px; box-shadow: inset 0 0 0 2px rgba(34,26,21,.08); }}
-.sw span {{ opacity:.75; font-size:21px; margin-top:4px; }}
+.sw span {{ opacity:.8; font-size:19px; margin-top:4px; }}
 .type {{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:24px; }}
 .type > div {{ background:{C["paper"]}; border-radius:28px; padding:34px 38px; }}
 .type .s {{ font-size:23px; color:#76695F; margin-top:14px; line-height:1.45; }}
-.pats {{ display:grid; grid-template-columns: repeat(4, 1fr); gap:24px; }}
-.pats img {{ width:100%; height:520px; object-fit:cover; border-radius:28px; display:block; }}
+.pats {{ display:grid; grid-template-columns: repeat(6, 1fr); gap:20px; }}
+.pats img {{ width:100%; height:440px; object-fit:cover; border-radius:28px; display:block; }}
 .mks {{ display:grid; grid-template-columns: repeat(3, 1fr); gap:24px; }}
 .mk {{ width:100%; height:760px; object-fit:cover; border-radius:28px; display:block; }}
 .mkws {{ display:grid; grid-template-columns: 1fr 1fr; gap:24px; margin-top:24px; }}
@@ -426,26 +455,26 @@ h2 {{ font: 700 40px Gluten; color:{C["terracotta"]}; margin:0 0 26px; }}
 .two {{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:24px; }}
 .use {{ background:{C["paper"]}; border-radius:28px; padding:36px 40px; font-size:25px; line-height:1.5; }}
 .use b {{ display:block; font: 400 40px FR; margin-bottom:12px; }}
-.use.il b {{ font: 800 42px Gluten; color:{C["terracotta"]}; }}
-.use.ph {{ background:none; border: 4px solid rgba(212,84,47,.35); }}
+.use.il b {{ font: 800 42px Gluten; color:{C["brand"]}; }}
+.use.ph {{ background:none; border: 4px solid rgba(90,107,50,.35); }}
 .ils {{ display:flex; gap:28px; align-items:flex-end; margin:6px 0 18px; }}
 .ils img {{ height:230px; width:auto; display:block; }}
-.use.ph b {{ font: 800 42px Gluten; color:{C["terracotta"]}; }}
+.use.ph b {{ font: 800 42px Gluten; color:{C["brand"]}; }}
 """
     body = f"""<div class="page">
   <div class="hero">
-    <div>{wordmark_svg(C["terracotta"], height=250)}
+    <div>{wordmark_svg(C["brand"], height=250)}
       <h1>Correr juntos y desayunar después.</h1>
       <p>La capa ilustrada de la marca, para quedadas, comunidad, merchandising y anuncios: una sola tinta, letras
       gordas y redondas, buen rollo. Los carruseles de datos siguen con el sistema editorial.</p></div>
-    <div>{sello_svg(C["cream"], C["terracotta"])}</div>
+    <div>{sello_svg(C["cream"], C["brand"])}</div>
   </div>
   <section><h2>Logotipo</h2><div class="row" style="grid-template-columns:repeat(3,1fr)">{logos}</div></section>
   <section><h2>Lemas</h2><div class="row" style="grid-template-columns:repeat(3,1fr)">{lemas}</div></section>
-  <section><h2>Color</h2><div class="sws">{swatches}</div></section>
+  <section><h2>Color</h2><div class="sws">{swatches}</div><div class="tns">{tints}</div></section>
   <section><h2>Tipografía</h2><div class="type">
-    <div><div style="font:820 66px Gluten;color:{C["terracotta"]}">Gluten</div><div class="s">Logotipo, titulares y lemas de la capa ilustrada. Licencia OFL, incluida en fonts/.</div></div>
-    <div><div style="font:400 66px FR">Fraunces <i style="color:{C["terracotta"]}">cursiva</i></div><div class="s">Titulares del sistema editorial: datos y carruseles.</div></div>
+    <div><div style="font:820 66px Gluten;color:{C["brand"]}">Gluten</div><div class="s">Logotipo, titulares y lemas de la capa ilustrada. Licencia OFL, incluida en fonts/.</div></div>
+    <div><div style="font:400 66px FR">Fraunces <i style="color:{C["brand"]}">cursiva</i></div><div class="s">Titulares del sistema editorial: datos y carruseles.</div></div>
     <div><div style="font:600 58px GSF">Google Sans Flex</div><div class="s">Textos y detalles en los dos sistemas.</div></div>
   </div></section>
   <section><h2>Patrón</h2><div class="pats">{pats}</div></section>
@@ -462,8 +491,9 @@ h2 {{ font: 700 40px Gluten; color:{C["terracotta"]}; margin:0 0 26px; }}
 
 
 def main(parts: list[str]) -> None:
-    parts = parts or ["logo", "patrones", "mockups", "hoja"]
-    steps = {"logo": build_logo, "patrones": build_patrones, "mockups": build_mockups, "hoja": build_hoja}
+    parts = parts or ["ilustraciones", "logo", "patrones", "mockups", "hoja"]
+    steps = {"ilustraciones": build_ilustraciones, "logo": build_logo, "patrones": build_patrones,
+             "mockups": build_mockups, "hoja": build_hoja}
     with Renderer() as r:
         for p in parts:
             steps[p](r)

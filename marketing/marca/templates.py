@@ -37,13 +37,14 @@ FPS, DUR = 30, 6.0
 
 # Tema: fondo y tinta (siempre una sola tinta).
 THEMES = {
-    "terracotta": (C["terracotta"], C["cream"]),
-    "cream": (C["cream"], C["terracotta"]),
+    "olive": (C["brand"], C["cream"]),
+    "cream": (C["cream"], C["brand"]),
+    "lavender": (C["lavender"], C["cream"]),
     "espresso": (C["espresso"], C["cream"]),
     "butter": (C["butter"], C["espresso"]),
 }
 # Versión de la ilustración (sufijo del archivo) que va con cada tema: la tinta del tema.
-INK_FILE = {"terracotta": "crema", "cream": "terracota", "espresso": "crema", "butter": "espresso"}
+INK_FILE = {"olive": "crema", "cream": "olivo", "lavender": "crema", "espresso": "crema", "butter": "espresso"}
 
 # Ilustraciones: ilustraciones/gemini/<nombre>-<tinta>.png. Tamaño del PNG y caja del dibujo (sin el margen
 # transparente), para colocarlas por el dibujo y no por el lienzo. "move": cómo se mueve en el vídeo.
@@ -55,9 +56,9 @@ ILLUS = {
 
 # Plantillas: diseño (tema e ilustración). Los textos van aparte, en TEXTS, uno por idioma.
 TEMPLATES = [
-    {"id": "quedada", "theme": "terracotta", "ilustracion": "corredor-1"},
+    {"id": "quedada", "theme": "olive", "ilustracion": "corredor-1"},
     {"id": "reto", "theme": "cream", "ilustracion": "corredor-1"},
-    {"id": "tu-turno", "theme": "espresso", "ilustracion": "corredor-2"},
+    {"id": "tu-turno", "theme": "lavender", "ilustracion": "corredor-2"},
     {"id": "cita", "theme": "butter", "ilustracion": "corredor-2"},
 ]
 
@@ -212,7 +213,7 @@ def quedada(t: dict, story: bool, fig) -> str:
         fig(1004 - fig_size(t["ilustracion"], fh), y0 + v(150, 130), fh, .2),
         kicker(t["kicker"], 72, y0 + v(196, 222), .1),
         at(72, y0 + v(262, 300), f'<p class="body">{t["body"]}</p>', 0, A("fade", .35, .7)),
-        at(v(84, 84), y0 + v(388, 440), stamp(t["stamp"], v(190, 220), C["cream"], C["terracotta"]), -6, A("stamp", 1.05, .9)),
+        at(v(84, 84), y0 + v(388, 440), stamp(t["stamp"], v(190, 220), C["cream"], C["brand"]), -6, A("stamp", 1.05, .9)),
         at(72, y0 + v(604, 762), f'<div class="day">{html.escape(t["day"].upper())}</div>', 0, A("rise", .3, .6, y=40)),
         at(v(56, 60), y0 + v(752, 910),
            f'<div class="hero-wrap"><div class="hero echo" {A("echo", .75, .7, x=v(14, 16), y=v(14, 16))} '
@@ -236,7 +237,7 @@ def reto(t: dict, story: bool, fig) -> str:
            f'style="font-size:{big}px">{t["big"]}</div>'
            f'<div class="hero" {A("pop", .5, .95, r=-12)} style="font-size:{big}px">{t["big"]}</div></div>', -6),
         at(v(420, 450), y0 + v(744, 850), f'<div class="stack">{lines_html(t["lines"], .7, .12)}</div>', -3),
-        at(v(770, 760), y0 + v(420, 500), stamp(t["stamp"], v(210, 240), C["terracotta"], C["cream"]), 0, A("stamp", 1.05, .9)),
+        at(v(770, 760), y0 + v(420, 500), stamp(t["stamp"], v(210, 240), C["brand"], C["cream"]), 0, A("stamp", 1.05, .9)),
         at(v(436, 486), y0 + v(1010, 1140), f'<div class="sticker">{html.escape(t["sticker"])}</div>', 4, A("pop", 1.0, .8, r=12)),
         f'<div class="abs chips" style="left:72px;top:{y0 + v(1190, 1330)}px">{chips(t["chips"], 1.4)}</div>',
     ])
@@ -252,7 +253,7 @@ def tu_turno(t: dict, story: bool, fig) -> str:
         at(v(64, 64), y0 + v(236, 276), f'<div class="q">{lines_html(t["lines"], .25, .12, [0, 120, 40, 0])}</div>', -3),
         f'<div class="abs chips col" style="left:72px;top:{y0 + v(900, 1030)}px">{chips(t["chips"], 1.3, .1)}</div>',
         fig(1000 - fig_size(t["ilustracion"], fh), y0 + v(680, 850), fh, .5),
-        at(v(420, 420), y0 + v(790, 930), stamp(t["stamp"], v(190, 210), C["cream"], C["espresso"]), -8, A("stamp", 1.0, .9)),
+        at(v(420, 420), y0 + v(790, 930), stamp(t["stamp"], v(190, 210), C["cream"], C["lavender_ink"]), -8, A("stamp", 1.0, .9)),
     ])
 
 
@@ -437,8 +438,11 @@ def main() -> None:
     OUT.mkdir(exist_ok=True)
     with Renderer() as r:
         if not only:  # se borra lo generado antes, para que no queden archivos con nombres viejos
-            for f in [*OUT.glob("*.png"), *OUT.glob("*.mp4")]:
-                f.unlink()
+            # (con --sin-video, los vídeos y sus hojas de fotogramas se quedan; los -musica.mp4 no los hace este script)
+            old = [*OUT.glob("*.png"), *OUT.glob("*.mp4")] if video else OUT.glob("*.png")
+            for f in old:
+                if "-musica" not in f.name and (video or not f.name.endswith("-frames.png")):
+                    f.unlink()
         for tpl in TEMPLATES:
             if only and tpl["id"] not in only:
                 continue
