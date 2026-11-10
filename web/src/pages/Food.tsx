@@ -169,12 +169,29 @@ function PhotoPicker({ photo, onPhoto, onError }: { photo: string | null; onPhot
 // ------------------------------------------------------------------ datos
 const FOOD_ON = 'gs-food-on';
 
+// Última vista recibida y petición en curso, compartidas por la tarjeta de Hoy y la página de Comida: al entrar
+// en Comida se pinta al instante lo que ya se tiene y se refresca por detrás, sin repetir la misma petición.
+let lastView: FoodView | null = null;
+let inflight: Promise<FoodView> | null = null;
+const remember = (x: FoodView) => {
+  lastView = x;
+  try { localStorage.setItem(FOOD_ON, x.prefs.enabled ? '1' : '0'); } catch { /* sin almacenamiento */ }
+};
+function fetchFood(): Promise<FoodView> {
+  inflight ??= call<FoodView>('./api/food').then((x) => { remember(x); return x; }).finally(() => { inflight = null; });
+  return inflight;
+}
+/** Trae Comida por adelantado (al abrir la app) para que la página salga ya pintada. */
+export function prefetchFood() {
+  try { if (localStorage.getItem(FOOD_ON) !== '1') return; } catch { return; }
+  if (!lastView) fetchFood().catch(() => { /* ya se reintentará al entrar */ });
+}
+
 export function useFood() {
-  const [view, setView] = useState<FoodView | null>(null);
+  const [view, setView] = useState<FoodView | null>(lastView);
   const [error, setError] = useState<string | null>(null);
-  const remember = (x: FoodView) => { try { localStorage.setItem(FOOD_ON, x.prefs.enabled ? '1' : '0'); } catch { /* sin almacenamiento */ } };
   const load = useCallback(async () => {
-    try { const x = await call<FoodView>('./api/food'); remember(x); setView(x); setError(null); } catch (e) { setError((e as Error).message); }
+    try { setView(await fetchFood()); setError(null); } catch (e) { setError((e as Error).message); }
   }, []);
   useEffect(() => { load(); }, [load]);
   /** POST a /api/food/...: la respuesta trae la vista completa. Lanza el Error del servidor. */
@@ -785,9 +802,9 @@ export default function Food({ data, go }: { data: GarminData; go: (k: string) =
 export function FoodTodayCard({ go, mt = 2 }: { go: (k: string) => void; mt?: number }) {
   const mode = useResolvedMode() as Mode;
   const on = (() => { try { return localStorage.getItem(FOOD_ON) === '1'; } catch { return false; } })();
-  const [v, setV] = useState<FoodView | null>(null);
-  const [loaded, setLoaded] = useState(!on);
-  useEffect(() => { if (on) call<FoodView>('./api/food').then(setV).catch(() => setV(null)).finally(() => setLoaded(true)); }, [on]);
+  const [v, setV] = useState<FoodView | null>(lastView);
+  const [loaded, setLoaded] = useState(!on || !!lastView);
+  useEffect(() => { if (on) fetchFood().then(setV).catch(() => setV(lastView)).finally(() => setLoaded(true)); }, [on]);
   if (!loaded) return null;
   if (!on || !v?.prefs.enabled) {
     // Sin el módulo activado: invitación amable en vez de un hueco vacío

@@ -61,7 +61,7 @@ import Insights from './pages/Insights';
 import PlanPage from './pages/PlanPage';
 import Paces from './pages/Paces';
 import Gym from './pages/Gym';
-import Food from './pages/Food';
+import Food, { prefetchFood } from './pages/Food';
 import Shopping from './pages/Shopping';
 import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import FitnessCenterRounded from '@mui/icons-material/FitnessCenterRounded';
@@ -381,6 +381,8 @@ export default function App() {
   const googleReturn = useGoogleReturn();
   const hasData = !!data;
   useEffect(() => { if (googleReturn && hasData) setInfo(googleReturn.message); }, [googleReturn, hasData]);
+  // Comida se pide ya al abrir la app (si la tiene activada): al entrar en su página sale pintada al instante.
+  useEffect(() => { if (hasData) prefetchFood(); }, [hasData]);
   // Ya hay datos en el servidor pero esta página se cargó antes: traerlos
   useEffect(() => { if (me?.hasData && !data) check(); }, [me?.hasData, data, check]);
   const { syncing, sync } = useManualSync(data, check, onSynced);
