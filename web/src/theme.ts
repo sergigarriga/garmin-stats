@@ -156,4 +156,6 @@ export const theme = createTheme({
     },
     MuiTableCell: { styleOverrides: { root: { borderColor: 'var(--mui-palette-divider)' } } },
   },
-});
+},
+// Textos de las gráficas en castellano (una gráfica sin datos decía "No data to display")
+{ components: { MuiChartsLocalizationProvider: { defaultProps: { localeText: { loading: 'Cargando…', noData: 'Aún no hay datos' } } } } });

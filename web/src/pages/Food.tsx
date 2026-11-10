@@ -633,6 +633,7 @@ function SettingsDialog({ open, onClose, v, act }: { open: boolean; onClose: () 
 function Intro({ onEnable }: { onEnable: () => Promise<void> }) {
   const mode = useResolvedMode() as Mode;
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const points = [
     'Haz una foto de lo que comes (o escríbelo) y la IA estima alimentos, gramos, calorías y macros.',
     'Ves lo que comes frente a lo que gastas según tu reloj, día a día y en tendencia.',
@@ -649,8 +650,9 @@ function Intro({ onEnable }: { onEnable: () => Promise<void> }) {
       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
         Es una estimación aproximada (±20-30 %), no un consejo médico. Cada foto gasta un poco de tu IA del mes (unos 2 céntimos).
       </Typography>
-      <Button data-new="food" variant="contained" disableElevation size="large" onClick={async () => { setBusy(true); try { await onEnable(); } finally { setBusy(false); } }}
+      <Button data-new="food" variant="contained" disableElevation size="large" onClick={async () => { setBusy(true); setErr(null); try { await onEnable(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); } }}
         disabled={busy} sx={{ ...PILL, px: 3 }}>Activar Comida</Button>
+      {err && <Typography color="error" variant="body2" sx={{ mt: 1.5 }}>No se ha podido activar: {err}</Typography>}
     </Card>
   );
 }
@@ -673,7 +675,9 @@ export default function Food({ data, go }: { data: GarminData; go: (k: string) =
   useEffect(() => {
     const on = () => setAdd(true);
     window.addEventListener('food-add', on);
-    if (window.location.hash === '#comida' && sessionStorage.getItem('food-add')) { sessionStorage.removeItem('food-add'); setAdd(true); }
+    try {
+      if (window.location.hash === '#comida' && sessionStorage.getItem('food-add')) { sessionStorage.removeItem('food-add'); setAdd(true); }
+    } catch { /* sin almacenamiento (modo privado estricto): no pasa nada */ }
     return () => window.removeEventListener('food-add', on);
   }, []);
   const dayEntries = useMemo(() => (v?.entries ?? []).filter((e) => e.date === day)
@@ -802,7 +806,7 @@ export function FoodTodayCard({ go, mt = 2 }: { go: (k: string) => void; mt?: nu
   }
   const t = v.today;
   const hide = v.prefs.hideCalories;
-  const addNow = () => { sessionStorage.setItem('food-add', '1'); go('comida'); };
+  const addNow = () => { try { sessionStorage.setItem('food-add', '1'); } catch { /* sin almacenamiento */ } go('comida'); };
   return (
     <Card sx={{ ...CARD_SX, mt, display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
       <IconBubble color={COL.intake[mode]}><RestaurantRounded /></IconBubble>

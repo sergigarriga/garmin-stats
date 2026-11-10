@@ -11,7 +11,7 @@ import json
 import os
 import logging
 import threading
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
@@ -28,7 +28,7 @@ CHAT_MODEL = ai.PREMIUM  # Sonnet 5.5; con el tope de gasto pasa a Haiku
 _count: dict[str, int] = {}
 _lock = threading.Lock()
 _plan_lock = threading.Lock()
-_ctx_cache: dict = {"mtime": None, "text": None}
+_ctx_cache: dict = {"key": None, "text": None, "last_day": None}
 
 CHAT_SYSTEM = ai.SYSTEM + """
 
@@ -39,19 +39,54 @@ Ahora respondes preguntas del usuario sobre sus propios datos, como un asistente
   3-4 puntos como mucho. Nada de títulos, tablas ni emojis. Máximo unas 150 palabras.
 - Para preguntas por días de la semana, meses o comparaciones, usa las tablas por_dia_semana, por_mes y dias.
 - Si los datos no permiten responder, dilo y sugiere qué registrar para saberlo.
-- Puedes dar consejos generales de hábitos saludables, pero no diagnósticos médicos. Ante síntomas, recomienda consultar a un profesional.
+- Si falta justo el dato por el que te preguntan (el reloj no lo mide, no se llevó puesto o aún no hay registros), dilo
+  claro en la primera frase y no lo calcules ni lo supongas a partir de otros. Un valor null o ausente es "no hay dato", nunca un cero.
+- Cada cifra que des, con su porqué en lenguaje de calle: qué significa y si es alta, normal o baja para esta persona
+  (compárala con su media o su rango habitual). Si usas un término técnico (HRV, carga, Body Battery), explícalo en media frase.
+- Para "¿por qué...?" mira primero lo que cambió justo antes (la última noche, el entreno de ayer, la carga de la
+  semana, cómo dice que se encuentra) y cita esos datos con su fecha. Son pistas, no causas seguras: dilo así.
+- Fechas: "hoy", "ayer" y "esta semana" se cuentan desde el bloque AHORA (hora de España), que va después de los datos.
+  Si el último día con datos no es hoy, dilo en vez de dar por de hoy un dato antiguo.
+- En el chat sí puedes hablar de lo que va de hoy si te preguntan (pasos, estrés, Body Battery de ahora): avisa de que
+  el día va a medias y di la hora del último dato del reloj.
+- Puedes dar consejos generales de hábitos saludables, pero no diagnósticos médicos ni dosis de medicamentos. Ante
+  síntomas (dolor en el pecho, mareos, desmayos, falta de aire, palpitaciones) o un dato que preocupa, recomienda
+  parar y consultar a un profesional sanitario, sin alarmar.
 """
+
+BUSY_MSG = "La IA está muy ocupada ahora mismo. Vuelve a intentarlo en un minuto."
+SLOW_MSG = "La IA ha tardado demasiado en responder. Vuelve a intentarlo."
+DAYS_ES = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+MONTHS_ES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre",
+             "noviembre", "diciembre"]
+
+
+def _day_es(d: date) -> str:
+    return f"{DAYS_ES[d.weekday()]} {d.day} de {MONTHS_ES[d.month - 1]} de {d.year} ({d.isoformat()})"
+
+
+def _now_block() -> str:
+    """Fecha y hora de la pregunta. Va DESPUÉS de los datos y sin caché: así los datos se siguen leyendo de la caché
+    aunque cambie el minuto."""
+    now = datetime.now()
+    last = _ctx_cache.get("last_day")
+    lines = [f"AHORA: {_day_es(now.date())}, {now:%H:%M} (hora de España). Ayer fue {_day_es(now.date() - timedelta(days=1))}."]
+    if last and last != now.date().isoformat():
+        lines.append(f"Aviso: el último día con datos es {last}; de hoy todavía no hay nada descargado.")
+    return "\n".join(lines)
 
 
 def _context() -> str:
-    """Datos para la IA: resumen + tablas compactas. Se recalcula solo si cambia data.js."""
+    """Datos para la IA: resumen + tablas compactas. Se recalcula solo si cambia data.js (o la persona, o el día)."""
     path = SITE_DIR / "data.js"
-    mtime = path.stat().st_mtime
-    if _ctx_cache["mtime"] == mtime:
+    # La persona y el día van en la clave: en AWS la misma Lambda atiende a varias y nunca debe servir datos de otra.
+    key = (os.environ.get("GARMIN_STATS_UID", ""), date.today().isoformat(), path.stat().st_mtime_ns)
+    if _ctx_cache["key"] == key:
         return _ctx_cache["text"]
     raw = path.read_text(encoding="utf-8")
     data = json.loads(raw[raw.index("=") + 1:].rstrip().rstrip(";"))
-    days = data["days"]
+    days = data.get("days") or []
+    activities = [a for a in data.get("activities") or [] if a.get("start")]
     cols = ["sleepH", "sleepScore", "bed", "wake", "steps", "rhr", "hrv", "stress", "bbMax", "load", "ready"]
     names = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
 
@@ -69,18 +104,22 @@ def _context() -> str:
     by_month = [{"mes": m, **{c: mean([r.get(c) for r in rs]) for c in cols}} for m, rs in sorted(months.items())]
     recent = [[d["d"], names[date.fromisoformat(d["d"]).weekday()]] + [d.get(c) for c in cols] for d in days[-120:]]
     acts = [{k: a.get(k) for k in ("start", "group", "name", "km", "min", "pace", "hr", "trimp", "vo2")}
-            for a in data["activities"][-40:]]
+            for a in activities[-40:]]
     runs_wd = []
     for i, n in enumerate(names):
-        rs = [a for a in data["activities"] if a["group"] in ("Correr", "Cinta")
+        rs = [a for a in activities if a.get("group") in ("Correr", "Cinta")
               and date.fromisoformat(a["start"][:10]).weekday() == i]
         runs_wd.append({"dia": n, "carreras": len(rs), "km_medio": mean([a.get("km") for a in rs]),
                         "ritmo_medio_min_km": mean([a.get("pace") for a in rs]), "eficiencia_media": mean([a.get("ef") for a in rs]),
                         "pulso_medio": mean([a.get("hr") for a in rs]), "carga_media": mean([a.get("trimp") for a in rs])})
+    summary = ai._summary(data)
+    for k in ("today", "now"):  # la fecha y la hora van aparte (bloque AHORA): aquí romperían la caché cada minuto
+        summary.pop(k, None)
     ctx = {
         "nota": "bed = horas desde mediodía (13,8 = 01:48); wake = hora del reloj (7,9 = 07:54); "
-                "las noches llevan la fecha del día en que te despiertas; ready = preparación 0-100.",
-        "resumen": ai._summary(data),
+                "las noches llevan la fecha del día en que te despiertas; ready = preparación 0-100. "
+                "Un dato que no aparece o vale null significa que no se ha medido.",
+        "resumen": summary,
         "preparacion_hoy": data.get("readiness"),
         "semanas": data.get("weeks"),
         "records": data.get("records"),
@@ -93,6 +132,14 @@ def _context() -> str:
         "plan_de_entreno": (data.get("coach") or {}).get("plan") and {
             k: data["coach"]["plan"].get(k) for k in ("goal", "raceDate", "goalTime", "summary", "memory")},
         "plan_hoy": (data.get("coach") or {}).get("today"),
+        "plan_sesiones_cercanas": _plan_sessions(data),
+        "nota_plan": "plan_sesiones_cercanas = sesiones del plan de los últimos 7 días y los próximos 14 (status: done = "
+                     "hecha, partial = a medias, missed = no hecha, today = toca hoy, upcoming = pendiente, moved = cambiada "
+                     "de día; actual = lo que hizo de verdad).",
+        "avisos": data.get("alerts") or None,
+        "peso": (data.get("weights") or [])[-12:] or None,
+        "comida": _optional(lambda: _food(data)),
+        "prevision_tiempo": _optional(_weather),
         "ahora_segun_el_reloj": {k: v for k, v in (data.get("live") or {}).items() if not k.endswith("Series")} or None,
         "nota_ahora": "bbNow = Body Battery actual (asOf = hora del último dato del reloj); bbMax = máximo del día.",
         "ritmos_de_referencia": data.get("paces") and {k: data["paces"].get(k) for k in ("vdot", "sourceLabel", "refs", "zones", "races")},
@@ -106,27 +153,78 @@ def _context() -> str:
             "ultimos_dias": data["wellness"].get("recent"), "molestias": data["wellness"].get("injuries")},
     }
     text = json.dumps(ctx, ensure_ascii=False, separators=(",", ":"))
-    _ctx_cache.update(mtime=mtime, text=text)
+    _ctx_cache.update(key=key, text=text, last_day=days[-1]["d"] if days else None)
     return text
+
+
+def _optional(fn):
+    """Un bloque extra del contexto (comida, tiempo): si falla, el chat sigue sin él."""
+    try:
+        return fn()
+    except Exception:  # noqa: BLE001
+        log.exception("Chat: bloque de contexto opcional no disponible")
+        return None
+
+
+def _plan_sessions(data: dict) -> list[dict] | None:
+    """Sesiones del plan cerca de hoy, para responder "¿qué me toca mañana?" o "¿cómo llevo la semana?"."""
+    plan = (data.get("coach") or {}).get("plan") or {}
+    today = date.today()
+    lo, hi = (today - timedelta(days=7)).isoformat(), (today + timedelta(days=14)).isoformat()
+    keys = ("date", "type", "title", "distance_km", "duration_min", "target", "description", "status", "moved_to", "weather_note")
+    out = []
+    for w in plan.get("weeks") or []:
+        for s in w.get("sessions") or []:
+            if lo <= str(s.get("date") or "") <= hi:
+                row = {k: s[k] for k in keys if s.get(k) is not None}
+                if s.get("actual"):
+                    row["actual"] = {k: s["actual"].get(k) for k in ("km", "min", "pace", "hr")}
+                out.append(row)
+    return out or None
+
+
+def _food(data: dict) -> dict | None:
+    """Lo que come (solo si usa el módulo Comida): hoy, media de 7 días y objetivo."""
+    from . import food
+    if not food.prefs()["enabled"]:
+        return None
+    v = food.view(data, None, coach.load())
+    return {"hoy": v.get("today"), "media_7_dias": v.get("week"), "objetivo": v.get("goal"), "proteina": v.get("protein"),
+            "nota": "Estimaciones a partir de fotos o texto: orientativas."}
+
+
+def _weather() -> list[dict] | None:
+    from . import weather
+    today = date.today()
+    return weather.for_coach([(today + timedelta(days=i)).isoformat() for i in range(4)])
 
 
 def ask(messages: list[dict]) -> dict:
     key = ai._api_key()
     if not key:
-        return {"error": "No hay clave de Anthropic configurada."}
+        return {"error": "El chat no está configurado todavía (falta la clave de la IA)."}
     if ai.over_budget():
         return {"error": f"Has llegado al tope de IA de este mes ({ai.budget():.0f} $). El chat vuelve el día 1."}
+    # Solo los últimos turnos, texto plano. Lo que no sea un mensaje normal (otro tipo, vacío) se ignora.
+    convo = [{"role": m["role"], "content": str(m["content"])[:2000]}
+             for m in (messages if isinstance(messages, list) else [])[-8:]
+             if isinstance(m, dict) and m.get("role") in ("user", "assistant") and str(m.get("content") or "").strip()]
+    while convo and convo[0]["role"] != "user":  # una respuesta suelta sin su pregunta no aporta nada
+        convo.pop(0)
+    if not convo or convo[-1]["role"] != "user":
+        return {"error": "Falta la pregunta."}
     today = (os.environ.get("GARMIN_STATS_UID", ""), date.today().isoformat())  # contador por persona
     with _lock:
         if _count.get(today, 0) >= MAX_QUESTIONS_PER_DAY:
             return {"error": f"Has llegado al límite de {MAX_QUESTIONS_PER_DAY} preguntas por hoy."}
         _count[today] = _count.get(today, 0) + 1
-    # Solo los últimos turnos, texto plano y alternando roles.
-    convo = [{"role": m["role"], "content": str(m["content"])[:2000]} for m in messages[-8:]
-             if m.get("role") in ("user", "assistant") and m.get("content")]
-    if not convo or convo[-1]["role"] != "user":
-        return {"error": "Falta la pregunta."}
-    client = anthropic.Anthropic(api_key=key, max_retries=2, timeout=120)
+    try:
+        context = _context()
+    except Exception:  # noqa: BLE001 - datos a medias o con una forma rara: mejor un aviso claro que un error 500
+        log.exception("Chat: no se pudo preparar el contexto")
+        return {"error": "No he podido leer tus datos para responder. Actualiza la app y vuelve a intentarlo."}
+    # La web (CloudFront) espera 60 s como mucho: un intento de 55 s y un solo reintento rápido si la IA está saturada.
+    client = anthropic.Anthropic(api_key=key, max_retries=1, timeout=55)
     model = ai.pick_model(CHAT_MODEL)
     extra = ai.FALLBACKS if model != ai.MODEL else {}
     try:
@@ -134,17 +232,39 @@ def ask(messages: list[dict]) -> dict:
             model=model, max_tokens=8000, output_config={"effort": "medium"}, **extra,
             system=[{"type": "text", "text": CHAT_SYSTEM},
                     # Los datos van en el system con caché: las preguntas seguidas los leen al 10 % del precio.
-                    {"type": "text", "text": "DATOS DEL USUARIO (JSON):\n" + _context(), "cache_control": {"type": "ephemeral"}}],
+                    {"type": "text", "text": "DATOS DEL USUARIO (JSON):\n" + context, "cache_control": {"type": "ephemeral"}},
+                    {"type": "text", "text": _now_block()}],
             messages=convo,
         )
-    except anthropic.APIStatusError as e:
-        return {"error": f"La IA no está disponible ahora ({e.status_code})."}
+    except anthropic.APITimeoutError:
+        log.warning("Chat: la IA no ha respondido a tiempo")
+        return {"error": SLOW_MSG, "retry": True}
     except anthropic.APIConnectionError:
-        return {"error": "Sin conexión con la IA."}
-    cost = ai._log_usage(resp, "chat", model)
+        log.warning("Chat: sin conexión con la IA")
+        return {"error": "No hay conexión con la IA ahora mismo. Vuelve a intentarlo en un momento.", "retry": True}
+    except anthropic.RateLimitError:
+        log.warning("Chat: límite de peticiones de la IA (429)")
+        return {"error": BUSY_MSG, "retry": True}
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
+        log.error("Chat: la clave de la IA no vale (%s)", e.status_code)
+        return {"error": "El chat no está disponible ahora por un problema de configuración. Prueba más tarde."}
+    except anthropic.BadRequestError as e:
+        log.error("Chat: petición rechazada: %s", str(e.message)[:200])
+        return {"error": "La IA no ha podido con esta pregunta. Prueba a escribirla de otra forma o borra la conversación."}
+    except anthropic.APIStatusError as e:
+        log.warning("Chat: error %s de la IA", e.status_code)
+        return {"error": BUSY_MSG if e.status_code >= 500 else "La IA no está disponible ahora. Vuelve a intentarlo en un rato.",
+                "retry": e.status_code >= 500}
+    cost = ai._log_usage(resp, "chat", model)  # toda respuesta 200 se cobra: se apunta siempre
     text = "".join(b.text for b in resp.content if b.type == "text").strip()
-    if resp.stop_reason == "refusal" or not text:
+    if resp.stop_reason == "refusal":
         text = "No puedo responder a eso. Prueba a preguntarlo de otra forma."
+    elif not text:
+        # Sin texto (p. ej. se quedó sin espacio antes de escribir): no se guarda como respuesta, se deja reintentar
+        log.warning("Chat: respuesta vacía (stop=%s)", resp.stop_reason)
+        return {"error": "La respuesta ha salido vacía. Vuelve a preguntar, mejor con una pregunta más corta.", "retry": True}
+    elif resp.stop_reason == "max_tokens":
+        text += "\n\nLa respuesta se ha cortado por ser muy larga. Pídeme que siga si quieres el resto."
     return {"answer": text, "cost": round(cost, 5)}
 
 

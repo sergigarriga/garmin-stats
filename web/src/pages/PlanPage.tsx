@@ -92,8 +92,9 @@ async function api(path: string, body?: unknown): Promise<CoachView> {
     method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Garmin-Stats': '1' }, body: JSON.stringify(body),
   });
   if (r.status === 401) { window.location.href = '/auth/login?next=%2F%23plan'; throw new Error('Sesión caducada'); }
-  const j = await r.json();
-  if (!r.ok) throw new Error(j.error ?? 'Algo ha fallado.');
+  // Si el servidor corta (plan largo, sin cobertura) la respuesta no es JSON: aviso claro, no el texto del navegador
+  const j = await r.json().catch(() => null);
+  if (!r.ok || !j) throw new Error(j?.error ?? 'No hemos podido hablar con el servidor. Inténtalo de nuevo en un momento.');
   return j;
 }
 
@@ -353,7 +354,12 @@ function FeedbackStars({ s, onSaved }: { s: PlanSession; onSaved: (v: CoachView)
   if (!online || !(s.status === 'done' || s.status === 'partial')) return null;
   return (
     <Tooltip title="¿Cómo te sentiste? El coach lo usa en el próximo ajuste">
-      <Rating size="small" value={val} onChange={async (_, v) => { if (!v) return; setVal(v); onSaved(await api('./api/plan/feedback', { date: s.date, rating: v })); }} />
+      <Rating size="small" value={val} onChange={async (_, v) => {
+        if (!v) return;
+        setVal(v);
+        // Si no se guarda (sin conexión), la estrella vuelve a como estaba en vez de quedarse marcada en falso
+        try { onSaved(await api('./api/plan/feedback', { date: s.date, rating: v })); } catch { setVal(s.feedback?.rating ?? null); }
+      }} />
     </Tooltip>
   );
 }
@@ -487,6 +493,16 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   const [watchOpen, setWatchOpen] = useState(false);
   const [calOpen, setCalOpen] = useState(false);
   const [sel, setSel] = useState<PlanSession | null>(null);
+  // "Entreno" desde los atajos de la portada: abre la sesión de hoy
+  useEffect(() => {
+    let want = false;
+    try { want = !!sessionStorage.getItem('plan-today'); sessionStorage.removeItem('plan-today'); } catch { /* sin almacenamiento */ }
+    if (!want) return;
+    const iso = isoLocal(new Date());
+    const today = (view?.plan?.weeks ?? []).flatMap((w) => w.sessions).filter((x) => x.date === iso);
+    const s = today.find((x) => x.type !== 'rest') ?? today[0];
+    if (s) setSel(s);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
   const refs = data.paces?.refs;
   const [confirm, setConfirm] = useState<null | { title: string; text: string; action: () => void }>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -502,7 +518,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
   }, [data.generatedAt]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const plan = view?.plan;
-  if (!plan) {
+  if (!plan || !plan.weeks?.length) {  // un plan sin semanas no se puede pintar: se trata como si no hubiera
     const creating = busy || view?.job?.status === 'running';
     return (
       <Box>

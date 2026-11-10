@@ -207,8 +207,9 @@ def activities(store: Store) -> pd.DataFrame:
             "is_pr": bool(a.get("pr") or a.get("isPR")),
         })
     df = pd.DataFrame(rows)
+    df = df[df["start"].notna()] if not df.empty else df  # sin hora de inicio no se puede colocar en ningún día
     if df.empty:
-        return df
+        return pd.DataFrame()
     df["date"] = df["start"].dt.normalize()
     df["pace_min_km"] = (df["moving_min"] / df["distance_km"]).where(df["distance_km"] > 0.2)
     return df.sort_values("start").reset_index(drop=True)

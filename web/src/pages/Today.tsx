@@ -32,6 +32,7 @@ import { WeatherIcon } from './PlanTime';
 import { FoodTodayCard } from './Food';
 import { KeyFacts, activityFacts, heartFacts, sleepFacts, trainingFacts } from '../highlights';
 import { BRAND_INK, brandTint } from '../brand/colors';
+import { Shortcuts } from '../shortcuts';
 
 const minutes = (hm: string) => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(Math.round(min % 60)).padStart(2, '0')}`;
@@ -176,9 +177,11 @@ export default function Today({ data, go }: { data: GarminData; go: (tab: string
         subtitle={`${dateLong(today).replace(/^\w/, (c) => c.toUpperCase())}${!latest && lastSync ? ` · aún no hay datos de hoy (últimos del ${dateShort(toDate(lastSync.d))})` : ''}${live?.asOf ? ` · datos del reloj hasta las ${live.asOf}` : ''}`}
       />
 
+      {/* Atajos para apuntar, lo primero de la portada */}
+      <Shortcuts data={data} go={go} />
       <Alerts alerts={data.alerts} />
       {data.ai?.headline && (
-        <Typography sx={{ fontSize: { xs: 18, sm: 20 }, mt: -1.5, mb: 3, maxWidth: 820 }}><Rich>{data.ai.headline}</Rich></Typography>
+        <Typography sx={{ fontSize: { xs: 18, sm: 20 }, mb: 3, maxWidth: 820 }}><Rich>{data.ai.headline}</Rich></Typography>
       )}
       <ReadinessCard data={data} />
       <GoalOddsCard data={data} go={go} />

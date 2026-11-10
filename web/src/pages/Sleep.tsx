@@ -42,6 +42,22 @@ export default function Sleep({ data }: { data: GarminData }) {
   const wd = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
   const byWd = wd.map((_, i) => mean(rows.filter((r) => (toDate(r.d).getDay() + 6) % 7 === i).map((r) => r.sleepH)) ?? null);
 
+  // Sin ninguna noche registrada (reloj que no mide el sueño o que no se lleva al dormir): aviso claro, no gráficas vacías
+  if (!nights.length) {
+    return (
+      <Box>
+        <PageHeader title="Sueño" subtitle="Todavía no hay noches registradas" />
+        <Card sx={{ ...CARD_SX, maxWidth: 640 }}>
+          <Typography variant="h6">Aún no tenemos datos de tu sueño</Typography>
+          <Typography color="text.secondary" sx={{ mt: 1 }}>
+            Duerme con el reloj puesto y, al sincronizar por la mañana, aquí verás cuánto duermes, las fases y tu horario.
+            Si tu reloj no mide el sueño, esta parte se quedará vacía; el resto de la app funciona igual.
+          </Typography>
+        </Card>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <PageHeader title="Sueño" subtitle={`${rows.length} noches · media ${hm(avg)} · ${Math.round(under7 * 100)} % por debajo de 7 h`}

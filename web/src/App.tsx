@@ -49,6 +49,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
+import ErrorBoundary from './ErrorBoundary';
 import { canPromptInstall, enablePush, isIos, isStandalone, onInstallChange, promptInstall } from './pwa';
 import { useGarminData, useNow, type GarminData } from './data';
 import { relative, time } from './format';
@@ -153,7 +154,7 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
           </MenuItem>
         )}
         {remote && vapid && (
-          <MenuItem onClick={async () => { setAnchor(null); onInfo(await enablePush(vapid)); }}>
+          <MenuItem onClick={async () => { setAnchor(null); onInfo(await enablePush(vapid).catch(() => 'No se pudo activar. Inténtalo de nuevo.')); }}>
             <ListItemIcon><NotificationsActiveOutlined fontSize="small" /></ListItemIcon>
             <ListItemText primary="Avisos de la mañana" secondary="Preparación y sesión del día a las 7:30" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
           </MenuItem>
@@ -317,6 +318,35 @@ function GlassNav({ current, go, last, sections: SECTIONS }: { current: Section;
   );
 }
 
+/** Cuánto sobresale el desenfoque por debajo de la cabecera (px): ahí se deshace hasta desaparecer. */
+const HEADER_FADE = 36;
+
+/** Fondo de la cabecera: desenfoque progresivo, fuerte arriba y nada abajo, sin borde ni línea.
+ *  Son capas de `backdrop-filter` con distinto radio, cada una recortada con una máscara en degradado, más un velo
+ *  del color del fondo (también en degradado) para que el logo y los botones se lean sobre cualquier contenido.
+ *  Las medidas van en px desde abajo: así da igual lo alta que sea la zona de la hora y la batería del iPhone.
+ *  No reciben toques (lo que asoma bajo la cabecera se puede pulsar) y arriba del todo no se ven. */
+function HeaderBlur({ on }: { on: boolean }) {
+  const veil = (pct: number) => `color-mix(in srgb, var(--mui-palette-background-default) ${pct}%, transparent)`;
+  // [radio del desenfoque, hasta dónde va entero, dónde se acaba] (px desde el borde inferior de la capa)
+  const layers: [number, number, number][] = [[2, 26, 0], [7, 46, 14], [18, 74, 38]];
+  const base = { position: 'absolute', left: 0, right: 0, top: 0, bottom: -HEADER_FADE, pointerEvents: 'none',
+    opacity: on ? 1 : 0, visibility: on ? 'visible' : 'hidden',
+    transition: on ? 'opacity .25s ease' : 'opacity .25s ease, visibility 0s linear .25s' } as const;
+  return (
+    <Box aria-hidden data-header-blur sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      {layers.map(([blur, solid, clear]) => {
+        // Arriba del todo se quita el filtro entero: Safari lo sigue pintando aunque la capa esté a opacidad 0.
+        const filter = on ? `blur(${blur}px)${blur > 15 ? ' saturate(160%)' : ''}` : 'none';
+        const mask = `linear-gradient(to bottom, #000 0, #000 calc(100% - ${solid}px), transparent calc(100% - ${clear}px))`;
+        return <Box key={blur} sx={{ ...base, backdropFilter: filter, WebkitBackdropFilter: filter, maskImage: mask, WebkitMaskImage: mask }} />;
+      })}
+      <Box sx={{ ...base, background: `linear-gradient(to bottom, ${veil(62)} 0, ${veil(62)} calc(100% - 104px), ${veil(52)} calc(100% - 72px), `
+        + `${veil(34)} calc(100% - 46px), ${veil(15)} calc(100% - 24px), ${veil(5)} calc(100% - 10px), transparent 100%)` }} />
+    </Box>
+  );
+}
+
 export default function App() {
   const { data, checking, fresh, clearFresh, check } = useGarminData(60_000);
   const [info, setInfo] = useState<string | null>(null);
@@ -361,7 +391,10 @@ export default function App() {
         {meError
           ? <Stack spacing={2} sx={{ alignItems: 'center' }}><Typography color="text.secondary">{meError}</Typography>
               <Button href="./" variant="outlined" sx={{ borderRadius: 999 }}>Reintentar</Button></Stack>
-          : <Typography color="text.secondary">Cargando tus datos…</Typography>}
+          : me?.hasData && !checking
+            ? <Stack spacing={2} sx={{ alignItems: 'center' }}><Typography color="text.secondary">No hemos podido cargar tus datos.</Typography>
+                <Button onClick={() => { check(); }} variant="outlined" sx={{ borderRadius: 999 }}>Reintentar</Button></Stack>
+            : <Typography color="text.secondary">Cargando tus datos…</Typography>}
       </Box>
     );
   }
@@ -374,16 +407,11 @@ export default function App() {
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: mobile ? 'calc(92px + env(safe-area-inset-bottom))' : 6 }}>
       {/* Cabecera fija (no "sticky"): no se mueve con el scroll, el rebote ni los diálogos. Con el teclado
           abierto iOS desplaza la vista: la cabecera la sigue (--vv-top) para no irse por arriba. */}
-      {/* Cristal: el contenido se ve pasar por debajo, desenfocado. Arriba del todo no hay línea; al bajar
-          aparece una línea fina y una sombra suave que separan la cabecera del contenido. */}
-      <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)',
-        bgcolor: scrolled ? 'color-mix(in srgb, var(--mui-palette-background-default) 64%, transparent)' : 'background.default',
-        backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-        borderBottom: '0.5px solid', borderColor: scrolled ? 'color-mix(in srgb, var(--mui-palette-text-primary) 10%, transparent)' : 'transparent',
-        boxShadow: scrolled ? '0 6px 24px -12px rgba(0,0,0,.18)' : 'none',
-        transition: 'background-color .25s ease, border-color .25s ease, box-shadow .25s ease',
+      {/* Sin fondo propio ni línea: el desenfoque progresivo de detrás (HeaderBlur) hace de cabecera. */}
+      <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: 'transparent', backgroundImage: 'none', boxShadow: 'none',
         'html[data-kb="1"] &': { transform: 'translateY(var(--vv-top, 0px))' } }}>
-        <Container maxWidth="lg">
+        <HeaderBlur on={scrolled} />
+        <Container maxWidth="lg" sx={{ position: 'relative' }}>
           <Toolbar disableGutters sx={{ gap: { xs: 0.75, sm: 1.5 }, minHeight: { xs: 56, sm: 68 } }}>
             {mobile ? (
               <Box sx={{ flex: 1, minWidth: 0, lineHeight: 1 }}>
@@ -452,8 +480,8 @@ export default function App() {
         )}
         {actId == null && <SubTabs section={section} page={pageKey} go={go} owner={isOwner} />}
         {actId != null
-          ? <ActivityDetail data={data} id={actId} back={() => (window.history.length > 1 ? window.history.back() : go('entreno'))} />
-          : current.render(data, go)}
+          ? <ErrorBoundary key={actId}><ActivityDetail data={data} id={actId} back={() => (window.history.length > 1 ? window.history.back() : go('entreno'))} /></ErrorBoundary>
+          : <ErrorBoundary key={pageKey}>{current.render(data, go)}</ErrorBoundary>}
         <Typography variant="caption" color="text.disabled" sx={{ display: 'block', textAlign: 'center', mt: 6 }}>
           Datos de Garmin Connect · No es consejo médico · actualizado {relative(generated, now)}
         </Typography>

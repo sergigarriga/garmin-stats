@@ -383,6 +383,7 @@ function NutritionCard({ n, hide, people }: { n: Nutrition; hide: boolean; peopl
 function Intro({ onEnable }: { onEnable: () => Promise<void> }) {
   const mode = useResolvedMode() as 'light' | 'dark';
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const points = [
     'El coach te propone un menú de 7 días según tu plan: más hidratos antes y después de la tirada larga y las series.',
     'Lo convierte en tu lista de la compra con productos reales de Mercadona, cuánto coger, el precio y el total.',
@@ -400,9 +401,10 @@ function Intro({ onEnable }: { onEnable: () => Promise<void> }) {
         Cada menú gasta unos 5-8 céntimos de tu IA del mes. Es una propuesta orientativa, no un consejo médico.
       </Typography>
       <Button data-new="shopping" variant="contained" disableElevation size="large" disabled={busy} sx={{ ...PILL, px: 3 }}
-        onClick={async () => { setBusy(true); try { await onEnable(); } finally { setBusy(false); } }}>
+        onClick={async () => { setBusy(true); setErr(null); try { await onEnable(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); } }}>
         Activar el menú semanal
       </Button>
+      {err && <Typography color="error" variant="body2" sx={{ mt: 1.5 }}>No se ha podido activar: {err}</Typography>}
     </Card>
   );
 }

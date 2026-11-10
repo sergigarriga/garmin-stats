@@ -1,3 +1,4 @@
+import { haptic } from './haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -70,7 +71,12 @@ export function useManualSync(data: GarminData | undefined, check: () => Promise
   return { syncing, sync: run };
 }
 
-/** Deslizar hacia abajo desde arriba del todo para actualizar (móvil). */
+// Tirar para actualizar: hay que tirar bastante y a propósito, para que no salte al moverse por la página.
+const PULL_DEAD = 28;   // primeros px del dedo que no cuentan (un toque o un scroll corto)
+const PULL_READY = 100; // recorrido de la bolita a partir del cual, al soltar, se actualiza
+const PULL_MAX = 132;
+
+/** Deslizar hacia abajo desde arriba del todo para actualizar (móvil). Solo actualiza si se suelta con «Suelta para actualizar». */
 export function PullToRefresh({ onRefresh, busy }: { onRefresh: () => void; busy: boolean }) {
   const [pull, setPull] = useState(0);
   const cb = useRef(onRefresh);
@@ -89,38 +95,45 @@ export function PullToRefresh({ onRefresh, busy }: { onRefresh: () => void; busy
       if (!start) return;
       const dy = e.touches[0].clientY - start.y;
       const dx = Math.abs(e.touches[0].clientX - start.x);
-      if (blocked() || dy <= 0 || dx > dy) { if (dist) set(0); return; }
-      set(Math.min(120, dy * 0.5));
+      // Un gesto en diagonal es un scroll o un deslizamiento lateral, no un «tirar»: se cancela del todo.
+      if (blocked() || dy <= 0 || dx > dy * 0.6) { if (dist) set(0); if (dx > dy * 0.6 && dx > 24) start = null; return; }
+      const next = Math.min(PULL_MAX, Math.max(0, dy - PULL_DEAD) * 0.42);
+      if (next >= PULL_READY && dist < PULL_READY) haptic('tap');
+      set(next);
     };
-    const onEnd = () => {
-      if (dist >= 70) cb.current();
+    const finish = (fire: boolean) => {
+      if (fire && dist >= PULL_READY) cb.current();
       start = null;
       if (dist) set(0);
     };
+    const onEnd = () => finish(true);
+    const onCancel = () => finish(false);
     window.addEventListener('touchstart', onStart, { passive: true });
     window.addEventListener('touchmove', onMove, { passive: true });
     window.addEventListener('touchend', onEnd, { passive: true });
-    window.addEventListener('touchcancel', onEnd, { passive: true });
+    window.addEventListener('touchcancel', onCancel, { passive: true });
     return () => {
       window.removeEventListener('touchstart', onStart);
       window.removeEventListener('touchmove', onMove);
       window.removeEventListener('touchend', onEnd);
-      window.removeEventListener('touchcancel', onEnd);
+      window.removeEventListener('touchcancel', onCancel);
     };
   }, []);
 
   if (!pull && !busy) return null;
   const y = busy && !pull ? 70 : pull;
-  const ready = pull >= 70;
+  const ready = pull >= PULL_READY;
   return (
     <Box aria-hidden sx={{ position: 'fixed', left: '50%', zIndex: 1200, pointerEvents: 'none',
       top: 'calc(env(safe-area-inset-top) + 8px)', transform: `translate(-50%, ${y}px)`,
       transition: pull ? 'none' : 'transform 200ms ease',
-      width: 40, height: 40, borderRadius: '50%', display: 'grid', placeItems: 'center',
+      height: 40, minWidth: 40, px: ready ? 1.75 : 0, borderRadius: 999, display: 'flex', gap: 0.75, alignItems: 'center', justifyContent: 'center',
+      whiteSpace: 'nowrap', fontSize: 14, fontWeight: 500,
       bgcolor: 'background.paper', boxShadow: '0 2px 10px rgba(0,0,0,.18)', color: ready || busy ? 'primary.main' : 'text.secondary' }}>
       {busy && !pull
         ? <CircularProgress size={20} thickness={5} />
-        : <RefreshRounded sx={{ fontSize: 22, transform: `rotate(${pull * 3}deg)`, opacity: Math.min(1, 0.3 + pull / 70) }} />}
+        : <RefreshRounded sx={{ fontSize: 22, transform: `rotate(${pull * 3}deg)`, opacity: Math.min(1, 0.3 + pull / PULL_READY) }} />}
+      {ready && <span>Suelta para actualizar</span>}
     </Box>
   );
 }

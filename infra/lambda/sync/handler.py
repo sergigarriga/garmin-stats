@@ -335,10 +335,10 @@ def _run(user: dict, ctx) -> bool:
         # Lo descargado se guarda YA: si el cálculo de la web falla o se queda sin tiempo/memoria,
         # la siguiente ejecución sigue desde aquí en vez de repetir la descarga.
         _push(uid)
-        if google and not _has_data():
-            # Google Health aún no tiene nada suyo (reloj recién enlazado): sin datos no hay informe que hacer
+        if not _has_data():
+            # Aún no hay nada suyo (reloj recién enlazado o cuenta vacía): sin datos no hay informe que hacer
             EMPTY.add(uid)
-            log.info("Google Health sin datos todavía para %s", uid)
+            log.info("Sin datos todavía para %s", uid)
         else:
             main(["report"])
     finally:

@@ -216,9 +216,39 @@ def _session_email(cookies: list[str]) -> str | None:
     return None
 
 
+def _no_nan(obj):
+    """NaN e infinitos a null: json.dumps los escribe tal cual y el navegador rechaza la respuesta entera."""
+    if isinstance(obj, float):
+        return obj if obj == obj and obj not in (float("inf"), float("-inf")) else None
+    if isinstance(obj, dict):
+        return {k: _no_nan(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_no_nan(v) for v in obj]
+    return obj
+
+
 def _json(status, obj, cookies=None):
+    try:
+        body = json.dumps(obj, ensure_ascii=False, allow_nan=False)
+    except ValueError:
+        body = json.dumps(_no_nan(obj), ensure_ascii=False)
     return {"statusCode": status, "headers": {"content-type": "application/json; charset=utf-8", "cache-control": "no-store"},
-            "cookies": cookies or [], "body": json.dumps(obj, ensure_ascii=False)}
+            "cookies": cookies or [], "body": body}
+
+
+def _ai_error(e: Exception, what: str = "el plan") -> str:
+    """Un fallo al llamar a la IA, dicho en claro (nunca el texto técnico del error)."""
+    import anthropic
+    if isinstance(e, RuntimeError):  # mensajes propios, ya escritos para la persona
+        return str(e)[:300]
+    if isinstance(e, anthropic.APIConnectionError):  # incluye cuando tarda demasiado
+        return "No hemos podido hablar con la IA. Inténtalo de nuevo en unos minutos."
+    if isinstance(e, anthropic.APIStatusError) and (e.status_code == 429 or e.status_code >= 500):
+        return "La IA está muy ocupada ahora mismo. Inténtalo de nuevo en unos minutos."
+    print(f"IA ({what}): {type(e).__name__}: {str(e)[:300]}")
+    if isinstance(e, anthropic.APIStatusError):
+        return f"La IA no ha podido preparar {what} ahora. Inténtalo de nuevo más tarde."
+    return f"Algo ha fallado al preparar {what}. Inténtalo de nuevo."
 
 
 def _with_job(view: dict, coach) -> dict:
@@ -268,7 +298,7 @@ def _run_job(event):
         coach.save(state)
     except Exception as e:  # noqa: BLE001 - se muestra al usuario
         state = coach.load()
-        state["job"] = {"status": "error", "action": action, "error": str(e)[:300], "at": int(time.time())}
+        state["job"] = {"status": "error", "action": action, "error": _ai_error(e), "at": int(time.time())}
         coach.save(state)
     _push("coach.json", "ai_usage_lambda.log", "weather.json")
     _refresh_site(coach)
@@ -277,6 +307,17 @@ def _run_job(event):
 
 # ------------------------------------------------------------------ entrada
 def handler(event, _ctx):
+    try:
+        return _handle(event)
+    except Exception:  # noqa: BLE001 - un fallo inesperado: la web recibe un aviso claro y el detalle queda en el log
+        import traceback
+        traceback.print_exc()
+        if "job" in event:
+            raise
+        return _json(500, {"error": "Algo ha fallado en el servidor. Inténtalo de nuevo en un momento."})
+
+
+def _handle(event):
     if "job" in event:  # invocación asíncrona propia
         return _run_job(event)
 
@@ -303,6 +344,8 @@ def handler(event, _ctx):
     try:
         payload = json.loads(body) if body else {}
     except json.JSONDecodeError:
+        return _json(400, {"error": "JSON no válido"})
+    if not isinstance(payload, dict):
         return _json(400, {"error": "JSON no válido"})
 
     _use(user)
@@ -386,7 +429,8 @@ def handler(event, _ctx):
     if method != "POST":
         return _json(405, {"error": "método no permitido"})
     if path == "/api/ask":
-        msgs = payload.get("messages") or []
+        msgs = payload.get("messages")
+        msgs = [m for m in msgs if isinstance(m, dict)] if isinstance(msgs, list) else []
         res = server.ask(msgs)
         _push("ai_usage_lambda.log")
         if "answer" in res and msgs and msgs[-1].get("role") == "user":
@@ -435,9 +479,12 @@ def handler(event, _ctx):
 
     if path == "/api/plan/structure":
         try:
-            coach.structure_week(payload.get("week", ""))
+            coach.structure_week(str(payload.get("week") or ""))
         except RuntimeError as e:
             return _json(400, {"error": str(e)})
+        except Exception as e:  # noqa: BLE001 - la IA no responde, va saturada o devuelve algo que no encaja
+            _push("ai_usage_lambda.log")
+            return _json(503, {"error": _ai_error(e, "los entrenos de la semana")})
         _push("coach.json", "ai_usage_lambda.log")
         _refresh_site(coach)
         return _json(200, _with_job(coach.view(_read_data()), coach))
@@ -458,7 +505,11 @@ def handler(event, _ctx):
         data = _read_data()
         return _json(200, {k: data.get(k) for k in ("paces", "swim", "wellness", "coach", "availability", "weather")})
     if path == "/api/plan/feedback":
-        coach.feedback(payload["date"], payload.get("rating", 3), payload.get("note", ""))
+        try:
+            coach.feedback(str(date.fromisoformat(str(payload.get("date")))), int(payload.get("rating") or 3),
+                           str(payload.get("note") or ""))
+        except (TypeError, ValueError):
+            return _json(400, {"error": "Valoración no válida."})
     elif path in ("/api/plan/redo", "/api/plan/redo-undo"):
         try:
             if path == "/api/plan/redo":

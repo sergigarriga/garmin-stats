@@ -20,6 +20,10 @@ def _trimp(hr: np.ndarray, minutes: np.ndarray, rest: float, mx: float) -> float
 def activity_metrics(acts: pd.DataFrame, fitsum: pd.DataFrame, rec: pd.DataFrame,
                      rest_hr: float, max_hr: float) -> pd.DataFrame:
     """Una fila por actividad: TRIMP, eficiencia aeróbica, desacople y VO2max del FIT."""
+    if acts.empty:  # sin ninguna actividad (persona nueva, solo pasos y sueño): tabla vacía pero con sus columnas
+        return pd.DataFrame(columns=["activity_id", "start", "date", "name", "type", "group", "distance_km", "duration_min",
+                                     "pace_min_km", "avg_hr", "max_hr", "trimp", "ef", "decoupling_pct", "cadence_spm",
+                                     "elev_gain", "calories", "is_pr"] + [f"z{i}_min" for i in range(1, 6)])
     out = []
     groups = dict(tuple(rec.groupby("activity_id"))) if not rec.empty else {}
     for a in acts.itertuples():

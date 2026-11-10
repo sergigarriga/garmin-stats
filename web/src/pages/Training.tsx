@@ -173,7 +173,7 @@ export default function Training({ data, go }: { data: GarminData; go: (k: strin
 
       <SectionTitle>Qué dicen tus datos</SectionTitle>
       {data.ai && <Box sx={{ mt: -1, mb: 2 }}><AiBadge at={data.ai.generatedAt} /></Box>}
-      <InsightList items={data.ai?.training?.length ? data.ai.training : [...data.insights.entreno, ...data.insights.carrera.filter((t) => !t.startsWith('Mejor '))]} color={cat('training')} />
+      <InsightList items={data.ai?.training?.length ? data.ai.training : [...(data.insights?.entreno ?? []), ...(data.insights?.carrera ?? []).filter((t) => !t.startsWith('Mejor '))]} color={cat('training')} />
 
       <SectionTitle>Actividades</SectionTitle>
       <Card sx={{ ...CARD_SX, p: 0.5, display: { xs: 'block', md: 'none' } }}>

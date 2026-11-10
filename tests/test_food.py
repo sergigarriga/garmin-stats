@@ -380,7 +380,7 @@ def api(tmp_path, monkeypatch):
               "body": raw if raw is not None else (json.dumps(body) if body is not None else "")}
         r = h.handler(ev, None)
         return r["statusCode"], json.loads(r["body"])
-    yield types.SimpleNamespace(call=call, s3=s3, friend=friend)
+    yield types.SimpleNamespace(call=call, s3=s3, friend=friend, h=h)
     for k, v in old_env.items():  # el handler fija la hora de Madrid, HOME y la persona: aquí se deja como estaba
         os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
     time.tzset()

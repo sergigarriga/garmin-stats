@@ -16,6 +16,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { alpha } from '@mui/material/styles';
 import type { TransitionProps } from '@mui/material/transitions';
 import CloseRounded from '@mui/icons-material/CloseRounded';
+import AddCircleOutlineRounded from '@mui/icons-material/AddCircleOutlineRounded';
 import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
 import BatteryChargingFullRounded from '@mui/icons-material/BatteryChargingFullRounded';
 import HealingRounded from '@mui/icons-material/HealingRounded';
@@ -54,6 +55,17 @@ const C = {
 
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
+  {
+    id: '2026-11-11', date: '2026-11-11', title: 'Apunta con un toque', subtitle: 'Atajos en la portada y una cabecera más ligera',
+    features: [
+      { icon: <AddCircleOutlineRounded />, color: C.green, title: 'Atajos en Hoy', target: 'shortcuts', where: 'Hoy', go: 'hoy',
+        body: 'Una fila de botones para apuntar sin buscar: una comida, tu entreno de hoy, tu ánimo, una molestia, la compra o una pregunta al coach.' },
+      { icon: <DashboardRounded />, color: C.blue, title: 'Cabecera que se difumina',
+        body: 'Ya no tiene línea ni borde: lo que pasa por debajo se va desenfocando poco a poco, como en las apps del iPhone.' },
+      { icon: <LockOutlined />, color: C.purple, title: 'Nueva pantalla de entrada',
+        body: 'La página para entrar en Runch estrena diseño, a juego con el resto de la app.' },
+    ],
+  },
   {
     id: '2026-11-10-2', date: '2026-11-10', title: 'Runch se viste de olivo', subtitle: 'Colores nuevos y todo en su sitio en el móvil',
     features: [

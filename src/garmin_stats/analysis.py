@@ -36,6 +36,8 @@ def assemble(t: dict, prof: dict) -> dict:
     for c in DAY_FIELDS:
         if c not in day and c != "ready":
             day[c] = float("nan")
+        elif c in day:  # una métrica que el reloj nunca dio llega como columna de None (object): a número
+            day[c] = pd.to_numeric(day[c], errors="coerce")
     return {"day": day, "acts": acts, "sleep": sleep, "hrv": hrv, "load": load, "prof": prof,
             "weight": t.get("weight", pd.DataFrame()), "start": start, "end": end}
 
@@ -79,10 +81,11 @@ def insights(A: dict, am: pd.DataFrame, rel: pd.DataFrame, best: pd.DataFrame) -
         if s["score"].notna().any():
             out["sueno"].append(f"Puntuación de sueño media: {s['score'].mean():.0f}/100.")
         sd = M.circ_sd_hours(s["bed_from_noon"])
-        out["sueno"].append(f"Te acuestas de media a las {_clock(s['bed_from_noon'].mean())} y te levantas a "
-                            f"las {_clock(s['wake_clock'].mean() - 12)}. La hora de acostarte varía "
-                            f"±{sd * 60:.0f} min de una noche a otra"
-                            + (" (bastante irregular; >60 min empeora el sueño)." if sd > 1 else "."))
+        if not math.isnan(sd) and s["bed_from_noon"].notna().sum() > 1:  # hace falta más de una noche con su hora
+            out["sueno"].append(f"Te acuestas de media a las {_clock(s['bed_from_noon'].mean())} y te levantas a "
+                                f"las {_clock(s['wake_clock'].mean() - 12)}. La hora de acostarte varía "
+                                f"±{sd * 60:.0f} min de una noche a otra"
+                                + (" (bastante irregular; >60 min empeora el sueño)." if sd > 1 else "."))
         wk = s[s["date"].dt.dayofweek < 5]["mid_from_noon"].mean()
         we = s[s["date"].dt.dayofweek >= 5]["mid_from_noon"].mean()
         if not math.isnan(wk) and not math.isnan(we):

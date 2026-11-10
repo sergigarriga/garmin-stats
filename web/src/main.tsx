@@ -6,6 +6,7 @@ import './fonts.css';
 import { useEffect } from 'react';
 import { theme, useResolvedMode } from './theme';
 import App from './App';
+import ErrorBoundary from './ErrorBoundary';
 import { setupPwa } from './pwa';
 import { setupViewport } from './viewport';
 
@@ -28,7 +29,7 @@ createRoot(document.getElementById('root')!).render(
     <ThemeProvider theme={theme} defaultMode="system" disableTransitionOnChange>
       <CssBaseline enableColorScheme />
       <ThemeChrome />
-      <App />
+      <ErrorBoundary full><App /></ErrorBoundary>
     </ThemeProvider>
   </StrictMode>,
 );

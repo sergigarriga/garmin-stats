@@ -69,7 +69,8 @@ def payload(A: dict, am: pd.DataFrame, last_sync: str | None, sets: dict | None 
     day["ready"] = ready
     rel = _safe("relations", lambda: M.relations(day), pd.DataFrame(columns=["a", "b", "rho", "n", "strength"]))
     best = _safe("best_efforts", lambda: M.best_efforts(am) if not am.empty else pd.DataFrame(), pd.DataFrame())
-    ins = _safe("insights", lambda: insights(A, am, rel, best), {})
+    ins = _safe("insights", lambda: insights(A, am, rel, best),
+                {k: [] for k in ("datos", "sueno", "corazon", "entreno", "carrera", "relaciones", "acciones")})
     # Coma decimal en castellano (las fechas usan guiones, no se tocan).
     ins = {k: [re.sub(r"(\d)\.(\d)", r"\1,\2", t) for t in v] for k, v in ins.items()}
 
@@ -84,7 +85,7 @@ def payload(A: dict, am: pd.DataFrame, last_sync: str | None, sets: dict | None 
     acts = []
     for a in am.sort_values("start").itertuples():
         acts.append(_clean({
-            "id": int(a.activity_id), "start": a.start.strftime("%Y-%m-%dT%H:%M"), "name": a.name,
+            "id": int(a.activity_id), "start": a.start.strftime("%Y-%m-%dT%H:%M"), "name": a.name if isinstance(a.name, str) else None,
             "type": a.type, "group": a.group, "km": _num(a.distance_km, 2), "min": _num(a.duration_min, 1),
             "pace": _num(a.pace_min_km, 3), "hr": _num(a.avg_hr, 0), "hrMax": _num(a.max_hr, 0),
             "trimp": _num(a.trimp, 0), "ef": _num(a.ef, 3), "dec": _num(a.decoupling_pct, 1),

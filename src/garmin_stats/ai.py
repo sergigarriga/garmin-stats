@@ -107,7 +107,7 @@ def _api_key() -> str | None:
 
 def _summary(data: dict) -> dict:
     """Resumen compacto para el prompt (unos pocos miles de tokens)."""
-    days = data["days"]
+    days = data.get("days") or []
 
     def avg(key, n, offset=0):
         rows = days[len(days) - n - offset: len(days) - offset] if n + offset <= len(days) else days
@@ -133,14 +133,17 @@ def _summary(data: dict) -> dict:
     night = next((d for d in reversed(days) if d.get("sleepH") is not None), None)
     if night:
         night = {**night, **{k: hm(night.get(k)) for k in ("sleepH", "deepH", "remH", "lightH", "awakeH")}}
-    yesterday = days[-2] if len(days) > 1 else None
-    acts = data["activities"][-8:]
+    # Ayer por fecha, no por posición: si la última descarga es de antes de medianoche, days[-1] ya no es hoy.
+    yd = (date.today() - timedelta(days=1)).isoformat()
+    yesterday = next((d for d in reversed(days[-3:]) if d.get("d") == yd), None)
+    activities = data.get("activities") or []
+    acts = activities[-8:]
     return {
-        "last_activity": _last_activity(data["activities"], data.get("profile"), days),
+        "last_activity": _last_activity(activities, data.get("profile"), days),
         "today": date.today().isoformat(),
         "now": datetime.now().strftime("%H:%M"),
         "yesterday_complete": yesterday and {k: yesterday.get(k) for k in ("d", "steps", "stepGoal", "rhr", "stress", "bbMax", "bbMin", "imMod", "imVig")},
-        "profile": {k: v for k, v in data["profile"].items() if k in ("age", "fitness_age", "max_hr", "rest_hr")},
+        "profile": {k: v for k, v in (data.get("profile") or {}).items() if k in ("age", "fitness_age", "max_hr", "rest_hr")},
         "latest": {k: last(k) for k in metrics + ["bed", "wake"]},
         "last_night": night and {k: night.get(k) for k in ("d", "sleepH", "deepH", "remH", "lightH", "awakeH", "sleepScore", "bed", "wake", "hrv", "hrvLow", "hrvHigh")},
         "trends": trends,
@@ -150,11 +153,11 @@ def _summary(data: dict) -> dict:
         "now_note": "now_from_watch = lo último que ha mandado el reloj hoy (asOf = hora). bbNow es la Body Battery "
                     "actual; bbMax es el máximo del día (por la mañana). Si hablas de la energía de ahora, usa bbNow.",
         "how_they_feel": __import__("garmin_stats.wellness", fromlist=["x"]).for_coach(),
-        "rule_based_findings": data["insights"],
+        "rule_based_findings": data.get("insights"),
         "coverage": data.get("coverage"),
         "huecos_sin_reloj": __import__("garmin_stats.settings", fromlist=["x"]).watch_gaps(),
         "nota_huecos": "En 'huecos_sin_reloj' el reloj estaba roto: no hables de parón ni de falta de entreno en ese periodo.",
-        "relations": [r for r in data["relations"] if r.get("rho") is not None and abs(r["rho"]) >= 0.2],
+        "relations": [r for r in data.get("relations") or [] if r.get("rho") is not None and abs(r["rho"]) >= 0.2],
         "notes": "bed = horas desde mediodía (13,8 = 01:48). wake = hora del reloj (7,9 = 07:54). "
                  "imVig cuenta doble para el objetivo OMS de 150 min/semana. ctl = forma (carga media 42 d), "
                  "acwr = carga 7 d / 28 d (seguro 0,8-1,3).",
@@ -272,7 +275,7 @@ def generate(data: dict, force: bool = False, offline: bool = False) -> dict | N
         return cache.get("result")
 
     result = {
-        "model": MODEL,
+        "model": model,
         "generatedAt": stamp,
         **resp.parsed_output.model_dump(),
         # A qué entreno se refiere last_workout: la web solo lo enseña si sigue siendo el último

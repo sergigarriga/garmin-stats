@@ -230,7 +230,7 @@ def profile(data: dict) -> dict:
         return round(sum(a["km"] for a in since(days)) / (days / 7), 1)
 
     zones = data["profile"].get("zones") or []
-    z3 = zones[2] if len(zones) > 2 else 140
+    z3 = (zones[2] if len(zones) > 2 else None) or 140
     easy = [a["pace"] for a in runs[-60:] if a.get("pace") and a.get("hr") and a["hr"] < z3 and a["km"] >= 4]
     wd = [0] * 7
     for a in runs[-80:]:

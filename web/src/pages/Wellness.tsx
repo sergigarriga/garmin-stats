@@ -58,6 +58,12 @@ export function CheckIn({ data }: { data: GarminData }) {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [injDialog, setInjDialog] = useState<Injury | 'new' | null>(null);
+  // "Molestia" desde los atajos de la portada: abre el diálogo de molestia nueva
+  useEffect(() => {
+    const on = () => setInjDialog('new');
+    window.addEventListener('injury-add', on);
+    return () => window.removeEventListener('injury-add', on);
+  }, []);
   useEffect(() => { setMood(saved?.mood ?? null); setSore(saved?.soreness ?? null); setNote(saved?.note ?? ''); },
     [saved?.mood, saved?.soreness, saved?.note]);  // eslint-disable-line react-hooks/exhaustive-deps
 

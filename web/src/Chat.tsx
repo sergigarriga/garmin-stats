@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
@@ -18,7 +19,7 @@ import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import { haptic } from './haptics';
 import { BRAND, BRAND_DARK } from './brand/colors';
 
-type Msg = { role: 'user' | 'assistant'; content: string; error?: boolean };
+type Msg = { role: 'user' | 'assistant'; content: string; error?: boolean; retry?: boolean };
 
 /** **negrita** dentro de una línea. */
 function inline(text: string): ReactNode[] {
@@ -90,10 +91,36 @@ const STORE = 'garmin-stats:chat';
 const online = window.location.protocol.startsWith('http');
 
 function loadHistory(): Msg[] {
-  try { return JSON.parse(sessionStorage.getItem(STORE) ?? '[]'); } catch { return []; }
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(STORE) ?? '[]');
+    return Array.isArray(saved) ? saved.filter((m) => m && typeof m.content === 'string') : [];
+  } catch { return []; }
 }
 
-function Bubble({ m, i }: { m: Msg; i: number }) {
+const NO_NET = 'No llego al servidor. Comprueba tu conexión y vuelve a probar.';
+const SLOW = 'La respuesta está tardando más de lo normal. Vuelve a intentarlo en un momento.';
+const offline = () => navigator.onLine === false;
+const WAIT_MS = 75_000;  // el servidor corta a los 60 s: pasado ese tiempo ya no va a llegar por esta petición
+
+/** Una petición cortada (sin cobertura, móvil bloqueado, respuesta lenta) no significa que no haya respuesta:
+ *  el servidor la guarda en la conversación al terminar. Se mira ahí unas cuantas veces antes de dar el fallo. */
+async function recover(question: string, sentAt: number, tries: number): Promise<string | null> {
+  for (let i = 0; i < tries; i++) {
+    if (i) await new Promise((r) => setTimeout(r, 4000));
+    try {
+      const r = await fetch('./api/chat', { credentials: 'same-origin' });
+      if (r.status === 401 || r.status === 404) return null;
+      if (!r.ok) continue;
+      const all = (await r.json())?.messages ?? [];
+      const a = all[all.length - 1], q = all[all.length - 2];
+      if (a?.role === 'assistant' && q?.role === 'user' && q.content === question.slice(0, 2000)
+        && (a.at ?? 0) * 1000 >= sentAt - 120_000) return String(a.content);
+    } catch { /* sigue sin red: se vuelve a probar */ }
+  }
+  return null;
+}
+
+function Bubble({ m, i, onRetry }: { m: Msg; i: number; onRetry?: () => void }) {
   const user = m.role === 'user';
   return (
     <Box data-msg={i} sx={{ alignSelf: user ? 'flex-end' : 'flex-start', maxWidth: user ? '85%' : '100%' }}>
@@ -103,6 +130,9 @@ function Bubble({ m, i }: { m: Msg; i: number }) {
         color: user ? '#FFFFFF' : 'text.primary', fontSize: 15,
         ...(user ? {} : { px: 2.25, py: 1.75 }),
       })}>{user || m.error ? m.content : <Formatted text={m.content} />}</Box>
+      {m.error && onRetry && (
+        <Button size="small" onClick={onRetry} sx={{ mt: 0.5, borderRadius: 999, textTransform: 'none', color: BRAND }}>Reintentar</Button>
+      )}
     </Box>
   );
 }
@@ -135,7 +165,9 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
         if (!j?.messages?.length) return;
         const server: Msg[] = j.messages.map(({ role, content }: Msg) => ({ role, content }));
         // Si es la misma conversación no se toca (si no, la lista se repinta y salta mientras lees).
-        setMsgs((cur) => (busyRef.current || JSON.stringify(cur.filter((m) => !m.error)) === JSON.stringify(server) ? cur : server));
+        // Tampoco si lo último es un aviso de fallo: la pregunta sigue ahí con su botón de reintentar.
+        setMsgs((cur) => (busyRef.current || cur[cur.length - 1]?.error
+          || JSON.stringify(cur.filter((m) => !m.error).map(({ role, content }) => ({ role, content }))) === JSON.stringify(server) ? cur : server));
       })
       .catch(() => { /* sin conexión: se queda la copia local */ });
   }, [open]);
@@ -166,25 +198,48 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
     }
   }, [msgs]);
 
-  const send = async (q: string) => {
+  const send = async (q: string, base: Msg[] = msgs) => {
     const question = q.trim();
-    if (!question || busy) return;
-    const next: Msg[] = [...msgs, { role: 'user', content: question }];
+    if (!question || busyRef.current) return;
+    busyRef.current = true;  // al momento (no al repintar): dos toques seguidos no mandan la pregunta dos veces
+    const next: Msg[] = [...base, { role: 'user', content: question }];
+    const sentAt = Date.now();
     why.current = 'ask';
     setMsgs(next); setText(''); setBusy(true);
+    const answer = (content: string) => { why.current = 'answer'; setMsgs([...next, { role: 'assistant', content }]); };
+    const fail = (content: string, retry: boolean) => {
+      why.current = 'answer';
+      setMsgs([...next, { role: 'assistant', content, error: true, retry }]);
+    };
     try {
-      const r = await fetch('./api/ask', {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Garmin-Stats': '1' },
-        body: JSON.stringify({ messages: next.filter((m) => !m.error).map(({ role, content }) => ({ role, content })) }),
-      });
+      if (offline()) { fail(NO_NET, true); return; }
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), WAIT_MS);
+      let r: Response;
+      try {
+        r = await fetch('./api/ask', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Garmin-Stats': '1' }, signal: ctl.signal,
+          body: JSON.stringify({ messages: next.filter((m) => !m.error).slice(-12).map(({ role, content }) => ({ role, content })) }),
+        });
+      } catch {
+        const late = await recover(question, sentAt, 5);
+        if (late) answer(late); else fail(offline() ? NO_NET : SLOW, true);
+        return;
+      } finally { clearTimeout(timer); }
       if (r.status === 401) { window.location.href = '/auth/login'; return; }
-      const j = await r.json();
-      why.current = 'answer';
-      setMsgs([...next, j.answer ? { role: 'assistant', content: j.answer } : { role: 'assistant', content: j.error ?? 'Algo ha fallado.', error: true }]);
-    } catch {
-      why.current = 'answer';
-      setMsgs([...next, { role: 'assistant', content: 'No llego al servidor. Comprueba tu conexión y vuelve a probar.', error: true }]);
-    } finally { setBusy(false); }
+      const j = await r.json().catch(() => null);
+      if (j?.answer) { answer(String(j.answer)); return; }
+      if (j?.error) { fail(String(j.error), !!j.retry); return; }
+      // Sin respuesta de la app: el servidor ha cortado por tiempo o ha fallado. Puede que la respuesta llegue tarde.
+      const late = r.status >= 502 ? await recover(question, sentAt, 10) : null;
+      if (late) answer(late); else fail(r.status >= 502 ? SLOW : 'Algo ha fallado. Vuelve a intentarlo.', true);
+    } finally { busyRef.current = false; setBusy(false); }
+  };
+  // Reintentar: quita el aviso de fallo y vuelve a mandar la misma pregunta.
+  const retry = () => {
+    const i = msgs.length - 1;
+    if (i < 1 || !msgs[i].error || msgs[i - 1].role !== 'user') return;
+    send(msgs[i - 1].content, msgs.slice(0, i - 1));
   };
 
   return (
@@ -236,7 +291,7 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
                 </Stack>
               </>
             )}
-            {msgs.map((m, i) => <Bubble key={i} i={i} m={m} />)}
+            {msgs.map((m, i) => <Bubble key={i} i={i} m={m} onRetry={m.retry && !busy && i === msgs.length - 1 ? retry : undefined} />)}
             {busy && (
               <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: 0.75, px: 2, py: 1.5, borderRadius: '20px',
                 bgcolor: 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)',
