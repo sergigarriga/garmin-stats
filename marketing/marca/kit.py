@@ -36,10 +36,6 @@ C = {
     "butter": "#F1DEA6",
     "sage": "#CBD3B8",           # Salvia: secundario suave
     "blush": "#FFE1A3",
-    # Capa «Ritmo» (deportiva): flúor solo para lo que corre (kit del club, dorsales, carteles, récords).
-    # Siempre con espresso u olivo, nunca como texto sobre fondos claros; en impresión, tinta flúor directa.
-    "yema_fluor": "#FFA31A",     # principal de Ritmo
-    "limon_fluor": "#F2F53A",    # solo noche y alta visibilidad
     # Legado: color de marca anterior. Solo lo usan las piezas ya programadas de Instagram
     # (marketing/instagram/stories.py, render.py y los lotes); la capa ilustrada ya no lo usa.
     "terracotta": "#D4542F",
