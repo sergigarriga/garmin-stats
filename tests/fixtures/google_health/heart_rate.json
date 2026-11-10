@@ -1,0 +1,69 @@
+{
+ "dataPoints": [
+  {
+   "heartRate": {
+    "beatsPerMinute": "60",
+    "sampleTime": {
+     "physicalTime": "2026-11-08T07:00:05Z",
+     "utcOffset": "3600s"
+    },
+    "metadata": {
+     "motionContext": "SEDENTARY",
+     "sensorLocation": "WRIST"
+    }
+   }
+  },
+  {
+   "heartRate": {
+    "beatsPerMinute": "64",
+    "sampleTime": {
+     "physicalTime": "2026-11-08T07:01:00Z",
+     "utcOffset": "3600s"
+    },
+    "metadata": {
+     "motionContext": "SEDENTARY",
+     "sensorLocation": "WRIST"
+    }
+   }
+  },
+  {
+   "heartRate": {
+    "beatsPerMinute": "150",
+    "sampleTime": {
+     "physicalTime": "2026-11-08T07:02:30Z",
+     "utcOffset": "3600s"
+    },
+    "metadata": {
+     "motionContext": "SEDENTARY",
+     "sensorLocation": "WRIST"
+    }
+   }
+  },
+  {
+   "heartRate": {
+    "beatsPerMinute": "154",
+    "sampleTime": {
+     "physicalTime": "2026-11-08T07:03:10Z",
+     "utcOffset": "3600s"
+    },
+    "metadata": {
+     "motionContext": "SEDENTARY",
+     "sensorLocation": "WRIST"
+    }
+   }
+  },
+  {
+   "heartRate": {
+    "beatsPerMinute": "999",
+    "sampleTime": {
+     "physicalTime": "2026-11-08T07:03:20Z",
+     "utcOffset": "3600s"
+    },
+    "metadata": {
+     "motionContext": "SEDENTARY",
+     "sensorLocation": "WRIST"
+    }
+   }
+  }
+ ]
+}

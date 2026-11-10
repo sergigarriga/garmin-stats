@@ -19,13 +19,30 @@ import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 import ContentPasteRounded from '@mui/icons-material/ContentPasteRounded';
 import OpenInNewRounded from '@mui/icons-material/OpenInNewRounded';
 import { relative } from './format';
+import { BRAND, BRAND_DARK, BRAND_INK, brandTint } from './brand/colors';
 
 export const GARMIN_KEY_URL = 'https://connect.garmin.com/app/settings/personalApiToken';
 const DIALOG_SX = { paper: { sx: { borderRadius: '28px', m: 2, width: 'calc(100% - 32px)', maxWidth: 520 } } };
 
-export interface SyncState { status?: 'running' | 'done' | 'error' | 'key_invalid'; at?: number; finished?: number; backfill?: boolean; part?: number; backfillDone?: boolean }
+export interface SyncState {
+  status?: 'running' | 'done' | 'error' | 'key_invalid' | 'google_reauth' | 'google_not_linked' | 'cancelled'; at?: number; finished?: number;
+  backfill?: boolean; part?: number; backfillDone?: boolean;
+  /** Google Health no tenía ningún dato todavía. */
+  empty?: boolean;
+}
+/** Conexión con Google Health (alternativa a Garmin para quien no tiene reloj Garmin). */
+export interface GoogleState {
+  /** El servidor tiene configurado Google Health (si no, no se ofrece). */
+  available: boolean; connected: boolean;
+  status?: 'ok' | 'reauth' | 'not_linked'; scopes?: string[]; connectedAt?: number;
+  /** Enlace para abrir la app Google Health y enlazar la cuenta (solo con status not_linked). */
+  linkUrl?: string;
+}
 export interface Me {
-  email: string; name: string; role: 'owner' | 'friend'; status: 'invited' | 'onboarding' | 'active' | 'key_invalid';
+  email: string; name: string; role: 'owner' | 'friend';
+  status: 'invited' | 'onboarding' | 'active' | 'key_invalid' | 'google_reauth' | 'google_not_linked';
+  /** De dónde salen sus datos. */
+  source?: 'garmin' | 'google' | null; google?: GoogleState;
   budgetUsd: number; monthSpendUsd: number; consented?: boolean; hasData: boolean; hasGoal: boolean; hasPlan: boolean;
   planJob?: { status: string; action: string } | null; sync: SyncState; owner: string;
   /** Última versión de novedades vista y desde cuándo tiene cuenta (epoch s). */
@@ -63,7 +80,7 @@ export function useMe(pollMs = 0) {
 // ------------------------------------------------------------------ clave de Garmin
 export function GarminKeySteps() {
   const steps = [
-    <>Abre <Link href={GARMIN_KEY_URL} target="_blank" rel="noopener" sx={{ color: '#D4542F', fontWeight: 600 }}>Garmin Connect → Clave de API personal <OpenInNewRounded sx={{ fontSize: 14, verticalAlign: '-2px' }} /></Link> e inicia sesión (mejor desde el ordenador).</>,
+    <>Abre <Link href={GARMIN_KEY_URL} target="_blank" rel="noopener" sx={{ color: BRAND_INK, fontWeight: 600 }}>Garmin Connect → Clave de API personal <OpenInNewRounded sx={{ fontSize: 14, verticalAlign: '-2px' }} /></Link> e inicia sesión (mejor desde el ordenador).</>,
     <>Pulsa <b>Crear clave</b>, acepta las condiciones de Garmin y elige que caduque en <b>1 año</b>.</>,
     <>Copia la clave: Garmin solo la enseña <b>una vez</b>. Pégala aquí abajo.</>,
   ];
@@ -72,7 +89,7 @@ export function GarminKeySteps() {
       {steps.map((s, i) => (
         <Stack key={i} component="li" direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
           <Box sx={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 600,
-            bgcolor: '#D4542F', color: '#FFFFFF' }}>{i + 1}</Box>
+            bgcolor: BRAND, color: '#FFFFFF' }}>{i + 1}</Box>
           <Typography variant="body2" sx={{ pt: 0.25 }}>{s}</Typography>
         </Stack>
       ))}
@@ -98,12 +115,12 @@ export function GarminKeyForm({ consent = true, onDone, submitLabel = 'Conectar 
         autoComplete="off" spellCheck={false} slotProps={{ htmlInput: { style: { fontFamily: 'monospace', fontSize: 16 } } }} />
       {canPaste && !key && (
         <Button variant="outlined" startIcon={<ContentPasteRounded />} onClick={paste}
-          sx={{ borderRadius: 999, alignSelf: 'flex-start', color: '#D4542F', borderColor: 'color-mix(in srgb, #D4542F 50%, transparent)' }}>Pegar</Button>
+          sx={{ borderRadius: 999, alignSelf: 'flex-start', color: BRAND_INK, borderColor: brandTint(50) }}>Pegar</Button>
       )}
       {err && <Alert severity="error" sx={{ borderRadius: '14px' }}>{err}</Alert>}
       <Button variant="contained" disableElevation size="large" onClick={submit} disabled={busy || key.trim().length < 20}
         startIcon={busy ? <CircularProgress size={18} color="inherit" /> : undefined}
-        sx={{ borderRadius: 999, alignSelf: { xs: 'stretch', sm: 'flex-start' }, py: 1.4, bgcolor: '#D4542F', color: '#FFFFFF', '&:hover': { bgcolor: '#B9441F' } }}>
+        sx={{ borderRadius: 999, alignSelf: { xs: 'stretch', sm: 'flex-start' }, py: 1.4, bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: BRAND_DARK } }}>
         {busy ? 'Comprobando con Garmin…' : submitLabel}
       </Button>
       <Typography variant="caption" color="text.secondary">
@@ -161,13 +178,15 @@ export function DeleteAccountDialog({ open, onClose }: { open: boolean; onClose:
 interface AdminUser {
   email: string; name: string; role: 'owner' | 'friend'; status: Me['status']; budgetUsd: number; monthSpendUsd: number;
   invitedAt?: number; joinedAt?: number; lastSync?: number; syncStatus?: string;
-  totalCostUsd?: number; calls?: number; lastAi?: string | null;
+  totalCostUsd?: number; calls?: number; lastAi?: string | null; source?: 'garmin' | 'google' | null;
 }
 const STATUS: Record<string, { label: string; color: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
   invited: { label: 'Invitación enviada', color: 'default' },
   onboarding: { label: 'Configurando', color: 'info' },
   active: { label: 'Activa', color: 'success' },
   key_invalid: { label: 'Clave caducada', color: 'error' },
+  google_reauth: { label: 'Google Health: reconectar', color: 'error' },
+  google_not_linked: { label: 'Google Health sin enlazar', color: 'warning' },
 };
 const money = (v: number) => `${v.toFixed(2).replace('.', ',')} $`;
 
@@ -215,7 +234,7 @@ export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => v
                       <Typography sx={{ fontWeight: 500 }} noWrap>{u.name || u.email.split('@')[0]}{u.role === 'owner' ? ' (tú)' : ''}</Typography>
                       <Typography variant="caption" color="text.secondary" sx={{ display: 'block', overflowWrap: 'anywhere' }}>{u.email}</Typography>
                     </Box>
-                    <Chip size="small" label={STATUS[u.status]?.label ?? u.status} color={STATUS[u.status]?.color ?? 'default'} />
+                    <Chip size="small" label={`${STATUS[u.status]?.label ?? u.status}${u.source === 'google' && u.status === 'active' ? ' · Google' : ''}`} color={STATUS[u.status]?.color ?? 'default'} />
                     {u.role !== 'owner' && (
                       <IconButton size="small" aria-label={`Quitar a ${u.email}`} onClick={() => setRemoving(u)}><DeleteOutlineRounded fontSize="small" /></IconButton>
                     )}

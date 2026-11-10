@@ -1,8 +1,8 @@
 """Sincronización en AWS (EventBridge Scheduler cada hora → esta Lambda). Versión multipersona.
 
 - Programada (sin `uid`): lanza una ejecución por persona con Garmin conectado (invocación asíncrona a sí misma).
-- Con `uid`: hace lo mismo que `garmin-stats all` para esa persona: descarga lo nuevo de Garmin, recalcula,
-  escribe los textos de IA (y el lunes reajusta el plan) y publica su web.
+- Con `uid`: hace lo mismo que `garmin-stats all` para esa persona: descarga lo nuevo de Garmin (o de Google Health,
+  si es su fuente), recalcula, escribe los textos de IA (y el lunes reajusta el plan) y publica su web.
 - La primera vez baja el historial por tandas: cada ejecución trabaja unos 7 minutos, publica lo que tiene
   y se vuelve a lanzar hasta terminar. Al acabar, si dejó un objetivo en el onboarding, se crea su plan.
 
@@ -33,6 +33,7 @@ HOME = Path("/tmp/home")
 os.environ["GARMIN_STATS_ROOT"] = str(ROOT)
 os.environ["HOME"] = str(HOME)
 
+from garmin_stats import google_health as GH
 from garmin_stats import users  # noqa: E402
 
 BUCKET = os.environ["BUCKET"]
@@ -49,13 +50,21 @@ STALE = 960      # una sincronización "en marcha" de hace más de 16 min se da 
 SYNC_SECONDS = 420  # trabajo con Garmin por ejecución; el resto queda para recalcular, IA y subir
 MAX_PARTS = 15   # tandas como mucho en la primera descarga
 ALERTS_TOPIC = os.environ.get("ALERTS_TOPIC")
+GH_ID_PARAM = os.environ.get("GOOGLE_HEALTH_CLIENT_ID_PARAM", "/garmin-stats/google-health-client-id")
+GH_SECRET_PARAM = os.environ.get("GOOGLE_HEALTH_CLIENT_SECRET_PARAM", "/garmin-stats/google-health-client-secret")
 ALERT_EVERY = 6 * 3600  # el mismo fallo de la misma persona se avisa como mucho cada 6 h
 log = logging.getLogger("garmin_stats")
+STARTED: dict[str, tuple[int, str | None]] = {}  # uid → (inicio de esta ejecución, fuente con la que empezó)
+EMPTY: set[str] = set()  # personas de Google Health sin ningún dato todavía (en esta ejecución)
 PULLED: dict[str, str] = {}  # huella de cada archivo de estado al bajarlo: solo se sube lo que esta ejecución cambia
 
 
 class KeyRejected(Exception):
     """Garmin no acepta la clave de esta persona (caducada o revocada)."""
+
+
+class SourceChanged(Exception):
+    """Mientras corría, la persona cambió de fuente, desconectó o borró sus datos: no se sube nada."""
 
 
 # ------------------------------------------------------------------ S3
@@ -128,7 +137,18 @@ def _pull(uid: str) -> None:
     (ROOT / "site" / "acts" / "_published.txt").write_text("\n".join(ids))
 
 
+def _source_changed(uid: str) -> bool:
+    """¿Ha cambiado de fuente (o desconectado, o borrado sus datos, o su cuenta) desde que empezó esta ejecución?"""
+    if uid not in STARTED:
+        return False
+    started, source = STARTED[uid]
+    u = users.find(users.load(s3, BUCKET), uid=uid)
+    return u is None or users.source(u) != source or (u.get("sourceChangedAt") or 0) > started
+
+
 def _push(uid: str) -> None:
+    if _source_changed(uid):  # la API acaba de borrar o cambiar sus datos: subir esto los resucitaría
+        raise SourceChanged()
     sp, site = users.state_prefix(uid), users.site_prefix(uid)
     for name in STATE:
         p = ROOT / "data" / name
@@ -188,7 +208,8 @@ def _dispatch() -> dict:
     """Ejecución programada: una sincronización por persona con Garmin conectado."""
     n = 0
     for u in users.load(s3, BUCKET):
-        if u.get("status") == "active":
+        # google_not_linked: se reintenta cada hora por si ya ha enlazado Google Health en la app del móvil
+        if u.get("status") in ("active", "google_not_linked"):
             lam.invoke(FunctionName=FUNCTION, InvocationType="Event", Payload=json.dumps({"uid": u["uid"]}).encode())
             n += 1
     log.info("Sincronización programada: %d personas", n)
@@ -198,8 +219,8 @@ def _dispatch() -> dict:
 def _sync_user(event: dict, ctx) -> dict:
     uid = event["uid"]
     user = users.find(users.load(s3, BUCKET), uid=uid)
-    if not user or user.get("status") not in ("active",):
-        return {"ok": False, "skipped": "sin Garmin conectado"}
+    if not user or user.get("status") not in ("active", "google_not_linked"):
+        return {"ok": False, "skipped": "sin Garmin ni Google Health conectado"}
     token = event.get("token")
     st = _get_json(_status_key(uid), {})
     if st.get("status") == "running" and time.time() - st.get("at", 0) < STALE and st.get("token") != token:
@@ -213,8 +234,28 @@ def _sync_user(event: dict, ctx) -> dict:
     backfill = bool(event.get("continue")) or first
     _put_json(_status_key(uid), {"status": "running", "at": started, "token": token, "manual": manual,
                                  "backfill": backfill, "part": part})
+    STARTED[uid] = (started, users.source(user))
     try:
         partial = _run(user, ctx)
+        if _source_changed(uid):
+            raise SourceChanged()
+    except (SourceChanged, GH.NotLinked, GH.Reauth) as e:
+        if isinstance(e, SourceChanged) or _source_changed(uid):
+            # tras desconectar o cambiar de fuente, el permiso ya no está: ni error ni "vuelve a conectar"
+            if _get_json(_status_key(uid), {}).get("token") == token:  # sin rastro de "en marcha"
+                _put_json(_status_key(uid), {"status": "cancelled", "at": started, "finished": int(time.time())})
+            log.warning("La fuente de %s ha cambiado durante la sincronización: no se sube nada", uid)
+            return {"ok": False, "sourceChanged": True}
+        if isinstance(e, GH.NotLinked):  # su cuenta de Google aún no tiene Google Health: se reintenta cada hora
+            _put_json(_status_key(uid), {"status": "google_not_linked", "at": started, "finished": int(time.time())})
+            users.update(s3, BUCKET, uid, status="google_not_linked", googleLinkUrl=e.link_url)
+            log.warning("Google Health sin enlazar para %s", uid)
+            return {"ok": False, "google_not_linked": True}
+        # retiró el permiso o caducó: tiene que volver a conectar
+        _put_json(_status_key(uid), {"status": "google_reauth", "at": started, "finished": int(time.time())})
+        users.update(s3, BUCKET, uid, status="google_reauth")
+        log.warning("Google Health ya no acepta el permiso de %s", uid)
+        return {"ok": False, "google_reauth": True}
     except KeyRejected:
         _put_json(_status_key(uid), {"status": "key_invalid", "at": started, "finished": int(time.time())})
         users.update(s3, BUCKET, uid, status="key_invalid")
@@ -239,7 +280,10 @@ def _sync_user(event: dict, ctx) -> dict:
                    Payload=json.dumps({"uid": uid, "token": token, "continue": True, "part": part + 1}).encode())
         return {"ok": True, "partial": True, "part": part}
     _put_json(_status_key(uid), {"status": "done", "at": started, "finished": int(time.time()), "manual": manual,
-                                 **({"backfillDone": True} if backfill else {})})
+                                 **({"backfillDone": True} if backfill else {}),
+                                 **({"empty": True} if uid in EMPTY else {})})
+    if user.get("status") == "google_not_linked":  # ya lo ha enlazado
+        users.update(s3, BUCKET, uid, status="active", googleLinkUrl=None)
     _maybe_create_plan(uid)
     return {"ok": True}
 
@@ -247,11 +291,17 @@ def _sync_user(event: dict, ctx) -> dict:
 def _run(user: dict, ctx) -> bool:
     """Sincroniza a una persona. Devuelve True si se cortó por tiempo y queda historial por bajar."""
     uid = user["uid"]
+    google = users.source(user) == "google"
+    EMPTY.discard(uid)
     _reset()
-    try:
-        _secret(users.key_param(uid), "~/.config/garmin/connect-personal-api-key")
-    except ssm.exceptions.ParameterNotFound:
-        raise KeyRejected() from None
+    client = None
+    if google:
+        client = _google_client(uid)
+    else:
+        try:
+            _secret(users.key_param(uid), "~/.config/garmin/connect-personal-api-key")
+        except ssm.exceptions.ParameterNotFound:
+            raise KeyRejected() from None
     _secret("/garmin-stats/anthropic-key", "~/.config/anthropic/garmin-stats-key")
     owner = user.get("role") == "owner"
     os.environ["GARMIN_STATS_UID"] = uid
@@ -262,24 +312,35 @@ def _run(user: dict, ctx) -> bool:
     os.environ["GARMIN_STATS_DEADLINE"] = str(time.time() + max(60, min(SYNC_SECONDS, left - 420)))
     _pull(uid)
 
-    from garmin_personal_api.errors import HttpError
-    from garmin_stats.api import Api
-    try:
-        Api()  # cambia la clave por un token: si Garmin la rechaza, no hay nada que hacer hasta que ponga otra
-    except HttpError as e:
-        if e.status_code in (400, 401, 403):
-            raise KeyRejected() from e
-        raise
+    if not google:
+        from garmin_personal_api.errors import HttpError
+        from garmin_stats.api import Api
+        try:
+            Api()  # cambia la clave por un token: si Garmin la rechaza, no hay nada que hacer hasta que ponga otra
+        except HttpError as e:
+            if e.status_code in (400, 401, 403):
+                raise KeyRejected() from e
+            raise
 
     from garmin_stats import export, sync
     from garmin_stats.cli import main
     export.SECTION_ERRORS.clear()
+    partial = False
     try:
-        main(["sync"])
+        if google:
+            partial = GH.sync(client)
+        else:
+            main(["sync"])
+            partial = bool(sync.LAST_PARTIAL)
         # Lo descargado se guarda YA: si el cálculo de la web falla o se queda sin tiempo/memoria,
         # la siguiente ejecución sigue desde aquí en vez de repetir la descarga.
         _push(uid)
-        main(["report"])
+        if google and not _has_data():
+            # Google Health aún no tiene nada suyo (reloj recién enlazado): sin datos no hay informe que hacer
+            EMPTY.add(uid)
+            log.info("Google Health sin datos todavía para %s", uid)
+        else:
+            main(["report"])
     finally:
         # Aunque el informe falle, lo descargado de Garmin se guarda: el reintento sigue donde se quedó
         # en vez de volver a bajar todo el historial desde cero.
@@ -287,7 +348,29 @@ def _run(user: dict, ctx) -> bool:
             _push(uid)
         except Exception:  # noqa: BLE001
             log.exception("No se pudo guardar el estado tras el fallo")
-    return bool(sync.LAST_PARTIAL)
+    return partial
+
+
+def _has_data() -> bool:
+    """¿Hay algo descargado (entrenos o días)? Sin nada, el informe no se puede calcular."""
+    db = sqlite3.connect(ROOT / "data" / "garmin.sqlite")
+    try:
+        return db.execute("SELECT 1 FROM raw WHERE dataset IN ('activity', 'daily_summary') LIMIT 1").fetchone() is not None
+    except sqlite3.Error:
+        return False
+    finally:
+        db.close()
+
+
+def _google_client(uid: str) -> GH.Client:
+    """Cliente de Google Health con el permiso guardado de esta persona."""
+    try:
+        tok = json.loads(ssm.get_parameter(Name=users.google_param(uid), WithDecryption=True)["Parameter"]["Value"])
+    except ssm.exceptions.ParameterNotFound:
+        raise GH.Reauth(401, "sin permiso guardado") from None
+    cid = ssm.get_parameter(Name=GH_ID_PARAM)["Parameter"]["Value"].strip()
+    sec = ssm.get_parameter(Name=GH_SECRET_PARAM, WithDecryption=True)["Parameter"]["Value"].strip()
+    return GH.Client(cid, sec, tok["refresh_token"])
 
 
 def _maybe_create_plan(uid: str) -> None:

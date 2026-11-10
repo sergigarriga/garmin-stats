@@ -1,0 +1,27 @@
+{
+ "dataPoints": [
+  {
+   "dailyRestingHeartRate": {
+    "date": {
+     "year": 2026,
+     "month": 11,
+     "day": 8
+    },
+    "beatsPerMinute": "51",
+    "dailyRestingHeartRateMetadata": {
+     "calculationMethod": "WITH_SLEEP"
+    }
+   }
+  },
+  {
+   "dailyRestingHeartRate": {
+    "date": {
+     "year": 2026,
+     "month": 11,
+     "day": 7
+    },
+    "beatsPerMinute": "53"
+   }
+  }
+ ]
+}

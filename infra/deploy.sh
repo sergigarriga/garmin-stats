@@ -91,10 +91,19 @@ cp infra/stack.yaml infra/build/stack.yaml && cp -r infra/lambda infra/build/lam
 # 5) Empaquetar y desplegar
 aws cloudformation package --template-file infra/build/stack.yaml --s3-bucket "$ARTIFACTS" --s3-prefix lambda \
   --output-template-file infra/build/packaged.yaml >/dev/null
+# Dominio público (para la vuelta de Google Health). Sale de la distribución ya creada; con dominio propio, PUBLIC_HOST
+# en deploy.env. La primera vez que se crea el stack aún no existe: Google Health se activa al volver a desplegar.
+if [ -z "${PUBLIC_HOST:-}" ]; then
+  PUBLIC_HOST=$(aws cloudformation describe-stacks --stack-name "$STACK" \
+    --query "Stacks[0].Outputs[?OutputKey=='Url'].OutputValue" --output text 2>/dev/null || true)
+  PUBLIC_HOST=${PUBLIC_HOST#https://}
+  if [ "$PUBLIC_HOST" = "None" ]; then PUBLIC_HOST=""; fi
+fi
 aws cloudformation deploy --stack-name "$STACK" --template-file infra/build/packaged.yaml \
   --capabilities CAPABILITY_IAM --no-fail-on-empty-changeset \
   --parameter-overrides AllowedEmails="$EMAIL" BudgetEmail="$EMAIL" SessionSecret="$SESSION" OriginSecret="$ORIGIN" VapidPublicKey="$VAPID_PUBLIC" \
-  CatalogPostcode="${CATALOG_POSTCODE:-}"
+  CatalogPostcode="${CATALOG_POSTCODE:-}" PublicHost="$(printf '%s' "$PUBLIC_HOST" | tr '[:upper:]' '[:lower:]')"
+[ -n "$PUBLIC_HOST" ] || echo "Aviso: sin dominio público todavía; vuelve a lanzar deploy.sh para activar Google Health."
 
 out() { aws cloudformation describe-stacks --stack-name "$STACK" --query "Stacks[0].Outputs[?OutputKey=='$1'].OutputValue" --output text; }
 BUCKET=$(out Bucket); URL=$(out Url)

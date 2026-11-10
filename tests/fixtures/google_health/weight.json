@@ -1,0 +1,61 @@
+{
+ "dataPoints": [
+  {
+   "weight": {
+    "weightGrams": 70350.0,
+    "sampleTime": {
+     "physicalTime": "2026-11-08T21:00:00Z",
+     "utcOffset": "3600s",
+     "civilTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 8
+      },
+      "time": {
+       "hours": 8
+      }
+     }
+    }
+   }
+  },
+  {
+   "weight": {
+    "weightGrams": 69800.0,
+    "sampleTime": {
+     "physicalTime": "2026-11-08T07:00:00Z",
+     "utcOffset": "3600s",
+     "civilTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 8
+      },
+      "time": {
+       "hours": 8
+      }
+     }
+    }
+   }
+  },
+  {
+   "weight": {
+    "weightGrams": 70100.0,
+    "sampleTime": {
+     "physicalTime": "2026-11-05T07:05:00Z",
+     "utcOffset": "3600s",
+     "civilTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 5
+      },
+      "time": {
+       "hours": 8
+      }
+     }
+    }
+   }
+  }
+ ]
+}

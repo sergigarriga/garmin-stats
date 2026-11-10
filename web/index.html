@@ -2,22 +2,42 @@
 <html lang="es">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!-- App, no web: sin zoom (pellizco, doble toque o al escribir) y el teclado de Android encoge la página en vez de taparla. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="color-scheme" content="light dark" />
     <title>Runch</title>
     <link rel="manifest" href="/manifest.webmanifest" crossorigin="use-credentials" />
-    <meta name="theme-color" content="#F2F5FA" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#F6F4EE" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0E0E0F" media="(prefers-color-scheme: dark)" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- App instalada en iPhone: la hora y la batería van encima de la app (sin franja propia); la cabecera de cristal pinta debajo. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Runch" />
     <style>
       /* La web se pinta también bajo la barra de estado (hora, batería): el fondo acompaña al tema. */
-      html { background: #F2F5FA; }
+      html { background: #F6F4EE; }
       @media (prefers-color-scheme: dark) { html { background: #0E0E0F; } }
-      html[data-theme="light"] { background: #F2F5FA; }
+      html[data-theme="light"] { background: #F6F4EE; }
       html[data-theme="dark"] { background: #0E0E0F; }
+      /* Color de marca: cambiarlo aquí cambia toda la app (ver src/brand/colors.ts). */
+      /* Marca «Olivo» + acentos: cada sección tiene su color (barra de abajo y pestañas). *-ink = el que se lee sobre el fondo. */
+      :root {
+        --brand: #5A6B32; --brand-dark: #46542A; --brand-light: #B4C784; --brand-cream: #F7F3EC; --brand-ink: var(--brand);
+        --lavanda: #8B6FD6; --lavanda-ink: #6B4FC0;
+        --pistacho: #9DB43A; --pistacho-ink: #5F7414;
+        --mar: #24496D; --mar-ink: #24496D;
+      }
+      [data-mui-color-scheme="dark"] {
+        --brand-ink: var(--brand-light); --lavanda-ink: #C9B8F5; --pistacho-ink: #CFE07A; --mar-ink: #9CC2E6;
+      }
+      /* Comportamiento de app: sin rebote ni arrastre de toda la página, sin zoom por doble toque,
+         sin texto que crece al girar el móvil y nada que se salga por los lados (eso hace que iOS aleje la vista). */
+      html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; touch-action: manipulation; overscroll-behavior: none; }
+      body { overscroll-behavior: none; overflow-x: clip; -webkit-tap-highlight-color: transparent; }
+      #root { overflow-x: clip; }
+      /* iOS hace zoom al tocar un campo con letra menor de 16 px */
+      @media (pointer: coarse) { input, textarea, select { font-size: max(16px, 1em) !important; } }
     </style>
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />

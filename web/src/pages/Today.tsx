@@ -31,6 +31,7 @@ import { LineChart } from '@mui/x-charts/LineChart';
 import { WeatherIcon } from './PlanTime';
 import { FoodTodayCard } from './Food';
 import { KeyFacts, activityFacts, heartFacts, sleepFacts, trainingFacts } from '../highlights';
+import { BRAND_INK, brandTint } from '../brand/colors';
 
 const minutes = (hm: string) => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
 const hhmm = (min: number) => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(Math.round(min % 60)).padStart(2, '0')}`;
@@ -136,8 +137,8 @@ function LastWorkoutCard({ data, go }: { data: GarminData; go: (tab: string) => 
       )}
       {text && (
         <Box sx={{ mt: 2, p: 1.5, borderRadius: '16px', display: 'flex', gap: 1, alignItems: 'flex-start',
-          bgcolor: 'color-mix(in srgb, #D4542F 8%, transparent)' }}>
-          {ai && <AutoAwesomeRounded sx={{ fontSize: 18, color: '#D4542F', mt: '2px', flexShrink: 0 }} />}
+          bgcolor: brandTint(8) }}>
+          {ai && <AutoAwesomeRounded sx={{ fontSize: 18, color: BRAND_INK, mt: '2px', flexShrink: 0 }} />}
           <Typography variant="body2"><Rich>{text}</Rich></Typography>
         </Box>
       )}

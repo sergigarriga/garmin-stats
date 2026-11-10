@@ -16,6 +16,7 @@ import { mmss, stepPace, toDate, type PaceRef, type PlanSession, type SessionTyp
 import { dec1, pace } from './format';
 import { useResolvedMode } from './theme';
 import { Rich } from './rich';
+import { BRAND, BRAND_DARK, BRAND_INK, brandTint } from './brand/colors';
 
 export type Refs = Partial<Record<PaceRef, number>> | null | undefined;
 
@@ -31,7 +32,6 @@ export const SESSION_TYPE: Record<SessionType, { label: string; light: string; d
   rest: { label: 'Descanso', light: '#80868B', dark: '#9AA0A6' },
 };
 
-const BRAND = { light: '#D4542F', dark: '#F08A66' };
 const KIND_LABEL: Record<WorkoutStep['kind'], string> = {
   warmup: 'Calentamiento', active: 'Esfuerzo', recovery: 'Recuperación', cooldown: 'Vuelta a la calma', rest: 'Descanso',
 };
@@ -207,7 +207,7 @@ export function SessionDialog({ s, refs, onClose, onRedo, onUndo, go, todayIso, 
     setBusy(true); setErr(null);
     try { await fn(); setConfirm(false); onClose(); } catch (e) { setErr(e instanceof Error ? e.message : 'Algo ha fallado.'); } finally { setBusy(false); }
   };
-  const statusColor = s.status === 'done' ? 'success.main' : s.status === 'partial' ? 'warning.main' : s.status === 'today' ? BRAND[mode] : 'text.secondary';
+  const statusColor = s.status === 'done' ? 'success.main' : s.status === 'partial' ? 'warning.main' : s.status === 'today' ? BRAND_INK : 'text.secondary';
   return (
     <Dialog open={!!s} onClose={onClose} fullWidth maxWidth="sm" scroll="paper"
       slotProps={{ paper: { sx: { borderRadius: '28px', m: { xs: 1, sm: 2 }, width: { xs: 'calc(100% - 16px)', sm: undefined }, maxHeight: 'calc(100% - 24px)' } } }}>
@@ -227,7 +227,7 @@ export function SessionDialog({ s, refs, onClose, onRedo, onUndo, go, todayIso, 
                 {[s.distance_km ? `${dec1(s.distance_km)} km` : null, s.duration_min ? `${s.duration_min} min` : null, s.target].filter(Boolean).join(' · ')}
               </Typography>
             </Stack>
-            {isRedo && <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: BRAND[mode], fontWeight: 600 }}>
+            {isRedo && <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: BRAND_INK, fontWeight: 600 }}>
               Retomado del {toDate(s.redo_from!).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })}</Typography>}
           </Box>
           <IconButton onClick={onClose} aria-label="Cerrar" sx={{ mt: -0.5, mr: -0.5 }}><CloseRounded /></IconButton>
@@ -250,17 +250,17 @@ export function SessionDialog({ s, refs, onClose, onRedo, onUndo, go, todayIso, 
         {err && <Typography color="error" variant="body2" sx={{ mt: 2 }}>{err}</Typography>}
         {(canRedo || canRepeat) && (
           confirm ? (
-            <Box sx={{ mt: 2.5, p: 1.75, borderRadius: '16px', bgcolor: alpha(BRAND[mode], 0.08) }}>
+            <Box sx={{ mt: 2.5, p: 1.75, borderRadius: '16px', bgcolor: brandTint(8, BRAND_INK) }}>
               <Typography variant="body2">Este entreno pasa a <b>hoy</b> y sustituye lo que tenías previsto hoy del mismo tipo. Si no lo haces, puedes deshacerlo.</Typography>
               <Stack direction="row" spacing={1} sx={{ mt: 1.5 }}>
                 <Button onClick={() => setConfirm(false)} sx={{ borderRadius: 999, flex: 1 }}>Cancelar</Button>
                 <Button variant="contained" disableElevation disabled={busy} onClick={() => act(() => onRedo(s))}
-                  sx={{ borderRadius: 999, flex: 2, bgcolor: BRAND.light, '&:hover': { bgcolor: '#B9441F' } }}>{busy ? 'Guardando…' : 'Sí, lo hago hoy'}</Button>
+                  sx={{ borderRadius: 999, flex: 2, bgcolor: BRAND, '&:hover': { bgcolor: BRAND_DARK } }}>{busy ? 'Guardando…' : 'Sí, lo hago hoy'}</Button>
               </Stack>
             </Box>
           ) : (
             <Button fullWidth variant="contained" disableElevation startIcon={<ReplayRounded />} onClick={() => setConfirm(true)}
-              sx={{ mt: 2.5, py: 1.25, borderRadius: 999, bgcolor: BRAND.light, '&:hover': { bgcolor: '#B9441F' } }}>
+              sx={{ mt: 2.5, py: 1.25, borderRadius: 999, bgcolor: BRAND, '&:hover': { bgcolor: BRAND_DARK } }}>
               {canRepeat ? 'Repetirlo hoy' : 'Hacerlo hoy'}
             </Button>
           )

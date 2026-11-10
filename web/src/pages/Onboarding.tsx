@@ -27,24 +27,26 @@ import AccordionDetails from '@mui/material/AccordionDetails';
 import { canPromptInstall, isIos, isStandalone, onInstallChange, promptInstall } from '../pwa';
 import { call, GarminKeyForm, GarminKeySteps, type Me } from '../account';
 import { CARD_SX, IconBubble } from '../ui';
+import { GoogleHealthConnect, useGoogleReturn } from '../googleHealth';
+import OpenInNewRounded from '@mui/icons-material/OpenInNewRounded';
 import { CreateForm } from './PlanPage';
+import { BRAND, BRAND_DARK } from '../brand/colors';
 
 type Step = 'welcome' | 'garmin' | 'goal' | 'download';
 
 /** Terracota del logo: el onboarding va con los colores de Runch. */
-const BRAND = '#D4542F';
-const BRAND_DARK = '#B9441F';
 const BTN = { borderRadius: 999, bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: BRAND_DARK } } as const;
 
 function stepFor(me: Me, skippedGoal: boolean): Step {
-  if (me.status !== 'active' && me.status !== 'key_invalid') return me.consented ? 'garmin' : 'welcome';
-  if (me.status === 'key_invalid') return 'garmin';
+  // Conectar (Garmin o Google Health): también si hay que volver a conectar o falta enlazar Google Health.
+  if (me.status === 'key_invalid' || me.status === 'google_reauth' || me.status === 'google_not_linked') return 'garmin';
+  if (me.status !== 'active') return me.consented ? 'garmin' : 'welcome';
   if (!me.hasGoal && !skippedGoal) return 'goal';
   return 'download';
 }
 
 const STEPS: { key: Step; label: string }[] = [
-  { key: 'welcome', label: 'Bienvenida' }, { key: 'garmin', label: 'Garmin' }, { key: 'goal', label: 'Objetivo' }, { key: 'download', label: 'Tus datos' },
+  { key: 'welcome', label: 'Bienvenida' }, { key: 'garmin', label: 'Conexión' }, { key: 'goal', label: 'Objetivo' }, { key: 'download', label: 'Tus datos' },
 ];
 
 /** Primeros pasos de una persona invitada: aceptar, conectar Garmin, objetivo y primera descarga. */
@@ -62,13 +64,30 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
     try { await navigator.clipboard.writeText(window.location.origin); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { /* sin portapapeles */ }
   };
   const first = (me.name || '').split(' ')[0];
+  const google = !!me.google?.available && me.source !== 'garmin';
+  const googleReturn = useGoogleReturn();
 
-  // Mientras descarga, pregunta cada 5 s; cuando ya hay datos, entra en la app
+  // Vuelta de Google con éxito: al paso que toque (objetivo o descarga).
   useEffect(() => {
-    if (step !== 'download') return;
-    const id = window.setInterval(async () => { const m = await refresh(); if (m?.hasData) onData(); }, 5000);
+    if (!googleReturn?.ok) return;
+    refresh().then((m) => { if (m) setStep(stepFor(m, false)); });
+  }, [googleReturn, refresh]);
+
+  // Mientras descarga, pregunta cada 5 s; cuando ya hay datos, entra en la app.
+  // Si Google Health pide algo (enlazar la app o reconectar), vuelve al paso de conexión.
+  // Con "falta enlazar" también pregunta: en cuanto lo enlaza, sigue solo.
+  const notLinked = me.status === 'google_not_linked';
+  useEffect(() => {
+    if (step !== 'download' && !(step === 'garmin' && notLinked)) return;
+    const id = window.setInterval(async () => {
+      const m = await refresh();
+      if (!m) return;
+      if (m.hasData) { onData(); return; }
+      const next = stepFor(m, skippedGoal);
+      if (next !== step && (step === 'garmin' || next === 'garmin')) setStep(next);
+    }, 5000);
     return () => window.clearInterval(id);
-  }, [step, refresh, onData]);
+  }, [step, notLinked, skippedGoal, refresh, onData]);
 
   const idx = STEPS.findIndex((s) => s.key === step);
   return (
@@ -97,7 +116,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
               {[
                 { icon: <BedtimeRounded />, color: '#5B5BD6', t: 'Sueño, corazón y energía', d: 'Cómo duermes, tu HRV y cómo llegas cada mañana para entrenar.' },
                 { icon: <DirectionsRunRounded />, color: '#E8710A', t: 'Plan de entreno con IA', d: 'Para tu objetivo (5 km, 10 km, media, maratón).' },
-                { icon: <TuneRounded />, color: '#D4542F', t: 'Reglas a tu medida', d: 'Más natación, bici, gimnasio o menos series: tú decides qué entra en tu semana, y el coach lo respeta.' },
+                { icon: <TuneRounded />, color: BRAND, t: 'Reglas a tu medida', d: 'Más natación, bici, gimnasio o menos series: tú decides qué entra en tu semana, y el coach lo respeta.' },
                 { icon: <FavoriteRounded />, color: '#D93025', t: 'Un coach al que preguntar', d: '"¿Por qué duermo peor los domingos?" y te responde con tus datos.' },
               ].map((f) => (
                 <Stack key={f.t} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
@@ -110,7 +129,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
               <Typography sx={{ fontWeight: 600, mb: 1.5 }}>Cómo empezar (unos 3 minutos)</Typography>
               <Stack spacing={1.25}>
                 {[
-                  'Conectas tu Garmin con una clave que te da el propio Garmin.',
+                  google ? 'Conectas tu Garmin (con una clave que te da Garmin) o Google Health.' : 'Conectas tu Garmin con una clave que te da el propio Garmin.',
                   'Eliges tu objetivo: una carrera, ponerte en forma o solo ver tus datos.',
                   'Bajamos tu historial y el coach te prepara el plan. Ya está.',
                 ].map((t, i) => (
@@ -123,7 +142,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
               </Stack>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1, sm: 2 }} sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
                 <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', color: 'text.secondary' }}>
-                  <WatchRounded sx={{ fontSize: 18 }} /><Typography variant="body2">Un reloj Garmin y tu cuenta de Garmin Connect</Typography>
+                  <WatchRounded sx={{ fontSize: 18 }} /><Typography variant="body2">{google ? 'Un reloj Garmin, o tus datos en Google Health' : 'Un reloj Garmin y tu cuenta de Garmin Connect'}</Typography>
                 </Stack>
                 <Stack direction="row" spacing={0.75} sx={{ alignItems: 'center', color: 'text.secondary' }}>
                   <ScheduleRounded sx={{ fontSize: 18 }} /><Typography variant="body2">3 minutos</Typography>
@@ -141,7 +160,7 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
                     Puedes borrar tu cuenta y todo lo guardado cuando quieras desde el menú.
                   </Typography>
                   <FormControlLabel sx={{ mt: 1 }} control={<Checkbox checked={consent} onChange={(e) => setConsent(e.target.checked)} sx={{ '&.Mui-checked': { color: BRAND } }} />}
-                    label={<Typography variant="body2">Acepto que se guarden y analicen mis datos de salud de Garmin para usar la app.</Typography>} />
+                    label={<Typography variant="body2">Acepto que se guarden y analicen mis datos de salud de {google ? 'Garmin o Google Health' : 'Garmin'} para usar la app.</Typography>} />
                 </Box>
               </Stack>
             </Card>
@@ -173,8 +192,49 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
           </Stack>
         )}
 
-        {step === 'garmin' && !later && (
+        {step === 'garmin' && !later && me.status === 'google_not_linked' && (
           <Stack spacing={3}>
+            <Box>
+              <Typography sx={{ fontSize: { xs: 26, sm: 30 }, fontWeight: 500, lineHeight: 1.2 }}>Falta un paso</Typography>
+              <Typography color="text.secondary" sx={{ mt: 1 }}>
+                Google Health está conectado, pero tu cuenta de Google aún no tiene la app Google Health enlazada.
+              </Typography>
+            </Box>
+            <Card sx={{ ...CARD_SX, p: 2.5 }}>
+              <Stack spacing={1.25}>
+                {[
+                  'Instala la app Google Health en tu móvil.',
+                  'Inicia sesión con esta misma cuenta de Google.',
+                  'Deja que reciba tus datos de Apple Salud (iPhone) o Health Connect (Android).',
+                ].map((t, i) => (
+                  <Stack key={i} direction="row" spacing={1.5} sx={{ alignItems: 'flex-start' }}>
+                    <Box sx={{ width: 24, height: 24, borderRadius: '50%', flexShrink: 0, display: 'grid', placeItems: 'center', fontSize: 13, fontWeight: 700,
+                      bgcolor: BRAND, color: '#FFFFFF' }}>{i + 1}</Box>
+                    <Typography variant="body2" sx={{ pt: 0.25 }}>{t}</Typography>
+                  </Stack>
+                ))}
+              </Stack>
+            </Card>
+            {me.google?.linkUrl && (
+              <Button variant="outlined" href={me.google.linkUrl} target="_blank" rel="noreferrer" endIcon={<OpenInNewRounded />} sx={{ borderRadius: 999, alignSelf: 'flex-start' }}>
+                Abrir Google Health
+              </Button>
+            )}
+            <RetryButton label="Ya lo he hecho" />
+            <Typography variant="body2" color="text.secondary">En cuanto esté enlazado seguimos solos (lo comprobamos también cada hora).</Typography>
+          </Stack>
+        )}
+
+        {step === 'garmin' && !later && me.status !== 'google_not_linked' && (
+          <Stack spacing={3}>
+            {googleReturn && !googleReturn.ok && <Alert severity="warning" sx={{ borderRadius: '14px' }}>{googleReturn.message}</Alert>}
+            {me.status === 'google_reauth' && (
+              <>
+                <Alert severity="warning" sx={{ borderRadius: '14px' }}>Google Health ya no da acceso a tus datos. Vuelve a conectarlo.</Alert>
+                <GoogleHealthConnect back="onboarding" consent />
+              </>
+            )}
+            {me.source !== 'google' && <>
             <Box>
               <Typography sx={{ fontSize: { xs: 26, sm: 30 }, fontWeight: 500, lineHeight: 1.2 }}>Conecta tu Garmin</Typography>
               <Typography color="text.secondary" sx={{ mt: 1 }}>
@@ -187,16 +247,18 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
             <Card sx={{ ...CARD_SX, p: 2.5 }}><GarminKeySteps /></Card>
             <KeyFaq />
             <GarminKeyForm consent={consent || !!me.consented || me.status === 'key_invalid'} onDone={async () => { const m = await refresh(); if (m) setStep(stepFor(m, skippedGoal)); }} />
+            {google && me.status !== 'key_invalid' && <GoogleHealthConnect back="onboarding" consent />}
             {me.status !== 'key_invalid' && (
               <Button onClick={() => setLater(true)} sx={{ borderRadius: 999, alignSelf: 'flex-start', color: BRAND }}>Ahora no, lo haré luego</Button>
             )}
+            </>}
           </Stack>
         )}
 
         {step === 'goal' && (
           <Stack spacing={2.5}>
             <Alert severity="success" icon={<CircularProgress size={18} />} sx={{ borderRadius: '14px', alignItems: 'center' }}>
-              ¡Garmin conectado! Ya estamos descargando tu historial mientras eliges tu objetivo.
+              ¡{me.source === 'google' ? 'Google Health' : 'Garmin'} conectado! Ya estamos descargando tu historial mientras eliges tu objetivo.
             </Alert>
             <Box>
               <Typography sx={{ fontSize: { xs: 26, sm: 30 }, fontWeight: 500, lineHeight: 1.2 }}>¿A por qué vas?</Typography>
@@ -214,24 +276,51 @@ export default function Onboarding({ me, refresh, onData }: { me: Me; refresh: (
   );
 }
 
+/** Volver a pedir una sincronización (p. ej. tras enlazar Google Health o si aún no había datos). */
+function RetryButton({ label }: { label: string }) {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const retry = async () => {
+    setBusy(true); setMsg(null);
+    try { await call('./api/sync', {}); setMsg('Comprobando… tarda unos segundos.'); } catch (e) { setMsg((e as Error).message); } finally { setBusy(false); }
+  };
+  return (
+    <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>
+      <Button variant="contained" disableElevation disabled={busy} onClick={retry} sx={BTN}>{label}</Button>
+      {msg && <Typography variant="body2" color="text.secondary">{msg}</Typography>}
+    </Stack>
+  );
+}
+
 function Download({ me, skippedGoal }: { me: Me; skippedGoal: boolean }) {
   const s = me.sync ?? {};
   const failed = s.status === 'error';
+  const src = me.source === 'google' ? 'Google Health' : 'Garmin';
+  // Google Health conectado pero todavía sin ningún dato
+  const empty = s.status === 'done' && !!s.empty;
   return (
     <Stack spacing={3}>
       <Box>
         <Typography sx={{ fontSize: { xs: 26, sm: 30 }, fontWeight: 500, lineHeight: 1.2 }}>Descargando tus datos</Typography>
         <Typography color="text.secondary" sx={{ mt: 1 }}>
-          La primera vez se baja todo tu historial de Garmin. En cuanto llegue la primera parte (2-8 minutos) entrarás en la app;
+          La primera vez se baja todo tu historial de {src}. En cuanto llegue la primera parte (2-8 minutos) entrarás en la app;
           el resto se sigue completando solo.
         </Typography>
       </Box>
       <Card sx={{ ...CARD_SX, p: 2.5 }}>
-        {failed ? (
-          <Alert severity="error" sx={{ borderRadius: '14px' }}>Garmin ha dado un error. Lo volvemos a intentar solos cada hora; también puedes recargar esta página en un rato.</Alert>
+        {empty ? (
+          <Stack spacing={1.5}>
+            <Alert severity="info" sx={{ borderRadius: '14px' }}>
+              Google Health todavía no tiene datos tuyos. Abre la app Google Health y comprueba que recibe datos de Apple Salud
+              (iPhone) o Health Connect (Android). Lo volvemos a mirar cada hora.
+            </Alert>
+            <RetryButton label="Volver a mirar" />
+          </Stack>
+        ) : failed ? (
+          <Alert severity="error" sx={{ borderRadius: '14px' }}>{src} ha dado un error. Lo volvemos a intentar solos cada hora; también puedes recargar esta página en un rato.</Alert>
         ) : (
           <Stack spacing={1.5}>
-            <Typography sx={{ fontWeight: 500 }}>{s.part && s.part > 1 ? `Bajando tu historial (parte ${s.part})…` : 'Conectando con Garmin…'}</Typography>
+            <Typography sx={{ fontWeight: 500 }}>{s.part && s.part > 1 ? `Bajando tu historial (parte ${s.part})…` : `Conectando con ${src}…`}</Typography>
             <LinearProgress sx={{ borderRadius: 2, height: 6 }} />
             <Typography variant="body2" color="text.secondary">
               Puedes cerrar esta página: seguirá descargándose y la próxima vez que entres ya estará todo.

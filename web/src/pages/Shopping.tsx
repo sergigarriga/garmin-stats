@@ -253,7 +253,7 @@ function LineDialog({ l, onClose, act }: { l: Line | null; onClose: () => void; 
   };
   const p = l.product;
   return (
-    <Dialog open onClose={onClose} fullScreen={full} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: { xs: 0, sm: '28px' } } } }}>
+    <Dialog open onClose={onClose} fullScreen={full} fullWidth maxWidth="sm" slotProps={{ paper: { sx: { borderRadius: { xs: 0, sm: '28px' }, pt: { xs: 'env(safe-area-inset-top)', sm: 0 }, pb: { xs: 'env(safe-area-inset-bottom)', sm: 0 } } } }}>
       <DialogTitle sx={{ pr: 6 }}>{l.name.charAt(0).toUpperCase() + l.name.slice(1)} · {amountLabel(l)}</DialogTitle>
       <DialogContent>
         <Stack spacing={2}>

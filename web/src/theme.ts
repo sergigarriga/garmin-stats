@@ -56,9 +56,9 @@ export const theme = createTheme({
   colorSchemes: {
     light: {
       palette: {
-        primary: { main: '#0B57D0', contrastText: '#FFFFFF' },
-        secondary: { main: '#00639B' },
-        background: { default: '#F2F5FA', paper: '#FFFFFF' },
+        primary: { main: '#5A6B32', contrastText: '#FFFFFF' },  // olivo (marca)
+        secondary: { main: '#24496D' },  // mar
+        background: { default: '#F6F4EE', paper: '#FFFFFF' },  // crema suave
         text: { primary: '#1F1F1F', secondary: '#444746', disabled: '#8E918F' },
         divider: '#E1E3E1',
         success: { main: '#146C2E' },
@@ -68,8 +68,8 @@ export const theme = createTheme({
     },
     dark: {
       palette: {
-        primary: { main: '#A8C7FA', contrastText: '#062E6F' },
-        secondary: { main: '#7FCFFF' },
+        primary: { main: '#B4C784', contrastText: '#1F2A0A' },
+        secondary: { main: '#9CC2E6' },
         background: { default: '#0E0E0F', paper: '#1E1F20' },
         text: { primary: '#E3E3E3', secondary: '#C4C7C5', disabled: '#8E918F' },
         divider: '#333537',

@@ -1,0 +1,41 @@
+{
+ "dataPoints": [
+  {
+   "name": "users/1234567890/dataTypes/exercise/dataPoints/8811a2b3-swim",
+   "dataSource": {
+    "recordingMethod": "ACTIVELY_MEASURED",
+    "device": {
+     "manufacturer": "Google",
+     "displayName": "Pixel Watch 3"
+    },
+    "platform": "FITBIT"
+   },
+   "exercise": {
+    "interval": {
+     "startTime": "2026-11-04T19:00:00Z",
+     "startUtcOffset": "3600s",
+     "endTime": "2026-11-04T19:40:00Z",
+     "endUtcOffset": "3600s",
+     "civilStartTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 4
+      }
+     }
+    },
+    "exerciseType": "SWIMMING_POOL",
+    "displayName": "Natación",
+    "activeDuration": "2100s",
+    "metricsSummary": {
+     "distanceMillimeters": 1500000.0,
+     "averageSpeedMillimetersPerSecond": 714.3,
+     "caloriesKcal": 350.0,
+     "totalSwimLengths": 60.0
+    },
+    "updateTime": "2026-11-04T19:40:00Z"
+   }
+  }
+ ],
+ "nextPageToken": "pagina-2"
+}

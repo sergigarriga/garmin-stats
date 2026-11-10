@@ -23,6 +23,13 @@ Parameters:
   VapidPublicKey:
     Type: String
     Description: Clave pública VAPID (notificaciones push)
+  PublicHost:
+    Type: String
+    Default: ""
+    AllowedPattern: "^[a-z0-9.-]*$"
+    Description: >-
+      Dominio público de la web (el de CloudFront, sin https://). La API solo manda a Google esa dirección de vuelta.
+      No se puede leer de la distribución dentro del stack (referencia circular): lo pasa deploy.sh. Vacío = sin Google Health.
   CatalogPostcode:
     Type: String
     Default: ""
@@ -179,7 +186,10 @@ Resources:
                 Resource: !Sub ${SiteBucket.Arn}/admin/catalog/*
               - Effect: Allow
                 Action: ssm:GetParameter
-                Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
+                Resource:
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
+                  # Cliente OAuth de Google Health (fuente de datos para quien no tiene Garmin)
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/google-health-client-*
               - Effect: Allow
                 Action: [ssm:PutParameter, ssm:DeleteParameter, ssm:GetParameter]
                 Resource: !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/users/*
@@ -210,6 +220,9 @@ Resources:
           ANTHROPIC_KEY_PARAM: /garmin-stats/anthropic-key
           NOTIFY_FUNCTION: garmin-stats-notify
           SYNC_FUNCTION: garmin-stats-sync
+          PUBLIC_HOST: !Ref PublicHost
+          GOOGLE_HEALTH_CLIENT_ID_PARAM: /garmin-stats/google-health-client-id
+          GOOGLE_HEALTH_CLIENT_SECRET_PARAM: /garmin-stats/google-health-client-secret
 
   ApiLogs:
     Type: AWS::Logs::LogGroup
@@ -263,6 +276,7 @@ Resources:
                 Resource:
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/users/*
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/google-health-client-*
               - Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource:
@@ -290,6 +304,8 @@ Resources:
           VAPID_PUBLIC_KEY: !Ref VapidPublicKey
           API_FUNCTION: garmin-stats-api
           ALERTS_TOPIC: !Ref AlertsTopic
+          GOOGLE_HEALTH_CLIENT_ID_PARAM: /garmin-stats/google-health-client-id
+          GOOGLE_HEALTH_CLIENT_SECRET_PARAM: /garmin-stats/google-health-client-secret
 
   SyncLogs:
     Type: AWS::Logs::LogGroup
@@ -589,6 +605,8 @@ Resources:
           if (email) {
             // Cada persona solo ve SU carpeta: el id sale del email firmado (HMAC), no de nada que mande el navegador
             var uid = crypto.createHmac('sha256', SECRET).update('uid:' + email).digest('hex').substring(0, 16);
+            // La API necesita el dominio público para la vuelta de Google Health (siempre el de CloudFront, nunca el del navegador)
+            if (u.indexOf('/api/') === 0) req.headers['x-viewer-host'] = { value: req.headers.host.value };
             if (u === '/data.js') req.uri = '/u/' + uid + '/data.js';
             else if (u.indexOf('/acts/') === 0) req.uri = '/u/' + uid + u;
             else if (u.endsWith('/')) req.uri += 'index.html';
@@ -701,6 +719,9 @@ Outputs:
   GoogleRedirectUri:
     Description: URI de redirección autorizada para el cliente OAuth de Google
     Value: !Sub https://${Distribution.DomainName}/auth/callback
+  GoogleHealthRedirectUri:
+    Description: URI de redirección autorizada para el cliente OAuth de Google Health (otro proyecto de Google Cloud)
+    Value: !Sub https://${Distribution.DomainName}/api/google/callback
   Bucket:
     Value: !Ref SiteBucket
   DistributionId:

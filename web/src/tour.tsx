@@ -11,9 +11,9 @@ import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
 import type { Me } from './account';
 import { haptic } from './haptics';
+import { BRAND, BRAND_DARK } from './brand/colors';
 
 const KEY = 'runch-tour-v1';
-const BRAND = '#D4542F';
 
 const SLIDES: { icon: ReactNode; color: string; title: string; body: ReactNode }[] = [
   { icon: <HomeRounded />, color: BRAND, title: 'Hoy: lo importante',
@@ -57,7 +57,7 @@ export function WelcomeTour({ me }: { me: Me | null }) {
         <Box sx={{ display: 'flex', gap: 1, mt: 3 }}>
           {!last && <Button onClick={close} sx={{ borderRadius: 999, color: 'text.secondary', flex: 1 }}>Saltar</Button>}
           <Button variant="contained" disableElevation onClick={() => { haptic('tap'); if (last) close(); else setI(i + 1); }}
-            sx={{ borderRadius: 999, flex: 2, py: 1.25, bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: '#B9441F' } }}>
+            sx={{ borderRadius: 999, flex: 2, py: 1.25, bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: BRAND_DARK } }}>
             {last ? 'Empezar' : 'Siguiente'}
           </Button>
         </Box>

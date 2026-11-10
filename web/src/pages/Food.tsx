@@ -91,7 +91,8 @@ const COL = {
 const PILL = { borderRadius: 999 } as const;
 /** Hasta 2 líneas y después "…" (sin cortar una sola línea a lo ancho). */
 const CLAMP2 = { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', overflowWrap: 'anywhere' } as const;
-const DIALOG_PAPER = { borderRadius: { xs: 0, sm: '28px' } } as const;
+// En móvil ocupa toda la pantalla: deja sitio a la hora/batería arriba y a la barra de inicio abajo.
+const DIALOG_PAPER = { borderRadius: { xs: 0, sm: '28px' }, pt: { xs: 'env(safe-area-inset-top)', sm: 0 }, pb: { xs: 'env(safe-area-inset-bottom)', sm: 0 } } as const;
 
 /** Tipo de comida por la hora (horarios de España); igual que en el servidor. */
 export function defaultMeal(d = new Date()): Meal {

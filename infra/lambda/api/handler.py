@@ -9,6 +9,7 @@ usuarias (S3 admin/users.json), su id. Todo lo que se lee o escribe va a SU carp
   users/<uid>/state/shopping.json  su menú de la semana y su lista de la compra
   admin/catalog/mercadona-latest.json  catálogo de productos (privado; solo lectura desde aquí)
   /garmin-stats/users/<uid>/garmin-key (SSM, cifrado)  su clave de Garmin
+  /garmin-stats/users/<uid>/google-token (SSM, cifrado) su permiso de Google Health (si usa Google en vez de Garmin)
 Antes de cada petición se vacía /tmp/gs: una Lambda caliente nunca mezcla datos de dos personas.
 
 Crear y reajustar el plan tarda minutos y CloudFront corta a los 60 s, así que se hace en segundo plano
@@ -39,6 +40,7 @@ os.environ.setdefault("GARMIN_STATS_ROOT", str(ROOT))
 os.environ.setdefault("GARMIN_STATS_USAGE_LOG", "ai_usage_lambda.log")
 os.environ["HOME"] = str(HOME)  # la clave de Anthropic se escribe en ~/.config/anthropic (en /tmp)
 
+from garmin_stats import google_health as GH
 from garmin_stats import users as U  # noqa: E402
 
 BUCKET = os.environ["BUCKET"]
@@ -59,6 +61,13 @@ STATE = ["coach.json", "settings.json", "wellness.json", "weather.json", "food.j
 MAX_BODY = 2_200_000  # la foto de Comida llega en base64 (máx. 1,5 MB); el resto de peticiones son pequeñas
 CAL_RE = re.compile(r"^/api/cal/([A-Za-z0-9_-]{24,64})\.ics$")
 CUR: dict = {}  # persona de esta petición
+GH_ID_PARAM = os.environ.get("GOOGLE_HEALTH_CLIENT_ID_PARAM", "/garmin-stats/google-health-client-id")
+GH_SECRET_PARAM = os.environ.get("GOOGLE_HEALTH_CLIENT_SECRET_PARAM", "/garmin-stats/google-health-client-secret")
+GH_COOKIE = "gs_google"  # PKCE y state del flujo de conexión (10 min, solo en /api/google)
+# Dominio público de la web (el de CloudFront): única dirección de vuelta que se manda a Google. Vacío = sin Google Health.
+PUBLIC_HOST = os.environ.get("PUBLIC_HOST", "").strip().lower()
+BUSY = "Hay una descarga en marcha; prueba en un par de minutos."
+_GH: dict = {}  # cliente OAuth de Google Health, leído de SSM una vez por Lambda caliente
 
 
 # ------------------------------------------------------------------ persona actual y archivos
@@ -305,6 +314,12 @@ def handler(event, _ctx):
         return _me(user)
     if path == "/api/sync":
         return _sync(method, user)
+    if path == "/api/google/connect" and method == "GET":
+        return _google_connect(user, headers, _query(event))
+    if path == "/api/google/callback" and method == "GET":
+        return _google_callback(user, headers, _query(event), event.get("cookies"))
+    if path == "/api/google/disconnect" and method == "POST":
+        return _google_disconnect(user, payload)
     if path == "/api/whatsnew/seen" and method == "POST":  # ya ha visto las novedades de esta versión
         rel = str(payload.get("release") or "")
         if not re.fullmatch(r"\d{4}-\d{2}-\d{2}(-\d{1,2})?", rel):
@@ -689,6 +704,7 @@ def _me(user: dict):
         "monthSpendUsd": _month_spend(user["uid"]),
         "consented": bool(user.get("consentAt")),
         "hasData": _exists(_site("data.js")), "hasGoal": bool(onb.get("goal")), "hasPlan": bool(coach.get("plan")),
+        "source": U.source(user), "google": _google_view(user),
         "planJob": coach.get("job"), "sync": _get_json(_sp("sync_status.json"), {}),
         "owner": OWNER,
         "seenRelease": user.get("seenRelease"),
@@ -702,7 +718,9 @@ def _sync(method: str, user: dict):
     now = time.time()
     if method == "GET":
         return _json(200, st)
-    if user.get("status") != "active":
+    if user.get("status") == "google_reauth":
+        return _json(409, {"error": "Google Health ya no da acceso a tus datos. Vuelve a conectarlo."})
+    if user.get("status") not in ("active", "google_not_linked"):  # sin enlazar: se reintenta por si ya lo ha hecho
         return _json(409, {"error": "Primero conecta tu Garmin."})
     if st.get("status") == "running" and now - st.get("at", 0) < STALE:
         return _json(200, {**st, "already": True})  # ya hay una en marcha: la web espera a esa
@@ -723,6 +741,10 @@ def _start_sync(user: dict) -> dict:
 def _onboarding_key(user: dict, payload: dict):
     """Comprueba la clave personal de Garmin, la guarda cifrada y lanza la primera descarga."""
     key = re.sub(r"\s+", "", str(payload.get("key") or ""))
+    if U.source(user) == "google":
+        return _json(409, {"error": "Tienes Google Health conectado. Desconéctalo antes de usar Garmin."})
+    if user.get("dataSource") == "google" and _sync_running(user["uid"]):
+        return _json(409, {"error": BUSY})  # se van a borrar sus datos de Google: no con una descarga a medias
     if not payload.get("consent") and not user.get("consentAt"):
         return _json(400, {"error": "Antes tienes que aceptar cómo se guardan tus datos."})
     if len(key) < 20 or len(key) > 400:
@@ -743,7 +765,11 @@ def _onboarding_key(user: dict, payload: dict):
     finally:
         (ROOT / "check-token.json").unlink(missing_ok=True)
     _ssm.put_parameter(Name=U.key_param(user["uid"]), Value=key, Type="SecureString", Overwrite=True)
-    fields = {"status": "active", "keyAt": U.now()}
+    if user.get("dataSource") == "google":  # venía de Google Health: sus datos no se mezclan con los de Garmin
+        _wipe_health_data(user["uid"])
+    fields = {"status": "active", "keyAt": U.now(), "source": "garmin", "dataSource": "garmin"}
+    if user.get("dataSource") == "google":
+        fields["sourceChangedAt"] = U.now()  # una descarga anterior de Google ya no puede subir nada
     if not user.get("consentAt"):
         fields["consentAt"] = U.now()
     user = U.update(s3, BUCKET, user["uid"], **fields) or user
@@ -797,8 +823,205 @@ def _delete_user(user: dict) -> None:
         _ssm.delete_parameter(Name=U.key_param(uid))
     except _ssm.exceptions.ParameterNotFound:
         pass
+    if _google_forget(uid) is False:
+        print("google: permiso no retirado al borrar la cuenta (se ha borrado igualmente)")
     users = [u for u in U.load(s3, BUCKET) if u["uid"] != uid]
     U.save(s3, BUCKET, users)
+
+
+# ------------------------------------------------------------------ Google Health (fuente de datos sin Garmin)
+def _gh_cfg() -> dict | None:
+    """Cliente OAuth de Google Health (SSM). Sin parámetros, Google Health no se ofrece; se vuelve a mirar cada 5 min."""
+    if _GH.get("id"):
+        return _GH
+    if time.time() - _GH.get("checked", 0) < 300:
+        return None
+    _GH["checked"] = time.time()
+    try:
+        cid = _ssm.get_parameter(Name=GH_ID_PARAM)["Parameter"]["Value"].strip()
+        sec = _ssm.get_parameter(Name=GH_SECRET_PARAM, WithDecryption=True)["Parameter"]["Value"].strip()
+    except Exception:  # noqa: BLE001 - sin parámetro o sin permiso: no disponible
+        return None
+    if not cid or not sec or cid.startswith("PLACEHOLDER") or sec.startswith("PLACEHOLDER"):
+        return None
+    _GH.update(id=cid, secret=sec)
+    return _GH
+
+
+def _google_view(user: dict) -> dict:
+    """Lo que la web necesita saber de Google Health (para enseñar o no el botón y avisos)."""
+    out: dict = {"available": bool(PUBLIC_HOST) and _gh_cfg() is not None, "connected": U.source(user) == "google"}
+    if out["connected"]:
+        st = user.get("status")
+        out["status"] = {"google_reauth": "reauth", "google_not_linked": "not_linked"}.get(st, "ok")
+        out["scopes"] = user.get("googleScopes") or []
+        out["connectedAt"] = user.get("googleAt")
+        if out["status"] == "not_linked":
+            out["linkUrl"] = user.get("googleLinkUrl") or GH.LINK_URL
+    return out
+
+
+def _query(event) -> dict:
+    from urllib.parse import parse_qs
+    return {k: v[0] for k, v in parse_qs(event.get("rawQueryString") or "").items()}
+
+
+def _redirect(location: str, cookies=None):
+    return {"statusCode": 302, "headers": {"location": location, "cache-control": "no-store", "referrer-policy": "no-referrer"},
+            "cookies": cookies or [], "body": ""}
+
+
+def _back(ok: bool, back: str = "", reason: str = "") -> str:
+    """Vuelta a la web: /?google=ok o /?google=error&reason=... y, si se pidió, #pestaña."""
+    from urllib.parse import urlencode
+    q = {"google": "ok"} if ok else {"google": "error", "reason": reason or "error"}
+    return "/?" + urlencode(q) + (f"#{back}" if back else "")
+
+
+def _safe_back(v) -> str:
+    v = str(v or "")
+    return v if re.fullmatch(r"[a-z][a-z0-9-]{0,30}", v) else ""
+
+
+def _viewer_host(headers: dict) -> str | None:
+    """Dominio público de la web: solo el configurado (PUBLIC_HOST). Cualquier otro x-viewer-host se rechaza."""
+    h = (headers.get("x-viewer-host") or "").strip().lower()
+    return h if PUBLIC_HOST and hmac.compare_digest(h, PUBLIC_HOST) else None
+
+
+def _sync_running(uid: str) -> bool:
+    st = _get_json(U.state_prefix(uid) + "sync_status.json", {})
+    return st.get("status") == "running" and time.time() - st.get("at", 0) < STALE
+
+
+def _google_connect(user: dict, headers: dict, qs: dict):
+    """Manda a Google a dar permiso (solo lectura). ?back=pestaña para volver ahí; ?consent=1 si acaba de aceptar."""
+    back = _safe_back(qs.get("back"))
+    g, host = _gh_cfg(), _viewer_host(headers)
+    if not g or not host:
+        return _redirect(_back(False, back, "unavailable"))
+    if U.source(user) == "garmin":
+        return _redirect(_back(False, back, "garmin"))
+    consent = qs.get("consent") == "1"
+    if not consent and not user.get("consentAt"):
+        return _redirect(_back(False, back, "consent"))
+    verifier, challenge = GH.pkce()
+    state = GH.b64url(secrets.token_bytes(16))
+    tmp = GH.b64url(json.dumps({"v": verifier, "s": state, "b": back, "c": consent, "u": user["uid"]}).encode())
+    return _redirect(GH.auth_url(g["id"], f"https://{host}/api/google/callback", state, challenge),
+                     [f"{GH_COOKIE}={tmp}; Path=/api/google; Max-Age=600; Secure; HttpOnly; SameSite=Lax"])
+
+
+def _google_callback(user: dict, headers: dict, qs: dict, cookies):
+    """Vuelta de Google: comprueba state, cambia el código por el permiso, lo guarda cifrado y lanza la descarga."""
+    clear = [f"{GH_COOKIE}=; Path=/api/google; Max-Age=0; Secure; HttpOnly; SameSite=Lax"]
+    raw = dict(c.split("=", 1) for c in cookies or [] if "=" in c).get(GH_COOKIE, "")
+    try:
+        tmp = json.loads(base64.urlsafe_b64decode(raw + "=="))
+    except ValueError:
+        tmp = {}
+    if not isinstance(tmp, dict):  # cookie manipulada
+        tmp = {}
+    back = _safe_back(tmp.get("b"))
+
+    def fail(reason: str):
+        return _redirect(_back(False, back, reason), clear)
+
+    if not tmp or tmp.get("u") != user["uid"] or not hmac.compare_digest(str(qs.get("state") or ""), str(tmp.get("s") or "")):
+        return fail("state")
+    if qs.get("error"):
+        return fail("denied" if qs["error"] == "access_denied" else "error")
+    if not user.get("consentAt") and tmp.get("c") is not True:  # sin la privacidad aceptada no se guarda nada
+        return fail("consent")
+    uid = user["uid"]
+    switching = bool(user.get("dataSource") and user.get("dataSource") != "google")
+    if switching and _sync_running(uid):
+        return fail("busy")
+    g, host = _gh_cfg(), _viewer_host(headers)
+    if not g or not host:
+        return fail("unavailable")
+    if not qs.get("code"):
+        return fail("state")
+    try:
+        tok = GH.exchange(g["id"], g["secret"], qs["code"], str(tmp.get("v") or ""), f"https://{host}/api/google/callback")
+    except (GH.GoogleError, OSError, ValueError):
+        return fail("token")
+    scopes = GH.granted(tok.get("scope"))
+    if not scopes:  # no marcó ningún permiso de salud: no hay nada que leer
+        GH.revoke(tok["refresh_token"])
+        return fail("scopes")
+    status, link, ident = "active", None, {}
+    try:
+        ident = GH.Client(g["id"], g["secret"], tok["refresh_token"], access_token=tok["access_token"]).identity()
+    except GH.NotLinked as e:
+        status, link = "google_not_linked", e.link_url
+    except (GH.GoogleError, OSError, ValueError):
+        pass  # lo vuelve a comprobar la sincronización
+    if switching:
+        _wipe_health_data(uid)  # nunca se mezclan datos de dos fuentes
+    _ssm.put_parameter(Name=U.google_param(uid), Type="SecureString", Overwrite=True, Value=json.dumps({
+        "refresh_token": tok["refresh_token"], "scope": tok.get("scope") or "",
+        "healthUserId": ident.get("healthUserId"), "at": U.now()}))
+    fields = {"source": "google", "dataSource": "google", "status": status, "googleAt": U.now(),
+              "googleScopes": scopes, "googleLinkUrl": link}
+    if switching:
+        fields["sourceChangedAt"] = U.now()  # una descarga anterior de la otra fuente ya no puede subir nada
+    if not user.get("consentAt"):
+        fields["consentAt"] = U.now()  # aceptada en la web justo antes de conectar (?consent=1)
+    user = U.update(s3, BUCKET, uid, **fields) or user
+    if status != "active":
+        return fail("not_linked")
+    st = _get_json(U.state_prefix(uid) + "sync_status.json", {})
+    if not (st.get("status") == "running" and time.time() - st.get("at", 0) < STALE):
+        _start_sync(user)
+    return _redirect(_back(True, back), clear)
+
+
+def _google_forget(uid: str) -> bool | None:
+    """Retira el permiso en Google y borra el guardado. None si no había permiso; False si Google no lo retiró."""
+    try:
+        raw = _ssm.get_parameter(Name=U.google_param(uid), WithDecryption=True)["Parameter"]["Value"]
+    except _ssm.exceptions.ParameterNotFound:
+        return None  # nunca conectó Google Health (p. ej. una cuenta de Garmin)
+    try:
+        token = json.loads(raw).get("refresh_token") or ""
+    except (ValueError, AttributeError):
+        token = ""
+    revoked = bool(token) and GH.revoke(token)
+    if not revoked:
+        print("google: Google no ha retirado el permiso; se borra igualmente el guardado")
+    try:
+        _ssm.delete_parameter(Name=U.google_param(uid))
+    except _ssm.exceptions.ParameterNotFound:
+        pass
+    return revoked
+
+
+def _wipe_health_data(uid: str) -> None:
+    """Borra los datos descargados (no el plan, la comida ni el chat) para empezar de cero con otra fuente."""
+    sp, site = U.state_prefix(uid), U.site_prefix(uid)
+    for prefix in (sp + "garmin.sqlite", sp + "sync_status.json", sp + "fit/", site + "data.js", site + "acts/"):
+        _delete_prefix(prefix)
+
+
+def _google_disconnect(user: dict, payload: dict):
+    """Desconecta Google Health: retira el permiso. Con {"deleteData": true} borra también lo descargado."""
+    if U.source(user) != "google":
+        return _json(409, {"error": "No tienes Google Health conectado."})
+    uid = user["uid"]
+    delete = bool(payload.get("deleteData"))
+    if delete and _sync_running(uid):
+        return _json(409, {"error": BUSY})
+    revoked = _google_forget(uid) is not False
+    # sourceChangedAt: una descarga en marcha ya no sube nada ni cambia el estado (la sincronización lo comprueba)
+    fields = {"source": None, "status": "onboarding", "googleAt": None, "googleScopes": None, "googleLinkUrl": None,
+              "sourceChangedAt": U.now()}
+    if delete:
+        _wipe_health_data(uid)
+        fields["dataSource"] = None
+    U.update(s3, BUCKET, uid, **fields)
+    # revoked=false: la web le dice que lo quite a mano en https://myaccount.google.com/connections
+    return _json(200, {"ok": True, "deleted": delete, "revoked": revoked})
 
 
 # ------------------------------------------------------------------ administración (solo el dueño)
@@ -815,6 +1038,7 @@ def _admin(path: str, method: str, payload: dict):
             st = _get_json(U.state_prefix(u["uid"]) + "sync_status.json", {})
             stats = _usage_stats(u["uid"])
             out.append({"email": u["email"], "name": u.get("name") or "", "role": u.get("role"), "status": u.get("status"),
+                        "source": U.source(u),
                         "budgetUsd": u.get("budgetUsd"), "monthSpendUsd": stats["monthCostUsd"],
                         "totalCostUsd": stats["totalCostUsd"], "calls": stats["calls"], "lastAi": stats["lastAi"],
                         "invitedAt": u.get("invitedAt"), "joinedAt": u.get("joinedAt"),

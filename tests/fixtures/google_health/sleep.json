@@ -1,0 +1,171 @@
+{
+ "dataPoints": [
+  {
+   "name": "users/1234567890/dataTypes/sleep/dataPoints/s-nap",
+   "sleep": {
+    "type": "CLASSIC",
+    "interval": {
+     "startTime": "2026-11-08T14:00:00Z",
+     "endTime": "2026-11-08T14:30:00Z",
+     "startUtcOffset": "3600s",
+     "endUtcOffset": "3600s",
+     "civilEndTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 8
+      },
+      "time": {
+       "hours": 15,
+       "minutes": 30
+      }
+     }
+    },
+    "summary": {
+     "minutesAsleep": "25",
+     "minutesAwake": "5",
+     "minutesInSleepPeriod": "30"
+    },
+    "metadata": {
+     "nap": true,
+     "mainSleep": false,
+     "processed": true
+    }
+   }
+  },
+  {
+   "name": "users/1234567890/dataTypes/sleep/dataPoints/s-main",
+   "sleep": {
+    "type": "STAGES",
+    "interval": {
+     "startTime": "2026-11-07T22:40:00Z",
+     "endTime": "2026-11-08T06:10:00Z",
+     "startUtcOffset": "3600s",
+     "endUtcOffset": "3600s",
+     "civilStartTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 7
+      },
+      "time": {
+       "hours": 23,
+       "minutes": 40
+      }
+     },
+     "civilEndTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 8
+      },
+      "time": {
+       "hours": 7,
+       "minutes": 10
+      }
+     }
+    },
+    "stages": [
+     {
+      "type": "LIGHT",
+      "startTime": "2026-11-07T22:40:00Z",
+      "endTime": "2026-11-07T23:30:00Z",
+      "startUtcOffset": "3600s",
+      "endUtcOffset": "3600s"
+     },
+     {
+      "type": "DEEP",
+      "startTime": "2026-11-07T23:30:00Z",
+      "endTime": "2026-11-08T00:45:00Z",
+      "startUtcOffset": "3600s",
+      "endUtcOffset": "3600s"
+     }
+    ],
+    "summary": {
+     "minutesAsleep": "412",
+     "minutesAwake": "38",
+     "minutesInSleepPeriod": "450",
+     "minutesToFallAsleep": "6",
+     "stagesSummary": [
+      {
+       "type": "AWAKE",
+       "minutes": "38",
+       "count": "9"
+      },
+      {
+       "type": "LIGHT",
+       "minutes": "221",
+       "count": "24"
+      },
+      {
+       "type": "DEEP",
+       "minutes": "85",
+       "count": "5"
+      },
+      {
+       "type": "REM",
+       "minutes": "106",
+       "count": "6"
+      }
+     ]
+    },
+    "metadata": {
+     "mainSleep": true,
+     "nap": false,
+     "processed": true,
+     "stagesStatus": "SUCCEEDED"
+    }
+   }
+  },
+  {
+   "name": "users/1234567890/dataTypes/sleep/dataPoints/s-classic",
+   "sleep": {
+    "type": "CLASSIC",
+    "interval": {
+     "startTime": "2026-11-06T23:10:00Z",
+     "endTime": "2026-11-07T06:40:00Z",
+     "startUtcOffset": "3600s",
+     "endUtcOffset": "3600s",
+     "civilEndTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 7
+      },
+      "time": {
+       "hours": 7,
+       "minutes": 40
+      }
+     }
+    },
+    "summary": {
+     "minutesAsleep": "420",
+     "minutesAwake": "30",
+     "minutesInSleepPeriod": "450",
+     "stagesSummary": [
+      {
+       "type": "ASLEEP",
+       "minutes": "400",
+       "count": "3"
+      },
+      {
+       "type": "RESTLESS",
+       "minutes": "20",
+       "count": "8"
+      },
+      {
+       "type": "AWAKE",
+       "minutes": "30",
+       "count": "4"
+      }
+     ]
+    },
+    "metadata": {
+     "mainSleep": true,
+     "nap": false,
+     "processed": true
+    }
+   }
+  }
+ ]
+}

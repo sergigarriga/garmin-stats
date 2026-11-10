@@ -33,7 +33,7 @@ export function IconBubble({ color, children, size = 40 }: { color: string; chil
   return (
     <Box sx={{
       width: size, height: size, borderRadius: '50%', display: 'grid', placeItems: 'center', flexShrink: 0,
-      color, bgcolor: alpha(color, 0.14), '& svg': { fontSize: size * 0.55 },
+      color, bgcolor: `color-mix(in srgb, ${color} 14%, transparent)`, '& svg': { fontSize: size * 0.55 },
     }}>
       {children}
     </Box>

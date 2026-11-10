@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
-import GlobalStyles from '@mui/material/GlobalStyles';
 import { PullToRefresh, useManualSync } from './sync';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
 import GroupAddOutlined from '@mui/icons-material/GroupAddOutlined';
+import FavoriteBorderRounded from '@mui/icons-material/FavoriteBorderRounded';
 import KeyOutlined from '@mui/icons-material/KeyOutlined';
 import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined';
 import { OwnerCtx } from './owner';
@@ -26,6 +26,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import useScrollTrigger from '@mui/material/useScrollTrigger';
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import HomeRounded from '@mui/icons-material/HomeRounded';
 import BedtimeRounded from '@mui/icons-material/BedtimeRounded';
@@ -66,11 +67,13 @@ import SpeedRounded from '@mui/icons-material/SpeedRounded';
 import FitnessCenterRounded from '@mui/icons-material/FitnessCenterRounded';
 import ActivityDetail from './pages/ActivityDetail';
 import Chat from './Chat';
+import { GoogleHealthAlert, GoogleHealthDialog, useGoogleReturn } from './googleHealth';
 import { LATEST, WhatsNew } from './whatsnew';
 import { Spotlight } from './spotlight';
 import { WelcomeTour } from './tour';
 import NewReleasesOutlined from '@mui/icons-material/NewReleasesOutlined';
 import LockRounded from '@mui/icons-material/LockRounded';
+import { BRAND, BRAND_INK, brandTint, sectionInk } from './brand/colors';
 
 type Page = { key: string; label: string; icon: ReactElement; render: (d: GarminData, go: (k: string) => void) => ReactElement };
 
@@ -102,12 +105,13 @@ function usePageFromHash() {
   }, []);
   const go = (k: string) => {
     window.location.hash = k;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Página nueva: arriba al instante (con animación se ve la página nueva "bajando").
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
   return [page, go] as const;
 }
 
-function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t: string) => void; me: Me | null; onAccount: (d: 'admin' | 'key' | 'delete') => void }) {
+function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t: string) => void; me: Me | null; onAccount: (d: 'admin' | 'key' | 'delete' | 'google') => void }) {
   const { mode, setMode } = useColorScheme();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [, force] = useState(0);
@@ -125,7 +129,7 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
     <>
       <Tooltip title={`Tema: ${current.label.toLowerCase()}`}>
         <IconButton onClick={(e) => setAnchor(e.currentTarget)} aria-label="Cambiar tema"
-          aria-haspopup="menu" aria-expanded={!!anchor} sx={{ color: '#D4542F' }}>{current.icon}</IconButton>
+          aria-haspopup="menu" aria-expanded={!!anchor} sx={{ color: BRAND_INK }}>{current.icon}</IconButton>
       </Tooltip>
       <Menu anchorEl={anchor} open={!!anchor} onClose={() => setAnchor(null)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
@@ -170,7 +174,13 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
             <ListItemText primary="Invitaciones" secondary="Invitar a amigos y amigas y ver su gasto" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
           </MenuItem>
         )}
-        {me && (
+        {me && me.source === 'google' && (
+          <MenuItem onClick={() => { setAnchor(null); onAccount('google'); }}>
+            <ListItemIcon><FavoriteBorderRounded fontSize="small" /></ListItemIcon>
+            <ListItemText primary="Google Health" secondary="Ver o desconectar" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+          </MenuItem>
+        )}
+        {me && me.source !== 'google' && (
           <MenuItem onClick={() => { setAnchor(null); onAccount('key'); }}>
             <ListItemIcon><KeyOutlined fontSize="small" /></ListItemIcon>
             <ListItemText primary="Clave de Garmin" secondary="Cambiarla si caduca" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
@@ -238,12 +248,12 @@ function SubTabs({ section, page, go, owner }: { section: Section; page: string;
           <Box key={k} component="button" onClick={() => go(k)}
             sx={{ flex: { xs: 1, sm: 'none' }, px: { xs: many ? 0.5 : 1, sm: 2.5 }, py: 1, border: 0, borderRadius: 999, cursor: 'pointer',
               font: 'inherit', fontSize: { xs: many ? 13 : 14, sm: 14 }, fontWeight: on ? 600 : 500, whiteSpace: 'nowrap', minWidth: 0,
-              color: on ? 'text.primary' : 'text.secondary', bgcolor: on ? 'background.paper' : 'transparent',
+              color: on ? sectionInk(section.key) : 'text.secondary', bgcolor: on ? 'background.paper' : 'transparent',
               boxShadow: on ? '0 1px 3px rgba(0,0,0,.12)' : 'none', transition: 'all .2s' }}>
             {OWNER_ONLY.has(k) ? (
               // Solo tú la ves: candado terracota delante del nombre
               <Box component="span" title="Solo la ves tú" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                <LockRounded sx={{ fontSize: 14, color: '#D4542F' }} />{SUB_LABEL[k]}
+                <LockRounded sx={{ fontSize: 14, color: BRAND_INK }} />{SUB_LABEL[k]}
               </Box>
             ) : SUB_LABEL[k]}
           </Box>
@@ -255,30 +265,35 @@ function SubTabs({ section, page, go, owner }: { section: Section; page: string;
 
 /** Barra inferior flotante tipo "cristal" (móvil): 4 secciones + botón del chat aparte. */
 function GlassNav({ current, go, last, sections: SECTIONS }: { current: Section; go: (k: string) => void; last: Record<string, string>; sections: Section[] }) {
-  // Barra de navegación en el terracota del logo, con iconos blancos.
+  // Barra de cristal (a juego con la cabecera): iconos grises y la sección activa en el terracota del logo.
+  // El botón del chat va en terracota sólido para que destaque.
   const glass = {
-    bgcolor: '#D4542F',
-    border: 0,
-    boxShadow: '0 8px 32px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.35)',
+    bgcolor: 'color-mix(in srgb, var(--mui-palette-background-paper) 72%, transparent)',
+    backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+    border: '0.5px solid color-mix(in srgb, var(--mui-palette-text-primary) 10%, transparent)',
+    boxShadow: '0 8px 32px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.5)',
   } as const;
+  const chatBtn = { background: 'linear-gradient(135deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 55%, var(--pistacho)) 100%)', border: 0, boxShadow: `0 8px 24px ${brandTint(35)}, inset 0 1px 0 rgba(255,255,255,.3)` } as const;
   return (
-    <Box sx={{ position: 'fixed', zIndex: 20, left: 12, right: 12, bottom: 'max(10px, calc(env(safe-area-inset-bottom) - 12px))',
-      display: 'flex', gap: 1, alignItems: 'center', maxWidth: 520, mx: 'auto' }}>
+    <Box component="nav" sx={{ position: 'fixed', zIndex: 20, left: 12, right: 12, bottom: 'max(10px, calc(env(safe-area-inset-bottom) - 12px))',
+      display: 'flex', gap: 1, alignItems: 'center', maxWidth: 520, mx: 'auto', transform: 'translateZ(0)',
+      // Con el teclado abierto se esconde: si no, se queda flotando encima del teclado o a media pantalla.
+      'html[data-kb="1"] &': { display: 'none' } }}>
       <Box sx={{ ...glass, flex: 1, height: 64, borderRadius: 999, display: 'flex', p: 0.5, position: 'relative' }}>
         {/* Burbuja que se desliza hasta la sección activa (efecto líquido, con rebote suave) */}
-        <Box aria-hidden sx={{ position: 'absolute', top: 4, bottom: 4, borderRadius: 999, bgcolor: 'rgba(255,255,255,0.22)',
+        <Box aria-hidden sx={{ position: 'absolute', top: 4, bottom: 4, borderRadius: 999, bgcolor: brandTint(15, sectionInk(current.key)),
           width: `calc((100% - 8px) / ${SECTIONS.length})`,
           left: `calc(4px + (100% - 8px) / ${SECTIONS.length} * ${Math.max(0, SECTIONS.findIndex((x) => x.key === current.key))})`,
-          transition: 'left 560ms cubic-bezier(.34,1.4,.64,1), width 560ms cubic-bezier(.34,1.4,.64,1)',
-          boxShadow: 'inset 0 1px 0 rgba(255,255,255,.35)' }} />
+          transition: 'left 560ms cubic-bezier(.34,1.4,.64,1), width 560ms cubic-bezier(.34,1.4,.64,1), background-color .4s ease',
+          boxShadow: 'none' }} />
         {SECTIONS.map((sec) => {
           const on = sec.key === current.key;
           return (
             <Box key={sec.key} component="button" onClick={() => { haptic('tap'); go(last[sec.key] ?? sec.pages[0]); }} aria-label={sec.label}
               sx={{ flex: 1, border: 0, borderRadius: 999, cursor: 'pointer', font: 'inherit', display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: 0.25, color: '#FFFFFF', opacity: on ? 1 : 0.72,
+                alignItems: 'center', justifyContent: 'center', gap: 0.25, color: on ? sectionInk(sec.key) : 'text.secondary',
                 position: 'relative', zIndex: 1, background: 'transparent',
-                transition: 'opacity .4s ease, transform .45s cubic-bezier(.34,1.4,.64,1)',
+                transition: 'color .3s ease, transform .45s cubic-bezier(.34,1.4,.64,1)',
                 transform: on ? 'scale(1.04)' : 'scale(1)',
                 '&:active': { transform: 'scale(0.94)' },
                 '& svg': { fontSize: 23, transition: 'transform .5s cubic-bezier(.34,1.4,.64,1)' },
@@ -286,7 +301,7 @@ function GlassNav({ current, go, last, sections: SECTIONS }: { current: Section;
               <Box sx={{ position: 'relative', display: 'flex' }}>
                 {sec.icon}
                 {sec.owner && <LockRounded aria-label="solo para ti" sx={{ position: 'absolute', right: -7, top: -4, fontSize: '12px !important', p: '1px',
-                  borderRadius: '50%', bgcolor: '#FFFFFF', color: '#D4542F' }} />}
+                  borderRadius: '50%', bgcolor: BRAND, color: '#FFFFFF' }} />}
               </Box>
               <Box component="span" sx={{ fontSize: 11, fontWeight: on ? 600 : 500, lineHeight: 1 }}>{sec.label}</Box>
             </Box>
@@ -294,7 +309,7 @@ function GlassNav({ current, go, last, sections: SECTIONS }: { current: Section;
         })}
       </Box>
       <Box component="button" aria-label="Pregúntale a la IA" onClick={() => window.dispatchEvent(new Event('open-chat'))}
-        sx={{ ...glass, width: 64, height: 64, borderRadius: '50%', cursor: 'pointer', display: 'grid', placeItems: 'center',
+        sx={{ ...chatBtn, width: 64, height: 64, borderRadius: '50%', cursor: 'pointer', display: 'grid', placeItems: 'center',
           color: '#FFFFFF', '& svg': { fontSize: 26 } }}>
         <AutoAwesomeRounded />
       </Box>
@@ -313,7 +328,12 @@ export default function App() {
   const onSynced = useCallback((msg: string) => { clearFresh(); setInfo(msg); haptic('success'); }, [clearFresh]);
   const { me, error: meError, refresh: refreshMe } = useMe(120_000);
   const isOwner = me?.role === 'owner';
-  const [dialog, setDialog] = useState<null | 'admin' | 'key' | 'delete'>(null);
+  const [dialog, setDialog] = useState<null | 'admin' | 'key' | 'delete' | 'google'>(null);
+  const scrolled = useScrollTrigger({ disableHysteresis: true, threshold: 4 });
+  // Vuelta de Google Health (reconectar desde la app): se avisa una vez.
+  const googleReturn = useGoogleReturn();
+  const hasData = !!data;
+  useEffect(() => { if (googleReturn && hasData) setInfo(googleReturn.message); }, [googleReturn, hasData]);
   // Ya hay datos en el servidor pero esta página se cargó antes: traerlos
   useEffect(() => { if (me?.hasData && !data) check(); }, [me?.hasData, data, check]);
   const { syncing, sync } = useManualSync(data, check, onSynced);
@@ -327,7 +347,11 @@ export default function App() {
   const section = sectionOf(pageKey);
   const sections = SECTIONS.filter((x) => !x.owner || isOwner);
   // El logo lleva al inicio: Hoy → Resumen, arriba del todo.
-  const goHome = () => { haptic('tap'); go('hoy'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const goHome = () => {
+    haptic('tap');
+    if (pageKey === 'hoy') window.scrollTo({ top: 0, behavior: 'smooth' });
+    else go('hoy');
+  };
   useEffect(() => { if (actId == null) setLast((l) => ({ ...l, [section.key]: pageKey })); }, [pageKey, section.key, actId]);
 
   if (!data) {
@@ -348,8 +372,17 @@ export default function App() {
   return (
     <OwnerCtx.Provider value={isOwner}>
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: mobile ? 'calc(92px + env(safe-area-inset-bottom))' : 6 }}>
-      <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: 'color-mix(in srgb, var(--mui-palette-background-default) 82%, transparent)',
-        backdropFilter: 'blur(16px) saturate(160%)', WebkitBackdropFilter: 'blur(16px) saturate(160%)' }}>
+      {/* Cabecera fija (no "sticky"): no se mueve con el scroll, el rebote ni los diálogos. Con el teclado
+          abierto iOS desplaza la vista: la cabecera la sigue (--vv-top) para no irse por arriba. */}
+      {/* Cristal: el contenido se ve pasar por debajo, desenfocado. Arriba del todo no hay línea; al bajar
+          aparece una línea fina y una sombra suave que separan la cabecera del contenido. */}
+      <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)',
+        bgcolor: scrolled ? 'color-mix(in srgb, var(--mui-palette-background-default) 64%, transparent)' : 'background.default',
+        backdropFilter: 'blur(24px) saturate(180%)', WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        borderBottom: '0.5px solid', borderColor: scrolled ? 'color-mix(in srgb, var(--mui-palette-text-primary) 10%, transparent)' : 'transparent',
+        boxShadow: scrolled ? '0 6px 24px -12px rgba(0,0,0,.18)' : 'none',
+        transition: 'background-color .25s ease, border-color .25s ease, box-shadow .25s ease',
+        'html[data-kb="1"] &': { transform: 'translateY(var(--vv-top, 0px))' } }}>
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ gap: { xs: 0.75, sm: 1.5 }, minHeight: { xs: 56, sm: 68 } }}>
             {mobile ? (
@@ -371,7 +404,7 @@ export default function App() {
             {!mobile && (
               <Tabs value={section.key} onChange={(_, v) => { const sec = SECTIONS.find((x) => x.key === v)!; go(last[sec.key] ?? sec.pages[0]); }}
                 sx={{ flex: 1, minWidth: 0, ml: 3, '& .MuiTabs-indicator': { height: 3, borderRadius: '3px 3px 0 0' } }}>
-                {sections.map((sec) => <Tab key={sec.key} value={sec.key} label={sec.label} icon={sec.owner ? <LockRounded sx={{ fontSize: 14, color: '#D4542F' }} /> : undefined} iconPosition="end" sx={{ minHeight: 48 }} />)}
+                {sections.map((sec) => <Tab key={sec.key} value={sec.key} label={sec.label} icon={sec.owner ? <LockRounded sx={{ fontSize: 14, color: BRAND_INK }} /> : undefined} iconPosition="end" sx={{ minHeight: 48 }} />)}
               </Tabs>
             )}
             {!mobile && (
@@ -396,6 +429,8 @@ export default function App() {
           </Toolbar>
         </Container>
       </AppBar>
+      {/* Hueco del mismo alto que la cabecera fija */}
+      <Box aria-hidden sx={{ pt: 'env(safe-area-inset-top)' }}><Toolbar sx={{ minHeight: { xs: 56, sm: 68 } }} /></Box>
 
       <Container maxWidth="lg" sx={{ pt: { xs: 2, sm: 4 }, px: { xs: 2, sm: 3 } }}>
         {me?.status === 'key_invalid' && (
@@ -404,6 +439,7 @@ export default function App() {
             Garmin ya no acepta tu clave (puede haber caducado): tus datos no se actualizan.
           </Alert>
         )}
+        {me && <GoogleHealthAlert me={me} onSynced={setInfo} />}
         {me?.sync?.status === 'running' && me.sync.backfill && (
           <Alert severity="info" sx={{ borderRadius: '16px', mb: 2 }}>
             Seguimos bajando tu historial de Garmin: algunas gráficas se completarán en unos minutos.
@@ -427,7 +463,7 @@ export default function App() {
       <AdminDialog open={dialog === 'admin'} onClose={() => setDialog(null)} />
       <GarminKeyDialog open={dialog === 'key'} onClose={() => setDialog(null)} onDone={() => { refreshMe(); setInfo('Clave guardada: actualizando tus datos de Garmin…'); }} />
       <DeleteAccountDialog open={dialog === 'delete'} onClose={() => setDialog(null)} />
-      {mobile && <GlobalStyles styles={{ 'html, body': { overscrollBehaviorY: 'contain' } }} />}
+      <GoogleHealthDialog open={dialog === 'google'} onClose={() => setDialog(null)} me={me} onChanged={setInfo} />
       {mobile && <PullToRefresh onRefresh={sync} busy={syncing} />}
 
       <Chat showFab={!mobile} />

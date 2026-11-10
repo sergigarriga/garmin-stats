@@ -1,14 +1,16 @@
 import Box from '@mui/material/Box';
 import { useResolvedMode } from '../theme';
-import terracota from './runch-logo-terracota.svg?raw';
-import crema from './runch-logo-crema.svg?raw';
+import logo from './runch-logo-terracota.svg?raw';
 
-// Logotipo «runch» (el de Instagram): terracota en modo claro, crema en oscuro.
+// Logotipo «runch» (el de Instagram) pintado con el color de marca: --brand en modo claro, crema en oscuro.
+// Se dibuja en línea (no como imagen) para que siga a las variables de index.html.
+const svg = logo.replace(/fill="#[0-9A-Fa-f]{6}"/, 'fill="currentColor"');
+
 export function Wordmark({ height = 26 }: { height?: number }) {
   const mode = useResolvedMode();
-  const svg = mode === 'dark' ? crema : terracota;
   return (
-    <Box component="img" alt="runch" src={`data:image/svg+xml;utf8,${encodeURIComponent(svg)}`}
-      sx={{ height, width: 'auto', display: 'block', flexShrink: 0 }} />
+    <Box component="span" role="img" aria-label="runch" dangerouslySetInnerHTML={{ __html: svg }}
+      sx={{ display: 'block', flexShrink: 0, lineHeight: 0, color: mode === 'dark' ? 'var(--brand-cream)' : 'var(--brand)',
+        '& svg': { height, width: 'auto', display: 'block' } }} />
   );
 }

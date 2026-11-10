@@ -55,6 +55,19 @@ const C = {
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-10-2', date: '2026-11-10', title: 'Runch se viste de olivo', subtitle: 'Colores nuevos y todo en su sitio en el móvil',
+    features: [
+      { icon: <BalanceRounded />, color: C.green, title: 'Colores nuevos',
+        body: 'Verde olivo para Runch, y cada sección con el suyo: lavanda en Salud, pistacho en Entreno y azul mar en Análisis.' },
+      { icon: <DashboardRounded />, color: C.blue, title: 'Cabecera de cristal',
+        body: 'Se queda siempre arriba y deja ver el contenido al pasar. La hora y la batería van encima de la app (si la tienes instalada, quítala y vuelve a añadirla a la pantalla de inicio).' },
+      { icon: <TaskAltRounded />, color: C.green, title: 'Sin zooms ni saltos',
+        body: 'La pantalla ya no se acerca al tocar ni al escribir, y nada se mueve cuando no toca.' },
+      { icon: <AutoAwesomeRounded />, color: C.orange, title: 'Chat más cómodo',
+        body: 'Al llegar la respuesta la lees desde el principio, y con el teclado abierto el chat se queda justo encima.' },
+    ],
+  },
+  {
     id: '2026-11-10', date: '2026-11-10', title: 'Tu plan, al detalle', subtitle: 'Cada entreno por partes y tus opciones de llegar',
     features: [
       { icon: <TaskAltRounded />, color: C.orange, title: 'Cada entreno, por partes', where: 'Entreno · Plan', go: 'plan',
@@ -208,7 +221,7 @@ export function WhatsNew({ me, go, ready }: { me: Me | null; go: (k: string) => 
   // Al abrirse sola: todas las versiones pendientes juntas (la más reciente manda en la cabecera). Desde el menú: la última.
   const list = auto ? pending(me) : [];
   const r: Release = list.length > 1 ? { ...list[0], features: list.flatMap((x) => x.features) } : LATEST;
-  const accent = mode === 'dark' ? '#8AB4F8' : '#0B57D0';
+  const accent = mode === 'dark' ? '#B4C784' : '#5A6B32';  // olivo
   return (
     <Dialog open={open} onClose={() => close()} fullScreen={full} slots={{ transition: SlideUp }} scroll="paper"
       aria-labelledby="whatsnew-title"
@@ -223,7 +236,7 @@ export function WhatsNew({ me, go, ready }: { me: Me | null; go: (k: string) => 
           <CloseRounded />
         </IconButton>
         <Box sx={{ width: 64, height: 64, mx: 'auto', mb: 2, borderRadius: '20px', display: 'grid', placeItems: 'center', color: '#fff',
-          background: 'conic-gradient(from 200deg, #D93025, #E8710A, #F6AE2D, #188038, #1A73E8, #5B5BD6, #D93025)',
+          background: 'conic-gradient(from 200deg, #5A6B32, #9DB43A, #F1DEA6, #8B6FD6, #24496D, #5A6B32)',  // paleta Runch
           boxShadow: `0 10px 30px ${alpha(accent, 0.35)}`, '& svg': { fontSize: 32 } }}>
           <AutoAwesomeRounded />
         </Box>

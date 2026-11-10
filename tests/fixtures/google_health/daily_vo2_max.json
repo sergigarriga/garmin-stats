@@ -1,0 +1,26 @@
+{
+ "dataPoints": [
+  {
+   "dailyVo2Max": {
+    "date": {
+     "year": 2026,
+     "month": 11,
+     "day": 8
+    },
+    "vo2Max": 50.8,
+    "cardioFitnessLevel": "GOOD",
+    "estimated": false
+   }
+  },
+  {
+   "dailyVo2Max": {
+    "date": {
+     "year": 2026,
+     "month": 11,
+     "day": 6
+    },
+    "vo2Max": 50.6
+   }
+  }
+ ]
+}

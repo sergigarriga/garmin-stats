@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import Drawer from '@mui/material/Drawer';
@@ -14,22 +14,9 @@ import CloseRounded from '@mui/icons-material/CloseRounded';
 import ArrowUpwardRounded from '@mui/icons-material/ArrowUpwardRounded';
 import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 
-// iOS Safari se queda con zoom al cerrar el teclado: forzamos un re-layout cambiando un instante el viewport.
-function resetZoom() {
-  try {
-    const m = document.querySelector('meta[name="viewport"]');
-    if (!m) return;
-    const base = m.getAttribute('content') ?? '';
-    m.setAttribute('content', `${base}, maximum-scale=1`);
-    window.scrollTo(window.scrollX, window.scrollY);
-    setTimeout(() => m.setAttribute('content', base), 150);
-  } catch { /* sin efecto en navegadores sin viewport */ }
-}
-
 // Color de marca (terracota del logo) para todo lo del chat.
 import { haptic } from './haptics';
-const BRAND = '#D4542F';
-const BRAND_DARK = '#B9441F';
+import { BRAND, BRAND_DARK } from './brand/colors';
 
 type Msg = { role: 'user' | 'assistant'; content: string; error?: boolean };
 
@@ -106,10 +93,10 @@ function loadHistory(): Msg[] {
   try { return JSON.parse(sessionStorage.getItem(STORE) ?? '[]'); } catch { return []; }
 }
 
-function Bubble({ m }: { m: Msg }) {
+function Bubble({ m, i }: { m: Msg; i: number }) {
   const user = m.role === 'user';
   return (
-    <Box sx={{ alignSelf: user ? 'flex-end' : 'flex-start', maxWidth: user ? '85%' : '100%' }}>
+    <Box data-msg={i} sx={{ alignSelf: user ? 'flex-end' : 'flex-start', maxWidth: user ? '85%' : '100%' }}>
       <Box sx={(t) => ({
         px: 2, py: 1.25, borderRadius: user ? '20px 20px 6px 20px' : '20px 20px 20px 6px', whiteSpace: user ? 'pre-wrap' : 'normal', lineHeight: 1.55,
         bgcolor: user ? BRAND : m.error ? alpha(t.palette.error.main, 0.12) : 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)',
@@ -127,7 +114,14 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
   const [msgs, setMsgs] = useState<Msg[]>(loadHistory);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement | null>(null);
+  // Por qué cambia la conversación: 'ask' (has preguntado), 'answer' (ha respondido) o null (carga/borrado).
+  const why = useRef<'ask' | 'answer' | null>(null);
+  // La lista aparece al abrir el chat (MUI la monta un instante después): se abre ya abajo del todo.
+  const listRef = useCallback((el: HTMLDivElement | null) => {
+    list.current = el;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, []);
   useEffect(() => {
     const on = () => setOpen(true);
     window.addEventListener('open-chat', on);
@@ -137,7 +131,12 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
   // La conversación se guarda en el servidor: al abrir la app se recupera (también desde otro dispositivo)
   useEffect(() => {
     fetch('./api/chat', { credentials: 'same-origin' }).then((r) => (r.ok ? r.json() : null))
-      .then((j) => { if (j?.messages?.length) setMsgs((cur) => (busyRef.current ? cur : j.messages.map(({ role, content }: Msg) => ({ role, content })))); })
+      .then((j) => {
+        if (!j?.messages?.length) return;
+        const server: Msg[] = j.messages.map(({ role, content }: Msg) => ({ role, content }));
+        // Si es la misma conversación no se toca (si no, la lista se repinta y salta mientras lees).
+        setMsgs((cur) => (busyRef.current || JSON.stringify(cur.filter((m) => !m.error)) === JSON.stringify(server) ? cur : server));
+      })
       .catch(() => { /* sin conexión: se queda la copia local */ });
   }, [open]);
   const busyRef = useRef(false);
@@ -145,13 +144,33 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
 
   useEffect(() => {
     try { sessionStorage.setItem(STORE, JSON.stringify(msgs.slice(-20))); } catch { /* sin almacenamiento */ }
-    end.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [msgs, busy]);
+  }, [msgs]);
+
+  // Scroll del chat: solo se mueve la lista de mensajes (nunca la página de detrás) y solo cuando toca.
+  // - Al preguntar: baja hasta tu pregunta y los puntitos.
+  // - Al llegar la respuesta: tu pregunta arriba y la respuesta debajo, para leerla desde el principio.
+  // - Si llega la conversación del servidor o se borra: abajo del todo, sin animación.
+  useEffect(() => {
+    const l = list.current;
+    const reason = why.current;
+    why.current = null;
+    if (!l) return;
+    if (reason === 'answer') {
+      const q = l.querySelector<HTMLElement>(`[data-msg="${msgs.length - 2}"]`);
+      const top = q ? q.offsetTop - 8 : l.scrollHeight;
+      l.scrollTo({ top: Math.min(top, l.scrollHeight - l.clientHeight), behavior: 'smooth' });
+    } else if (reason === 'ask') {
+      l.scrollTo({ top: l.scrollHeight, behavior: 'smooth' });
+    } else {
+      l.scrollTop = l.scrollHeight;
+    }
+  }, [msgs]);
 
   const send = async (q: string) => {
     const question = q.trim();
     if (!question || busy) return;
     const next: Msg[] = [...msgs, { role: 'user', content: question }];
+    why.current = 'ask';
     setMsgs(next); setText(''); setBusy(true);
     try {
       const r = await fetch('./api/ask', {
@@ -160,8 +179,10 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
       });
       if (r.status === 401) { window.location.href = '/auth/login'; return; }
       const j = await r.json();
+      why.current = 'answer';
       setMsgs([...next, j.answer ? { role: 'assistant', content: j.answer } : { role: 'assistant', content: j.error ?? 'Algo ha fallado.', error: true }]);
     } catch {
+      why.current = 'answer';
       setMsgs([...next, { role: 'assistant', content: 'No llego al servidor. Comprueba tu conexión y vuelve a probar.', error: true }]);
     } finally { setBusy(false); }
   };
@@ -174,8 +195,16 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
         <AutoAwesomeRounded sx={{ mr: 1 }} /> Pregunta
       </Fab>}
       <Drawer anchor={mobile ? 'bottom' : 'right'} open={open} onClose={() => setOpen(false)}
-        slotProps={{ paper: { sx: { width: mobile ? '100%' : 440, height: mobile ? '92dvh' : '100%', pb: mobile ? 'env(safe-area-inset-bottom)' : 0,
-          borderRadius: mobile ? '28px 28px 0 0' : '28px 0 0 28px', bgcolor: 'background.paper', backgroundImage: 'none' } } }}>
+        slotProps={{ paper: { sx: mobile ? {
+          // Móvil: el chat ocupa la parte visible de la pantalla. Con el teclado abierto se encoge y se
+          // queda justo encima de él (iOS no encoge la página: usamos el alto visible, ver viewport.ts).
+          '--chat-h': 'min(92dvh, calc(var(--vv-h, 100dvh) - 12px * var(--no-kb, 1)))',
+          width: '100%', height: 'var(--chat-h)', bottom: 'auto',
+          top: 'calc(var(--vv-top, 0px) + var(--vv-h, 100dvh) - var(--chat-h))',
+          pb: 'calc(env(safe-area-inset-bottom) * var(--no-kb, 1))',
+          borderRadius: '28px 28px 0 0',
+          bgcolor: 'background.paper', backgroundImage: 'none', overscrollBehavior: 'contain',
+        } : { width: 440, height: '100%', borderRadius: '28px 0 0 28px', bgcolor: 'background.paper', backgroundImage: 'none' } } }}>
         <Stack sx={{ height: '100%' }}>
           <Stack direction="row" sx={{ alignItems: 'center', px: 2.5, pt: 2.5, pb: 1.5 }} spacing={1.5}>
             <AutoAwesomeRounded sx={{ color: BRAND }} />
@@ -187,7 +216,7 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
             <IconButton aria-label="Cerrar" onClick={() => setOpen(false)}><CloseRounded /></IconButton>
           </Stack>
 
-          <Stack spacing={1.5} sx={{ flex: 1, overflowY: 'auto', px: 2.5, py: 1 }}>
+          <Stack ref={listRef} spacing={1.5} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain', position: 'relative', px: 2.5, py: 1 }}>
             {!online && (
               <Box sx={{ p: 2, borderRadius: '16px', bgcolor: 'color-mix(in srgb, var(--mui-palette-warning-main) 14%, transparent)' }}>
                 <Typography sx={{ fontWeight: 500 }}>El chat necesita el servidor local</Typography>
@@ -207,7 +236,7 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
                 </Stack>
               </>
             )}
-            {msgs.map((m, i) => <Bubble key={i} m={m} />)}
+            {msgs.map((m, i) => <Bubble key={i} i={i} m={m} />)}
             {busy && (
               <Box sx={{ alignSelf: 'flex-start', display: 'flex', gap: 0.75, px: 2, py: 1.5, borderRadius: '20px',
                 bgcolor: 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)',
@@ -217,7 +246,6 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
                 <span /><span /><span />
               </Box>
             )}
-            <div ref={end} />
           </Stack>
 
           <Box component="form" onSubmit={(e) => { e.preventDefault(); send(text); }}
@@ -225,7 +253,7 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
               bgcolor: 'color-mix(in srgb, var(--mui-palette-text-primary) 6%, transparent)' }}>
             <InputBase value={text} onChange={(e) => setText(e.target.value)} placeholder="Escribe tu pregunta…" disabled={!online}
               multiline maxRows={4} sx={{ flex: 1, py: 1, fontSize: 16 }}  /* 16px: iOS no hace zoom al escribir */
-              onBlur={resetZoom}
+              slotProps={{ input: { enterKeyHint: 'send' } }}
               onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(text); } }} />
             <IconButton type="submit" onClick={() => haptic('tap')} disabled={!text.trim() || busy || !online} aria-label="Enviar"
               sx={{ bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: BRAND_DARK },

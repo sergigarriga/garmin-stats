@@ -423,3 +423,46 @@ Quien se da de alta después de la fecha de la versión no la ve. Siempre se pue
 **Cada vez que se publiquen novedades:** añadir una entrada al principio de `RELEASES` en `web/src/whatsnew.tsx`
 (id nuevo `AAAA-MM-DD`, título, subtítulo y 3-7 novedades con icono, color, texto corto y la página a la que llevan),
 compilar la web y desplegar. Sin entrada nueva no se anuncia nada.
+
+## Google Health en lugar de Garmin (10-11-2026)
+
+Para quien no tiene Garmin (Pixel Watch, Fitbit, Apple Watch, Oura… todo lo que llega a la app **Google Health**).
+Cada persona usa **una sola fuente**: Garmin o Google Health, nunca las dos mezcladas.
+
+**Qué se lee** (Google Health API v4, `health.googleapis.com`, solo lectura, sin ubicación GPS): entrenos, pasos,
+distancia, calorías totales y activas, minutos en zona activa, pulso en reposo, HRV, sueño (fases si las hay), peso,
+VO2max y el pulso a lo largo del día de la última semana. Se guarda en el mismo SQLite y con la misma forma que los datos
+de Garmin (`src/garmin_stats/google_health.py`), así el informe, el coach y la web no cambian. Lo que Google no da
+(Body Battery, estrés, FIT con series de fuerza y ruta, pico de pulso del entreno) se queda vacío, como con un reloj que no lo mide.
+La primera vez se bajan 2 años; luego, cada hora, lo nuevo y los últimos 3 días.
+
+**Cómo se conecta** (todo en la Lambda de la API, detrás de la cookie de sesión):
+- `GET /api/google/connect?back=<pestaña>&consent=1` → Google (OAuth con PKCE, `access_type=offline`, `prompt=consent`).
+  `consent=1` cuando acaba de aceptar la privacidad en la web; `back` es la pestaña a la que volver (opcional).
+- `GET /api/google/callback` → vuelve a `/?google=ok[#pestaña]` o `/?google=error&reason=<motivo>[#pestaña]`.
+  Motivos: `unavailable` (falta el cliente OAuth en SSM), `garmin` (ya usa Garmin), `consent` (falta aceptar la privacidad),
+  `state` (enlace caducado o de otra sesión), `denied` (canceló en Google), `scopes` (no marcó ningún permiso de salud),
+  `token` (Google no aceptó el código), `not_linked` (su cuenta de Google no tiene Google Health enlazado),
+  `busy` (hay una descarga en marcha y conectar borraría los datos de la otra fuente: probar en un par de minutos), `error`.
+- `POST /api/google/disconnect` con `{"deleteData": true|false}` → retira el permiso en Google y lo borra de SSM;
+  con `deleteData` borra también lo descargado (no el plan, la comida ni el chat). Responde
+  `{"ok": true, "deleted": bool, "revoked": bool}`; con `revoked: false` Google no lo retiró y la web le dice que lo
+  quite en <https://myaccount.google.com/connections>. Con `deleteData` y una descarga en marcha: 409.
+- Ninguna descarga en marcha puede resucitar datos borrados: al desconectar o cambiar de fuente se apunta
+  `sourceChangedAt` y la sincronización, antes de subir nada, comprueba que la fuente sigue siendo la misma.
+- `/api/me` añade `source` (`"garmin"`, `"google"` o `null`) y
+  `google: {available, connected, status: "ok"|"reauth"|"not_linked", scopes, connectedAt, linkUrl}`.
+  `available` es `false` mientras no existan los parámetros del cliente OAuth o el dominio público (`PublicHost`):
+  la web no enseña el botón.
+
+**Estados** (`admin/users.json`): `active` (con datos), `google_reauth` (retiró el permiso o caducó: tiene que volver a
+conectar; no salta ninguna alarma) y `google_not_linked` (tiene que abrir la app de Google Health y enlazar su cuenta;
+la sincronización lo reintenta cada hora y pasa sola a `active`). El permiso (refresh token) se guarda en SSM
+SecureString `/garmin-stats/users/<uid>/google-token`; al borrar la cuenta se retira en Google y se borra.
+Si alguien cambia de fuente, lo descargado de la anterior se borra para no mezclar datos.
+
+**Lo que hay que preparar una vez** (detalle en `docs/aws.md`): un proyecto de Google Cloud **aparte** del login, con
+la Google Health API activada, la pantalla de consentimiento y un cliente OAuth web con la vuelta
+`https://<dominio>/api/google/callback` (salida `GoogleHealthRedirectUri` del stack), y sus dos parámetros en SSM.
+
+Pruebas: `tests/test_google_health.py` (respuestas grabadas en `tests/fixtures/google_health/`, sin red).

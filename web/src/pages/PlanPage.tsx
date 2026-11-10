@@ -80,6 +80,7 @@ import { useResolvedMode } from '../theme';
 import { CARD_SX, IconBubble, PageHeader, SectionTitle, chartSx } from '../ui';
 import { bandAxis, yClean } from '../charts';
 import { SESSION_TYPE, SessionDialog, WorkoutView } from '../sessionDetail';
+import { BRAND, BRAND_INK, brandTint } from '../brand/colors';
 
 const online = window.location.protocol.startsWith('http');
 const TYPE = SESSION_TYPE;
@@ -308,13 +309,13 @@ export function CreateForm({ onDone, onSubmit, submitLabel, onSkip }: {
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>Quiero incluir</Typography>
           <ToggleButtonGroup value={include} onChange={(_, v) => setInclude(v)} size="small"
             sx={{ flexWrap: 'wrap', gap: 1, mb: 2, '& .MuiToggleButton-root': { borderRadius: '999px !important', border: '1px solid', borderColor: 'divider', px: 1.75 },
-              '& .Mui-selected': { bgcolor: 'color-mix(in srgb, #D4542F 16%, transparent) !important', color: '#D4542F', borderColor: '#D4542F' } }}>
+              '& .Mui-selected': { bgcolor: `${brandTint(16)} !important`, color: BRAND_INK, borderColor: BRAND } }}>
             {['Natación', 'Bici', 'Cinta', 'Gimnasio (fuerza)', 'Yoga o movilidad', 'Caminar'].map((o) => <ToggleButton key={o} value={o}>{o}</ToggleButton>)}
           </ToggleButtonGroup>
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>Quiero evitar</Typography>
           <ToggleButtonGroup value={avoid} onChange={(_, v) => setAvoid(v)} size="small"
             sx={{ flexWrap: 'wrap', gap: 1, '& .MuiToggleButton-root': { borderRadius: '999px !important', border: '1px solid', borderColor: 'divider', px: 1.75 },
-              '& .Mui-selected': { bgcolor: 'color-mix(in srgb, #D4542F 16%, transparent) !important', color: '#D4542F', borderColor: '#D4542F' } }}>
+              '& .Mui-selected': { bgcolor: `${brandTint(16)} !important`, color: BRAND_INK, borderColor: BRAND } }}>
             {['Cuestas', 'Series', 'Correr días seguidos', 'Madrugar'].map((o) => <ToggleButton key={o} value={o}>{o}</ToggleButton>)}
           </ToggleButtonGroup>
         </Box>
@@ -633,7 +634,7 @@ export default function PlanPage({ data, go }: { data: GarminData; go: (k: strin
               <Typography sx={{ mt: 1, color: 'text.secondary', '& b': { color: 'text.primary' } }}><Rich>{t.session.description}</Rich></Typography>
               <WeatherNote s={t.session} sx={{ mt: 1, fontSize: 13 }} />
               {t.session.timeWarn && <Box sx={{ mt: 1 }}><TimeTag warn={t.session.timeWarn} /></Box>}
-              {t.session.redo_from && <Typography variant="caption" sx={{ display: 'block', mt: 1, fontWeight: 600, color: mode === 'dark' ? '#F08A66' : '#D4542F' }}>Retomado del {toDate(t.session.redo_from).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })} · <Box component="span" onClick={() => setSel(t.session)} sx={{ textDecoration: 'underline', cursor: 'pointer' }}>deshacer</Box></Typography>}
+              {t.session.redo_from && <Typography variant="caption" sx={{ display: 'block', mt: 1, fontWeight: 600, color: BRAND_INK }}>Retomado del {toDate(t.session.redo_from).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' })} · <Box component="span" onClick={() => setSel(t.session)} sx={{ textDecoration: 'underline', cursor: 'pointer' }}>deshacer</Box></Typography>}
               <WorkoutView s={t.session} refs={refs} />
             </Box>
             {(t.tip || t.weatherTip || t.bestWindow) && (

@@ -1,9 +1,13 @@
 """Personas con acceso a la web (versión multipersona en AWS).
 
 El registro vive en S3 (admin/users.json, fuera de site/, así que nunca se sirve):
-  {"users": [{"email", "uid", "name", "role": "owner" | "friend", "budgetUsd", "status", "invitedAt", "joinedAt"}]}
-status: invited (invitada, aún no ha entrado) · onboarding (ha entrado, falta Garmin) · active (con Garmin)
-        · key_invalid (Garmin rechaza su clave).
+  {"users": [{"email", "uid", "name", "role": "owner" | "friend", "budgetUsd", "status", "invitedAt", "joinedAt",
+              "source": "garmin" | "google", "dataSource"}]}
+status: invited (invitada, aún no ha entrado) · onboarding (ha entrado, falta conectar sus datos) · active (con Garmin
+        o Google Health) · key_invalid (Garmin rechaza su clave) · google_reauth (Google ya no acepta el permiso)
+        · google_not_linked (su cuenta de Google no tiene Google Health enlazado).
+source: de dónde salen sus datos ahora (una sola fuente por persona; sin campo = Garmin, como antes).
+dataSource: de qué fuente son los datos guardados (al cambiar de fuente se borran para no mezclarlas).
 Cada persona tiene su carpeta privada users/<uid>/state/ y su web site/u/<uid>/ (CloudFront solo le sirve la suya).
 El uid sale del email con HMAC (no se puede adivinar sin el secreto de sesión).
 """
@@ -32,6 +36,20 @@ def site_prefix(uid: str) -> str:
 
 def key_param(uid: str) -> str:
     return f"/garmin-stats/users/{uid}/garmin-key"
+
+
+def google_param(uid: str) -> str:
+    return f"/garmin-stats/users/{uid}/google-token"
+
+
+GOOGLE_STATUSES = ("google_reauth", "google_not_linked")
+
+
+def source(u: dict) -> str | None:
+    """Fuente de datos actual: "google", "garmin" o None (aún sin conectar)."""
+    if u.get("source"):
+        return u["source"]
+    return "garmin" if u.get("status") in ("active", "key_invalid") else None
 
 
 def load(s3, bucket: str) -> list[dict]:

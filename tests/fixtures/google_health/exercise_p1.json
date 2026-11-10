@@ -1,0 +1,79 @@
+{
+ "dataPoints": [
+  {
+   "name": "users/1234567890/dataTypes/exercise/dataPoints/8811a2b3-run",
+   "dataSource": {
+    "recordingMethod": "ACTIVELY_MEASURED",
+    "device": {
+     "manufacturer": "Google",
+     "displayName": "Pixel Watch 3"
+    },
+    "platform": "FITBIT"
+   },
+   "exercise": {
+    "interval": {
+     "startTime": "2026-11-08T07:02:11.123456789Z",
+     "startUtcOffset": "3600s",
+     "endTime": "2026-11-08T07:50:31Z",
+     "endUtcOffset": "3600s",
+     "civilStartTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 8
+      }
+     }
+    },
+    "exerciseType": "RUNNING",
+    "displayName": "Carrera",
+    "activeDuration": "2587.598s",
+    "metricsSummary": {
+     "distanceMillimeters": 8012345.0,
+     "caloriesKcal": 612.4,
+     "averageHeartRateBeatsPerMinute": "152",
+     "averagePaceSecondsPerMeter": 0.3229,
+     "elevationGainMillimeters": 48000.0,
+     "steps": "7210",
+     "runVo2Max": 51.3,
+     "activeZoneMinutes": "64"
+    },
+    "updateTime": "2026-11-08T07:50:31Z"
+   }
+  },
+  {
+   "name": "users/1234567890/dataTypes/exercise/dataPoints/8811a2b3-gym",
+   "dataSource": {
+    "recordingMethod": "ACTIVELY_MEASURED",
+    "device": {
+     "manufacturer": "Google",
+     "displayName": "Pixel Watch 3"
+    },
+    "platform": "FITBIT"
+   },
+   "exercise": {
+    "interval": {
+     "startTime": "2026-11-06T17:30:00Z",
+     "startUtcOffset": "3600s",
+     "endTime": "2026-11-06T18:20:00Z",
+     "endUtcOffset": "3600s",
+     "civilStartTime": {
+      "date": {
+       "year": 2026,
+       "month": 11,
+       "day": 6
+      }
+     }
+    },
+    "exerciseType": "WEIGHTLIFTING",
+    "displayName": "Pesas",
+    "activeDuration": "2950s",
+    "metricsSummary": {
+     "caloriesKcal": 280.0,
+     "averageHeartRateBeatsPerMinute": "118"
+    },
+    "updateTime": "2026-11-06T18:20:00Z"
+   }
+  }
+ ],
+ "nextPageToken": "pagina-2"
+}
