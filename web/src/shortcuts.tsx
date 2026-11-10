@@ -1,11 +1,10 @@
-// Atajos de la portada: de Hoy a apuntar algo con un toque (comida, entreno del día, ánimo, molestia, compra, coach).
+// Atajos de la portada: de Hoy a apuntar algo con un toque (tu día, comida, entreno del día, ánimo, molestia, compra).
 // Cada atajo lleva el color de la sección a la que va. Solo hay atajos a cosas que existen de verdad.
 //
 // Cómo abre cada cosa (mismo mecanismo que ya usaba la tarjeta de comida de Hoy):
 //   - comida:   deja la marca `food-add` y va a Comida, que abre "Añadir comida" al montarse (Food.tsx)
 //   - entreno:  deja la marca `plan-today` y va al Plan, que abre la sesión de hoy (PlanPage.tsx)
 //   - molestia: evento `injury-add`, que escucha la tarjeta "¿Cómo te encuentras hoy?" (Wellness.tsx)
-//   - coach:    evento `open-chat` (Chat.tsx)
 import type { ReactElement } from 'react';
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -15,7 +14,7 @@ import ShoppingCartRounded from '@mui/icons-material/ShoppingCartRounded';
 import DirectionsRunRounded from '@mui/icons-material/DirectionsRunRounded';
 import SentimentSatisfiedRounded from '@mui/icons-material/SentimentSatisfiedRounded';
 import HealingRounded from '@mui/icons-material/HealingRounded';
-import AutoAwesomeRounded from '@mui/icons-material/AutoAwesomeRounded';
+import TodayRounded from '@mui/icons-material/TodayRounded';
 import type { GarminData } from './data';
 import { haptic } from './haptics';
 import { sectionInk } from './brand/colors';
@@ -37,6 +36,8 @@ interface Shortcut { key: string; label: string; hint: string; section: string; 
 export function Shortcuts({ data, go }: { data: GarminData; go: (k: string) => void }) {
   const hasSessionToday = !!data.coach?.today;
   const items: Shortcut[] = [
+    { key: 'dia', label: 'Tu día', hint: 'Ver tu día al detalle', section: 'hoy', icon: <TodayRounded />,
+      run: () => go('dia') },
     { key: 'comida', label: 'Comida', hint: 'Apuntar una comida', section: 'salud', icon: <RestaurantRounded />,
       run: () => { mark('food-add'); go('comida'); } },
     { key: 'entreno', label: 'Entreno', hint: hasSessionToday ? 'Ver tu entreno de hoy' : 'Ir a tu plan de entreno', section: 'entreno', icon: <DirectionsRunRounded />,
@@ -47,8 +48,6 @@ export function Shortcuts({ data, go }: { data: GarminData; go: (k: string) => v
       run: () => window.dispatchEvent(new Event('injury-add')) },
     { key: 'compra', label: 'Compra', hint: 'Ir al menú y la lista de la compra', section: 'salud', icon: <ShoppingCartRounded />,
       run: () => go('compra') },
-    { key: 'coach', label: 'Coach', hint: 'Preguntar al coach', section: 'hoy', icon: <AutoAwesomeRounded />,
-      run: () => window.dispatchEvent(new Event('open-chat')) },
   ];
   return (
     <Card component="nav" aria-label="Atajos para apuntar" data-new="shortcuts"

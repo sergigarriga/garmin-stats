@@ -9,6 +9,7 @@
 //      --vv-top  cuánto ha desplazado iOS la vista para enseñar el campo (px)
 //      --no-kb   1 sin teclado, 0 con teclado (para quitar márgenes de la zona segura)
 //    y `<html data-kb="1">` mientras el teclado está abierto.
+// 3. `<html data-modal="1">` mientras hay un diálogo abierto, para que la cabecera no asome por encima.
 
 const KB_MIN = 120; // menos que esto es la barra del navegador, no un teclado
 
@@ -44,6 +45,15 @@ export function setupViewport() {
     root.style.setProperty('--no-kb', kb ? '0' : '1');
     if ((root.dataset.kb === '1') !== kb) root.dataset.kb = kb ? '1' : '0';
   };
+
+  // Al abrir o recargar se empieza siempre arriba: el navegador no recoloca la página por su cuenta.
+  try { window.history.scrollRestoration = 'manual'; } catch { /* navegador antiguo */ }
+  window.scrollTo(0, 0);
+
+  // `<html data-modal="1">` mientras hay un diálogo o el chat abiertos (MUI bloquea el scroll del body).
+  const modal = () => { const on = document.body.style.overflow === 'hidden'; if ((root.dataset.modal === '1') !== on) root.dataset.modal = on ? '1' : '0'; };
+  new MutationObserver(modal).observe(document.body, { attributes: true, attributeFilter: ['style'] });
+  modal();
 
   update();
   vv?.addEventListener('resize', update);

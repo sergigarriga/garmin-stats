@@ -238,7 +238,8 @@ export function WhatsNew({ me, go, ready }: { me: Me | null; go: (k: string) => 
     <Dialog open={open} onClose={() => close()} fullScreen={full} slots={{ transition: SlideUp }} scroll="paper"
       aria-labelledby="whatsnew-title"
       slotProps={{ paper: { sx: { borderRadius: full ? 0 : '32px', maxWidth: 520, width: '100%', overflow: 'hidden', bgcolor: 'background.default',
-        display: 'flex', flexDirection: 'column', maxHeight: full ? '100%' : 'calc(100% - 48px)' } } }}>
+        display: 'flex', flexDirection: 'column', maxHeight: full ? 'none' : 'calc(100% - 48px)',
+        ...(full ? { position: 'fixed', inset: 0, height: 'auto', m: 0 } : {}) } } }}>
       {/* cabecera */}
       <Box sx={{ position: 'relative', flexShrink: 0, px: 3, pt: full ? 'calc(env(safe-area-inset-top) + 40px)' : 5, pb: 3.5, textAlign: 'center',
         background: mode === 'dark'

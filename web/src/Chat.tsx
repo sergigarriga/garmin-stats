@@ -17,6 +17,7 @@ import DeleteOutlineRounded from '@mui/icons-material/DeleteOutlineRounded';
 
 // Color de marca (terracota del logo) para todo lo del chat.
 import { haptic } from './haptics';
+import { ChatGrow } from './chatGrow';
 import { BRAND, BRAND_DARK } from './brand/colors';
 
 type Msg = { role: 'user' | 'assistant'; content: string; error?: boolean; retry?: boolean };
@@ -244,12 +245,13 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
 
   return (
     <>
-      {showFab && <Fab variant="extended" onClick={() => setOpen(true)} aria-label="Pregúntale a la IA"
+      {showFab && <Fab data-chat-btn variant="extended" onClick={() => setOpen(true)} aria-label="Pregúntale a la IA"
         sx={{ position: 'fixed', right: { xs: 16, md: 28 }, bottom: { xs: 88, md: 28 }, zIndex: 20, textTransform: 'none',
           bgcolor: BRAND, color: '#FFFFFF', '&:hover': { bgcolor: BRAND_DARK }, borderRadius: '18px', px: 2.5, height: 56, boxShadow: '0 2px 6px rgba(0,0,0,.2), 0 6px 18px rgba(0,0,0,.12)' }}>
         <AutoAwesomeRounded sx={{ mr: 1 }} /> Pregunta
       </Fab>}
       <Drawer anchor={mobile ? 'bottom' : 'right'} open={open} onClose={() => setOpen(false)}
+        slots={mobile ? { transition: ChatGrow as never } : undefined}
         slotProps={{ paper: { sx: mobile ? {
           // Móvil: el chat ocupa la parte visible de la pantalla. Con el teclado abierto se encoge y se
           // queda justo encima de él (iOS no encoge la página: usamos el alto visible, ver viewport.ts).
@@ -260,7 +262,8 @@ export default function Chat({ showFab = true }: { showFab?: boolean }) {
           borderRadius: '28px 28px 0 0',
           bgcolor: 'background.paper', backgroundImage: 'none', overscrollBehavior: 'contain',
         } : { width: 440, height: '100%', borderRadius: '28px 0 0 28px', bgcolor: 'background.paper', backgroundImage: 'none' } } }}>
-        <Stack sx={{ height: '100%' }}>
+        <Stack sx={{ height: '100%', '@keyframes chat-in': { from: { opacity: 0, transform: 'translateY(10px)' }, to: { opacity: 1, transform: 'none' } },
+          '@media (prefers-reduced-motion: no-preference)': { animation: mobile ? 'chat-in .32s cubic-bezier(.22,1,.36,1) .12s both' : 'none' } }}>
           <Stack direction="row" sx={{ alignItems: 'center', px: 2.5, pt: 2.5, pb: 1.5 }} spacing={1.5}>
             <AutoAwesomeRounded sx={{ color: BRAND }} />
             <Box sx={{ flex: 1 }}>

@@ -26,7 +26,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import useScrollTrigger from '@mui/material/useScrollTrigger';
 import { useColorScheme, useTheme } from '@mui/material/styles';
 import HomeRounded from '@mui/icons-material/HomeRounded';
 import BedtimeRounded from '@mui/icons-material/BedtimeRounded';
@@ -309,8 +308,9 @@ function GlassNav({ current, go, last, sections: SECTIONS }: { current: Section;
           );
         })}
       </Box>
-      <Box component="button" aria-label="Pregúntale a la IA" onClick={() => window.dispatchEvent(new Event('open-chat'))}
+      <Box component="button" data-chat-btn aria-label="Pregúntale a la IA" onClick={() => { haptic('tap'); window.dispatchEvent(new Event('open-chat')); }}
         sx={{ ...chatBtn, width: 64, height: 64, borderRadius: '50%', cursor: 'pointer', display: 'grid', placeItems: 'center',
+          transition: 'transform .3s cubic-bezier(.34,1.4,.64,1)', '&:active': { transform: 'scale(0.9)' },
           color: '#FFFFFF', '& svg': { fontSize: 26 } }}>
         <AutoAwesomeRounded />
       </Box>
@@ -326,6 +326,23 @@ const HEADER_FADE = 36;
  *  del color del fondo (también en degradado) para que el logo y los botones se lean sobre cualquier contenido.
  *  Las medidas van en px desde abajo: así da igual lo alta que sea la zona de la hora y la batería del iPhone.
  *  No reciben toques (lo que asoma bajo la cabecera se puede pulsar) y arriba del todo no se ven. */
+/** ¿Se ha bajado la página? Arriba del todo (y con un diálogo abierto) es `false`: la cabecera va limpia, sin desenfoque. */
+function useScrolled(threshold = 12) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    let raf = 0;
+    const read = () => { raf = 0; setScrolled(window.scrollY > threshold && document.documentElement.dataset.modal !== '1'); };
+    const on = () => { if (!raf) raf = requestAnimationFrame(read); };
+    read();
+    window.addEventListener('scroll', on, { passive: true });
+    window.addEventListener('pageshow', on);
+    const mo = new MutationObserver(on);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-modal'] });
+    return () => { window.removeEventListener('scroll', on); window.removeEventListener('pageshow', on); mo.disconnect(); if (raf) cancelAnimationFrame(raf); };
+  }, [threshold]);
+  return scrolled;
+}
+
 function HeaderBlur({ on }: { on: boolean }) {
   const veil = (pct: number) => `color-mix(in srgb, var(--mui-palette-background-default) ${pct}%, transparent)`;
   // [radio del desenfoque, hasta dónde va entero, dónde se acaba] (px desde el borde inferior de la capa)
@@ -359,7 +376,7 @@ export default function App() {
   const { me, error: meError, refresh: refreshMe } = useMe(120_000);
   const isOwner = me?.role === 'owner';
   const [dialog, setDialog] = useState<null | 'admin' | 'key' | 'delete' | 'google'>(null);
-  const scrolled = useScrollTrigger({ disableHysteresis: true, threshold: 4 });
+  const scrolled = useScrolled();
   // Vuelta de Google Health (reconectar desde la app): se avisa una vez.
   const googleReturn = useGoogleReturn();
   const hasData = !!data;
@@ -409,9 +426,11 @@ export default function App() {
           abierto iOS desplaza la vista: la cabecera la sigue (--vv-top) para no irse por arriba. */}
       {/* Sin fondo propio ni línea: el desenfoque progresivo de detrás (HeaderBlur) hace de cabecera. */}
       <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: 'transparent', backgroundImage: 'none', boxShadow: 'none',
-        'html[data-kb="1"] &': { transform: 'translateY(var(--vv-top, 0px))' } }}>
+        'html[data-kb="1"] &': { transform: 'translateY(var(--vv-top, 0px))' },
+        // Con un diálogo a pantalla completa (novedades, comida…) la cabecera se quita de en medio para que no asome.
+        'html:has(.MuiDialog-paperFullScreen) &': { visibility: 'hidden' } }}>
         <HeaderBlur on={scrolled} />
-        <Container maxWidth="lg" sx={{ position: 'relative' }}>
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           <Toolbar disableGutters sx={{ gap: { xs: 0.75, sm: 1.5 }, minHeight: { xs: 56, sm: 68 } }}>
             {mobile ? (
               <Box sx={{ flex: 1, minWidth: 0, lineHeight: 1 }}>
