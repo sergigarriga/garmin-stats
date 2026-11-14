@@ -11,7 +11,10 @@ import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import CloseRounded from '@mui/icons-material/CloseRounded';
 import ContentCopyRounded from '@mui/icons-material/ContentCopyRounded';
@@ -190,7 +193,84 @@ const STATUS: Record<string, { label: string; color: 'default' | 'success' | 'wa
 };
 const money = (v: number) => `${v.toFixed(2).replace('.', ',')} $`;
 
+interface UsageUser {
+  email: string; name: string; role?: string; lastSeen: number | null; activeDays: number; sessions: number; mins: number; pwa: number;
+  daily: { d: string; mins: number; sessions: number }[]; views: [string, number][]; acts: [string, number][];
+  dev: Record<string, number>; hours: number[];
+}
+
+/** Cómo usa la app cada persona (últimos 30 días): cuándo entra, a qué horas, qué páginas y qué acciones. Solo recuentos. */
+function UsagePanel({ open }: { open: boolean }) {
+  const [list, setList] = useState<UsageUser[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => {
+    if (!open) return;
+    setList(null); setErr(null);
+    call<{ users: UsageUser[] }>('./api/admin/usage').then((r) => setList(r.users)).catch((e) => setErr((e as Error).message));
+  }, [open]);
+  if (err) return <Alert severity="error" sx={{ borderRadius: '14px' }}>{err}</Alert>;
+  if (!list) return <CircularProgress size={24} />;
+  const bars = (vals: number[], labels: string[], color: string, h = 34) => {
+    const max = Math.max(1, ...vals);
+    return (
+      <Stack direction="row" sx={{ alignItems: 'flex-end', gap: '2px', height: h }}>
+        {vals.map((v, i) => (
+          <Tooltip key={i} title={labels[i]} arrow>
+            <Box sx={{ flex: 1, minWidth: 2, height: v ? Math.max(3, (v / max) * h) : 2, borderRadius: '2px', bgcolor: v ? color : 'action.disabledBackground' }} />
+          </Tooltip>
+        ))}
+      </Stack>
+    );
+  };
+  const mobilePct = (u: UsageUser) => { const t = (u.dev.m ?? 0) + (u.dev.d ?? 0); return t ? Math.round(((u.dev.m ?? 0) / t) * 100) : null; };
+  return (
+    <Stack spacing={1.25}>
+      <Typography variant="caption" color="text.secondary">
+        Últimos 30 días. Solo recuentos (aperturas, páginas, acciones y minutos con la app a la vista); nunca lo que escriben ni sus datos.
+      </Typography>
+      {list.map((u) => (
+        <Box key={u.email} sx={{ p: 1.5, borderRadius: '16px', bgcolor: 'action.hover' }}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'baseline', justifyContent: 'space-between' }}>
+            <Typography sx={{ fontWeight: 500 }} noWrap>{u.name || u.email.split('@')[0]}{u.role === 'owner' ? ' (tú)' : ''}</Typography>
+            <Typography variant="caption" color={u.lastSeen ? 'text.secondary' : 'text.disabled'} sx={{ whiteSpace: 'nowrap' }}>
+              {u.lastSeen ? `Visto ${relative(new Date(u.lastSeen * 1000), new Date())}` : 'Aún sin registro'}
+            </Typography>
+          </Stack>
+          {u.lastSeen && (
+            <>
+              <Stack direction="row" spacing={2} sx={{ mt: 0.5, flexWrap: 'wrap', rowGap: 0.25 }}>
+                <Typography variant="caption" color="text.secondary"><b>{u.activeDays}</b> de 30 días</Typography>
+                <Typography variant="caption" color="text.secondary"><b>{u.sessions}</b> aperturas</Typography>
+                <Typography variant="caption" color="text.secondary"><b>{u.activeDays ? Math.round(u.mins / u.activeDays) : 0}</b> min/día activo</Typography>
+                {mobilePct(u) != null && <Typography variant="caption" color="text.secondary">{mobilePct(u)} % móvil{u.pwa ? ` · app instalada ${u.pwa}×` : ''}</Typography>}
+              </Stack>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, mb: 0.25 }}>Minutos al día (14 días)</Typography>
+              {bars(u.daily.map((x) => x.mins), u.daily.map((x) => `${x.d.slice(5)}: ${x.mins} min · ${x.sessions} aperturas`), BRAND)}
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, mb: 0.25 }}>A qué horas (hora de Madrid)</Typography>
+              {bars(u.hours, u.hours.map((m, h) => `${h}:00 · ${m} min`), BRAND_DARK, 28)}
+              <Stack direction="row" sx={{ justifyContent: 'space-between' }}>
+                {['0', '6', '12', '18', '24'].map((h) => <Typography key={h} variant="caption" color="text.disabled" sx={{ fontSize: 10 }}>{h}</Typography>)}
+              </Stack>
+              {u.views.length > 0 && (
+                <Stack direction="row" sx={{ mt: 0.75, flexWrap: 'wrap', gap: 0.5 }}>
+                  {u.views.map(([n, c]) => <Chip key={n} size="small" label={`${n} ${c}`} />)}
+                </Stack>
+              )}
+              {u.acts.length > 0 && (
+                <Stack direction="row" sx={{ mt: 0.5, flexWrap: 'wrap', gap: 0.5 }}>
+                  {u.acts.map(([n, c]) => <Chip key={n} size="small" variant="outlined" label={`${n} ${c}`} />)}
+                </Stack>
+              )}
+            </>
+          )}
+        </Box>
+      ))}
+    </Stack>
+  );
+}
+
 export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [tab, setTab] = useState(0);
   const [list, setList] = useState<AdminUser[] | null>(null);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
@@ -220,10 +300,15 @@ export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => v
 
   return (
     <Dialog open={open} onClose={onClose} slotProps={{ paper: { sx: { borderRadius: '28px', m: 2, width: 'calc(100% - 32px)', maxWidth: 600 } } }}>
-      <DialogTitle sx={{ pr: 6 }}>Invitaciones
+      <DialogTitle sx={{ pr: 6 }}>Administración
         <IconButton onClick={onClose} aria-label="Cerrar" sx={{ position: 'absolute', right: 12, top: 12 }}><CloseRounded /></IconButton>
       </DialogTitle>
+      <Tabs value={tab} onChange={(_, v: number) => setTab(v)} sx={{ px: 2, minHeight: 40, '& .MuiTab-root': { minHeight: 40, textTransform: 'none' } }}>
+        <Tab label="Invitaciones" />
+        <Tab label="Uso" />
+      </Tabs>
       <DialogContent>
+        {tab === 1 ? <UsagePanel open={open} /> : (
         <Stack spacing={2.5}>
           {!list ? <CircularProgress size={24} /> : (
             <Stack spacing={1.25}>
@@ -277,6 +362,7 @@ export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => v
           )}
           {err && <Alert severity="error" sx={{ borderRadius: '14px' }}>{err}</Alert>}
         </Stack>
+        )}
       </DialogContent>
 
       <Dialog open={!!removing} onClose={() => setRemoving(null)} slotProps={DIALOG_SX}>

@@ -348,6 +348,9 @@ def _handle(event):
     if not isinstance(payload, dict):
         return _json(400, {"error": "JSON no válido"})
 
+    if path == "/api/track" and method == "POST":  # uso de la app: ligero, sin preparar el entorno de la persona
+        return _track(user, payload)
+
     _use(user)
 
     # --- cuenta, onboarding y administración (no necesitan sus datos)
@@ -1080,11 +1083,90 @@ def _google_disconnect(user: dict, payload: dict):
     return _json(200, {"ok": True, "deleted": delete, "revoked": revoked})
 
 
+# ------------------------------------------------------------------ uso de la app (solo lo ve el dueño)
+# Un archivo por persona y día (users/<uid>/usage/AAAA-MM-DD.json) con totales: sesiones, segundos con la app a la vista,
+# páginas vistas, acciones y a qué horas. Nunca el contenido de lo que escribe ni de sus datos. Se borra con su cuenta.
+USAGE_DAYS = 30
+_NAME_RE = re.compile(r"^[a-z0-9][a-z0-9_./-]{0,39}$")
+
+
+def _usage_key(uid: str, day: str) -> str:
+    return f"users/{uid}/usage/{day}.json"
+
+
+def _track(user: dict, payload: dict):
+    """Suma al día de hoy lo que la web cuenta: aperturas, páginas, acciones y segundos con la app a la vista."""
+    now = time.time()
+    lt = time.localtime(now)  # hora de Madrid (TZ de la Lambda)
+    day = time.strftime("%Y-%m-%d", lt)
+    key = _usage_key(user["uid"], day)
+    doc = _get_json(key, None) or {"d": day, "first": int(now), "sessions": 0, "secs": 0, "views": {}, "acts": {},
+                                   "dev": {}, "pwa": 0, "hours": [0] * 24}
+    events = payload.get("events")
+    for e in (events if isinstance(events, list) else [])[:60]:
+        if not isinstance(e, dict):
+            continue
+        kind, name = e.get("k"), str(e.get("n") or "")
+        if kind == "open":
+            doc["sessions"] += 1
+            dev = "m" if name == "m" else "d"
+            doc["dev"][dev] = doc["dev"].get(dev, 0) + 1
+            doc["pwa"] += 1 if e.get("pwa") else 0
+        elif kind in ("view", "act") and _NAME_RE.match(name):
+            bucket = doc["views" if kind == "view" else "acts"]
+            bucket[name] = bucket.get(name, 0) + 1
+    try:
+        secs = max(0, min(int(payload.get("secs") or 0), 900))  # segundos a la vista desde el último envío
+    except (TypeError, ValueError):
+        secs = 0
+    doc["secs"] += secs
+    doc["hours"][lt.tm_hour] += secs
+    doc["last"] = int(now)
+    _put_json(key, doc)
+    return _json(200, {"ok": True})
+
+
+def _usage_report() -> dict:
+    """Resumen del uso de cada persona en los últimos 30 días (lo ve solo el dueño)."""
+    today = date.today()
+    days = [(today - timedelta(days=i)).isoformat() for i in range(USAGE_DAYS)]
+    out = []
+    for u in U.load(s3, BUCKET):
+        prefix = f"users/{u['uid']}/usage/"
+        have = {Path(o["Key"]).stem for pg in s3.get_paginator("list_objects_v2").paginate(Bucket=BUCKET, Prefix=prefix)
+                for o in pg.get("Contents", [])}
+        docs = {d: _get_json(_usage_key(u["uid"], d), None) for d in days if d in have}
+        views: dict = {}
+        acts: dict = {}
+        dev: dict = {}
+        hours = [0] * 24
+        for d in docs.values():
+            for src, dst in ((d.get("views"), views), (d.get("acts"), acts), (d.get("dev"), dev)):
+                for k, v in (src or {}).items():
+                    dst[k] = dst.get(k, 0) + v
+            hours = [a + b for a, b in zip(hours, d.get("hours") or [0] * 24)]
+        active = [d for d, v in docs.items() if (v or {}).get("secs", 0) >= 10 or (v or {}).get("sessions")]
+        top = lambda m, n: sorted(m.items(), key=lambda kv: -kv[1])[:n]  # noqa: E731
+        out.append({
+            "email": u["email"], "name": u.get("name") or "", "role": u.get("role"),
+            "lastSeen": max((v.get("last", 0) for v in docs.values() if v), default=None),
+            "activeDays": len(active), "sessions": sum(v.get("sessions", 0) for v in docs.values() if v),
+            "mins": round(sum(v.get("secs", 0) for v in docs.values() if v) / 60),
+            "pwa": sum(v.get("pwa", 0) for v in docs.values() if v),
+            "daily": [{"d": d, "mins": round(((docs.get(d) or {}).get("secs", 0)) / 60, 1),
+                       "sessions": (docs.get(d) or {}).get("sessions", 0)} for d in reversed(days[:14])],
+            "views": top(views, 8), "acts": top(acts, 8), "dev": dev, "hours": [round(h / 60) for h in hours],
+        })
+    return {"users": out, "days": USAGE_DAYS}
+
+
 # ------------------------------------------------------------------ administración (solo el dueño)
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$", re.I)
 
 
 def _admin(path: str, method: str, payload: dict):
+    if path == "/api/admin/usage" and method == "GET":
+        return _json(200, _usage_report())
     if path != "/api/admin/users":
         return _json(404, {"error": "no encontrado"})
     users = U.load(s3, BUCKET)

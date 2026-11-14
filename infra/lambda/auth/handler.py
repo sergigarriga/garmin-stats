@@ -193,7 +193,7 @@ def page(title, text, button=""):
 
 # ------------------------------------------------------------------ páginas legales (públicas, sin sesión)
 # Sin emails personales: el contacto público es la cuenta de Instagram de la app.
-LEGAL_UPDATED = "10 de noviembre de 2026"
+LEGAL_UPDATED = "14 de noviembre de 2026"
 GOOGLE_SITE_FILES = {"google91ccfe2d5b372e65.html"}  # el archivo que da Search Console (URL-prefix de la web)
 
 PRIVACY = """
@@ -219,13 +219,16 @@ series de fuerza, peso y datos parecidos, leídos con tu clave personal de la AP
 preferencias del menú y lo que preguntas al chat.</li>
 <li><b>Fotos de comida:</b> si usas esta función, la foto se analiza al momento y se descarta. Solo se guardan los
 alimentos y cantidades estimados.</li>
+<li><b>Uso de la app:</b> cuándo la abres, qué páginas y funciones usas, a qué horas y cuánto tiempo la tienes a la
+vista, junto con si la usas desde móvil u ordenador. Son solo recuentos, sin el contenido de lo que escribes ni de tus datos.
+Se guardan en nuestro propio almacenamiento, solo los ve el administrador y sirven para mejorar la app.</li>
 <li><b>Tiempo:</b> la población que indiques para la previsión del tiempo.</li>
 <li><b>Avisos:</b> si los activas, la suscripción de tu navegador para poder enviarte notificaciones.</li>
 </ul>
 
 <h2>Para qué</h2>
 <p>Solo para enseñarte tus datos, calcular tendencias, escribir tus consejos, crear y ajustar tu plan y enviarte los
-avisos que actives. No hay publicidad, no vendemos ni cedemos datos y no usamos analítica ni rastreadores.
+avisos que actives, y mejorar la app con recuentos de uso. No hay publicidad, no vendemos ni cedemos datos y no usamos analítica de terceros ni rastreadores: los recuentos de uso los guarda la propia app.
 Cada persona ve únicamente sus propios datos.</p>
 
 <h2>Quién nos ayuda a prestar el servicio</h2>

@@ -1022,3 +1022,39 @@ def test_sync_passes_the_requested_activity_to_run(sync_handler, monkeypatch):
     sync_handler.h.handler({"uid": "m1", "refresh": "42"}, None)
     sync_handler.h.handler({"uid": "m1"}, None)
     assert seen == ["42", None]
+
+
+# ---------------------------------------------------------------- uso de la app (lo ve solo el dueño)
+def _track(api, body, who=None):
+    return api.call("POST", "/api/track", body, who=who or api.friend)
+
+
+def test_track_adds_up_the_day_without_content(api):
+    uid = "u2"
+    assert _track(api, {"events": [{"k": "open", "n": "m", "pwa": True}, {"k": "view", "n": "hoy"}, {"k": "view", "n": "hoy"},
+                                   {"k": "act", "n": "ask"}, {"k": "view", "n": "<script>"}, {"k": "nope", "n": "x"}], "secs": 40})["statusCode"] == 200
+    _track(api, {"events": [{"k": "view", "n": "plan"}], "secs": 20})
+    day = next(k for k in api.s3.objs if k.startswith(f"users/{uid}/usage/"))
+    doc = json.loads(api.s3.objs[day])
+    assert doc["sessions"] == 1 and doc["secs"] == 60 and doc["pwa"] == 1 and doc["dev"] == {"m": 1}
+    assert doc["views"] == {"hoy": 2, "plan": 1} and doc["acts"] == {"ask": 1}  # el nombre raro se descarta
+    assert sum(doc["hours"]) == 60
+
+
+def test_track_ignores_bad_input(api):
+    assert _track(api, {"events": "x", "secs": "mucho"})["statusCode"] == 200
+    assert _track(api, {"events": [None, 3, {"k": "open"}], "secs": 99999})["statusCode"] == 200
+    doc = json.loads(next(v for k, v in api.s3.objs.items() if k.startswith("users/u2/usage/")))
+    assert doc["secs"] == 900  # tope por envío
+
+
+def test_usage_report_is_owner_only_and_summarises(api):
+    _track(api, {"events": [{"k": "open", "n": "d"}, {"k": "view", "n": "hoy"}, {"k": "act", "n": "sync"}], "secs": 120})
+    assert api.call("GET", "/api/admin/usage", who=api.friend)["statusCode"] == 403
+    r = api.call("GET", "/api/admin/usage", who=api.owner)
+    assert r["statusCode"] == 200
+    rows = {u["email"]: u for u in json.loads(r["body"])["users"]}
+    f = rows[api.friend]
+    assert f["activeDays"] == 1 and f["sessions"] == 1 and f["mins"] == 2 and f["views"] == [["hoy", 1]] and f["acts"] == [["sync", 1]]
+    assert f["dev"] == {"d": 1} and len(f["daily"]) == 14 and f["lastSeen"]
+    assert rows[api.garmin]["lastSeen"] is None  # sin registro todavía

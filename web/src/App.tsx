@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import { PullToRefresh, useManualSync } from './sync';
+import { startTracking, track } from './track';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
 import GroupAddOutlined from '@mui/icons-material/GroupAddOutlined';
@@ -171,7 +172,7 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
         {me?.role === 'owner' && (
           <MenuItem onClick={() => { setAnchor(null); onAccount('admin'); }}>
             <ListItemIcon><GroupAddOutlined fontSize="small" /></ListItemIcon>
-            <ListItemText primary="Invitaciones" secondary="Invitar a amigos y amigas y ver su gasto" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+            <ListItemText primary="Administración" secondary="Invitaciones, gasto y cómo usan la app" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
           </MenuItem>
         )}
         {me && me.source === 'google' && (
@@ -377,6 +378,10 @@ export default function App() {
   const onSynced = useCallback((msg: string, activity?: number) => { clearFresh(); setInfo(msg); haptic('success'); if (activity) setActReload((n) => n + 1); }, [clearFresh]);
   const { me, error: meError, refresh: refreshMe } = useMe(120_000);
   const isOwner = me?.role === 'owner';
+  // Uso de la app para el administrador (solo recuentos): aperturas, páginas vistas y tiempo con la app a la vista.
+  const signedIn = !!me;
+  useEffect(() => { if (signedIn) startTracking(); }, [signedIn]);
+  useEffect(() => { if (signedIn) track('view', page.startsWith('act-') ? 'entreno-detalle' : page); }, [signedIn, page]);
   const [dialog, setDialog] = useState<null | 'admin' | 'key' | 'delete' | 'google'>(null);
   const scrolled = useScrolled();
   // Vuelta de Google Health (reconectar desde la app): se avisa una vez.
@@ -506,7 +511,7 @@ export default function App() {
         {actId == null && <SubTabs section={section} page={pageKey} go={go} owner={isOwner} />}
         {actId != null
           ? <ErrorBoundary key={actId}><ActivityDetail data={data} id={actId} reload={actReload} refreshing={syncing}
-            onRefresh={me?.source === 'google' ? undefined : () => { haptic('tap'); sync(actId); }}
+            onRefresh={me?.source === 'google' ? undefined : () => { haptic('tap'); track('act', 'activity-refresh'); sync(actId); }}
             back={() => (window.history.length > 1 ? window.history.back() : go('entreno'))} /></ErrorBoundary>
           : <ErrorBoundary key={pageKey}>{current.render(data, go)}</ErrorBoundary>}
         <Typography variant="caption" color="text.disabled" sx={{ display: 'block', textAlign: 'center', mt: 6 }}>
