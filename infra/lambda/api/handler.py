@@ -374,8 +374,8 @@ def _handle(event):
     if not email:
         return _json(401, {"error": "login"})
     user = U.find(U.load(s3, BUCKET), email=email)
-    if not user:
-        return _json(401, {"error": "login"})  # la invitación se ha retirado
+    if not user or user.get("status") == "waitlist":
+        return _json(401, {"error": "login"})  # la invitación se ha retirado (o aún está en la lista de espera)
 
     method = event["requestContext"]["http"]["method"]
     path = event.get("rawPath", "")
@@ -1270,6 +1270,8 @@ def _usage_report() -> dict:
     days = [(today - timedelta(days=i)).isoformat() for i in range(USAGE_DAYS)]
     out = []
     for u in U.load(s3, BUCKET):
+        if u.get("status") == "waitlist":
+            continue
         prefix = f"users/{u['uid']}/usage/"
         have = {Path(o["Key"]).stem for pg in s3.get_paginator("list_objects_v2").paginate(Bucket=BUCKET, Prefix=prefix)
                 for o in pg.get("Contents", [])}
@@ -1299,6 +1301,13 @@ def _usage_report() -> dict:
 
 
 # ------------------------------------------------------------------ administración (solo el dueño)
+MAX_USERS = 100  # personas con acceso (sin contar la lista de espera)
+
+
+def _seats(users: list[dict]) -> int:
+    return sum(1 for u in users if u.get("role") != "owner" and u.get("status") != "waitlist")
+
+
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[a-z]{2,}$", re.I)
 
 
@@ -1310,7 +1319,11 @@ def _admin(path: str, method: str, payload: dict):
     users = U.load(s3, BUCKET)
     if method == "GET":
         out = []
+        waiting = [{"email": u["email"], "name": u.get("name") or "", "requestedAt": u.get("requestedAt")}
+                   for u in users if u.get("status") == "waitlist"]
         for u in users:
+            if u.get("status") == "waitlist":
+                continue
             st = _get_json(U.state_prefix(u["uid"]) + "sync_status.json", {})
             stats = _usage_stats(u["uid"])
             out.append({"email": u["email"], "name": u.get("name") or "", "role": u.get("role"), "status": u.get("status"),
@@ -1320,16 +1333,20 @@ def _admin(path: str, method: str, payload: dict):
                         "totalCostUsd": stats["totalCostUsd"], "calls": stats["calls"], "lastAi": stats["lastAi"],
                         "invitedAt": u.get("invitedAt"), "joinedAt": u.get("joinedAt"),
                         "lastSync": st.get("finished"), "syncStatus": st.get("status")})
-        return _json(200, {"users": out})
+        return _json(200, {"users": out, "waitlist": sorted(waiting, key=lambda w: w.get("requestedAt") or 0),
+                           "maxUsers": MAX_USERS})
     action = payload.get("action")
     email = str(payload.get("email") or "").strip().lower()
     if action == "add":
         if not EMAIL_RE.match(email):
             return _json(400, {"error": "Ese email no es válido."})
-        if U.find(users, email=email):
+        old = U.find(users, email=email)
+        if old and old.get("status") == "waitlist":  # estaba en la lista de espera: la invitación directa manda
+            users.remove(old)
+        elif old:
             return _json(400, {"error": "Ya tiene invitación."})
-        if sum(1 for u in users if u.get("role") != "owner") >= 10:
-            return _json(400, {"error": "Máximo 10 invitaciones."})
+        if _seats(users) >= MAX_USERS:
+            return _json(400, {"error": f"Máximo {MAX_USERS} personas."})
         budget = float(payload.get("budgetUsd") or FRIEND_BUDGET)
         users.append({"email": email, "uid": U.uid_for(email, SESSION_SECRET), "name": str(payload.get("name") or "")[:60],
                       "role": "friend", "budgetUsd": max(0.0, min(budget, 20.0)), "status": "invited", "invitedAt": U.now(),
@@ -1347,6 +1364,18 @@ def _admin(path: str, method: str, payload: dict):
         if not u:
             return _json(404, {"error": "No existe."})
         u["budgetUsd"] = max(0.0, min(float(payload.get("budgetUsd") or 0), 50.0))
+        U.save(s3, BUCKET, users)
+    elif action in ("approve", "reject"):
+        u = U.find(users, email=email)
+        if not u or u.get("status") != "waitlist":
+            return _json(404, {"error": "No está en la lista de espera."})
+        if action == "reject":
+            users.remove(u)
+        else:
+            if _seats(users) >= MAX_USERS:
+                return _json(400, {"error": f"Máximo {MAX_USERS} personas."})
+            # Entra con el plan gratis y 14 días de Plus de prueba (empiezan cuando entra por primera vez).
+            u.update(status="invited", plan="free", trial=True, invitedAt=U.now(), budgetUsd=FRIEND_BUDGET)
         U.save(s3, BUCKET, users)
     elif action == "plan":
         u = U.find(users, email=email)

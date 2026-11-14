@@ -35,8 +35,13 @@ _s3 = boto3.client("s3")
 _cfg: dict = {}
 
 
-def _check_user(email: str, name: str) -> bool:
-    """¿Tiene invitación? Al entrar por primera vez se apunta su nombre y la fecha."""
+WAITLIST_MAX = 500   # personas en lista de espera como mucho
+TRIAL_DAYS = 14      # prueba de Runch Plus para quien entra desde la lista de espera
+
+
+def _check_user(email: str, name: str) -> bool | str:
+    """¿Tiene invitación? Al entrar por primera vez se apunta su nombre y la fecha.
+    Sin invitación se apunta a la lista de espera (devuelve "waitlist"): entra cuando el administrador la acepta."""
     try:
         reg = json.loads(_s3.get_object(Bucket=BUCKET, Key=USERS_KEY)["Body"].read())
     except _s3.exceptions.NoSuchKey:
@@ -48,18 +53,29 @@ def _check_user(email: str, name: str) -> bool:
         u = {"email": email, "uid": uid, "name": name, "role": "owner", "budgetUsd": 50, "status": "onboarding",
              "invitedAt": int(time.time())}
         users.append(u)
+    save = lambda: _s3.put_object(Bucket=BUCKET, Key=USERS_KEY, Body=json.dumps(reg, ensure_ascii=False, indent=1).encode(),  # noqa: E731
+                                  ContentType="application/json")
     if u is None:
-        return False
+        if sum(1 for x in users if x.get("status") == "waitlist") >= WAITLIST_MAX:
+            return False
+        uid = hmac.new(SESSION_SECRET, b"uid:" + email.encode(), hashlib.sha256).hexdigest()[:16]
+        users.append({"email": email, "uid": uid, "name": name, "role": "friend", "status": "waitlist", "plan": "free",
+                      "requestedAt": int(time.time())})
+        save()
+        return "waitlist"
+    if u.get("status") == "waitlist":
+        return "waitlist"
     changed = False
     if u.get("status") == "invited":
         u["status"], changed = "onboarding", True
     if not u.get("joinedAt"):
         u["joinedAt"], changed = int(time.time()), True
+        if u.pop("trial", None):  # aceptada desde la lista de espera: 14 días de Plus desde que entra
+            u["trialEnd"] = int(time.time()) + TRIAL_DAYS * 86400
     if name and not u.get("name"):
         u["name"], changed = name, True
     if changed:
-        _s3.put_object(Bucket=BUCKET, Key=USERS_KEY, Body=json.dumps(reg, ensure_ascii=False, indent=1).encode(),
-                       ContentType="application/json")
+        save()
     return True
 
 
@@ -179,7 +195,7 @@ def landing(message: str = "", button_href: str = "/auth/login?go=1", button_tex
   <p class="lead">El sueño, el corazón y los entrenos de tu reloj en un solo sitio, con un plan que se adapta a ti cada semana.</p>
   {msg}<a class="btn" href="{button_href}">{G_LOGO}<span>{button_text}</span></a>
   <p class="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zm0 6a3 3 0 0 1 3 3v1h1v6H8v-6h1v-1a3 3 0 0 1 3-3zm0 2a1 1 0 0 0-1 1v1h2v-1a1 1 0 0 0-1-1z"/></svg>
-  <span>Solo con invitación. Cada persona ve únicamente sus datos.</span></p>
+  <span>Con invitación. Si aún no la tienes, al continuar te apuntas a la lista de espera. Cada persona ve únicamente sus datos.</span></p>
  </section>
 </main>
 <footer>Datos de Garmin o Google Health · No es consejo médico<br><a href="/auth/privacidad">Privacidad</a> · <a href="/auth/condiciones">Condiciones</a></footer></body></html>"""
@@ -208,7 +224,8 @@ mensaje directo en Instagram a <a href="https://www.instagram.com/runch.run/">@r
 
 <h2>Qué datos usamos</h2>
 <ul>
-<li><b>Tu cuenta de Google:</b> solo tu nombre y tu email, para iniciar sesión y comprobar que tienes invitación.
+<li><b>Tu cuenta de Google:</b> solo tu nombre y tu email, para iniciar sesión, comprobar que tienes invitación y, si aún
+no la tienes, apuntarte a la lista de espera (puedes pedirnos que te borremos de ella).
 No accedemos a tu Gmail, tus contactos, tu Drive ni nada más de tu cuenta.</li>
 <li><b>Tus datos de Google Health</b> (solo si lo conectas en lugar de Garmin): entrenos, pasos, distancia, calorías,
 minutos en zona activa, pulso (en reposo y a lo largo del día), HRV, VO2max, sueño y peso. Solo lectura: Runch no
@@ -424,6 +441,9 @@ def handler(event, _ctx):
                 ok = _check_user(email, str(claims.get("given_name") or claims.get("name") or "")[:60])
             except Exception:  # noqa: BLE001
                 return landing("No se pudo comprobar tu acceso. Vuelve a intentarlo en un momento.")
+        if ok == "waitlist":
+            return landing(f"Te hemos apuntado a la lista de espera con <b>{html.escape(email)}</b>. Runch se abre poco a poco: "
+                           "cuando haya sitio para ti, podrás entrar con esta misma cuenta.", button_text="Probar con otra cuenta")
         if not ok:
             return landing(f"La cuenta <b>{html.escape(email) or 'elegida'}</b> no tiene invitación. Pide a quien te pasó el enlace que te invite con este email.",
                            button_text="Probar con otra cuenta")

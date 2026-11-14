@@ -278,6 +278,7 @@ function UsagePanel({ open }: { open: boolean }) {
 export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [tab, setTab] = useState(0);
   const [list, setList] = useState<AdminUser[] | null>(null);
+  const [waitlist, setWaitlist] = useState<{ email: string; name: string; requestedAt?: number }[]>([]);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [err, setErr] = useState<string | null>(null);
@@ -288,7 +289,7 @@ export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => v
 
   const act = async (body?: Record<string, unknown>) => {
     setBusy(true); setErr(null);
-    try { const r = await call<{ users: AdminUser[] }>('./api/admin/users', body); setList(r.users); return true; }
+    try { const r = await call<{ users: AdminUser[]; waitlist?: typeof waitlist }>('./api/admin/users', body); setList(r.users); setWaitlist(r.waitlist ?? []); return true; }
     catch (e) { setErr((e as Error).message); return false; } finally { setBusy(false); }
   };
   useEffect(() => { if (open) { setInvite(null); act(); } }, [open]);  // eslint-disable-line react-hooks/exhaustive-deps
@@ -352,6 +353,29 @@ export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => v
                 </Box>
               ))}
             </Stack>
+          )}
+
+          {waitlist.length > 0 && (
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>Lista de espera ({waitlist.length})</Typography>
+              <Stack spacing={1}>
+                {waitlist.map((w) => (
+                  <Stack key={w.email} direction="row" spacing={1} sx={{ alignItems: 'center', p: 1.25, borderRadius: '14px', border: 1, borderColor: 'divider' }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 500 }} noWrap>{w.name || w.email.split('@')[0]}</Typography>
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', overflowWrap: 'anywhere' }}>
+                        {w.email}{w.requestedAt ? ` · ${relative(new Date(w.requestedAt * 1000), new Date())}` : ''}
+                      </Typography>
+                    </Box>
+                    <Button size="small" variant="contained" disableElevation disabled={busy} onClick={() => act({ action: 'approve', email: w.email })} sx={{ borderRadius: 999 }}>Aceptar</Button>
+                    <IconButton size="small" disabled={busy} aria-label={`Rechazar a ${w.email}`} onClick={() => act({ action: 'reject', email: w.email })}><DeleteOutlineRounded fontSize="small" /></IconButton>
+                  </Stack>
+                ))}
+              </Stack>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                Al aceptar, entra con el plan gratis y 14 días de Runch Plus de prueba. Avísale tú: la app no envía emails.
+              </Typography>
+            </Box>
           )}
 
           <Box>

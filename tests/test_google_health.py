@@ -1219,3 +1219,35 @@ def test_idle_people_do_not_spend_ai_in_the_hourly_sync(sync_handler):
     assert h._idle("m1") is True                                    # 9 días sin abrir
     sync_handler.s3.objs[f"users/m1/usage/{time.strftime('%Y-%m-%d')}.json"] = b"{}"
     assert h._idle("m1") is False
+
+
+# ---------------------------------------------------------------- lista de espera y prueba de 14 días
+def test_unknown_people_join_the_waitlist_and_enter_with_a_trial_once_accepted(api, monkeypatch):
+    auth = _load("infra/lambda/auth/handler.py", "auth_handler_waitlist_test", monkeypatch,
+                 {"BUCKET": "b", "SESSION_SECRET": "s" * 64, "ORIGIN_SECRET": "o" * 64, "OWNER_EMAIL": api.owner,
+                  "GOOGLE_CLIENT_ID_PARAM": "/id", "GOOGLE_CLIENT_SECRET_PARAM": "/sec"}, {"s3": api.s3, "ssm": api.ssm})
+    assert auth._check_user("nueva@x.com", "Nora") == "waitlist"
+    assert auth._check_user("nueva@x.com", "Nora") == "waitlist"          # volver a entrar no la duplica
+    assert sum(1 for u in json.loads(api.s3.objs["admin/users.json"])["users"] if u["email"] == "nueva@x.com") == 1
+    assert auth._check_user(api.friend, "") is True                        # quien tiene invitación entra como siempre
+
+    r = json.loads(api.call("GET", "/api/admin/users", who=api.owner)["body"])
+    assert [w["email"] for w in r["waitlist"]] == ["nueva@x.com"] and "nueva@x.com" not in [u["email"] for u in r["users"]]
+    assert api.call("GET", "/api/me", who="nueva@x.com")["statusCode"] == 401   # en espera no entra ni con sesión
+    assert api.call("POST", "/api/admin/users", {"action": "approve", "email": "nueva@x.com"}, who=api.friend)["statusCode"] == 403
+    assert api.call("POST", "/api/admin/users", {"action": "approve", "email": "nueva@x.com"}, who=api.owner)["statusCode"] == 200
+    u = api.user("nueva@x.com")
+    assert u["status"] == "invited" and u["plan"] == "free" and u["trial"] is True
+
+    assert auth._check_user("nueva@x.com", "Nora") is True                 # primera entrada: empieza la prueba
+    u = api.user("nueva@x.com")
+    assert u["status"] == "onboarding" and "trial" not in u and 13 * 86400 < u["trialEnd"] - time.time() <= 14 * 86400
+    me = _me(api, "nueva@x.com")
+    assert me["plan"] == "free" and me["entitled"] is True                 # gratis, con Plus de prueba
+
+    assert auth._check_user("otra@x.com", "") == "waitlist"
+    assert api.call("POST", "/api/admin/users", {"action": "reject", "email": "otra@x.com"}, who=api.owner)["statusCode"] == 200
+    assert not [x for x in json.loads(api.s3.objs["admin/users.json"])["users"] if x["email"] == "otra@x.com"]
+    assert auth._check_user("tercera@x.com", "") == "waitlist"             # invitarla a mano gana a la lista de espera
+    api.call("POST", "/api/admin/users", {"action": "add", "email": "tercera@x.com", "name": "T"}, who=api.owner)
+    assert api.user("tercera@x.com")["status"] == "invited" and api.user("tercera@x.com")["plan"] == "comp"
