@@ -262,7 +262,7 @@ def sorteo(s: dict, th: dict) -> str:
         f'{A("fade", .95, .7)}>{rich(s["hook"])}</div></div>',
         card(s["cover"], 116, 1175, 316, -5, t["draw_chip"], -1),
         figure("corredor-1", th["ill"], 1000 - fig_w("corredor-1", 380), 1195, 380, 1.05),
-        pill(t["draw_cta"]),
+        pill(t["draw_cta"].replace("19:00", s.get("hour") or "19:00")),   # "hour": el post de ese día sale a otra hora
     ])
 
 
