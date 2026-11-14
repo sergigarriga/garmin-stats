@@ -47,7 +47,7 @@ export default function Gym({ data, go }: { data: GarminData; go: (k: string) =>
     );
   }
   const muscles = g.muscles.filter((m) => g.weeks.some((w) => w.muscles[m.key]));
-  const noKg = data.activities.filter((a) => a.type === 'strength_training').flatMap((a) => a.sets ?? []).filter((s) => !s.kg).length;
+  const noKg = data.activities.filter((a) => a.type === 'strength_training').flatMap((a) => a.sets ?? []).filter((s) => s.reps > 0 && !s.kg).length;
   const maxAvg = Math.max(12, ...g.muscleAvg4w.map((m) => m.sets));
   const recent = data.activities.filter((a) => a.type === 'strength_training').slice(-6).reverse();
 

@@ -17,7 +17,7 @@ export interface Activity {
   km?: number; min?: number; pace?: number; hr?: number; hrMax?: number; trimp?: number;
   ef?: number; dec?: number; vo2?: number; cad?: number; elev?: number; cal?: number;
   z: number[]; pr?: boolean; swolf?: number; poolM?: number;
-  sets?: { ex: string; reps: number; kg?: number | null; dur?: number }[] | null;
+  sets?: { ex: string; name?: string; reps: number; kg?: number | null; kgMax?: number; dur?: number | null }[] | null;
 }
 
 export interface Prediction {

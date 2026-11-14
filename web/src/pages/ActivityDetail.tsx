@@ -210,25 +210,38 @@ export default function ActivityDetail({ data, id, back, onRefresh, refreshing =
             <>
               <SectionTitle>Ejercicios</SectionTitle>
               <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' } }}>
-                {Object.entries(a.sets.reduce<Record<string, typeof a.sets>>((m, s) => { (m[s.ex] ??= []).push(s); return m; }, {}))
-                  .map(([ex, ss]) => (
+                {Object.entries(a.sets.reduce<Record<string, typeof a.sets>>((m, s) => { (m[s.name ?? s.ex] ??= []).push(s); return m; }, {}))
+                  .map(([ex, ss]) => {
+                    const reps = ss!.reduce((t, s) => t + s.reps, 0);
+                    const secs = ss!.reduce((t, s) => t + (s.reps ? 0 : s.dur ?? 0), 0);
+                    const top = ss!.find((s) => s.kgMax)?.kgMax;
+                    const clock = (v: number) => (v >= 60 ? `${Math.floor(v / 60)}:${String(Math.round(v % 60)).padStart(2, '0')}` : `${Math.round(v)} s`);
+                    return (
                     <Card key={ex} sx={{ ...CARD_SX, py: 2 }}>
-                      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>
-                        <Typography variant="subtitle1">{ex}</Typography>
-                        <Typography variant="body2" color="text.secondary">{ss!.length} series · {ss!.reduce((t, s) => t + s.reps, 0)} reps</Typography>
+                      <Stack direction="row" spacing={1} sx={{ justifyContent: 'space-between', alignItems: 'baseline', mb: 1 }}>
+                        <Typography variant="subtitle1" sx={{ lineHeight: 1.25 }}>{ex}</Typography>
+                        <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'nowrap' }}>
+                          {ss!.length} series · {reps ? `${reps} reps` : clock(secs)}
+                        </Typography>
                       </Stack>
                       <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1 }}>
                         {ss!.map((s, i) => (
                           <Box key={i} sx={{ px: 1.25, py: 0.5, borderRadius: '10px', fontSize: 14, fontWeight: 500,
                             bgcolor: alpha(color, mode === 'dark' ? 0.18 : 0.1) }}>
-                            {s.reps}{s.kg ? ` × ${dec1(s.kg)} kg` : ' reps'}
+                            {s.reps ? `${s.reps}${s.kg ? ` × ${top ? '≈' : ''}${dec1(s.kg)} kg` : ' reps'}` : clock(s.dur ?? 0)}
                           </Box>
                         ))}
                       </Stack>
+                      {top && (
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                          Garmin solo da el total de este ejercicio: se muestra el peso medio. Serie más pesada: {dec1(top)} kg.
+                        </Typography>
+                      )}
                     </Card>
-                  ))}
+                    );
+                  })}
               </Box>
-              {a.sets.every((s) => !s.kg) && (
+              {a.sets.every((s) => !s.kg) && a.sets.some((s) => s.reps) && (
                 <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
                   El reloj no guardó el peso de estas series. Si lo confirmas en el reloj al terminar cada serie, el coach podrá subir las cargas.
                 </Typography>

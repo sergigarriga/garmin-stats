@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import math
+import re
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -281,49 +282,83 @@ def parse_sets(path: Path) -> list[dict]:
             cats = v.get("category") or ()
             cats = cats if isinstance(cats, (tuple, list)) else (cats,)
             cat = next((c for c in cats if isinstance(c, int) and c < 65534), None)
-            out.append({"ex": EXERCISES.get(cat, "Otro ejercicio"), "reps": int(reps),
+            names = v.get("category_subtype") if v.get("category_subtype") is not None else v.get("exercise_name")
+            names = names if isinstance(names, (tuple, list)) else (names,)
+            idx = next((x for x in names if isinstance(x, int) and x < 65534), None)
+            name = _FIT_NAMES.get((cat, idx))
+            out.append({"ex": EXERCISES.get(cat, "Otro ejercicio"), **({"name": name} if name else {}), "reps": int(reps),
                         "kg": _f(v.get("weight"), 1), "dur": _f(dur, 0)})
     return out
 
 
-_CATEGORY_IDS = {k: v["id"] for k, v in json.loads((Path(__file__).parent / "garmin_exercises.json").read_text()).items()}
+_EX_FILE = json.loads((Path(__file__).parent / "garmin_exercises.json").read_text())
+_CATEGORY_IDS = {k: v["id"] for k, v in _EX_FILE.items()}
+# Nombre concreto de cada ejercicio en castellano ("Peso muerto con mancuernas"): {CATEGORIA: {SUB_CATEGORIA: nombre}}.
+try:
+    _NAMES_ES = json.loads((Path(__file__).parent / "garmin_exercise_names_es.json").read_text())
+except OSError:
+    _NAMES_ES = {}
+
+
+def _snake(camel: str) -> str:
+    return re.sub(r"(?<=[a-z])(?=[A-Z0-9])|(?<=[0-9])(?=[A-Za-z])|(?<=[A-Z])(?=[A-Z][a-z])", "_", camel).upper()
+
+
+# Para el FIT: (id de categoría, índice del ejercicio) → nombre en castellano.
+_FIT_NAMES = {(v["id"], idx): _NAMES_ES.get(_snake(cat), {}).get(_snake(name))
+              for cat, v in _EX_FILE.items() for name, idx in v["names"].items()}
 
 
 def sets_from_summary(a: dict) -> list[dict]:
     """Series según el resumen de la actividad en Garmin Connect (`summarizedExerciseSets`).
     Ahí entran los cambios hechos a mano en la app (pesos, reps) que NO se reescriben en el FIT del reloj.
-    Solo hay totales por ejercicio: se reparten en series iguales (reps) y el peso es el medio (volumen / reps)."""
+    Solo hay totales por ejercicio: las repeticiones se reparten en series iguales y el peso es el medio
+    (volumen / reps); si no todas las series pesaron igual, `kgMax` lleva la más pesada. Los ejercicios por tiempo
+    (planchas) salen con `reps` 0 y la duración de cada serie en `dur` (s)."""
     out = []
     for e in a.get("summarizedExerciseSets") or []:
-        parts = str(e.get("category") or "").lower().split("_")
+        cat_s, sub_s = str(e.get("category") or ""), str(e.get("subCategory") or "")
+        parts = cat_s.lower().split("_")
         key = parts[0] + "".join(w.title() for w in parts[1:])
         n, reps = int(e.get("sets") or 0), int(e.get("reps") or 0)
-        if n <= 0 or reps <= 0 or key not in _CATEGORY_IDS:  # sin repeticiones (planchas…): como en el FIT
+        secs = (e.get("duration") or 0) / 1000
+        if n <= 0 or key not in _CATEGORY_IDS or (reps <= 0 and secs <= 0):
+            continue
+        ex = EXERCISES.get(_CATEGORY_IDS[key], "Otro ejercicio")
+        base = {"ex": ex, "name": _NAMES_ES.get(cat_s, {}).get(sub_s) or ex}
+        if reps <= 0:  # por tiempo
+            out += [{**base, "reps": 0, "kg": None, "dur": _f(secs / n, 0)} for _ in range(n)]
             continue
         kg = _f(e["volume"] / reps / 1000, 1) if e.get("volume") else None
+        top = _f((e.get("maxWeight") or 0) / 1000, 1)
+        extra = {"kgMax": top} if kg and top and top - kg > 0.5 else {}
         for i in range(n):
-            out.append({"ex": EXERCISES.get(_CATEGORY_IDS[key], "Otro ejercicio"), "reps": reps // n + (1 if i < reps % n else 0),
-                        "kg": kg, "dur": 0.0})
+            out.append({**base, "reps": reps // n + (1 if i < reps % n else 0), "kg": kg, "dur": 0.0, **extra})
     return out
 
 
 def _totals(sets: list[dict]) -> dict:
     t: dict = {}
     for x in sets:
+        if not x["reps"]:
+            continue
         n, r, m = t.get(x["ex"], (0, 0, 0.0))
-        t[x["ex"]] = (n + 1, r + x["reps"], max(m, x["kg"] or 0))
+        t[x["ex"]] = (n + 1, r + x["reps"], max(m, x.get("kgMax") or x["kg"] or 0))
     return t
 
 
 def best_sets(fit_sets: list[dict], a: dict) -> list[dict]:
     """Series del FIT (una a una) salvo que el resumen de Garmin Connect tenga otros totales: entonces
-    se editó después en la app y manda el resumen."""
+    se editó después en la app y manda el resumen. Los ejercicios por tiempo siempre salen del resumen."""
     summ = sets_from_summary(a)
     if not summ:
         return fit_sets
     f, g = _totals(fit_sets), _totals(summ)
     same = f.keys() == g.keys() and all(f[k][:2] == g[k][:2] and abs(f[k][2] - g[k][2]) < 0.6 for k in f)
-    return fit_sets if same else summ
+    if not same:
+        return summ
+    timed = [x for x in summ if not x["reps"]]
+    return fit_sets + timed if timed else fit_sets
 
 
 def parse_new_strength(store) -> int:
@@ -354,7 +389,7 @@ def strength_summary(sets_by_act: dict[str, list], acts: pd.DataFrame) -> dict:
         for s in sets:
             by_ex.setdefault(s["ex"], []).append(s)
         rows.append({"fecha": a.start.strftime("%Y-%m-%d"), "min": _f(a.duration_min, 0),
-                     "ejercicios": {ex: [f"{s['reps']}x{s['kg']}kg" if s.get("kg") else f"{s['reps']} reps" for s in ss]
+                     "ejercicios": {ex: [f"{s['reps']}x{s['kg']}kg" if s.get("kg") else f"{s['reps']} reps" if s["reps"] else f"{int(s.get('dur') or 0)} s" for s in ss]
                                     for ex, ss in by_ex.items()}})
     progress: dict[str, list] = {}
     for r in rows:
