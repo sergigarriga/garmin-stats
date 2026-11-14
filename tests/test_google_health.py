@@ -7,6 +7,7 @@ import importlib.util
 import io
 import json
 import os
+import sqlite3
 import sys
 import time
 import types
@@ -964,3 +965,60 @@ def test_reauth_after_disconnect_is_not_a_reconnect_prompt(sync_handler, monkeyp
     monkeypatch.setattr(sync_handler.h, "_run", fake_run)
     assert sync_handler.h.handler({"uid": "g1"}, None)["sourceChanged"]
     assert _users(sync_handler.s3)["g1"]["status"] == "onboarding"
+
+
+# ---------------------------------------------------------------- volver a bajar UN entreno de Garmin
+def test_refresh_one_activity_asks_the_sync_for_it(api):
+    r = api.call("POST", "/api/sync", {"activity": 123456}, who=api.garmin)
+    assert r["statusCode"] == 202
+    assert api.lam.invokes[-1]["refresh"] == "123456" and api.lam.invokes[-1]["uid"] == "u3"
+    # un "actualizar" normal no lleva entreno
+    api.s3.objs["users/u3/state/sync_status.json"] = json.dumps({"status": "done", "finished": 1}).encode()
+    api.call("POST", "/api/sync", {}, who=api.garmin)
+    assert "refresh" not in api.lam.invokes[-1]
+
+
+def test_refresh_one_activity_skips_the_45s_shortcut(api):
+    api.s3.objs["users/u3/state/sync_status.json"] = json.dumps({"status": "done", "finished": int(time.time())}).encode()
+    assert api.call("POST", "/api/sync", {}, who=api.garmin)["statusCode"] == 200  # acaba de terminar: no repite
+    assert api.call("POST", "/api/sync", {"activity": "99"}, who=api.garmin)["statusCode"] == 202
+
+
+def test_refresh_one_activity_rejects_bad_ids_and_google_users(api):
+    assert api.call("POST", "/api/sync", {"activity": "../x"}, who=api.garmin)["statusCode"] == 400
+    api.h.U.update(api.s3, "b", "u3", source="google")
+    assert api.call("POST", "/api/sync", {"activity": "5"}, who=api.garmin)["statusCode"] == 400
+
+
+def test_forget_activity_clears_its_caches_and_nothing_else(sync_handler, tmp_path, monkeypatch):
+    h = sync_handler.h
+    monkeypatch.setattr(h, "ROOT", tmp_path / "gs")
+    for sub in ("data/fit", "site/acts"):
+        (h.ROOT / sub).mkdir(parents=True, exist_ok=True)
+    (h.ROOT / "data/fit/7.fit").write_bytes(b"old")
+    (h.ROOT / "data/fit/8.fit").write_bytes(b"keep")
+    (h.ROOT / "site/acts/7.js").write_text("x")
+    (h.ROOT / "site/acts/_published.txt").write_text("7\n8")
+    db = sqlite3.connect(h.ROOT / "data/garmin.sqlite")
+    db.execute("CREATE TABLE raw (dataset TEXT, key TEXT, payload TEXT, fetched_at TEXT)")
+    db.executemany("INSERT INTO raw VALUES (?, ?, '{}', 'x')",
+                   [(d, k) for d in ("activity", "activity_detail", "fit_summary", "strength_sets") for k in ("7", "8")])
+    db.commit()
+    db.close()
+    h._forget("7")
+    db = sqlite3.connect(h.ROOT / "data/garmin.sqlite")
+    left = set(db.execute("SELECT dataset, key FROM raw"))
+    db.close()
+    assert left == {("activity", "7")} | {(d, "8") for d in ("activity", "activity_detail", "fit_summary", "strength_sets")}
+    assert not (h.ROOT / "data/fit/7.fit").exists() and (h.ROOT / "data/fit/8.fit").exists()
+    assert not (h.ROOT / "site/acts/7.js").exists()
+    assert (h.ROOT / "site/acts/_published.txt").read_text() == "8"
+    assert h.REFRESH == {"7"}
+
+
+def test_sync_passes_the_requested_activity_to_run(sync_handler, monkeypatch):
+    seen = []
+    monkeypatch.setattr(sync_handler.h, "_run", lambda user, ctx, refresh=None: seen.append(refresh) or False)
+    sync_handler.h.handler({"uid": "m1", "refresh": "42"}, None)
+    sync_handler.h.handler({"uid": "m1"}, None)
+    assert seen == ["42", None]

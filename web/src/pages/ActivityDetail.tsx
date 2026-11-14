@@ -12,6 +12,7 @@ import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
 import { alpha } from '@mui/material/styles';
 import ArrowBackRounded from '@mui/icons-material/ArrowBackRounded';
+import SyncRounded from '@mui/icons-material/SyncRounded';
 import { LineChart } from '@mui/x-charts/LineChart';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -57,12 +58,15 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
-export default function ActivityDetail({ data, id, back }: { data: GarminData; id: number; back: () => void }) {
+export default function ActivityDetail({ data, id, back, onRefresh, refreshing = false, reload = 0 }:
+  { data: GarminData; id: number; back: () => void; onRefresh?: () => void; refreshing?: boolean; reload?: number }) {
   const cat = useCat();
   const mode = useResolvedMode();
   const a = data.activities.find((x) => x.id === id);
   const [d, setD] = useState<Detail | null | undefined>(undefined);
   useEffect(() => { setD(undefined); loadActivity(id).then(setD); }, [id]);
+  // Tras «Actualizar con Garmin» se relee el detalle sin vaciar la página (no parpadea).
+  useEffect(() => { if (reload) loadActivity(id, true).then((v) => { if (v) setD(v); }); }, [id, reload]);
 
   if (!a) return <Typography>Actividad no encontrada.</Typography>;
   const color = SPORTS[a.group]?.[mode] ?? cat('training');
@@ -92,7 +96,15 @@ export default function ActivityDetail({ data, id, back }: { data: GarminData; i
 
   return (
     <Box>
-      <Button startIcon={<ArrowBackRounded />} onClick={back} sx={{ mb: 2, ml: -1, borderRadius: 999 }}>Volver</Button>
+      <Stack direction="row" sx={{ mb: 2, justifyContent: 'space-between', alignItems: 'center' }}>
+        <Button startIcon={<ArrowBackRounded />} onClick={back} sx={{ ml: -1, borderRadius: 999 }}>Volver</Button>
+        {/* Mientras actualiza solo se ve el indicador de siempre (cabecera / bolita de arriba): el botón se quita para no duplicarlo. */}
+        {onRefresh && !refreshing && (
+          <Button variant="outlined" onClick={onRefresh} startIcon={<SyncRounded />} sx={{ borderRadius: 999 }}>
+            Actualizar con Garmin
+          </Button>
+        )}
+      </Stack>
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center', mb: 3 }}>
         <IconBubble color={color} size={52}><SportIcon group={a.group} /></IconBubble>
         <Box>

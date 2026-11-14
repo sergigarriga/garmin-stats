@@ -372,7 +372,9 @@ export default function App() {
   const theme = useTheme();
   const mobile = useMediaQuery(theme.breakpoints.down('md'));
   const [last, setLast] = useState<Record<string, string>>({});
-  const onSynced = useCallback((msg: string) => { clearFresh(); setInfo(msg); haptic('success'); }, [clearFresh]);
+  // Contador de «este entreno se ha vuelto a bajar de Garmin»: su página lo usa para releer el detalle.
+  const [actReload, setActReload] = useState(0);
+  const onSynced = useCallback((msg: string, activity?: number) => { clearFresh(); setInfo(msg); haptic('success'); if (activity) setActReload((n) => n + 1); }, [clearFresh]);
   const { me, error: meError, refresh: refreshMe } = useMe(120_000);
   const isOwner = me?.role === 'owner';
   const [dialog, setDialog] = useState<null | 'admin' | 'key' | 'delete' | 'google'>(null);
@@ -427,7 +429,9 @@ export default function App() {
       {/* Cabecera fija (no "sticky"): no se mueve con el scroll, el rebote ni los diálogos. Con el teclado
           abierto iOS desplaza la vista: la cabecera la sigue (--vv-top) para no irse por arriba. */}
       {/* Sin fondo propio ni línea: el desenfoque progresivo de detrás (HeaderBlur) hace de cabecera. */}
-      <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: 'transparent', backgroundImage: 'none', boxShadow: 'none',
+      {/* Arriba del todo, fondo sólido del color de la página (se ve igual): sin él, iOS 26 no detecta cabecera
+          y difumina por su cuenta la franja de la hora, logo e iconos incluidos. Al bajar, el desenfoque propio. */}
+      <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: scrolled ? 'transparent' : 'background.default', backgroundImage: 'none', boxShadow: 'none',
         'html[data-kb="1"] &': { transform: 'translateY(var(--vv-top, 0px))' },
         // Con un diálogo a pantalla completa (novedades, comida…) la cabecera se quita de en medio para que no asome.
         'html:has(.MuiDialog-paperFullScreen) &': { visibility: 'hidden' } }}>
@@ -460,7 +464,7 @@ export default function App() {
               <Tooltip title={syncing ? 'Conectando con Garmin…' : `Datos de las ${time(generated)}. Se actualizan solos cada hora; pulsa para traerlos de Garmin ahora.`}>
                 <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', color: 'text.secondary' }}>
                   <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>{syncing ? 'Conectando con Garmin…' : `Actualizado ${relative(generated, now)}`}</Typography>
-                  <IconButton size="small" onClick={sync} disabled={syncing} aria-label="Actualizar con Garmin ahora"
+                  <IconButton size="small" onClick={() => { sync(); }} disabled={syncing} aria-label="Actualizar con Garmin ahora"
                     sx={{ animation: syncing || checking ? 'spin 0.8s linear infinite' : 'none', '@keyframes spin': { to: { transform: 'rotate(360deg)' } } }}>
                     <RefreshRounded fontSize="small" />
                   </IconButton>
@@ -501,7 +505,9 @@ export default function App() {
         )}
         {actId == null && <SubTabs section={section} page={pageKey} go={go} owner={isOwner} />}
         {actId != null
-          ? <ErrorBoundary key={actId}><ActivityDetail data={data} id={actId} back={() => (window.history.length > 1 ? window.history.back() : go('entreno'))} /></ErrorBoundary>
+          ? <ErrorBoundary key={actId}><ActivityDetail data={data} id={actId} reload={actReload} refreshing={syncing}
+            onRefresh={me?.source === 'google' ? undefined : () => { haptic('tap'); sync(actId); }}
+            back={() => (window.history.length > 1 ? window.history.back() : go('entreno'))} /></ErrorBoundary>
           : <ErrorBoundary key={pageKey}>{current.render(data, go)}</ErrorBoundary>}
         <Typography variant="caption" color="text.disabled" sx={{ display: 'block', textAlign: 'center', mt: 6 }}>
           Datos de Garmin Connect · No es consejo médico · actualizado {relative(generated, now)}
@@ -513,16 +519,20 @@ export default function App() {
       <GarminKeyDialog open={dialog === 'key'} onClose={() => setDialog(null)} onDone={() => { refreshMe(); setInfo('Clave guardada: actualizando tus datos de Garmin…'); }} />
       <DeleteAccountDialog open={dialog === 'delete'} onClose={() => setDialog(null)} />
       <GoogleHealthDialog open={dialog === 'google'} onClose={() => setDialog(null)} me={me} onChanged={setInfo} />
-      {mobile && <PullToRefresh onRefresh={sync} busy={syncing} />}
+      {mobile && <PullToRefresh onRefresh={() => { sync(); }} busy={syncing} />}
 
       <Chat showFab={!mobile} />
       <WhatsNew me={me} go={go} ready={!!me} />
       <WelcomeTour me={me} />
       <Spotlight />
+      {/* Avisos abajo, por encima de la barra de navegación del móvil: arriba quedaban tapados por la cabecera y la hora. */}
       <Snackbar open={!!info} autoHideDuration={9000} onClose={() => setInfo(null)} message={info}
-        anchorOrigin={{ vertical: mobile ? 'top' : 'bottom', horizontal: 'center' }} sx={{ '& .MuiSnackbarContent-root': { maxWidth: 520 } }} />
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{ ...(mobile ? { bottom: 'calc(max(10px, env(safe-area-inset-bottom) - 12px) + 76px) !important' } : {}),
+          '& .MuiSnackbarContent-root': { maxWidth: 520, fontSize: 15, lineHeight: 1.4, borderRadius: '16px' } }} />
       <Snackbar open={fresh} autoHideDuration={4000} onClose={clearFresh} message="Datos actualizados"
-        anchorOrigin={{ vertical: mobile ? 'top' : 'bottom', horizontal: 'center' }} />
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={mobile ? { bottom: 'calc(max(10px, env(safe-area-inset-bottom) - 12px) + 76px) !important' } : undefined} />
     </Box>
     </OwnerCtx.Provider>
   );

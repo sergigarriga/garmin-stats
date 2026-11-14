@@ -57,6 +57,7 @@ log = logging.getLogger("garmin_stats")
 STARTED: dict[str, tuple[int, str | None]] = {}  # uid → (inicio de esta ejecución, fuente con la que empezó)
 EMPTY: set[str] = set()  # personas de Google Health sin ningún dato todavía (en esta ejecución)
 PULLED: dict[str, str] = {}  # huella de cada archivo de estado al bajarlo: solo se sube lo que esta ejecución cambia
+REFRESH: set[str] = set()  # actividades que la persona ha pedido volver a bajar de Garmin (su FIT nuevo pisa el de S3)
 
 
 class KeyRejected(Exception):
@@ -163,10 +164,34 @@ def _push(uid: str) -> None:
     existing = {Path(o["Key"]).name for p in s3.get_paginator("list_objects_v2").paginate(Bucket=BUCKET, Prefix=sp + "fit/")
                 for o in p.get("Contents", [])}
     for f in (ROOT / "data" / "fit").glob("*.fit"):
-        if f.name not in existing:
+        if f.name not in existing or f.stem in REFRESH:
             s3.upload_file(str(f), BUCKET, f"{sp}fit/{f.name}")
     for f in (ROOT / "site" / "acts").glob("*.js"):
         s3.upload_file(str(f), BUCKET, f"{site}acts/{f.name}", ExtraArgs=js)
+
+
+def _forget(aid: str) -> None:
+    """Olvida lo guardado de UNA actividad (detalle, FIT, series, página de detalle) para que esta
+    sincronización la vuelva a bajar entera de Garmin: así entran los cambios hechos después en el reloj o la app."""
+    REFRESH.add(aid)
+    for p in (ROOT / "data" / "fit" / f"{aid}.fit", ROOT / "data" / "fit" / f"{aid}.missing", ROOT / "site" / "acts" / f"{aid}.js"):
+        p.unlink(missing_ok=True)
+    pub = ROOT / "site" / "acts" / "_published.txt"
+    if pub.exists():
+        pub.write_text("\n".join(i for i in pub.read_text().split() if i != aid))
+    db_path = ROOT / "data" / "garmin.sqlite"
+    if not db_path.exists():
+        return
+    db = sqlite3.connect(db_path)
+    try:
+        db.execute("DELETE FROM raw WHERE key = ? AND dataset IN ('activity_detail', 'fit_summary', 'strength_sets')", (aid,))
+        try:
+            db.execute("DELETE FROM fit_records WHERE activity_id = ?", (int(aid),))
+        except sqlite3.Error:  # aún no existe la tabla
+            pass
+        db.commit()
+    finally:
+        db.close()
 
 
 # ------------------------------------------------------------------ avisos
@@ -236,7 +261,8 @@ def _sync_user(event: dict, ctx) -> dict:
                                  "backfill": backfill, "part": part})
     STARTED[uid] = (started, users.source(user))
     try:
-        partial = _run(user, ctx)
+        refresh = str(event.get("refresh") or "")
+        partial = _run(user, ctx, refresh) if refresh else _run(user, ctx)
         if _source_changed(uid):
             raise SourceChanged()
     except (SourceChanged, GH.NotLinked, GH.Reauth) as e:
@@ -288,9 +314,11 @@ def _sync_user(event: dict, ctx) -> dict:
     return {"ok": True}
 
 
-def _run(user: dict, ctx) -> bool:
-    """Sincroniza a una persona. Devuelve True si se cortó por tiempo y queda historial por bajar."""
+def _run(user: dict, ctx, refresh: str | None = None) -> bool:
+    """Sincroniza a una persona. Devuelve True si se cortó por tiempo y queda historial por bajar.
+    `refresh`: id de una actividad que hay que volver a bajar de Garmin aunque ya estuviera guardada."""
     uid = user["uid"]
+    REFRESH.clear()
     google = users.source(user) == "google"
     EMPTY.discard(uid)
     _reset()
@@ -311,6 +339,8 @@ def _run(user: dict, ctx) -> bool:
     left = ctx.get_remaining_time_in_millis() / 1000 if ctx else 900
     os.environ["GARMIN_STATS_DEADLINE"] = str(time.time() + max(60, min(SYNC_SECONDS, left - 420)))
     _pull(uid)
+    if refresh and refresh.isdigit() and not google:
+        _forget(refresh)
 
     if not google:
         from garmin_personal_api.errors import HttpError

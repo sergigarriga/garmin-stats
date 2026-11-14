@@ -356,7 +356,7 @@ def _handle(event):
     if path == "/api/me":
         return _me(user)
     if path == "/api/sync":
-        return _sync(method, user)
+        return _sync(method, user, payload)
     if path == "/api/google/connect" and method == "GET":
         return _google_connect(user, headers, _query(event))
     if path == "/api/google/callback" and method == "GET":
@@ -763,8 +763,9 @@ def _me(user: dict):
     })
 
 
-def _sync(method: str, user: dict):
-    """Sincronizar con Garmin ahora (botón "actualizar" y onboarding). GET devuelve el estado."""
+def _sync(method: str, user: dict, payload: dict | None = None):
+    """Sincronizar con Garmin ahora (botón "actualizar" y onboarding). GET devuelve el estado.
+    Con `{"activity": id}` (POST) además vuelve a bajar esa actividad entera de Garmin (cambios hechos después en el reloj o la app)."""
     st = _get_json(_sp("sync_status.json"), {})
     now = time.time()
     if method == "GET":
@@ -773,19 +774,23 @@ def _sync(method: str, user: dict):
         return _json(409, {"error": "Google Health ya no da acceso a tus datos. Vuelve a conectarlo."})
     if user.get("status") not in ("active", "google_not_linked"):  # sin enlazar: se reintenta por si ya lo ha hecho
         return _json(409, {"error": "Primero conecta tu Garmin."})
+    activity = str((payload or {}).get("activity") or "")
+    if activity and (not activity.isdigit() or len(activity) > 15 or U.source(user) == "google"):
+        return _json(400, {"error": "Esta actividad no se puede volver a bajar de Garmin."})
     if st.get("status") == "running" and now - st.get("at", 0) < STALE:
         return _json(200, {**st, "already": True})  # ya hay una en marcha: la web espera a esa
-    if st.get("status") == "done" and now - st.get("finished", 0) < 45:
+    if st.get("status") == "done" and now - st.get("finished", 0) < 45 and not activity:
         return _json(200, {**st, "recent": True})  # acaba de terminar: no se vuelve a llamar a Garmin
-    return _json(202, _start_sync(user))
+    return _json(202, _start_sync(user, activity))
 
 
-def _start_sync(user: dict) -> dict:
+def _start_sync(user: dict, activity: str | None = None) -> dict:
     token = base64.urlsafe_b64encode(os.urandom(9)).decode()
     st = {"status": "running", "at": int(time.time()), "token": token, "manual": True}
     _put_json(U.state_prefix(user["uid"]) + "sync_status.json", st)
     _lambda.invoke(FunctionName=os.environ["SYNC_FUNCTION"], InvocationType="Event",
-                   Payload=json.dumps({"uid": user["uid"], "token": token, "manual": True}).encode())
+                   Payload=json.dumps({"uid": user["uid"], "token": token, "manual": True,
+                                       **({"refresh": activity} if activity else {})}).encode())
     return st
 
 

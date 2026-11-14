@@ -9,8 +9,9 @@ type Status = { status?: 'running' | 'done' | 'error'; at?: number; finished?: n
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function call(method: 'GET' | 'POST'): Promise<Status> {
-  const r = await fetch('./api/sync', { method, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: method === 'POST' ? '{}' : undefined });
+async function call(method: 'GET' | 'POST', activity?: number): Promise<Status> {
+  const r = await fetch('./api/sync', { method, credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+    body: method === 'POST' ? JSON.stringify(activity ? { activity } : {}) : undefined });
   if (r.status === 401) { window.location.href = './auth/login'; throw new Error('login'); }
   if (!r.ok) throw new Error(String(r.status));
   return r.json();
@@ -34,21 +35,22 @@ function summary(before: GarminData, after: GarminData): string {
 }
 
 /** Botón "actualizar": pide a AWS que se conecte a Garmin ahora y espera a los datos nuevos (~30 s). */
-export function useManualSync(data: GarminData | undefined, check: () => Promise<GarminData | undefined>, onDone: (msg: string) => void) {
+export function useManualSync(data: GarminData | undefined, check: () => Promise<GarminData | undefined>, onDone: (msg: string, activity?: number) => void) {
   const [syncing, setSyncing] = useState(false);
   const busy = useRef(false);
   const latest = useRef(data);
   latest.current = data;
 
-  const run = useCallback(async () => {
+  /** Sin argumento: actualiza todo. Con el id de un entreno: además lo vuelve a bajar entero de Garmin (cambios hechos después). */
+  const run = useCallback(async (activity?: number) => {
     if (busy.current || !latest.current) return;
     busy.current = true;
     setSyncing(true);
     const before = latest.current;
-    try {
-      const st = await call('POST');
-      let end: Status = st;
-      if (st.status === 'running') {
+    // Espera a que acabe la que está en marcha (hasta 3 min).
+    const wait = async (from: Status): Promise<Status> => {
+      let end = from;
+      if (from.status === 'running') {
         const deadline = Date.now() + 3 * 60_000;
         for (;;) {
           await sleep(3000);
@@ -56,10 +58,21 @@ export function useManualSync(data: GarminData | undefined, check: () => Promise
           if (end.status !== 'running' || Date.now() > deadline) break;
         }
       }
+      return end;
+    };
+    try {
+      let st = await call('POST', activity);
+      let end = await wait(st);
+      // Había otra sincronización en marcha que no incluía este entreno: cuando acaba, se pide la suya.
+      if (activity && st.already && end.status === 'done') end = await wait(st = await call('POST', activity));
       if (end.status === 'error') { onDone('Garmin no ha respondido. Vuelve a probar en unos minutos.'); return; }
       if (end.status === 'running') { onDone('Garmin va lento: los datos llegarán en un momento.'); return; }
       const after = (await check()) ?? latest.current;
-      onDone(summary(before, after));
+      // Con un entreno: se dice si Garmin tenía algo distinto (series, pesos, nombre…) o no.
+      const mine = (d: GarminData) => JSON.stringify(d.activities.find((x) => x.id === activity));
+      onDone(activity
+        ? (mine(before) === mine(after) ? 'Garmin no tiene cambios nuevos en este entreno.' : 'Entreno actualizado con Garmin.')
+        : summary(before, after), activity);
     } catch (e) {
       if ((e as Error).message !== 'login') onDone('No se ha podido conectar. Comprueba tu conexión.');
     } finally {
@@ -127,13 +140,14 @@ export function PullToRefresh({ onRefresh, busy }: { onRefresh: () => void; busy
     <Box aria-hidden sx={{ position: 'fixed', left: '50%', zIndex: 1200, pointerEvents: 'none',
       top: 'calc(env(safe-area-inset-top) + 8px)', transform: `translate(-50%, ${y}px)`,
       transition: pull ? 'none' : 'transform 200ms ease',
-      height: 40, minWidth: 40, px: ready ? 1.75 : 0, borderRadius: 999, display: 'flex', gap: 0.75, alignItems: 'center', justifyContent: 'center',
+      height: 40, minWidth: 40, px: ready || (busy && !pull) ? 1.75 : 0, borderRadius: 999, display: 'flex', gap: 0.75, alignItems: 'center', justifyContent: 'center',
       whiteSpace: 'nowrap', fontSize: 14, fontWeight: 500,
       bgcolor: 'background.paper', boxShadow: '0 2px 10px rgba(0,0,0,.18)', color: ready || busy ? 'primary.main' : 'text.secondary' }}>
       {busy && !pull
         ? <CircularProgress size={20} thickness={5} />
         : <RefreshRounded sx={{ fontSize: 22, transform: `rotate(${pull * 3}deg)`, opacity: Math.min(1, 0.3 + pull / PULL_READY) }} />}
       {ready && <span>Suelta para actualizar</span>}
+      {busy && !pull && <span>Actualizando con Garmin…</span>}
     </Box>
   );
 }

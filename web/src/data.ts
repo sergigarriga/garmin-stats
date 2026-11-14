@@ -364,9 +364,10 @@ export function lastWith<T>(rows: T[], pick: (r: T) => unknown): T | undefined {
 }
 
 /** Carga el detalle de una actividad (site/acts/<id>.js) con <script>, válido también en file://. */
-export function loadActivity(id: number): Promise<ActivityDetail | null> {
+export function loadActivity(id: number, force = false): Promise<ActivityDetail | null> {
   const have = window.__ACTS__?.[id];
-  if (have) return Promise.resolve(have);
+  if (have && !force) return Promise.resolve(have);
+  if (force && window.__ACTS__) delete window.__ACTS__[id];
   return new Promise((resolve) => {
     const s = document.createElement('script');
     s.src = `./acts/${id}.js?t=${Date.now()}`;

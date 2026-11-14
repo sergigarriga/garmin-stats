@@ -286,6 +286,46 @@ def parse_sets(path: Path) -> list[dict]:
     return out
 
 
+_CATEGORY_IDS = {k: v["id"] for k, v in json.loads((Path(__file__).parent / "garmin_exercises.json").read_text()).items()}
+
+
+def sets_from_summary(a: dict) -> list[dict]:
+    """Series según el resumen de la actividad en Garmin Connect (`summarizedExerciseSets`).
+    Ahí entran los cambios hechos a mano en la app (pesos, reps) que NO se reescriben en el FIT del reloj.
+    Solo hay totales por ejercicio: se reparten en series iguales (reps) y el peso es el medio (volumen / reps)."""
+    out = []
+    for e in a.get("summarizedExerciseSets") or []:
+        parts = str(e.get("category") or "").lower().split("_")
+        key = parts[0] + "".join(w.title() for w in parts[1:])
+        n, reps = int(e.get("sets") or 0), int(e.get("reps") or 0)
+        if n <= 0 or reps <= 0 or key not in _CATEGORY_IDS:  # sin repeticiones (planchas…): como en el FIT
+            continue
+        kg = _f(e["volume"] / reps / 1000, 1) if e.get("volume") else None
+        for i in range(n):
+            out.append({"ex": EXERCISES.get(_CATEGORY_IDS[key], "Otro ejercicio"), "reps": reps // n + (1 if i < reps % n else 0),
+                        "kg": kg, "dur": 0.0})
+    return out
+
+
+def _totals(sets: list[dict]) -> dict:
+    t: dict = {}
+    for x in sets:
+        n, r, m = t.get(x["ex"], (0, 0, 0.0))
+        t[x["ex"]] = (n + 1, r + x["reps"], max(m, x["kg"] or 0))
+    return t
+
+
+def best_sets(fit_sets: list[dict], a: dict) -> list[dict]:
+    """Series del FIT (una a una) salvo que el resumen de Garmin Connect tenga otros totales: entonces
+    se editó después en la app y manda el resumen."""
+    summ = sets_from_summary(a)
+    if not summ:
+        return fit_sets
+    f, g = _totals(fit_sets), _totals(summ)
+    same = f.keys() == g.keys() and all(f[k][:2] == g[k][:2] and abs(f[k][2] - g[k][2]) < 0.6 for k in f)
+    return fit_sets if same else summ
+
+
 def parse_new_strength(store) -> int:
     """Lee las series de las sesiones de fuerza aún no procesadas (si su FIT está disponible)."""
     done = store.keys("strength_sets")
@@ -297,7 +337,7 @@ def parse_new_strength(store) -> int:
         if not fit.exists():
             continue
         try:
-            store.put("strength_sets", key, parse_sets(fit))
+            store.put("strength_sets", key, best_sets(parse_sets(fit), a))
             n += 1
         except Exception as e:  # FIT corrupto
             log.warning("Series de %s: %s", key, e)
