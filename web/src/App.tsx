@@ -434,9 +434,10 @@ export default function App() {
       {/* Cabecera fija (no "sticky"): no se mueve con el scroll, el rebote ni los diálogos. Con el teclado
           abierto iOS desplaza la vista: la cabecera la sigue (--vv-top) para no irse por arriba. */}
       {/* Sin fondo propio ni línea: el desenfoque progresivo de detrás (HeaderBlur) hace de cabecera. */}
-      {/* Arriba del todo, fondo sólido del color de la página (se ve igual): sin él, iOS 26 no detecta cabecera
-          y difumina por su cuenta la franja de la hora, logo e iconos incluidos. Al bajar, el desenfoque propio. */}
-      <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)', bgcolor: scrolled ? 'transparent' : 'background.default', backgroundImage: 'none', boxShadow: 'none',
+      {/* iOS 26 difumina por su cuenta (efecto de borde) cualquier elemento `fixed` pegado arriba: logo e iconos salían
+          borrosos. Arriba del todo la cabecera va como parte de la página (`absolute`, nada fijo que difuminar) y solo
+          pasa a fija, con el desenfoque propio, al bajar. */}
+      <AppBar position={scrolled ? 'fixed' : 'absolute'} sx={{ pt: 'env(safe-area-inset-top)', bgcolor: scrolled ? 'transparent' : 'background.default', backgroundImage: 'none', boxShadow: 'none',
         'html[data-kb="1"] &': { transform: 'translateY(var(--vv-top, 0px))' },
         // Con un diálogo a pantalla completa (novedades, comida…) la cabecera se quita de en medio para que no asome.
         'html:has(.MuiDialog-paperFullScreen) &': { visibility: 'hidden' } }}>

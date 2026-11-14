@@ -252,6 +252,32 @@ Resources:
       Principal: "*"
       InvokedViaFunctionUrl: true
 
+  # Latido: mantiene caliente la API (sin arranque en frío de varios segundos al abrir Comida, el plan…). ~8.600 llamadas/mes.
+  ApiWarmRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: [{ Effect: Allow, Principal: { Service: scheduler.amazonaws.com }, Action: sts:AssumeRole }]
+      Policies:
+        - PolicyName: invoke-api-warm
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement: [{ Effect: Allow, Action: lambda:InvokeFunction, Resource: !GetAtt ApiFunction.Arn }]
+
+  ApiWarm:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      Name: garmin-stats-api-warm
+      Description: Mantiene caliente la Lambda de la API
+      ScheduleExpression: rate(5 minutes)
+      FlexibleTimeWindow: { Mode: "OFF" }
+      Target:
+        Arn: !GetAtt ApiFunction.Arn
+        RoleArn: !GetAtt ApiWarmRole.Arn
+        Input: '{"warm": true}'
+        RetryPolicy: { MaximumRetryAttempts: 0 }
+
   # ------------------------------------------------------------------ sincronización horaria (Lambda)
   SyncRole:
     Type: AWS::IAM::Role

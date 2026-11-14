@@ -25,6 +25,7 @@ import re
 import secrets
 import shutil
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 # Hora de Madrid (Lambda va en UTC): "hoy" cambia a medianoche de aquí. Regla POSIX: no necesita tzdata.
 os.environ["TZ"] = "CET-1CEST,M3.5.0,M10.5.0/3"
@@ -119,19 +120,24 @@ def _put_json(key: str, obj) -> None:
 
 
 def _pull() -> bool:
-    """Baja los datos de la persona actual. Devuelve False si aún no tiene web (está en el onboarding)."""
+    """Baja los datos de la persona actual (todos los archivos a la vez). Devuelve False si aún no tiene web (está en el onboarding)."""
     (ROOT / "site").mkdir(parents=True, exist_ok=True)
     (ROOT / "data").mkdir(parents=True, exist_ok=True)
-    for name in STATE:
+    jobs = [(_sp(name), ROOT / "data" / name) for name in STATE] + [(_site("data.js"), ROOT / "site" / "data.js")]
+
+    def fetch(job) -> bool:
+        key, dest = job
         try:
-            s3.download_file(BUCKET, _sp(name), str(ROOT / "data" / name))
+            dest.write_bytes(s3.get_object(Bucket=BUCKET, Key=key)["Body"].read())
+            return True
+        except s3.exceptions.NoSuchKey:
+            return False
         except s3.exceptions.ClientError:
-            pass
-    try:
-        s3.download_file(BUCKET, _site("data.js"), str(ROOT / "site" / "data.js"))
-        return True
-    except s3.exceptions.ClientError:
-        return False
+            return False
+
+    with ThreadPoolExecutor(max_workers=len(jobs)) as pool:
+        ok = list(pool.map(fetch, jobs))
+    return ok[-1]
 
 
 def _push(*names):
@@ -317,7 +323,17 @@ def handler(event, _ctx):
         return _json(500, {"error": "Algo ha fallado en el servidor. Inténtalo de nuevo en un momento."})
 
 
+def _warm() -> dict:
+    """Latido cada pocos minutos (EventBridge): deja la Lambda caliente, con los módulos pesados ya importados y la
+    clave de IA descargada, para que la primera petición de una persona (p. ej. Comida) no pague el arranque en frío."""
+    _setup_key()
+    from garmin_stats import ai, coach, food, training, weather, wellness  # noqa: F401
+    return {"warm": True}
+
+
 def _handle(event):
+    if event.get("warm"):
+        return _warm()
     if "job" in event:  # invocación asíncrona propia
         return _run_job(event)
 

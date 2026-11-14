@@ -1058,3 +1058,20 @@ def test_usage_report_is_owner_only_and_summarises(api):
     assert f["activeDays"] == 1 and f["sessions"] == 1 and f["mins"] == 2 and f["views"] == [["hoy", 1]] and f["acts"] == [["sync", 1]]
     assert f["dev"] == {"d": 1} and len(f["daily"]) == 14 and f["lastSeen"]
     assert rows[api.garmin]["lastSeen"] is None  # sin registro todavía
+
+
+def test_warm_ping_keeps_the_api_hot_without_touching_anyone(api):
+    api.ssm.params["/x"] = {"Value": "clave", "Type": "SecureString"}
+    assert api.h.handler({"warm": True}, None) == {"warm": True}
+    assert not api.lam.invokes and not [k for k in api.s3.objs if "/usage/" in k]
+
+
+def test_pull_reads_every_file_in_parallel_and_says_if_the_person_has_a_web(api):
+    api.s3.objs["users/u3/state/food.json"] = b'{"entries": []}'
+    api.s3.objs["site/u/u3/data.js"] = b"window.__GARMIN__={};"
+    api.h._use(api.user(api.garmin))
+    assert api.h._pull() is True
+    assert (api.h.ROOT / "data" / "food.json").read_bytes() == b'{"entries": []}'
+    assert not (api.h.ROOT / "data" / "coach.json").exists()  # el que no existe se salta
+    del api.s3.objs["site/u/u3/data.js"]
+    assert api.h._pull() is False

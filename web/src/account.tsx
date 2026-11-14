@@ -58,7 +58,7 @@ export async function call<T = unknown>(path: string, body?: unknown): Promise<T
     method: body === undefined ? 'GET' : 'POST', credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (r.status === 401) { window.location.href = './auth/login'; throw new Error('Sesión caducada'); }
+  if (r.status === 401) { try { localStorage.removeItem('gs-food-view'); } catch { /* sin almacenamiento */ } window.location.href = './auth/login'; throw new Error('Sesión caducada'); }
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error((j as { error?: string }).error ?? 'Algo ha fallado.');
   return j as T;

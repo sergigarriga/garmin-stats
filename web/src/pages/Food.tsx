@@ -171,11 +171,20 @@ const FOOD_ON = 'gs-food-on';
 
 // Última vista recibida y petición en curso, compartidas por la tarjeta de Hoy y la página de Comida: al entrar
 // en Comida se pinta al instante lo que ya se tiene y se refresca por detrás, sin repetir la misma petición.
-let lastView: FoodView | null = null;
+// También se guarda en este dispositivo (localStorage): al abrir la app Comida sale pintada al instante con lo último
+// que se vio y se refresca por detrás.
+const FOOD_VIEW = 'gs-food-view';
+const stored = (): FoodView | null => {
+  try { const v = JSON.parse(localStorage.getItem(FOOD_VIEW) ?? 'null') as FoodView | null; return v?.prefs && v.entries ? v : null; } catch { return null; }
+};
+let lastView: FoodView | null = stored();
 let inflight: Promise<FoodView> | null = null;
 const remember = (x: FoodView) => {
   lastView = x;
-  try { localStorage.setItem(FOOD_ON, x.prefs.enabled ? '1' : '0'); } catch { /* sin almacenamiento */ }
+  try {
+    localStorage.setItem(FOOD_ON, x.prefs.enabled ? '1' : '0');
+    localStorage.setItem(FOOD_VIEW, JSON.stringify(x));
+  } catch { /* sin almacenamiento */ }
 };
 function fetchFood(): Promise<FoodView> {
   inflight ??= call<FoodView>('./api/food').then((x) => { remember(x); return x; }).finally(() => { inflight = null; });
@@ -184,7 +193,7 @@ function fetchFood(): Promise<FoodView> {
 /** Trae Comida por adelantado (al abrir la app) para que la página salga ya pintada. */
 export function prefetchFood() {
   try { if (localStorage.getItem(FOOD_ON) !== '1') return; } catch { return; }
-  if (!lastView) fetchFood().catch(() => { /* ya se reintentará al entrar */ });
+  fetchFood().catch(() => { /* ya se reintentará al entrar */ });
 }
 
 export function useFood() {
