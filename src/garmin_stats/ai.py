@@ -225,7 +225,8 @@ def generate(data: dict, force: bool = False, offline: bool = False) -> dict | N
     calls_today = cache.get("calls", {}).get(today, 0)
     if not force and cache.get("fingerprint") == fp:
         return cache.get("result")
-    if not force and calls_today >= MAX_CALLS_PER_DAY:
+    max_calls = 1 if os.environ.get("GARMIN_STATS_PLAN") == "free" else MAX_CALLS_PER_DAY  # gratis: un texto al día
+    if not force and calls_today >= max_calls:
         log.info("IA: límite de %d llamadas/día alcanzado, uso la caché", MAX_CALLS_PER_DAY)
         return cache.get("result")
     key = _api_key()
@@ -433,4 +434,6 @@ def over_budget() -> bool:
 
 def pick_model(preferred: str) -> str:
     """El modelo bueno mientras el mes esté por debajo del 80 % del tope; si no, Haiku."""
+    if os.environ.get("GARMIN_STATS_PLAN") == "free":  # plan gratis: siempre el modelo barato
+        return MODEL
     return preferred if month_spend() < safe_limit() else MODEL

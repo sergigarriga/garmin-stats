@@ -33,6 +33,7 @@ HOME = Path("/tmp/home")
 os.environ["GARMIN_STATS_ROOT"] = str(ROOT)
 os.environ["HOME"] = str(HOME)
 
+from garmin_stats import billing as BILL
 from garmin_stats import google_health as GH
 from garmin_stats import users  # noqa: E402
 
@@ -333,7 +334,8 @@ def _run(user: dict, ctx, refresh: str | None = None) -> bool:
     _secret("/garmin-stats/anthropic-key", "~/.config/anthropic/garmin-stats-key")
     owner = user.get("role") == "owner"
     os.environ["GARMIN_STATS_UID"] = uid
-    os.environ["GARMIN_STATS_AI_BUDGET"] = str(user.get("budgetUsd") or 5)
+    os.environ["GARMIN_STATS_AI_BUDGET"] = str(BILL.ai_budget(user, 5))
+    os.environ["GARMIN_STATS_PLAN"] = "plus" if BILL.entitled(user) else "free"
     os.environ["GARMIN_STATS_ADAPT_MODEL"] = "" if owner else "claude-sonnet-5-5"
     os.environ["GARMIN_STATS_OWNER"] = "1" if owner else "0"
     left = ctx.get_remaining_time_in_millis() / 1000 if ctx else 900
@@ -370,7 +372,8 @@ def _run(user: dict, ctx, refresh: str | None = None) -> bool:
             EMPTY.add(uid)
             log.info("Sin datos todavía para %s", uid)
         else:
-            main(["report"])
+            # Quien lleva una semana sin abrir la app no gasta IA: se le publican los datos con los últimos textos.
+            main(["report", "--no-ai"] if _idle(uid) else ["report"])
     finally:
         # Aunque el informe falle, lo descargado de Garmin se guarda: el reintento sigue donde se quedó
         # en vez de volver a bajar todo el historial desde cero.
@@ -379,6 +382,23 @@ def _run(user: dict, ctx, refresh: str | None = None) -> bool:
         except Exception:  # noqa: BLE001
             log.exception("No se pudo guardar el estado tras el fallo")
     return partial
+
+
+IDLE_DAYS = 7
+
+
+def _idle(uid: str) -> bool:
+    """¿Lleva IDLE_DAYS sin abrir la app? Solo cuenta para quien ya tiene registro de uso (empezó el 14-11-2026):
+    sin ningún registro no se sabe, y se le siguen escribiendo los textos."""
+    try:
+        days = sorted(Path(o["Key"]).stem for pg in s3.get_paginator("list_objects_v2").paginate(
+            Bucket=BUCKET, Prefix=f"users/{uid}/usage/") for o in pg.get("Contents", []))
+    except Exception:  # noqa: BLE001 - ante la duda, se escriben
+        return False
+    if not days:
+        return False
+    limit = time.strftime("%Y-%m-%d", time.localtime(time.time() - IDLE_DAYS * 86400))
+    return days[-1] < limit
 
 
 def _has_data() -> bool:

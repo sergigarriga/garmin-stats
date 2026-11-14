@@ -73,7 +73,7 @@ def cmd_report(args) -> None:
         data["ai"] = ai.generate(data, force=args.force_ai, offline=args.no_ai)
         data["weekly"] = ai.weekly(data, offline=args.no_ai)
         from . import coach
-        if not args.no_ai:
+        if not args.no_ai and os.environ.get("GARMIN_STATS_PLAN") != "free":  # el coach es de los planes de pago
             try:
                 coach.adapt(data=data)  # solo hace algo el primer informe de cada semana
             except Exception as e:  # el informe no debe caerse por el coach

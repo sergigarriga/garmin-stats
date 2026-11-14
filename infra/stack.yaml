@@ -188,6 +188,8 @@ Resources:
                 Action: ssm:GetParameter
                 Resource:
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/anthropic-key
+                  # Stripe (clave, secreto del webhook y precios); sin el parámetro, los pagos no están activados
+                  - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/stripe
                   # Cliente OAuth de Google Health (fuente de datos para quien no tiene Garmin)
                   - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/garmin-stats/google-health-client-*
               - Effect: Allow
@@ -624,6 +626,8 @@ Resources:
           // Calendario del plan: las apps de calendario no mandan cookie. La dirección lleva un código secreto
           // propio de cada persona que comprueba la API (solo lectura, solo el plan; se puede cambiar o desactivar).
           if (/^\/api\/cal\/[A-Za-z0-9_-]{24,64}\.ics$/.test(u)) return req;
+          // Avisos de Stripe (pagos): no traen cookie; la API comprueba la firma de Stripe.
+          if (u === '/api/stripe/webhook' && req.method === 'POST') return req;
           // Las carpetas de datos de cada persona nunca se piden directamente
           if (u.indexOf('/u/') === 0) return { statusCode: 404, statusDescription: 'Not Found' };
           var c = req.cookies['gs_session'];

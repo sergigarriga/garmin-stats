@@ -48,6 +48,8 @@ export interface Me {
   source?: 'garmin' | 'google' | null; google?: GoogleState;
   budgetUsd: number; monthSpendUsd: number; consented?: boolean; hasData: boolean; hasGoal: boolean; hasPlan: boolean;
   planJob?: { status: string; action: string } | null; sync: SyncState; owner: string;
+  /** Plan: cortesía (invitación), gratis o de pago; `entitled` = tiene las funciones de Plus ahora. */
+  plan?: 'comp' | 'free' | 'plus' | 'founder'; entitled?: boolean;
   /** Última versión de novedades vista y desde cuándo tiene cuenta (epoch s). */
   seenRelease?: string | null; since?: number | null;
 }
@@ -60,6 +62,8 @@ export async function call<T = unknown>(path: string, body?: unknown): Promise<T
   });
   if (r.status === 401) { try { localStorage.removeItem('gs-food-view'); } catch { /* sin almacenamiento */ } window.location.href = './auth/login'; throw new Error('Sesión caducada'); }
   const j = await r.json().catch(() => ({}));
+  // Función de pago para alguien en el plan gratis: se abre «Tu plan» con el motivo.
+  if (r.status === 402) window.dispatchEvent(new CustomEvent('open-plan', { detail: (j as { error?: string }).error }));
   if (!r.ok) throw new Error((j as { error?: string }).error ?? 'Algo ha fallado.');
   return j as T;
 }
@@ -182,7 +186,9 @@ interface AdminUser {
   email: string; name: string; role: 'owner' | 'friend'; status: Me['status']; budgetUsd: number; monthSpendUsd: number;
   invitedAt?: number; joinedAt?: number; lastSync?: number; syncStatus?: string;
   totalCostUsd?: number; calls?: number; lastAi?: string | null; source?: 'garmin' | 'google' | null;
+  plan?: 'comp' | 'free' | 'plus' | 'founder'; subStatus?: string | null; subPeriodEnd?: number | null;
 }
+const PLAN_LABEL: Record<string, string> = { comp: 'Cortesía', free: 'Gratis', plus: 'Plus', founder: 'Fundador' };
 const STATUS: Record<string, { label: string; color: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
   invited: { label: 'Invitación enviada', color: 'default' },
   onboarding: { label: 'Configurando', color: 'info' },
@@ -332,6 +338,16 @@ export function AdminDialog({ open, onClose }: { open: boolean; onClose: () => v
                       {[...new Set([2, 5, 10, 20, 50, u.budgetUsd])].sort((a, b) => a - b).map((v) => <MenuItem key={v} value={v}>{v} $</MenuItem>)}
                     </TextField>
                     {u.lastSync && <Typography variant="caption" color="text.secondary">Garmin {relative(new Date(u.lastSync * 1000), new Date())}</Typography>}
+                    {u.role !== 'owner' && (u.plan === 'plus' || u.plan === 'founder'
+                      ? <Chip size="small" color="success" variant="outlined" label={`${PLAN_LABEL[u.plan]}${u.subStatus && u.subStatus !== 'active' ? ` · ${u.subStatus}` : ''}`} />
+                      : (
+                        <TextField select size="small" value={u.plan ?? 'comp'} disabled={busy} variant="standard" aria-label="Plan"
+                          onChange={(e) => act({ action: 'plan', email: u.email, plan: e.target.value })}
+                          sx={{ minWidth: 92, '& .MuiInputBase-input': { fontSize: 13, py: 0.25 } }}>
+                          <MenuItem value="comp">Cortesía</MenuItem>
+                          <MenuItem value="free">Gratis</MenuItem>
+                        </TextField>
+                      ))}
                   </Stack>
                 </Box>
               ))}

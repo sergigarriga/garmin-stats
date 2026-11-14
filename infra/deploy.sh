@@ -43,6 +43,15 @@ if [ -f "$GJSON" ]; then
   echo "Cliente OAuth de Google guardado en SSM."
 fi
 
+# Stripe (pagos), si ya está configurado en local: {"secret", "webhook", "prices": {"monthly", "yearly", "founder"}}.
+# Lo crea tools/stripe_setup.py. Sin el archivo, la app funciona igual y los pagos salen como «muy pronto».
+SJSON=~/.config/garmin/stripe.json
+if [ -f "$SJSON" ]; then
+  chmod 600 "$SJSON"
+  aws ssm put-parameter --name /garmin-stats/stripe --type SecureString --overwrite --value "file://$SJSON" >/dev/null
+  echo "Configuración de Stripe guardada en SSM."
+fi
+
 # Claves VAPID para las notificaciones push (se crean una vez)
 VAPID=~/.config/garmin/vapid.json
 if [ ! -f "$VAPID" ]; then

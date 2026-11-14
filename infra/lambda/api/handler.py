@@ -41,6 +41,7 @@ os.environ.setdefault("GARMIN_STATS_ROOT", str(ROOT))
 os.environ.setdefault("GARMIN_STATS_USAGE_LOG", "ai_usage_lambda.log")
 os.environ["HOME"] = str(HOME)  # la clave de Anthropic se escribe en ~/.config/anthropic (en /tmp)
 
+from garmin_stats import billing as BILL
 from garmin_stats import google_health as GH
 from garmin_stats import users as U  # noqa: E402
 
@@ -79,8 +80,9 @@ def _use(user: dict) -> None:
     shutil.rmtree(ROOT, ignore_errors=True)
     shutil.rmtree(HOME / ".config" / "garmin", ignore_errors=True)
     os.environ["GARMIN_STATS_UID"] = user["uid"]
-    os.environ["GARMIN_STATS_AI_BUDGET"] = str(user.get("budgetUsd") or FRIEND_BUDGET)
+    os.environ["GARMIN_STATS_AI_BUDGET"] = str(BILL.ai_budget(user, FRIEND_BUDGET))
     os.environ["GARMIN_STATS_ADAPT_MODEL"] = "" if user.get("role") == "owner" else "claude-sonnet-5-5"
+    os.environ["GARMIN_STATS_PLAN"] = "plus" if BILL.entitled(user) else "free"
 
 
 def _sp(name: str) -> str:
@@ -366,6 +368,8 @@ def _handle(event):
     m = CAL_RE.match(event.get("rawPath", ""))
     if m:
         return _calendar_feed(m.group(1))
+    if event.get("rawPath", "") == "/api/stripe/webhook":
+        return _stripe_webhook(event, headers)
     email = _session_email(event.get("cookies"))
     if not email:
         return _json(401, {"error": "login"})
@@ -397,6 +401,8 @@ def _handle(event):
         return _json(200, {"ok": True, "ai": True, "mode": "aws"})
     if path == "/api/me":
         return _me(user)
+    if path == "/api/billing" or path.startswith("/api/billing/"):
+        return _billing(path, method, payload, user, headers)
     if path == "/api/sync":
         return _sync(method, user, payload)
     if path == "/api/google/connect" and method == "GET":
@@ -471,13 +477,20 @@ def _handle(event):
     if method != "POST":
         return _json(405, {"error": "método no permitido"})
     if path == "/api/brief" and method == "POST":
+        if not BILL.entitled(user):
+            return _json(200, {"brief": None})  # sin aviso: al abrir la app no se molesta con el plan
         return _brief(has_data)
 
     if path == "/api/ask":
+        trial = not BILL.entitled(user)
+        if trial and int(user.get("freeAsks") or 0) >= BILL.FREE_ASKS:
+            return _upgrade("Has usado tus preguntas de prueba. El chat con tu coach está en Runch Plus.")
         msgs = payload.get("messages")
         msgs = [m for m in msgs if isinstance(m, dict)] if isinstance(msgs, list) else []
         res = server.ask(msgs)
         _push("ai_usage_lambda.log")
+        if trial and "answer" in res:
+            U.update(s3, BUCKET, user["uid"], freeAsks=int(user.get("freeAsks") or 0) + 1)
         if "answer" in res and msgs and msgs[-1].get("role") == "user":
             hist = _get_json(_sp("chat.json"), {}).get("messages", [])
             now = U.now()
@@ -493,6 +506,8 @@ def _handle(event):
             coach.save(st)
             _push("coach.json")
         return _json(200, _with_job(coach.view(_read_data()), coach))
+    if path in ("/api/plan/ambition", "/api/plan/create", "/api/plan/adapt") and not BILL.entitled(user):
+        return _upgrade("El plan de entreno con tu coach está en Runch Plus.")
     if path == "/api/plan/ambition":
         if payload.get("ambition") not in ("realista", "exigente"):
             return _json(400, {"error": "Nivel no válido."})
@@ -628,6 +643,8 @@ def _food(path: str, method: str, payload: dict, has_data: bool):
         if not payload.get("analyze", True) and not entry["items"]:
             return _json(400, {"error": "Apunta al menos un alimento."})
         if analyze and payload.get("analyze", True):
+            if not BILL.entitled(CUR):
+                return _upgrade("Analizar la comida con IA (foto o texto) está en Runch Plus. Puedes apuntar los alimentos a mano.")
             try:
                 res = F.analyze(entry, image, media)
                 F.apply_analysis(entry, *res, from_photo=bool(image))
@@ -702,6 +719,8 @@ def _shopping(path: str, method: str, payload: dict, user: dict):
         return _json(409, {"error": "Activa primero el plan de comidas y compra semanal."})
     if path == "/api/shopping/generate":
         from garmin_stats import ai
+        if not BILL.entitled(user):
+            return _upgrade("El menú semanal y la lista de la compra con IA están en Runch Plus.")
         fresh()
         st = SH.load()
         job = st.get("job") or {}
@@ -803,6 +822,7 @@ def _me(user: dict):
         "source": U.source(user), "google": _google_view(user),
         "planJob": coach.get("job"), "sync": _get_json(_sp("sync_status.json"), {}),
         "owner": OWNER,
+        "plan": BILL.plan_of(user), "entitled": BILL.entitled(user),
         "seenRelease": user.get("seenRelease"),
         "since": user.get("consentAt") or user.get("joinedAt") or user.get("invitedAt"),
     })
@@ -1125,6 +1145,82 @@ def _google_disconnect(user: dict, payload: dict):
     return _json(200, {"ok": True, "deleted": delete, "revoked": revoked})
 
 
+# ------------------------------------------------------------------ planes y facturación (Stripe)
+STRIPE_PARAM = os.environ.get("STRIPE_PARAM", "/garmin-stats/stripe")
+_STRIPE: dict = {}
+
+
+def _stripe_cfg() -> dict | None:
+    """Configuración de Stripe (SSM, JSON: secret, webhook, prices…). Sin ella no se puede pagar; se vuelve a mirar cada 5 min."""
+    if _STRIPE.get("cfg") is not None and time.time() - _STRIPE.get("at", 0) < 300:
+        return _STRIPE["cfg"] or None
+    try:
+        cfg = json.loads(_ssm.get_parameter(Name=STRIPE_PARAM, WithDecryption=True)["Parameter"]["Value"])
+    except Exception:  # noqa: BLE001 - sin parámetro (o ilegible): la facturación aún no está activada
+        cfg = {}
+    _STRIPE.update(cfg=cfg, at=time.time())
+    return cfg or None
+
+
+def _upgrade(message: str):
+    """Función de pago para alguien en el plan gratis: la web abre «Tu plan»."""
+    return _json(402, {"error": message, "upgrade": True})
+
+
+def _billing(path: str, method: str, payload: dict, user: dict, headers: dict):
+    cfg = _stripe_cfg()
+    users = U.load(s3, BUCKET)
+    if path == "/api/billing" and method == "GET":
+        return _json(200, BILL.view(user, cfg, users))
+    if method != "POST":
+        return _json(405, {"error": "método no permitido"})
+    if not cfg or not cfg.get("secret"):
+        return _json(409, {"error": "Los pagos aún no están activados."})
+    host = PUBLIC_HOST or headers.get("x-viewer-host", "")
+    try:
+        if path == "/api/billing/checkout":
+            offer = str(payload.get("offer") or "")
+            if BILL.plan_of(user) == "comp":
+                return _json(400, {"error": "Tienes una invitación con todo incluido: no hace falta pagar."})
+            if BILL.plan_of(user) in BILL.PAID and user.get("subStatus") in BILL.GOOD:
+                return _json(400, {"error": "Ya tienes una suscripción. Cámbiala desde «Gestionar suscripción»."})
+            if offer == "founder" and BILL.view(user, cfg, users)["foundersLeft"] <= 0:
+                return _json(409, {"error": "Las plazas de Fundadores se han agotado."})
+            return _json(200, {"url": BILL.checkout(cfg, user, offer, host)})
+        if path == "/api/billing/portal":
+            return _json(200, {"url": BILL.portal(cfg, user, host)})
+    except ValueError as e:
+        return _json(400, {"error": str(e)})
+    except BILL.StripeError as e:
+        print(f"stripe: {e.status} {e}")
+        return _json(502, {"error": "No se ha podido conectar con el pago. Inténtalo de nuevo en un momento."})
+    return _json(404, {"error": "no encontrado"})
+
+
+def _stripe_webhook(event: dict, headers: dict):
+    """Avisos de Stripe (pago hecho, suscripción cambiada o cancelada). Sin sesión: vale la firma de Stripe."""
+    cfg = _stripe_cfg()
+    if not cfg or not cfg.get("webhook"):
+        return _json(503, {"error": "sin configurar"})
+    body = event.get("body") or ""
+    if event.get("isBase64Encoded"):
+        body = base64.b64decode(body).decode()
+    try:
+        ev = BILL.verify(body, headers.get("stripe-signature", ""), cfg["webhook"])
+    except ValueError as e:
+        print(f"stripe webhook rechazado: {e}")
+        return _json(400, {"error": "firma no válida"})
+    try:
+        u, fields = BILL.handle_event(ev, cfg, U.load(s3, BUCKET))
+    except BILL.StripeError as e:
+        print(f"stripe webhook: {e.status} {e}")
+        return _json(500, {"error": "reintentar"})  # Stripe lo vuelve a enviar
+    if u and fields:
+        U.update(s3, BUCKET, u["uid"], **fields)
+        print(f"stripe: {ev.get('type')} → {u['uid']} plan={fields.get('plan')} estado={fields.get('subStatus')}")
+    return _json(200, {"ok": True})
+
+
 # ------------------------------------------------------------------ uso de la app (solo lo ve el dueño)
 # Un archivo por persona y día (users/<uid>/usage/AAAA-MM-DD.json) con totales: sesiones, segundos con la app a la vista,
 # páginas vistas, acciones y a qué horas. Nunca el contenido de lo que escribe ni de sus datos. Se borra con su cuenta.
@@ -1218,7 +1314,8 @@ def _admin(path: str, method: str, payload: dict):
             st = _get_json(U.state_prefix(u["uid"]) + "sync_status.json", {})
             stats = _usage_stats(u["uid"])
             out.append({"email": u["email"], "name": u.get("name") or "", "role": u.get("role"), "status": u.get("status"),
-                        "source": U.source(u),
+                        "source": U.source(u), "plan": BILL.plan_of(u), "subStatus": u.get("subStatus"),
+                        "subPeriodEnd": u.get("subPeriodEnd"),
                         "budgetUsd": u.get("budgetUsd"), "monthSpendUsd": stats["monthCostUsd"],
                         "totalCostUsd": stats["totalCostUsd"], "calls": stats["calls"], "lastAi": stats["lastAi"],
                         "invitedAt": u.get("invitedAt"), "joinedAt": u.get("joinedAt"),
@@ -1235,7 +1332,8 @@ def _admin(path: str, method: str, payload: dict):
             return _json(400, {"error": "Máximo 10 invitaciones."})
         budget = float(payload.get("budgetUsd") or FRIEND_BUDGET)
         users.append({"email": email, "uid": U.uid_for(email, SESSION_SECRET), "name": str(payload.get("name") or "")[:60],
-                      "role": "friend", "budgetUsd": max(0.0, min(budget, 20.0)), "status": "invited", "invitedAt": U.now()})
+                      "role": "friend", "budgetUsd": max(0.0, min(budget, 20.0)), "status": "invited", "invitedAt": U.now(),
+                      "plan": "comp"})
         U.save(s3, BUCKET, users)
     elif action == "remove":
         u = U.find(users, email=email)
@@ -1249,6 +1347,16 @@ def _admin(path: str, method: str, payload: dict):
         if not u:
             return _json(404, {"error": "No existe."})
         u["budgetUsd"] = max(0.0, min(float(payload.get("budgetUsd") or 0), 50.0))
+        U.save(s3, BUCKET, users)
+    elif action == "plan":
+        u = U.find(users, email=email)
+        if not u:
+            return _json(404, {"error": "No existe."})
+        if u.get("role") == "owner" or payload.get("plan") not in ("comp", "free"):
+            return _json(400, {"error": "Solo se puede poner cortesía o gratis; Plus lo pone el pago."})
+        if payload["plan"] == "comp" and u.get("subStatus") in BILL.GOOD:
+            return _json(400, {"error": "Tiene una suscripción activa: que la cancele antes en «Tu plan»."})
+        u["plan"] = payload["plan"]
         U.save(s3, BUCKET, users)
     else:
         return _json(400, {"error": "Acción no válida."})

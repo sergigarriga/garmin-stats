@@ -222,6 +222,8 @@ alimentos y cantidades estimados.</li>
 <li><b>Uso de la app:</b> cuándo la abres, qué páginas y funciones usas, a qué horas y cuánto tiempo la tienes a la
 vista, junto con si la usas desde móvil u ordenador. Son solo recuentos, sin el contenido de lo que escribes ni de tus datos.
 Se guardan en nuestro propio almacenamiento, solo los ve el administrador y sirven para mejorar la app.</li>
+<li><b>Suscripción</b> (solo si contratas un plan de pago): tu plan, su estado y fechas, y tu identificador de cliente
+en Stripe. Los datos de tu tarjeta los trata Stripe: Runch no los ve ni los guarda.</li>
 <li><b>Tiempo:</b> la población que indiques para la previsión del tiempo.</li>
 <li><b>Avisos:</b> si los activas, la suscripción de tu navegador para poder enviarte notificaciones.</li>
 </ul>
@@ -238,6 +240,7 @@ Cada persona ve únicamente sus propios datos.</p>
 crear el plan y analizar fotos de comida. Según sus condiciones para empresas, no usa estos datos para entrenar sus modelos.</li>
 <li><b>Google</b>: inicio de sesión y tipografía de esta página; y Google Health, si lo eliges como origen de tus datos.</li>
 <li><b>Garmin</b>: origen de tus datos de actividad y salud, si usas un reloj Garmin.</li>
+<li><b>Stripe</b> (solo si contratas un plan de pago): gestiona el pago, las facturas y la suscripción.</li>
 <li><b>Open-Meteo</b>: previsión del tiempo (solo recibe la población o sus coordenadas).</li>
 <li><b>El servicio de avisos de tu navegador</b> (Google, Apple o Mozilla), si activas las notificaciones.</li>
 </ul>
@@ -293,6 +296,15 @@ como una contraseña) o tu cuenta de Google Health.</li>
 
 <h2>Invitaciones</h2>
 <p>El administrador puede retirar una invitación o cerrar el servicio. Si lo cierra, borrará los datos.</p>
+
+<h2>Planes y pagos</h2>
+<p>Las personas con invitación usan Runch sin pagar. Cuando los planes de pago estén abiertos, <b>Runch Plus</b> será una
+suscripción opcional: el precio (con impuestos) se muestra siempre antes de pagar, el cobro lo gestiona Stripe y se renueva
+cada mes o cada año hasta que la canceles. Puedes cancelarla cuando quieras desde la app (menú → <b>Tu plan</b> →
+Gestionar suscripción): mantienes Plus hasta el final del periodo ya pagado y después pasas al plan gratis, sin perder tus datos.
+Tienes 14 días desde la contratación para desistir y pedir la devolución escribiéndonos. Si un cobro falla, Stripe lo reintenta
+unos días antes de terminar la suscripción. Podemos cambiar precios o funciones avisando con antelación; un cambio de precio
+no afecta al periodo que ya has pagado.</p>
 
 <h2>Responsabilidad</h2>
 <p>El servicio se ofrece tal cual, sin garantías. En la medida en que lo permita la ley, no nos hacemos responsables de

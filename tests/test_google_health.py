@@ -1112,3 +1112,110 @@ def test_api_brief_without_data_or_ai_answers_empty(api, monkeypatch):
     monkeypatch.setattr(B, "generate", lambda data, now: None)  # la IA falla: no hay mensaje, pero no es un error
     r = api.call("POST", "/api/brief", {}, who=api.garmin)
     assert r["statusCode"] == 200 and json.loads(r["body"])["brief"] is None
+
+
+# ---------------------------------------------------------------- planes y pagos (API)
+from garmin_stats import billing as BILL  # noqa: E402
+
+STRIPE_CFG = {"secret": "sk_test_x", "webhook": "whsec_x", "prices": {"monthly": "price_m", "yearly": "price_y", "founder": "price_f"}}
+
+
+def _stripe_on(api):
+    api.ssm.params["/garmin-stats/stripe"] = {"Value": json.dumps(STRIPE_CFG), "Type": "SecureString"}
+    api.h._STRIPE.clear()
+
+
+def _set_plan(api, email, **fields):
+    api.h.U.update(api.s3, "b", api.user(email)["uid"], **fields)
+
+
+def test_invited_people_keep_everything_and_free_is_gated(api):
+    api.h._STRIPE.clear()
+    me = _me(api, api.garmin)
+    assert me["plan"] == "comp" and me["entitled"] is True
+    b = json.loads(api.call("GET", "/api/billing", who=api.garmin)["body"])
+    assert b["plan"] == "comp" and b["available"] is False            # sin Stripe configurado: «muy pronto»
+    assert api.call("POST", "/api/billing/checkout", {"offer": "monthly"}, who=api.garmin)["statusCode"] == 409
+    _set_plan(api, api.garmin, plan="free")
+    assert _me(api, api.garmin)["entitled"] is False
+    api.ssm.params["/x"] = {"Value": "clave", "Type": "SecureString"}
+    api.s3.objs["site/u/u3/data.js"] = b'window.__GARMIN__={"days":[],"activities":[]};'
+    r = api.call("POST", "/api/plan/create", {"date": "2027-03-21"}, who=api.garmin)
+    assert r["statusCode"] == 402 and json.loads(r["body"])["upgrade"] is True
+    assert json.loads(api.call("POST", "/api/brief", {}, who=api.garmin)["body"]) == {"brief": None}  # sin aviso al abrir
+    assert api.h.os.environ["GARMIN_STATS_PLAN"] == "free" and api.h.os.environ["GARMIN_STATS_AI_BUDGET"] == str(BILL.FREE_AI_BUDGET)
+
+
+def test_free_chat_has_three_trial_questions(api, monkeypatch):
+    _set_plan(api, api.garmin, plan="free", freeAsks=2)
+    api.ssm.params["/x"] = {"Value": "clave", "Type": "SecureString"}
+    api.s3.objs["site/u/u3/data.js"] = b'window.__GARMIN__={"days":[],"activities":[]};'
+    from garmin_stats import server
+    monkeypatch.setattr(server, "ask", lambda msgs: {"answer": "hola"})
+    q = {"messages": [{"role": "user", "content": "¿qué tal?"}]}
+    assert api.call("POST", "/api/ask", q, who=api.garmin)["statusCode"] == 200
+    assert api.user(api.garmin)["freeAsks"] == 3
+    assert api.call("POST", "/api/ask", q, who=api.garmin)["statusCode"] == 402
+
+
+def test_checkout_and_webhook_turn_a_free_person_into_plus(api, monkeypatch):
+    _stripe_on(api)
+    _set_plan(api, api.garmin, plan="free")
+    calls = []
+
+    def fake(secret, method, path, params=None):
+        calls.append((method, path, params))
+        if path == "/checkout/sessions":
+            return {"url": "https://checkout.stripe.com/c/1"}
+        return {"id": "sub_1", "customer": "cus_1", "status": "active", "current_period_end": 1_900_000_000,
+                "cancel_at_period_end": False, "items": {"data": [{"price": {"id": "price_m", "recurring": {"interval": "month"}}}]}}
+    monkeypatch.setattr(BILL, "request", fake)
+    r = api.call("POST", "/api/billing/checkout", {"offer": "monthly"}, who=api.garmin)
+    assert json.loads(r["body"]) == {"url": "https://checkout.stripe.com/c/1"}
+    assert calls[0][2]["client_reference_id"] == "u3" and calls[0][2]["success_url"] == f"https://{HOST}/?billing=ok"
+    # una invitada con todo incluido no paga
+    assert api.call("POST", "/api/billing/checkout", {"offer": "monthly"})["statusCode"] == 400
+
+    def hook(event, sig=None):
+        body = json.dumps(event)
+        t = int(time.time())
+        sig = sig or f"t={t},v1={hmac.new(b'whsec_x', f'{t}.{body}'.encode(), hashlib.sha256).hexdigest()}"
+        ev = {"headers": {"x-origin-verify": "o" * 64, "stripe-signature": sig}, "cookies": [], "rawPath": "/api/stripe/webhook",
+              "requestContext": {"http": {"method": "POST"}}, "rawQueryString": "", "body": body}
+        return api.h.handler(ev, None)
+    done = {"type": "checkout.session.completed", "data": {"object": {"mode": "subscription", "client_reference_id": "u3",
+                                                                       "customer": "cus_1", "subscription": "sub_1"}}}
+    assert hook(done, sig="t=1,v1=mala")["statusCode"] == 400           # firma falsa: no cambia nada
+    assert api.user(api.garmin)["plan"] == "free"
+    assert hook(done)["statusCode"] == 200
+    u = api.user(api.garmin)
+    assert u["plan"] == "plus" and u["subStatus"] == "active" and u["stripeCustomerId"] == "cus_1"
+    me = _me(api, api.garmin)
+    assert me["plan"] == "plus" and me["entitled"] is True
+    b = json.loads(api.call("GET", "/api/billing", who=api.garmin)["body"])
+    assert b["canManage"] and b["interval"] == "month" and b["periodEnd"] == 1_900_000_000
+    assert api.call("POST", "/api/billing/checkout", {"offer": "yearly"}, who=api.garmin)["statusCode"] == 400  # ya tiene una
+    gone = {"type": "customer.subscription.deleted", "data": {"object": {"id": "sub_1", "customer": "cus_1", "status": "canceled",
+                                                                          "items": {"data": [{"price": {"id": "price_m"}}]}}}}
+    assert hook(gone)["statusCode"] == 200 and api.user(api.garmin)["plan"] == "free"
+
+
+def test_admin_can_switch_between_courtesy_and_free(api):
+    r = api.call("POST", "/api/admin/users", {"action": "plan", "email": api.garmin, "plan": "free"}, who=api.owner)
+    assert r["statusCode"] == 200 and api.user(api.garmin)["plan"] == "free"
+    rows = {u["email"]: u for u in json.loads(r["body"])["users"]}
+    assert rows[api.garmin]["plan"] == "free" and rows[api.friend]["plan"] == "comp"
+    assert api.call("POST", "/api/admin/users", {"action": "plan", "email": api.garmin, "plan": "plus"}, who=api.owner)["statusCode"] == 400
+    assert api.call("POST", "/api/admin/users", {"action": "plan", "email": api.garmin, "plan": "comp"}, who=api.friend)["statusCode"] == 403
+    api.call("POST", "/api/admin/users", {"action": "add", "email": "nueva@x.com", "name": "N"}, who=api.owner)
+    assert api.user("nueva@x.com")["plan"] == "comp"
+
+
+def test_idle_people_do_not_spend_ai_in_the_hourly_sync(sync_handler):
+    h = sync_handler.h
+    assert h._idle("m1") is False                                   # sin registro de uso: no se sabe, se escriben
+    old = time.strftime("%Y-%m-%d", time.localtime(time.time() - 9 * 86400))
+    sync_handler.s3.objs[f"users/m1/usage/{old}.json"] = b"{}"
+    assert h._idle("m1") is True                                    # 9 días sin abrir
+    sync_handler.s3.objs[f"users/m1/usage/{time.strftime('%Y-%m-%d')}.json"] = b"{}"
+    assert h._idle("m1") is False

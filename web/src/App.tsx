@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import { PullToRefresh, useManualSync } from './sync';
 import { startTracking, track } from './track';
 import { DailyBrief } from './brief';
+import { PlanDialog, readBillingReturn } from './plan';
+import WorkspacePremiumOutlined from '@mui/icons-material/WorkspacePremiumOutlined';
 import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
@@ -167,6 +169,10 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
             {me.name ? `${me.name} · ` : ''}{me.email}
           </Typography>
         )}
+        <MenuItem onClick={() => { setAnchor(null); window.dispatchEvent(new CustomEvent('open-plan')); }}>
+          <ListItemIcon><WorkspacePremiumOutlined fontSize="small" /></ListItemIcon>
+          <ListItemText primary="Tu plan" secondary={me?.plan === 'comp' ? 'Invitación: todo incluido' : me?.entitled ? 'Runch Plus' : 'Gratis · mira qué incluye Plus'} slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+        </MenuItem>
         <MenuItem onClick={() => { setAnchor(null); window.dispatchEvent(new Event('open-brief')); }}>
           <ListItemIcon><AutoAwesomeOutlined fontSize="small" /></ListItemIcon>
           <ListItemText primary="Resumen del día" secondary="Cómo vas hoy y lo que has hecho" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
@@ -394,6 +400,12 @@ export default function App() {
   const googleReturn = useGoogleReturn();
   const hasData = !!data;
   useEffect(() => { if (googleReturn && hasData) setInfo(googleReturn.message); }, [googleReturn, hasData]);
+  // Vuelta del pago de Stripe: el aviso de Stripe puede tardar unos segundos en llegar, se vuelve a mirar la cuenta.
+  useEffect(() => {
+    const r = readBillingReturn();
+    if (r === 'ok') { setInfo('Pago recibido. Ya tienes Runch Plus: gracias por apoyar Runch.'); [1500, 5000, 12000].forEach((ms) => setTimeout(refreshMe, ms)); }
+    else if (r === 'cancel') setInfo('No se ha hecho ningún cargo. Puedes pasarte a Plus cuando quieras desde el menú → Tu plan.');
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
   // Comida se pide ya al abrir la app (si la tiene activada): al entrar en su página sale pintada al instante.
   useEffect(() => { if (hasData) prefetchFood(); }, [hasData]);
   // Ya hay datos en el servidor pero esta página se cargó antes: traerlos
@@ -536,6 +548,7 @@ export default function App() {
       <Chat showFab={!mobile} />
       <WhatsNew me={me} go={go} ready={!!me} />
       <WelcomeTour me={me} />
+      <PlanDialog />
       <DailyBrief name={me?.name} ready={hasData && me?.status === 'active'} go={go} />
       <Spotlight />
       {/* Avisos abajo, por encima de la barra de navegación del móvil: arriba quedaban tapados por la cabecera y la hora. */}
