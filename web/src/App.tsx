@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import { PullToRefresh, useManualSync } from './sync';
 import { startTracking, track } from './track';
+import { DailyBrief } from './brief';
+import AutoAwesomeOutlined from '@mui/icons-material/AutoAwesomeOutlined';
 import Alert from '@mui/material/Alert';
 import Divider from '@mui/material/Divider';
 import GroupAddOutlined from '@mui/icons-material/GroupAddOutlined';
@@ -165,6 +167,10 @@ function ModeMenu({ vapid, onInfo, me, onAccount }: { vapid?: string; onInfo: (t
             {me.name ? `${me.name} · ` : ''}{me.email}
           </Typography>
         )}
+        <MenuItem onClick={() => { setAnchor(null); window.dispatchEvent(new Event('open-brief')); }}>
+          <ListItemIcon><AutoAwesomeOutlined fontSize="small" /></ListItemIcon>
+          <ListItemText primary="Resumen del día" secondary="Cómo vas hoy y lo que has hecho" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
+        </MenuItem>
         <MenuItem onClick={() => { setAnchor(null); window.dispatchEvent(new Event('open-whatsnew')); }}>
           <ListItemIcon><NewReleasesOutlined fontSize="small" /></ListItemIcon>
           <ListItemText primary="Novedades" secondary="Lo último que hemos añadido" slotProps={{ secondary: { sx: { fontSize: 12 } } }} />
@@ -530,6 +536,7 @@ export default function App() {
       <Chat showFab={!mobile} />
       <WhatsNew me={me} go={go} ready={!!me} />
       <WelcomeTour me={me} />
+      <DailyBrief name={me?.name} ready={hasData && me?.status === 'active'} go={go} />
       <Spotlight />
       {/* Avisos abajo, por encima de la barra de navegación del móvil: arriba quedaban tapados por la cabecera y la hora. */}
       <Snackbar open={!!info} autoHideDuration={9000} onClose={() => setInfo(null)} message={info}

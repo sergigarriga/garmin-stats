@@ -1075,3 +1075,40 @@ def test_pull_reads_every_file_in_parallel_and_says_if_the_person_has_a_web(api)
     assert not (api.h.ROOT / "data" / "coach.json").exists()  # el que no existe se salta
     del api.s3.objs["site/u/u3/data.js"]
     assert api.h._pull() is False
+
+
+# ---------------------------------------------------------------- mensaje de bienvenida con IA (API)
+from garmin_stats import brief as B  # noqa: E402
+
+DATA = {"days": [{"d": "2026-11-14", "sleepH": 6.1, "steps": 3000}],
+        "activities": [{"id": 7, "start": "2026-11-14T08:30:00", "group": "Correr", "km": 5.0, "min": 30}]}
+
+
+def _api_ready(api, monkeypatch, made):
+    api.s3.objs["users/u3/state/coach.json"] = b"{}"
+    api.s3.objs["site/u/u3/data.js"] = ("window.__GARMIN__=" + json.dumps(DATA) + ";").encode()
+    api.ssm.params["/x"] = {"Value": "clave", "Type": "SecureString"}
+    def fake(data, now):
+        made.append(now)
+        return {"tone": "positive", "title": "Vas bien", "body": "Cuerpo", "next_step": "Camina", "slot": B.slot(now), "at": now.isoformat()}
+    monkeypatch.setattr(B, "generate", fake)
+
+
+def test_api_brief_generates_once_per_slot_then_serves_the_cache(api, monkeypatch):
+    made: list = []
+    _api_ready(api, monkeypatch, made)
+    r1 = json.loads(api.call("POST", "/api/brief", {}, who=api.garmin)["body"])
+    assert r1["brief"]["title"] == "Vas bien" and not r1.get("cached") and len(made) == 1
+    r2 = json.loads(api.call("POST", "/api/brief", {}, who=api.garmin)["body"])
+    assert r2["brief"] == r1["brief"] and r2["cached"] is True and len(made) == 1  # sin segunda llamada a la IA
+    assert r2["key"] == r1["key"]
+
+
+def test_api_brief_without_data_or_ai_answers_empty(api, monkeypatch):
+    api.ssm.params["/x"] = {"Value": "clave", "Type": "SecureString"}
+    assert api.call("POST", "/api/brief", {}, who=api.garmin)["statusCode"] == 409  # sin web todavía: como el resto de rutas con datos
+    made: list = []
+    _api_ready(api, monkeypatch, made)
+    monkeypatch.setattr(B, "generate", lambda data, now: None)  # la IA falla: no hay mensaje, pero no es un error
+    r = api.call("POST", "/api/brief", {}, who=api.garmin)
+    assert r["statusCode"] == 200 and json.loads(r["body"])["brief"] is None

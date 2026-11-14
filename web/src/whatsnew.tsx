@@ -56,6 +56,17 @@ const C = {
 /** La más reciente primero. */
 export const RELEASES: Release[] = [
   {
+    id: '2026-11-14', date: '2026-11-14', title: 'Un resumen al abrir', subtitle: 'Cómo vas hoy, entrenos al día y Comida más rápida',
+    features: [
+      { icon: <AutoAwesomeRounded />, color: C.orange, title: 'Resumen del día al abrir',
+        body: 'Al entrar, un mensaje con IA te cuenta cómo vas hoy, lo que has hecho y una valoración, con un paso para lo que queda de día. Cambia por la mañana, la tarde y la noche, y lo reabres desde el menú.' },
+      { icon: <FitnessCenterRounded />, color: C.green, title: 'Actualizar un entreno con Garmin',
+        body: 'Dentro de un entreno, «Actualizar con Garmin» vuelve a bajarlo entero. Si cambias pesos o repeticiones en la app de Garmin, aquí aparecen.' },
+      { icon: <RestaurantRounded />, color: C.blue, title: 'Comida más rápida',
+        body: 'Sale al instante con lo último que viste y se refresca por detrás.' },
+    ],
+  },
+  {
     id: '2026-11-11', date: '2026-11-11', title: 'Apunta con un toque', subtitle: 'Atajos en la portada y una cabecera más ligera',
     features: [
       { icon: <AddCircleOutlineRounded />, color: C.green, title: 'Atajos en Hoy', target: 'shortcuts', where: 'Hoy', go: 'hoy',

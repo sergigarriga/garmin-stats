@@ -323,6 +323,29 @@ def handler(event, _ctx):
         return _json(500, {"error": "Algo ha fallado en el servidor. Inténtalo de nuevo en un momento."})
 
 
+def _brief(has_data: bool):
+    """Mensaje de bienvenida con IA (cómo vas hoy, lo hecho, valoración): uno por franja del día y novedad, el resto sale de la caché."""
+    from datetime import datetime
+    from garmin_stats import ai, brief as B
+    if not has_data:
+        return _json(200, {"brief": None})
+    data, now = _read_data(), datetime.now()
+    key, today = B.cache_key(data, now), now.date().isoformat()
+    st = _get_json(_sp("brief.json"), {})
+    if st.get("key") == key and st.get("result"):
+        return _json(200, {"brief": st["result"], "key": key, "cached": True})
+    calls = (st.get("calls") or {}).get(today, 0)
+    stale = st.get("result") if str((st.get("result") or {}).get("at", ""))[:10] == today else None
+    if calls >= B.MAX_PER_DAY or ai.over_budget():
+        return _json(200, {"brief": stale, "key": st.get("key")})  # sin llamadas: lo último de hoy, si lo hay
+    res = B.generate(data, now)
+    _push("ai_usage_lambda.log")
+    if not res:
+        return _json(200, {"brief": stale, "key": st.get("key")})
+    _put_json(_sp("brief.json"), {"key": key, "result": res, "calls": {today: calls + 1}})
+    return _json(200, {"brief": res, "key": key})
+
+
 def _warm() -> dict:
     """Latido cada pocos minutos (EventBridge): deja la Lambda caliente, con los módulos pesados ya importados y la
     clave de IA descargada, para que la primera petición de una persona (p. ej. Comida) no pague el arranque en frío."""
@@ -447,6 +470,9 @@ def _handle(event):
         return _json(200, _with_job(coach.view(_read_data()), coach))
     if method != "POST":
         return _json(405, {"error": "método no permitido"})
+    if path == "/api/brief" and method == "POST":
+        return _brief(has_data)
+
     if path == "/api/ask":
         msgs = payload.get("messages")
         msgs = [m for m in msgs if isinstance(m, dict)] if isinstance(msgs, list) else []
